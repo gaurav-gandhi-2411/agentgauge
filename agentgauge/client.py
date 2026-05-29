@@ -1,0 +1,83 @@
+from __future__ import annotations
+
+import contextlib
+from dataclasses import dataclass, field
+from typing import Any
+
+from mcp import ClientSession, StdioServerParameters
+from mcp.client.sse import sse_client
+from mcp.client.stdio import stdio_client
+from mcp.shared.exceptions import McpError
+from mcp.types import Prompt, Resource, Tool
+
+
+@dataclass
+class ServerInfo:
+    tools: list[Tool] = field(default_factory=list)
+    resources: list[Resource] = field(default_factory=list)
+    prompts: list[Prompt] = field(default_factory=list)
+
+
+@dataclass
+class ToolCallResult:
+    success: bool
+    content: list[Any]
+    error: str | None = None
+
+
+class MCPClient:
+    """Wraps an active MCP ClientSession."""
+
+    def __init__(self, session: ClientSession) -> None:
+        self._session = session
+
+    async def introspect(self) -> ServerInfo:
+        tools_resp = await self._session.list_tools()
+        # Servers may not implement resources/prompts; treat Method not found as empty.
+        try:
+            resources_resp = await self._session.list_resources()
+            resources = resources_resp.resources
+        except McpError:
+            resources = []
+        try:
+            prompts_resp = await self._session.list_prompts()
+            prompts = prompts_resp.prompts
+        except McpError:
+            prompts = []
+        return ServerInfo(tools=tools_resp.tools, resources=resources, prompts=prompts)
+
+    async def call_tool(self, name: str, arguments: dict[str, Any]) -> ToolCallResult:
+        try:
+            result = await self._session.call_tool(name, arguments)
+            return ToolCallResult(success=True, content=result.content)
+        except Exception as exc:
+            return ToolCallResult(success=False, content=[], error=str(exc))
+
+
+async def connect_stdio(command: str, args: list[str]) -> tuple[MCPClient, Any]:
+    """Returns (client, context) — caller must use as async context or call cleanup."""
+    params = StdioServerParameters(command=command, args=args)
+    ctx = stdio_client(params)
+    read, write = await ctx.__aenter__()
+    session_ctx = ClientSession(read, write)
+    session = await session_ctx.__aenter__()
+    await session.initialize()
+    return MCPClient(session), (ctx, session_ctx, read, write)
+
+
+async def connect_http(url: str) -> tuple[MCPClient, Any]:
+    """Connect to an MCP server over HTTP/SSE."""
+    ctx = sse_client(url)
+    read, write = await ctx.__aenter__()
+    session_ctx = ClientSession(read, write)
+    session = await session_ctx.__aenter__()
+    await session.initialize()
+    return MCPClient(session), (ctx, session_ctx, read, write)
+
+
+async def cleanup_connection(ctx_tuple: Any) -> None:
+    ctx, session_ctx, read, write = ctx_tuple
+    with contextlib.suppress(Exception):
+        await session_ctx.__aexit__(None, None, None)
+    with contextlib.suppress(Exception):
+        await ctx.__aexit__(None, None, None)
