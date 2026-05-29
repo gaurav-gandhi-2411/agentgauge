@@ -2,11 +2,15 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass, field
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from mcp.types import Tool
 
 from agentgauge.providers import Message, Provider
+
+if TYPE_CHECKING:
+    from agentgauge.client import MCPClient
+    from agentgauge.runner import RunResult
 
 
 @dataclass
@@ -147,6 +151,69 @@ async def score_description_quality(
     )
 
 
+def score_selection_accuracy(run_results: list[RunResult]) -> DimensionScore:
+    """Score how often the provider selects the correct tool for each task."""
+    if not run_results:
+        return DimensionScore(
+            name="selection_accuracy",
+            score=0.0,
+            details={"reason": "no results"},
+            fix_hints=["Run tasks to generate selection accuracy data"],
+        )
+
+    correct = sum(1 for r in run_results if r.selected_tool == r.task.tool_name)
+    score = (correct / len(run_results)) * 100
+
+    fix_hints: list[str] = []
+    if score < 100.0:
+        for r in run_results:
+            if r.selected_tool != r.task.tool_name:
+                fix_hints.append(
+                    f"Task for '{r.task.tool_name}' → provider selected '{r.selected_tool}'"
+                )
+                if len(fix_hints) >= 3:
+                    break
+
+    return DimensionScore(
+        name="selection_accuracy",
+        score=round(score, 1),
+        details={"correct": correct, "total": len(run_results)},
+        fix_hints=fix_hints,
+    )
+
+
+def score_call_correctness(run_results: list[RunResult]) -> DimensionScore:
+    """Score how often tool calls succeed (no errors from the server)."""
+    if not run_results:
+        return DimensionScore(
+            name="call_correctness",
+            score=0.0,
+            details={"reason": "no results"},
+            fix_hints=["Run tasks to generate call correctness data"],
+        )
+
+    successful = sum(1 for r in run_results if r.success)
+    score = (successful / len(run_results)) * 100
+
+    fix_hints: list[str] = []
+    if score < 100.0:
+        for r in run_results:
+            if not r.success:
+                hint = f"Tool '{r.selected_tool or r.task.tool_name}' call failed"
+                if r.error:
+                    hint += f": {r.error[:80]}"
+                fix_hints.append(hint)
+                if len(fix_hints) >= 3:
+                    break
+
+    return DimensionScore(
+        name="call_correctness",
+        score=round(score, 1),
+        details={"successful": successful, "total": len(run_results)},
+        fix_hints=fix_hints,
+    )
+
+
 def _stub_dimension(name: str) -> DimensionScore:
     return DimensionScore(
         name=name,
@@ -156,16 +223,34 @@ def _stub_dimension(name: str) -> DimensionScore:
     )
 
 
-async def score_all(tools: list[Tool], provider: Provider, *, trials: int = 1) -> ScoredReport:
+async def score_all(
+    tools: list[Tool],
+    provider: Provider,
+    *,
+    trials: int = 1,
+    client: MCPClient | None = None,
+) -> ScoredReport:
+    from agentgauge.runner import run_tasks
+    from agentgauge.tasks import generate_tasks
+
     schema = score_schema_completeness(tools)
     description = await score_description_quality(tools, provider, trials=trials)
+
+    if client is not None:
+        tasks = generate_tasks(tools)
+        run_results = await run_tasks(tasks, client, provider, tools, trials=trials)
+        selection = score_selection_accuracy(run_results)
+        correctness = score_call_correctness(run_results)
+    else:
+        selection = _stub_dimension("selection_accuracy")
+        correctness = _stub_dimension("call_correctness")
 
     dimensions = [
         schema,
         description,
         _stub_dimension("discoverability"),
-        _stub_dimension("selection_accuracy"),
-        _stub_dimension("call_correctness"),
+        selection,
+        correctness,
         _stub_dimension("error_legibility"),
         _stub_dimension("robustness"),
         _stub_dimension("docs_manifest"),
