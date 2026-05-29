@@ -6,7 +6,10 @@ from typing import Any
 
 from mcp.types import Tool
 
+from agentgauge.client import MCPClient
 from agentgauge.providers import Message, Provider
+from agentgauge.runner import RunResult, run_tasks
+from agentgauge.tasks import generate_tasks
 
 
 @dataclass
@@ -147,6 +150,69 @@ async def score_description_quality(
     )
 
 
+def score_selection_accuracy(run_results: list[RunResult]) -> DimensionScore:
+    """Fraction of runs where the provider selected the expected tool."""
+    if not run_results:
+        return DimensionScore(
+            name="selection_accuracy",
+            score=0.0,
+            details={"reason": "no results"},
+            fix_hints=["No run results to score — ensure tasks and client are provided"],
+        )
+
+    correct = sum(1 for r in run_results if r.selected_tool == r.task.tool_name)
+    score = (correct / len(run_results)) * 100
+
+    fix_hints: list[str] = []
+    if score < 100.0:
+        for r in run_results:
+            if r.selected_tool != r.task.tool_name:
+                fix_hints.append(
+                    f"Tool '{r.task.tool_name}' was not selected (got '{r.selected_tool}')"
+                )
+                if len(fix_hints) >= 5:
+                    break
+
+    return DimensionScore(
+        name="selection_accuracy",
+        score=round(score, 1),
+        details={"correct": correct, "total": len(run_results)},
+        fix_hints=fix_hints,
+    )
+
+
+def score_call_correctness(run_results: list[RunResult]) -> DimensionScore:
+    """Fraction of tool calls that succeeded."""
+    if not run_results:
+        return DimensionScore(
+            name="call_correctness",
+            score=0.0,
+            details={"reason": "no results"},
+            fix_hints=["No run results to score — ensure tasks and client are provided"],
+        )
+
+    successful = sum(1 for r in run_results if r.success)
+    score = (successful / len(run_results)) * 100
+
+    fix_hints: list[str] = []
+    if score < 100.0:
+        for r in run_results:
+            if not r.success:
+                msg = f"Call to '{r.task.tool_name}' failed"
+                if r.error:
+                    msg += f": {r.error}"
+                fix_hints.append(msg)
+                if len(fix_hints) >= 5:
+                    break
+
+    return DimensionScore(
+        name="call_correctness",
+        score=round(score, 1),
+        details={"successful": successful, "total": len(run_results)},
+        fix_hints=fix_hints,
+    )
+
+
 def _stub_dimension(name: str) -> DimensionScore:
     return DimensionScore(
         name=name,
@@ -156,16 +222,31 @@ def _stub_dimension(name: str) -> DimensionScore:
     )
 
 
-async def score_all(tools: list[Tool], provider: Provider, *, trials: int = 1) -> ScoredReport:
+async def score_all(
+    tools: list[Tool],
+    provider: Provider,
+    *,
+    client: MCPClient | None = None,
+    trials: int = 1,
+) -> ScoredReport:
     schema = score_schema_completeness(tools)
     description = await score_description_quality(tools, provider, trials=trials)
+
+    if client is not None:
+        tasks = generate_tasks(tools)
+        run_results = await run_tasks(tasks, client, provider, trials=trials)
+        selection = score_selection_accuracy(run_results)
+        correctness = score_call_correctness(run_results)
+    else:
+        selection = _stub_dimension("selection_accuracy")
+        correctness = _stub_dimension("call_correctness")
 
     dimensions = [
         schema,
         description,
         _stub_dimension("discoverability"),
-        _stub_dimension("selection_accuracy"),
-        _stub_dimension("call_correctness"),
+        selection,
+        correctness,
         _stub_dimension("error_legibility"),
         _stub_dimension("robustness"),
         _stub_dimension("docs_manifest"),
