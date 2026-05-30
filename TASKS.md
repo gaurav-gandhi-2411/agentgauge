@@ -6,23 +6,6 @@ Autonomous runs: pick the single top TODO, implement it, move to IN-REVIEW.
 
 ---
 
-## IN PROGRESS (manual)
-
-### T2 — Error-legibility dimension
-
-**Priority:** P2
-**Claimed:** manual session (feat/t2-error-legibility branch)
-**Acceptance criteria:**
-- `client.py`: `call_tool_with_bad_input(tool_name, bad_args)` injects malformed arguments
-  (missing required, wrong type) and returns the raw error response.
-- `scorer.py`: `score_error_legibility(tools, client, provider)` asks the provider whether the
-  error messages are actionable for an AI agent (0-10 per tool, averaged to 0-100). Integrated
-  into `score_all`.
-- Tests: mock both client (returns crafted error strings) and provider; deterministic.
-- `./scripts/verify.sh` exits 0.
-
----
-
 ## TODO
 
 ### T3 — Robustness dimension
@@ -83,6 +66,13 @@ Autonomous runs: pick the single top TODO, implement it, move to IN-REVIEW.
 ---
 
 ## DONE
+
+### T2 — Error-legibility dimension
+
+**Priority:** P2
+**Merged:** PR #10 — feat(scorer): T2 — error-legibility dimension
+
+---
 
 ### T1 — Task generator + agent runner (selection-accuracy & call-correctness)
 

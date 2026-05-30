@@ -4,7 +4,7 @@
 
 [![CI](https://github.com/gaurav-gandhi-2411/agentgauge/actions/workflows/ci.yml/badge.svg)](https://github.com/gaurav-gandhi-2411/agentgauge/actions/workflows/ci.yml)
 
-> **Early / WIP.** Four of the eight scoring dimensions are implemented. The project is under active development.
+> **Early / WIP.** Five of the eight scoring dimensions are implemented. The project is under active development.
 
 ---
 
@@ -78,7 +78,7 @@ Example output:
 | `selection_accuracy` | 15% | Given a task description, agent picks the right tool (N trials, % correct) | **Implemented** (T1) |
 | `call_correctness` | 10% | Agent constructs valid arguments; server accepts the call | **Implemented** (T1) |
 | `discoverability` | 15% | Tool names are distinct and self-explanatory (heuristic + LLM judge) | In progress |
-| `error_legibility` | 5% | Error responses are understandable and actionable to an agent | In progress |
+| `error_legibility` | 5% | Error responses are understandable and actionable to an agent | **Implemented** (T2) |
 | `robustness` | 3% | Server handles malformed inputs gracefully without crashing | In progress |
 | `docs_manifest` | 2% | Quality and presence of `llms.txt` / tool-level docs | In progress |
 
