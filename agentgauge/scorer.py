@@ -110,7 +110,7 @@ async def score_description_quality(
 
     for tool in tools:
         tool_scores: list[float] = []
-        for _ in range(trials):
+        for trial_idx in range(trials):
             prompt = (
                 f"Rate this MCP tool description on a scale of 0-10 for clarity and completeness "
                 f"for an AI agent. Reply with ONLY a number.\n\n"
@@ -118,7 +118,7 @@ async def score_description_quality(
                 f"Description: {tool.description or '(none)'}\n"
                 f"Input schema: {tool.inputSchema}"
             )
-            resp = await provider.chat([Message(role="user", content=prompt)])
+            resp = await provider.chat([Message(role="user", content=prompt)], seed=42 + trial_idx)
             match = re.search(r"\b(\d+(?:\.\d+)?)\b", resp)
             if match:
                 raw_score = float(match.group(1))
@@ -283,7 +283,7 @@ async def score_error_legibility(
             error_text = _extract_error_text(result)
 
             judge_scores: list[float] = []
-            for _ in range(trials):
+            for trial_idx in range(trials):
                 prompt = (
                     f"An AI agent called MCP tool '{tool.name}' with invalid arguments "
                     f"and received the error below. Rate it 0-10 on TWO dimensions:\n"
@@ -296,13 +296,16 @@ async def score_error_legibility(
                     f"(e.g. \"Required field 'user_id' (string) is missing.\")\n"
                     f"- 3-4: Vague — something failed but not which field or why "
                     f'(e.g. "Invalid input")\n'
-                    f"- 0-2: Opaque — bare status code, empty, or raw stack trace "
-                    f'(e.g. "Error 500")\n\n'
+                    f"- 0-2: No field-level information — bare status code, empty string, "
+                    f'or stack trace. Score "Error 500" as 1, "Internal Server Error" as 1. '
+                    f"Any response naming no specific field scores <= 2.\n\n"
                     f"Bad input used: {probe.args}\n"
                     f"Error response: {error_text!r}\n\n"
                     f"Reply with ONLY a number 0-10."
                 )
-                resp = await provider.chat([Message(role="user", content=prompt)])
+                resp = await provider.chat(
+                    [Message(role="user", content=prompt)], seed=42 + trial_idx
+                )
                 m = re.search(r"\b(\d+(?:\.\d+)?)\b", resp)
                 if m:
                     judge_scores.append(min(float(m.group(1)), 10.0))

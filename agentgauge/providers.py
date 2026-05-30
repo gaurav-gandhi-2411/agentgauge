@@ -41,7 +41,7 @@ class OllamaProvider:
             "stream": False,
             "options": {"seed": seed},
         }
-        async with httpx.AsyncClient(timeout=60.0) as client:
+        async with httpx.AsyncClient(timeout=180.0) as client:
             resp = await client.post(f"{self.BASE_URL}/api/chat", json=payload)
             resp.raise_for_status()
             return resp.json()["message"]["content"]
