@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import sys
 from pathlib import Path
 from typing import Annotated
 
@@ -68,8 +69,8 @@ async def _scan_async(
     if target.startswith("http://") or target.startswith("https://"):
         client, ctx = await connect_http(target)
     else:
-        # Treat as Python script path
-        client, ctx = await connect_stdio("python", [target])
+        # Use sys.executable so the subprocess inherits the active venv, not system Python.
+        client, ctx = await connect_stdio(sys.executable, [target])
 
     try:
         info = await client.introspect()

@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import subprocess
+import sys
+from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, patch
 
 from mcp.types import Tool
@@ -52,3 +55,21 @@ def test_version_flag() -> None:
     result = runner.invoke(app, ["--version"])
     assert result.exit_code == 0
     assert "0.1.0" in result.output
+
+
+def test_scan_echo_server_subprocess() -> None:
+    """End-to-end: spawn the real CLI against the echo server using sys.executable.
+
+    This catches the regression where connect_stdio("python", ...) used the system
+    Python instead of the venv interpreter, causing ModuleNotFoundError on mcp.
+    """
+    repo_root = Path(__file__).parent.parent
+    echo_server = repo_root / "examples" / "echo_server.py"
+    result = subprocess.run(
+        [sys.executable, "-m", "agentgauge", "scan", str(echo_server), "--mock"],
+        capture_output=True,
+        text=True,
+        timeout=30,
+    )
+    assert result.returncode == 0, f"scan exited {result.returncode}:\n{result.stderr}"
+    assert "AgentGauge Score" in result.stdout
