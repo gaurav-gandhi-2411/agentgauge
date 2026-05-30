@@ -1,19 +1,21 @@
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass
+from typing import Any
 
 from agentgauge.client import MCPClient
-from agentgauge.providers import Provider
+from agentgauge.providers import Message, Provider
 from agentgauge.tasks import Task
 
 
 @dataclass
 class RunResult:
     task: Task
+    selected_tool: str | None
+    constructed_args: dict[str, Any]
     success: bool
     error: str | None = None
-    # TODO: extend with LLM-selected tool name, constructed args, etc.
-    # See TASKS.md: agent-runner item
 
 
 async def run_tasks(
@@ -23,10 +25,61 @@ async def run_tasks(
     *,
     trials: int = 1,
 ) -> list[RunResult]:
-    """Stub — full agent runner in TASKS.md backlog."""
+    """Ask the provider to select the right tool and construct arguments for each task.
+
+    For each task, two prompts are sent:
+    1. Select the tool name from the available tools.
+    2. Construct a JSON argument object for that tool.
+    The tool is then called and the result recorded.
+    """
+    info = await client.introspect()
+    tool_names_str = ", ".join(t.name for t in info.tools)
+    tool_schema_map = {t.name: t.inputSchema for t in info.tools}
+
     results: list[RunResult] = []
     for task in tasks:
-        # TODO: have provider select and call the right tool
-        result = await client.call_tool(task.tool_name, {})
-        results.append(RunResult(task=task, success=result.success, error=result.error))
+        for _ in range(trials):
+            selection_resp = await provider.chat(
+                [
+                    Message(
+                        role="user",
+                        content=(
+                            f"Available tools: {tool_names_str}\n"
+                            f"Task: {task.description}\n"
+                            "Reply with ONLY the tool name to call, nothing else."
+                        ),
+                    )
+                ]
+            )
+            selected_tool = selection_resp.strip().split()[0] if selection_resp.strip() else None
+
+            schema = tool_schema_map.get(selected_tool or task.tool_name, {})
+            args_resp = await provider.chat(
+                [
+                    Message(
+                        role="user",
+                        content=(
+                            f"Tool: {selected_tool or task.tool_name}\n"
+                            f"Schema: {schema}\n"
+                            f"Task: {task.description}\n"
+                            "Reply with ONLY a JSON object of arguments, nothing else."
+                        ),
+                    )
+                ]
+            )
+            try:
+                constructed_args: dict[str, Any] = json.loads(args_resp.strip())
+            except (json.JSONDecodeError, ValueError):
+                constructed_args = {}
+
+            call_result = await client.call_tool(selected_tool or task.tool_name, constructed_args)
+            results.append(
+                RunResult(
+                    task=task,
+                    selected_tool=selected_tool,
+                    constructed_args=constructed_args,
+                    success=call_result.success,
+                    error=call_result.error,
+                )
+            )
     return results
