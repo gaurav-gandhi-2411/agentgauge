@@ -55,3 +55,8 @@ omit = ["tests/*", "examples/*", "scripts/*"]
 python_version = "3.11"
 strict = false
 ignore_missing_imports = true
+
+[dependency-groups]
+dev = [
+    "pytest-cov>=7.1.0",
+]

@@ -79,7 +79,7 @@ async def _scan_async(
             f"{len(info.prompts)} prompts[/dim]"
         )
 
-        report = await score_all(info.tools, provider, trials=trials)
+        report = await score_all(info.tools, provider, client=client, trials=trials)
         render_text(report, console)
 
         if out is not None:
