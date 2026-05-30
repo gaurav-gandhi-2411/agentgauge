@@ -14,6 +14,11 @@ from agentgauge.providers import MockProvider, OllamaProvider
 from agentgauge.report import render_text
 from agentgauge.scorer import score_all
 
+# Model the judge rubric was calibrated against. Scores are model-specific:
+# changing --model shifts absolute band values and makes results non-comparable
+# to prior runs. See README.md and CLAUDE.md for calibration notes.
+CALIBRATED_JUDGE_MODEL = "llama3.1:8b"
+
 app = typer.Typer(
     name="agentgauge",
     help="Score how well an AI agent can use an MCP server.",
@@ -40,7 +45,18 @@ def main(
 @app.command()
 def scan(
     target: Annotated[str, typer.Argument(help="Path to MCP server script, or HTTP/SSE URL")],
-    model: Annotated[str, typer.Option("--model", "-m", help="Ollama model name")] = "llama3.2",
+    model: Annotated[
+        str,
+        typer.Option(
+            "--model",
+            "-m",
+            help=(
+                f"Ollama model name (default: calibrated judge model '{CALIBRATED_JUDGE_MODEL}'). "
+                "Changing this shifts absolute score bands — results are not comparable "
+                "across judge models."
+            ),
+        ),
+    ] = CALIBRATED_JUDGE_MODEL,
     trials: Annotated[int, typer.Option("--trials", "-t", help="LLM trials per dimension")] = 1,
     out: Annotated[
         Path | None, typer.Option("--out", "-o", help="Write JSON report to file")

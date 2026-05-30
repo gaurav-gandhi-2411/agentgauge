@@ -58,11 +58,39 @@ uv run pytest
 | schema_completeness  | 25%    | implemented   |
 | description_quality  | 25%    | implemented   |
 | discoverability      | 15%    | TODO          |
-| selection_accuracy   | 15%    | TODO          |
-| call_correctness     | 10%    | TODO          |
-| error_legibility     | 5%     | TODO          |
+| selection_accuracy   | 15%    | implemented   |
+| call_correctness     | 10%    | implemented   |
+| error_legibility     | 5%     | implemented   |
 | robustness           | 3%     | TODO          |
 | docs_manifest        | 2%     | TODO          |
+
+## Judge model and calibration
+
+**Pinned judge model:** `llama3.1:8b` (via Ollama). This is the model the
+error_legibility and description_quality rubrics were calibrated against.
+It is the default for `agentgauge scan --model`.
+
+**Score comparability:** Scores are NOT comparable across judge models. Changing
+`--model` shifts absolute band values — a 70/100 on `llama3.1:8b` is a different
+thing than a 70/100 on another model. Always record the judge model alongside
+any score you store or publish.
+
+**What the dimension guarantees (model-independent):**
+- Ordering: what+how > diagnosis-only > opaque (always true by rubric design)
+- Actionability gap: what+how − diagnosis-only ≥ 20 pts (locked by mock tests)
+- Opaque errors score low: ≤ 25/100
+
+**Absolute bands are model-dependent and NOT guaranteed:**
+The 5-6 rubric anchor for "diagnosis-only" is the intended target but is
+aspirational for llama3.1:8b. Measured values (5 trials, 2026-05-31):
+- Opaque ("Error 500"): ≈ 10/100
+- Diagnosis-only ("Required field X is missing."): ≈ 68/100
+  (rubric intends 5-6/10; 8B treats clear field-naming as near-actionable)
+- What+how ("...add it and retry."): ≈ 90/100, stable across seeds
+
+**Updating calibration:** Run `scripts/validate_error_judge.py` (ad-hoc, not
+committed), record before/after tables, update the `CALIBRATED_JUDGE_MODEL`
+constant in `cli.py` and these notes.
 
 ## MCP SDK notes
 

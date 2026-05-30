@@ -65,6 +65,18 @@ Autonomous runs: pick the single top TODO, implement it, move to IN-REVIEW.
 
 ---
 
+## FUTURE / DEFERRED
+
+### Re-calibrate judge bands against a ≥30B model
+
+Re-calibrate `score_error_legibility` rubric bands against `llama3.3:70b` (or
+equivalent ≥30B model) when a ≥64GB host is available. Model pinning makes this a
+config + re-measure exercise, not a rebuild: update `CALIBRATED_JUDGE_MODEL` in
+`cli.py`, re-run the three-tier calibration cases, and update `CLAUDE.md`. The
+test suite guarantees ordering + actionability gap regardless of which model is used.
+
+---
+
 ## DONE
 
 ### T2 — Error-legibility dimension
