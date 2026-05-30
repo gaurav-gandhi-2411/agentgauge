@@ -8,23 +8,6 @@ Autonomous runs: pick the single top TODO, implement it, move to IN-REVIEW.
 
 ## TODO
 
-### T1 — Task generator + agent runner (selection-accuracy & call-correctness)
-
-**Priority:** P2
-**Acceptance criteria:**
-- `tasks.py`: `generate_tasks(tools)` produces ≥1 `Task` per tool, each with a synthesized
-  natural-language description and a dict of valid sample arguments derived from the tool's
-  JSON schema.
-- `runner.py`: `run_tasks(tasks, client, provider, trials=N)` asks the provider to pick the
-  correct tool name and construct valid arguments for each task description. Returns
-  `RunResult` with `selected_tool`, `constructed_args`, `success`, `error`.
-- `scorer.py`: `score_selection_accuracy(run_results)` and `score_call_correctness(run_results)`
-  implemented and integrated into `score_all`.
-- Tests: deterministic with MockProvider; no network calls; at least one test per new function.
-- `./scripts/verify.sh` exits 0.
-
----
-
 ### T2 — Error-legibility dimension
 
 **Priority:** P2
@@ -92,7 +75,20 @@ Autonomous runs: pick the single top TODO, implement it, move to IN-REVIEW.
 
 ## IN-REVIEW
 
-*(empty)*
+### T1 — Task generator + agent runner (selection-accuracy & call-correctness)
+
+**Priority:** P2
+**Acceptance criteria:**
+- `tasks.py`: `generate_tasks(tools)` produces ≥1 `Task` per tool, each with a synthesized
+  natural-language description and a dict of valid sample arguments derived from the tool's
+  JSON schema.
+- `runner.py`: `run_tasks(tasks, client, provider, trials=N)` asks the provider to pick the
+  correct tool name and construct valid arguments for each task description. Returns
+  `RunResult` with `selected_tool`, `constructed_args`, `success`, `error`.
+- `scorer.py`: `score_selection_accuracy(run_results)` and `score_call_correctness(run_results)`
+  implemented and integrated into `score_all`.
+- Tests: deterministic with MockProvider; no network calls; at least one test per new function.
+- `./scripts/verify.sh` exits 0.
 
 ---
 
