@@ -6,11 +6,12 @@ Autonomous runs: pick the single top TODO, implement it, move to IN-REVIEW.
 
 ---
 
-## TODO
+## IN PROGRESS (manual)
 
 ### T2 — Error-legibility dimension
 
 **Priority:** P2
+**Claimed:** manual session (feat/t2-error-legibility branch)
 **Acceptance criteria:**
 - `client.py`: `call_tool_with_bad_input(tool_name, bad_args)` injects malformed arguments
   (missing required, wrong type) and returns the raw error response.
@@ -21,6 +22,8 @@ Autonomous runs: pick the single top TODO, implement it, move to IN-REVIEW.
 - `./scripts/verify.sh` exits 0.
 
 ---
+
+## TODO
 
 ### T3 — Robustness dimension
 
