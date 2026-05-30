@@ -284,6 +284,12 @@ async def score_error_legibility(
 
             judge_scores: list[float] = []
             for trial_idx in range(trials):
+                # Rubric calibration note (llama3.1:8b, 2026-05-31):
+                # The 5-6 anchor for "diagnosis-only" is the INTENDED target but
+                # is aspirational: llama3.1:8b rates such errors at ~7/10 (~70/100).
+                # The dimension guarantees ORDERING (what+how > diag > opaque) and
+                # ACTIONABILITY GAP (~20 pts), not absolute band membership.
+                # Revisit if the pinned judge model changes. See CLAUDE.md.
                 prompt = (
                     f"An AI agent called MCP tool '{tool.name}' with invalid arguments "
                     f"and received the error below. Rate it 0-10 on TWO dimensions:\n"
