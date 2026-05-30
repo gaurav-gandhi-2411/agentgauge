@@ -180,6 +180,64 @@ async def test_good_error_beats_bad_error_by_large_margin() -> None:
     )
 
 
+async def test_three_tier_scoring_locks_actionability() -> None:
+    """Regression test for the two-dimension rubric (diagnosis × actionability).
+
+    Three tiers with distinct mock judge scores that mirror the rubric anchors:
+      "1" → opaque ("Error 500")                             0–2 band
+      "5" → diagnosis-only ("...is missing.")                5–6 cap
+      "9" → what+how ("...is missing — add it and retry.")   9–10 band
+
+    Assertions verify:
+    1. Strict ordering: opaque < diagnosis-only < what+how
+    2. Diagnosis-only is capped in the middle band (40–65), not the high band
+    3. Actionability gap (what+how minus diagnosis-only) ≥ 25 pts — the regression
+       lock that fails if the rubric collapses back to measuring clarity alone
+    4. Diagnosis gap (diagnosis-only minus opaque) ≥ 20 pts — naming the field
+       still matters materially
+    """
+    OPAQUE = "Error 500"
+    DIAG_ONLY = "Required field 'message' (string) is missing."
+    WHAT_HOW = "Required field 'message' (string) is missing — add it and retry."
+
+    opaque_score = await score_error_legibility(
+        [ECHO_TOOL], _make_error_client(OPAQUE), MockProvider(responses=["1"]), trials=1
+    )
+    diag_score = await score_error_legibility(
+        [ECHO_TOOL], _make_error_client(DIAG_ONLY), MockProvider(responses=["5"]), trials=1
+    )
+    what_how_score = await score_error_legibility(
+        [ECHO_TOOL], _make_error_client(WHAT_HOW), MockProvider(responses=["9"]), trials=1
+    )
+
+    # Strict ordering
+    assert opaque_score.score < diag_score.score < what_how_score.score, (
+        f"Expected opaque ({opaque_score.score}) < diag ({diag_score.score}) "
+        f"< what+how ({what_how_score.score})"
+    )
+
+    # Band membership
+    assert opaque_score.score <= 20, f"opaque should be ≤ 20, got {opaque_score.score}"
+    assert 40 <= diag_score.score <= 65, (
+        f"diagnosis-only should land in 40–65 (5–6 cap), got {diag_score.score}"
+    )
+    assert what_how_score.score >= 80, f"what+how should be ≥ 80, got {what_how_score.score}"
+
+    # Actionability gap: what+how must materially outscore diagnosis-only
+    actionability_gap = what_how_score.score - diag_score.score
+    assert actionability_gap >= 25, (
+        f"Actionability gap ({actionability_gap:.1f} pts) < 25 — "
+        f"rubric is not separating diagnosis from actionability"
+    )
+
+    # Diagnosis gap: naming the field must materially outscore opaque
+    diagnosis_gap = diag_score.score - opaque_score.score
+    assert diagnosis_gap >= 20, (
+        f"Diagnosis gap ({diagnosis_gap:.1f} pts) < 20 — "
+        f"rubric is not rewarding field-level specificity"
+    )
+
+
 async def test_variance_reported_in_details() -> None:
     """details must carry 'avg_variance' and 'judge_trials'."""
     client = _make_error_client(GOOD_ERROR)

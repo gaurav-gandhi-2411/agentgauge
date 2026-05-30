@@ -286,12 +286,18 @@ async def score_error_legibility(
             for _ in range(trials):
                 prompt = (
                     f"An AI agent called MCP tool '{tool.name}' with invalid arguments "
-                    f"and received the error below. Rate this error message 0-10 on how "
-                    f"UNDERSTANDABLE and ACTIONABLE it is for the agent:\n"
-                    f"- 10: Names exactly what was wrong AND how to fix it "
-                    f"(e.g. \"Required field 'X' missing; expected string\")\n"
-                    f"- 5: Partially helpful — something failed but not which field or why\n"
-                    f"- 0: Opaque, empty, a bare status code, or a raw stack trace\n\n"
+                    f"and received the error below. Rate it 0-10 on TWO dimensions:\n"
+                    f"(a) DIAGNOSIS — does it name what was wrong (which field, which type)?\n"
+                    f"(b) ACTIONABILITY — does it state how to fix it (the corrective step)?\n\n"
+                    f"Scoring guide:\n"
+                    f"- 9-10: Names what was wrong AND states the corrective action "
+                    f"(e.g. \"Required field 'user_id' (string) is missing — add it and retry\")\n"
+                    f"- 5-6: Names the failing field/type but gives NO corrective instruction "
+                    f"(e.g. \"Required field 'user_id' (string) is missing.\")\n"
+                    f"- 3-4: Vague — something failed but not which field or why "
+                    f'(e.g. "Invalid input")\n'
+                    f"- 0-2: Opaque — bare status code, empty, or raw stack trace "
+                    f'(e.g. "Error 500")\n\n'
                     f"Bad input used: {probe.args}\n"
                     f"Error response: {error_text!r}\n\n"
                     f"Reply with ONLY a number 0-10."
@@ -314,7 +320,8 @@ async def score_error_legibility(
             if tool_avg < 6.0:
                 fix_hints.append(
                     f"Tool '{tool.name}' error messages scored {tool_avg:.1f}/10 — "
-                    f"return structured errors that name the failing field and expected type"
+                    f"return structured errors that name the failing field, expected type, "
+                    f"and corrective action (e.g. '— add it and retry')"
                 )
 
     if not all_case_means:
