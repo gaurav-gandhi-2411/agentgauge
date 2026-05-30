@@ -1,14 +1,22 @@
 from __future__ import annotations
 
+from unittest.mock import AsyncMock, MagicMock
+
 from mcp.types import Tool
 
+from agentgauge.client import MCPClient
 from agentgauge.providers import MockProvider
+from agentgauge.runner import RunResult
 from agentgauge.scorer import (
+    DIMENSION_WEIGHTS,
     DimensionScore,
     score_all,
+    score_call_correctness,
     score_description_quality,
     score_schema_completeness,
+    score_selection_accuracy,
 )
+from agentgauge.tasks import Task
 
 
 def _make_tool(name: str, description: str, schema: dict) -> Tool:
@@ -65,8 +73,144 @@ async def test_description_quality_no_tools() -> None:
 
 
 async def test_score_all_returns_report() -> None:
+    """Without a client, selection_accuracy and call_correctness must be stubs (score=0, not_implemented)."""
     provider = MockProvider(responses=["7"])
     report = await score_all([GOOD_TOOL, BAD_TOOL], provider)
+
     assert report.tool_count == 2
     assert 0 <= report.overall <= 100
-    assert len(report.dimensions) == 8
+
+    # All 8 expected dimensions must be present in the right order.
+    dim_names = [d.name for d in report.dimensions]
+    assert dim_names == list(DIMENSION_WEIGHTS.keys()), f"dimension order changed: {dim_names}"
+
+    # Without a client, runner dims must be explicit stubs — catches silent wiring regressions.
+    dim_map = {d.name: d for d in report.dimensions}
+    assert dim_map["selection_accuracy"].details.get("status") == "not_implemented", (
+        "selection_accuracy should be a stub when no client is passed"
+    )
+    assert dim_map["call_correctness"].details.get("status") == "not_implemented", (
+        "call_correctness should be a stub when no client is passed"
+    )
+
+    # schema_completeness and description_quality must be real (non-zero for GOOD_TOOL).
+    assert dim_map["schema_completeness"].score > 0
+    assert dim_map["description_quality"].score > 0
+
+
+def _make_mock_client(tool: Tool) -> MCPClient:
+    """Return a mock MCPClient that introspects to [tool] and returns success on call_tool."""
+    session = MagicMock()
+    tools_resp = MagicMock()
+    tools_resp.tools = [tool]
+    resources_resp = MagicMock()
+    resources_resp.resources = []
+    prompts_resp = MagicMock()
+    prompts_resp.prompts = []
+    session.list_tools = AsyncMock(return_value=tools_resp)
+    session.list_resources = AsyncMock(return_value=resources_resp)
+    session.list_prompts = AsyncMock(return_value=prompts_resp)
+    call_resp = MagicMock()
+    call_resp.content = [MagicMock(type="text", text="ok")]
+    session.call_tool = AsyncMock(return_value=call_resp)
+    return MCPClient(session)
+
+
+async def test_score_all_with_client_activates_runner_dimensions() -> None:
+    """With a client, selection_accuracy and call_correctness must be real scored dimensions.
+
+    MockProvider responses (in order consumed by score_all):
+      "7"    — description_quality judge for GOOD_TOOL (1 call × 1 trial)
+      "echo" — tool selection for the echo task
+      "{}"   — arg construction for the echo task (empty dict, call_tool returns success anyway)
+
+    The mock client's call_tool always returns success=True, so call_correctness = 100.
+    The mock provider returns the correct tool name "echo", so selection_accuracy = 100.
+    """
+    client = _make_mock_client(GOOD_TOOL)
+    provider = MockProvider(responses=["7", "echo", "{}"])
+
+    report = await score_all([GOOD_TOOL], provider, client=client)
+
+    dim_map = {d.name: d for d in report.dimensions}
+
+    # Runner dims must NOT be stubs.
+    assert dim_map["selection_accuracy"].details.get("status") != "not_implemented", (
+        "selection_accuracy is still a stub — client= kwarg not wired into score_all"
+    )
+    assert dim_map["call_correctness"].details.get("status") != "not_implemented", (
+        "call_correctness is still a stub — client= kwarg not wired into score_all"
+    )
+
+    # With a correct-picking mock agent, scores should be 100.
+    assert dim_map["selection_accuracy"].score == 100.0
+    assert dim_map["call_correctness"].score == 100.0
+
+    # All 8 dimensions present.
+    assert [d.name for d in report.dimensions] == list(DIMENSION_WEIGHTS.keys())
+
+
+def _make_task(tool_name: str = "echo") -> Task:
+    return Task(tool_name=tool_name, description="Call echo", sample_args={})
+
+
+def test_score_selection_accuracy_perfect() -> None:
+    task = _make_task("echo")
+    results = [RunResult(task=task, selected_tool="echo", constructed_args={}, success=True)]
+    score = score_selection_accuracy(results)
+    assert score.score == 100.0
+    assert score.name == "selection_accuracy"
+
+
+def test_score_selection_accuracy_zero() -> None:
+    task = _make_task("echo")
+    results = [RunResult(task=task, selected_tool="wrong", constructed_args={}, success=False)]
+    score = score_selection_accuracy(results)
+    assert score.score == 0.0
+    assert len(score.fix_hints) > 0
+
+
+def test_score_selection_accuracy_partial() -> None:
+    task = _make_task("echo")
+    results = [
+        RunResult(task=task, selected_tool="echo", constructed_args={}, success=True),
+        RunResult(task=task, selected_tool="wrong", constructed_args={}, success=False),
+    ]
+    score = score_selection_accuracy(results)
+    assert score.score == 50.0
+
+
+def test_score_selection_accuracy_empty() -> None:
+    score = score_selection_accuracy([])
+    assert score.score == 0.0
+
+
+def test_score_call_correctness_perfect() -> None:
+    task = _make_task("echo")
+    results = [RunResult(task=task, selected_tool="echo", constructed_args={}, success=True)]
+    score = score_call_correctness(results)
+    assert score.score == 100.0
+    assert score.name == "call_correctness"
+
+
+def test_score_call_correctness_zero() -> None:
+    task = _make_task("echo")
+    results = [RunResult(task=task, selected_tool="echo", constructed_args={}, success=False)]
+    score = score_call_correctness(results)
+    assert score.score == 0.0
+    assert len(score.fix_hints) > 0
+
+
+def test_score_call_correctness_partial() -> None:
+    task = _make_task("echo")
+    results = [
+        RunResult(task=task, selected_tool="echo", constructed_args={}, success=True),
+        RunResult(task=task, selected_tool="echo", constructed_args={}, success=False),
+    ]
+    score = score_call_correctness(results)
+    assert score.score == 50.0
+
+
+def test_score_call_correctness_empty() -> None:
+    score = score_call_correctness([])
+    assert score.score == 0.0

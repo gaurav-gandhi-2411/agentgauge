@@ -2,11 +2,15 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass, field
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from mcp.types import Tool
 
 from agentgauge.providers import Message, Provider
+
+if TYPE_CHECKING:
+    from agentgauge.client import MCPClient
+    from agentgauge.runner import RunResult
 
 
 @dataclass
@@ -147,6 +151,54 @@ async def score_description_quality(
     )
 
 
+def score_selection_accuracy(run_results: list[RunResult]) -> DimensionScore:
+    """Score how often the agent picked the correct tool for each task."""
+    if not run_results:
+        return DimensionScore(
+            name="selection_accuracy",
+            score=0.0,
+            details={"reason": "no run results"},
+            fix_hints=["Run tasks to generate selection accuracy data"],
+        )
+    correct = sum(1 for r in run_results if r.selected_tool == r.task.tool_name)
+    total = len(run_results)
+    score = (correct / total) * 100
+    return DimensionScore(
+        name="selection_accuracy",
+        score=round(score, 1),
+        details={"correct": correct, "total": total},
+        fix_hints=(
+            ["Improve tool names and descriptions so agents can identify the right tool"]
+            if score < 75
+            else []
+        ),
+    )
+
+
+def score_call_correctness(run_results: list[RunResult]) -> DimensionScore:
+    """Score how often the agent's tool call succeeded (server accepted the arguments)."""
+    if not run_results:
+        return DimensionScore(
+            name="call_correctness",
+            score=0.0,
+            details={"reason": "no run results"},
+            fix_hints=["Run tasks to generate call correctness data"],
+        )
+    successful = sum(1 for r in run_results if r.success)
+    total = len(run_results)
+    score = (successful / total) * 100
+    return DimensionScore(
+        name="call_correctness",
+        score=round(score, 1),
+        details={"successful": successful, "total": total},
+        fix_hints=(
+            ["Improve parameter descriptions and examples so agents construct valid arguments"]
+            if score < 75
+            else []
+        ),
+    )
+
+
 def _stub_dimension(name: str) -> DimensionScore:
     return DimensionScore(
         name=name,
@@ -156,16 +208,34 @@ def _stub_dimension(name: str) -> DimensionScore:
     )
 
 
-async def score_all(tools: list[Tool], provider: Provider, *, trials: int = 1) -> ScoredReport:
+async def score_all(
+    tools: list[Tool],
+    provider: Provider,
+    *,
+    client: MCPClient | None = None,
+    trials: int = 1,
+) -> ScoredReport:
+    from agentgauge.runner import run_tasks
+    from agentgauge.tasks import generate_tasks
+
     schema = score_schema_completeness(tools)
     description = await score_description_quality(tools, provider, trials=trials)
+
+    if client is not None:
+        tasks = generate_tasks(tools)
+        run_results = await run_tasks(tasks, client, provider, trials=trials)
+        selection = score_selection_accuracy(run_results)
+        correctness = score_call_correctness(run_results)
+    else:
+        selection = _stub_dimension("selection_accuracy")
+        correctness = _stub_dimension("call_correctness")
 
     dimensions = [
         schema,
         description,
         _stub_dimension("discoverability"),
-        _stub_dimension("selection_accuracy"),
-        _stub_dimension("call_correctness"),
+        selection,
+        correctness,
         _stub_dimension("error_legibility"),
         _stub_dimension("robustness"),
         _stub_dimension("docs_manifest"),
