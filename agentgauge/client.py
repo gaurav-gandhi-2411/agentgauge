@@ -53,6 +53,13 @@ class MCPClient:
         except Exception as exc:
             return ToolCallResult(success=False, content=[], error=str(exc))
 
+    async def call_tool_with_bad_input(self, name: str, bad_args: dict[str, Any]) -> ToolCallResult:
+        """Call a tool with deliberately malformed arguments to probe error response quality.
+
+        Returns the raw result without raising; the caller inspects the error text.
+        """
+        return await self.call_tool(name, bad_args)
+
 
 async def connect_stdio(command: str, args: list[str]) -> tuple[MCPClient, Any]:
     """Returns (client, context) — caller must use as async context or call cleanup."""

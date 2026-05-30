@@ -84,13 +84,16 @@ async def test_score_all_returns_report() -> None:
     dim_names = [d.name for d in report.dimensions]
     assert dim_names == list(DIMENSION_WEIGHTS.keys()), f"dimension order changed: {dim_names}"
 
-    # Without a client, runner dims must be explicit stubs — catches silent wiring regressions.
+    # Without a client, all three runner dims must be explicit stubs.
     dim_map = {d.name: d for d in report.dimensions}
     assert dim_map["selection_accuracy"].details.get("status") == "not_implemented", (
         "selection_accuracy should be a stub when no client is passed"
     )
     assert dim_map["call_correctness"].details.get("status") == "not_implemented", (
         "call_correctness should be a stub when no client is passed"
+    )
+    assert dim_map["error_legibility"].details.get("status") == "not_implemented", (
+        "error_legibility should be a stub when no client is passed"
     )
 
     # schema_completeness and description_quality must be real (non-zero for GOOD_TOOL).
@@ -117,34 +120,37 @@ def _make_mock_client(tool: Tool) -> MCPClient:
 
 
 async def test_score_all_with_client_activates_runner_dimensions() -> None:
-    """With a client, selection_accuracy and call_correctness must be real scored dimensions.
+    """With a client, selection_accuracy, call_correctness, and error_legibility are real.
 
-    MockProvider responses (in order consumed by score_all):
-      "7"    — description_quality judge for GOOD_TOOL (1 call × 1 trial)
-      "echo" — tool selection for the echo task
-      "{}"   — arg construction for the echo task (empty dict, call_tool returns success anyway)
-
-    The mock client's call_tool always returns success=True, so call_correctness = 100.
-    The mock provider returns the correct tool name "echo", so selection_accuracy = 100.
+    MockProvider responses consumed by score_all (trials=1, GOOD_TOOL has 1 required param):
+      "7"    — description_quality judge for GOOD_TOOL
+      "echo" — run_tasks: tool selection (correct → selection_accuracy = 100)
+      "{}"   — run_tasks: arg construction (call_tool returns success → call_correctness = 100)
+      "7"    — error_legibility judge: probe 1 (missing_required)
+      "7"    — error_legibility judge: probe 2 (wrong_type_message)
     """
     client = _make_mock_client(GOOD_TOOL)
-    provider = MockProvider(responses=["7", "echo", "{}"])
+    provider = MockProvider(responses=["7", "echo", "{}", "7", "7"])
 
     report = await score_all([GOOD_TOOL], provider, client=client)
 
     dim_map = {d.name: d for d in report.dimensions}
 
-    # Runner dims must NOT be stubs.
+    # All three client-activated dims must NOT be stubs.
     assert dim_map["selection_accuracy"].details.get("status") != "not_implemented", (
         "selection_accuracy is still a stub — client= kwarg not wired into score_all"
     )
     assert dim_map["call_correctness"].details.get("status") != "not_implemented", (
         "call_correctness is still a stub — client= kwarg not wired into score_all"
     )
+    assert dim_map["error_legibility"].details.get("status") != "not_implemented", (
+        "error_legibility is still a stub — client= kwarg not wired into score_all"
+    )
 
     # With a correct-picking mock agent, scores should be 100.
     assert dim_map["selection_accuracy"].score == 100.0
     assert dim_map["call_correctness"].score == 100.0
+    assert dim_map["error_legibility"].score > 0
 
     # All 8 dimensions present.
     assert [d.name for d in report.dimensions] == list(DIMENSION_WEIGHTS.keys())
