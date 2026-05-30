@@ -104,10 +104,12 @@ agentgauge scan <target>
 | Provider | How to use |
 |---|---|
 | Mock (deterministic) | `--mock` — no network, no cost; used in all tests |
-| Ollama (local) | default; `--model llama3.2` (or any model you have pulled) |
+| Ollama (local) | default; `--model llama3.1:8b` (or any model you have pulled) |
 | Any hosted model | implement the `Provider` protocol in `providers.py` |
 
 **Tests never call a real LLM.** `MockProvider` returns preset responses deterministically, so `./scripts/verify.sh` runs with no network access and no credentials.
+
+**Judge model and score comparability.** The default judge model is `llama3.1:8b` — the model the scoring rubric was calibrated against. Scores produced with a different `--model` are not directly comparable to scores produced with the default: the absolute band values shift as the model changes. Always record which judge model produced a score alongside the score itself. A future calibration run may update the pinned default; that change will be noted in CLAUDE.md.
 
 ---
 
