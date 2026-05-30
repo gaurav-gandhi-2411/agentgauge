@@ -11,10 +11,27 @@ You are a Claude Code cloud scheduled task running against the `agentgauge` repo
 ## Pick your task
 
 Select the **single highest-priority TODO item** in TASKS.md that has clear, testable acceptance
-criteria. If no item qualifies (all are ambiguous, blocked, or already IN-REVIEW), stop here:
-write a short `BLOCKER.md` at repo root explaining what is unclear, commit it to a
-`claude/blocker-<date>` branch, open a DRAFT PR titled "Blocker report: <reason>", and exit.
-Do not invent work.
+criteria.
+
+**Before starting any work**, check whether an open `claude/*` PR already addresses that task:
+
+```bash
+gh pr list --state open --search "<task-id>" --json number,title,headRefName
+```
+
+For example, for T2:
+```bash
+gh pr list --state open --search "T2" --json number,title,headRefName
+```
+
+- If a matching open PR exists → **skip that item** and pick the next eligible TODO.
+- If no next eligible TODO exists → stop here: write a short `BLOCKER.md` at repo root
+  explaining that all TODO items already have open PRs, commit it to a
+  `claude/blocker-<date>` branch, open a DRAFT PR titled "Blocker report: all TODOs in
+  review", and exit. **Never open a second PR for a task that already has one open.**
+
+If no item qualifies at all (all are ambiguous, blocked, or already in review), write the
+BLOCKER.md as above and exit. Do not invent work.
 
 ## Implement
 
@@ -37,9 +54,11 @@ Run `./scripts/verify.sh`. It exits 0 only if:
 
 If `verify.sh` exits 0:
 - Commit with conventional-commit message: `feat(scope): description`
+- **Do NOT include claude.ai session URLs in commit bodies.**
 - Push branch: `git push origin claude/<task-name>`
 - Open a DRAFT PR using `gh pr create --draft`
-- In TASKS.md, move the item from TODO to IN-REVIEW
+- In TASKS.md on your branch, move the item from TODO to IN-REVIEW (this makes your intent
+  visible even before the PR is merged — the human reviewer can see the task state at a glance)
 - Commit that TASKS.md update as a separate `chore: move <task> to IN-REVIEW` commit
 
 If `verify.sh` does not exit 0:
@@ -52,6 +71,7 @@ If `verify.sh` does not exit 0:
 
 Always end your run with a brief report (5-10 lines):
 - Task selected
+- Open-PR check result (any skipped tasks and why)
 - What was implemented
 - `verify.sh` result (exit code + any relevant failure lines)
 - PR link (if created)
