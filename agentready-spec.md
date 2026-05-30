@@ -1,6 +1,6 @@
-# Spec — AgentReady: Agent-Readiness Scorer + Monitor
+# Spec — AgentGauge: Agent-Readiness Scorer + Monitor
 
-> Working name `AgentReady` (CLI: `agentready`). Rename before first commit if you have a better one.
+> ~~Working name `AgentReady` (CLI: `agentready`).~~ Named **AgentGauge** (CLI: `agentgauge`).
 > "Lighthouse / PageSpeed, but for agent interfaces." Point it at an MCP server (later: an OpenAPI
 > spec or a CLI), and it tells you whether a real LLM agent can actually discover, understand, call,
 > and recover from errors against that target — with a score, a diagnosis, and the fixes.
@@ -27,14 +27,14 @@ Three things keep this defensible against existing test runners (Arcade Evals, T
 ## 3. Scope (staged; v1 is the only thing we build first)
 
 **v1 — CLI scanner (ship this first).**
-`agentready scan <target>` connects to an MCP server (stdio or HTTP/SSE), introspects its
+`agentgauge scan <target>` connects to an MCP server (stdio or HTTP/SSE), introspects its
 tools/resources/prompts, runs an eval harness where a real LLM agent attempts a battery of tasks,
 and prints a scored report (+ JSON + HTML). No backend, no accounts. This alone is demoable and
 shareable.
 
 **v2 — Fix + monitor (the revenue core).**
 Auto-generate improved tool descriptions/schemas/examples and open them as a PR against the target
-repo. A CI action (`agentready ci`) that fails the build on score regression. A hosted dashboard with
+repo. A CI action (`agentgauge ci`) that fails the build on score regression. A hosted dashboard with
 per-server history and regression alerts (subscription).
 
 **v3 — Expand surface + flywheel.**
@@ -62,14 +62,14 @@ testing is misleading).
 ## 5. Architecture (v1)
 
 ```
-agentready/
+agentgauge/
   client.py     # MCP client: connect (stdio/HTTP/SSE), list tools/resources/prompts, call tools
   tasks.py      # task generator: per tool, synthesize realistic invocations + edge cases
   runner.py     # agent runner: an LLM attempts the tasks using the server (N trials)
   scorer.py     # rubric scoring: heuristics + LLM-as-judge; aggregates with variance
   report.py     # CLI/text + JSON + HTML report
   providers.py  # model-agnostic LLM provider (local Ollama, or hosted via API key)
-  cli.py        # `agentready scan <target> [--model ...] [--trials N] [--out report.html]`
+  cli.py        # `agentgauge scan <target> [--model ...] [--trials N] [--out report.html]`
 tests/          # unit tests with the LLM MOCKED so CI is deterministic and free
 ```
 
@@ -104,7 +104,7 @@ repo by the kickoff prompt.)
 - (P1) MCP client: connect over stdio + HTTP/SSE; list tools/resources/prompts; call a tool.
 - (P1) Provider layer: pluggable LLM provider; Ollama default; mockable for tests.
 - (P1) Scorer: schema-completeness + description-quality dimensions end-to-end with a printed score.
-- (P1) CLI: `agentready scan` wiring client -> scorer -> text report.
+- (P1) CLI: `agentgauge scan` wiring client -> scorer -> text report.
 - (P2) Task generator + agent runner: selection-accuracy & call-correctness dimensions, N trials.
 - (P2) Error-legibility + robustness dimensions.
 - (P2) JSON + HTML report output.
