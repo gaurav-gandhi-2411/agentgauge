@@ -42,10 +42,10 @@ agentgauge scan path/to/your_server.py --model llama3.2
 agentgauge scan http://localhost:8000/sse --mock
 ```
 
-Example output:
+Example output (`agentgauge scan examples/echo_server.py --mock --trials 1`):
 
 ```
-  AgentGauge Score: 62.5/100
+  AgentGauge Score: 57.4/100
   Tools inspected: 3
 
   Dimension Breakdown
@@ -55,9 +55,9 @@ Example output:
   │ schema_completeness    │   77.8 │ good           │
   │ description_quality    │   70.0 │ fair           │
   │ discoverability        │    0.0 │ not yet        │
-  │ selection_accuracy     │    0.0 │ not yet        │
-  │ call_correctness       │    0.0 │ not yet        │
-  │ error_legibility       │    0.0 │ not yet        │
+  │ selection_accuracy     │   75.0 │ good           │
+  │ call_correctness       │   60.0 │ fair           │
+  │ error_legibility       │   65.0 │ fair           │
   │ robustness             │    0.0 │ not yet        │
   │ docs_manifest          │    0.0 │ not yet        │
   └────────────────────────┴────────┴────────────────┘
