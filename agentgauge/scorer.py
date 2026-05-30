@@ -9,7 +9,7 @@ from mcp.types import Tool
 from agentgauge.providers import Message, Provider
 
 if TYPE_CHECKING:
-    from agentgauge.client import MCPClient
+    from agentgauge.client import MCPClient, ToolCallResult
     from agentgauge.runner import RunResult
 
 
@@ -199,6 +199,148 @@ def score_call_correctness(run_results: list[RunResult]) -> DimensionScore:
     )
 
 
+@dataclass
+class ErrorProbe:
+    label: str
+    args: dict[str, Any]
+
+
+def _error_probes(tool: Tool) -> list[ErrorProbe]:
+    """Generate 2 bad-input cases for a tool derived from its JSON schema.
+
+    Case 1 (when required params exist): empty args — triggers missing-required errors.
+    Case 2 (when required params exist): wrong type on the first required param.
+    Fallback (no required params): inject an unknown field.
+    """
+    schema = tool.inputSchema or {}
+    properties: dict[str, Any] = schema.get("properties", {})
+    required: list[str] = schema.get("required", [])
+
+    if not required:
+        return [ErrorProbe(label="unknown_param", args={"__bad_field__": True})]
+
+    probes: list[ErrorProbe] = [ErrorProbe(label="missing_required", args={})]
+
+    first = required[0]
+    prop = properties.get(first, {})
+    wrong: dict[str, Any] = {
+        "string": 99999,
+        "integer": "not_a_number",
+        "number": "not_a_number",
+        "boolean": [1, 2, 3],
+        "array": "not_an_array",
+        "object": 42,
+    }
+    bad_val: Any = wrong.get(prop.get("type", "string"))
+    probes.append(ErrorProbe(label=f"wrong_type_{first}", args={first: bad_val}))
+
+    return probes
+
+
+def _extract_error_text(result: ToolCallResult) -> str:
+    """Pull the human-readable error string out of a ToolCallResult."""
+    if result.error:
+        return result.error
+    # Some servers return error content in the content list rather than raising.
+    for item in result.content:
+        text = getattr(item, "text", None)
+        if text:
+            return str(text)
+    return "(no error message returned)"
+
+
+async def score_error_legibility(
+    tools: list[Tool],
+    client: MCPClient,
+    provider: Provider,
+    *,
+    trials: int = 3,
+) -> DimensionScore:
+    """LLM-judge whether error responses are understandable and actionable to an agent.
+
+    For each tool, injects 2 classes of bad input (missing required param, wrong type).
+    Runs the judge `trials` times per case and aggregates mean + variance across all cases.
+    """
+    if not tools:
+        return DimensionScore(
+            name="error_legibility",
+            score=0.0,
+            details={"reason": "no tools"},
+            fix_hints=["Add tools to your MCP server"],
+        )
+
+    all_case_means: list[float] = []
+    all_variances: list[float] = []
+    per_tool: dict[str, float] = {}
+    fix_hints: list[str] = []
+
+    for tool in tools:
+        probes = _error_probes(tool)
+        tool_case_means: list[float] = []
+
+        for probe in probes:
+            result = await client.call_tool_with_bad_input(tool.name, probe.args)
+            error_text = _extract_error_text(result)
+
+            judge_scores: list[float] = []
+            for _ in range(trials):
+                prompt = (
+                    f"An AI agent called MCP tool '{tool.name}' with invalid arguments "
+                    f"and received the error below. Rate this error message 0-10 on how "
+                    f"UNDERSTANDABLE and ACTIONABLE it is for the agent:\n"
+                    f"- 10: Names exactly what was wrong AND how to fix it "
+                    f"(e.g. \"Required field 'X' missing; expected string\")\n"
+                    f"- 5: Partially helpful — something failed but not which field or why\n"
+                    f"- 0: Opaque, empty, a bare status code, or a raw stack trace\n\n"
+                    f"Bad input used: {probe.args}\n"
+                    f"Error response: {error_text!r}\n\n"
+                    f"Reply with ONLY a number 0-10."
+                )
+                resp = await provider.chat([Message(role="user", content=prompt)])
+                m = re.search(r"\b(\d+(?:\.\d+)?)\b", resp)
+                if m:
+                    judge_scores.append(min(float(m.group(1)), 10.0))
+
+            if judge_scores:
+                case_mean = sum(judge_scores) / len(judge_scores)
+                case_var = sum((s - case_mean) ** 2 for s in judge_scores) / len(judge_scores)
+                tool_case_means.append(case_mean)
+                all_variances.append(case_var)
+
+        if tool_case_means:
+            tool_avg = sum(tool_case_means) / len(tool_case_means)
+            per_tool[tool.name] = round(tool_avg * 10, 1)  # 0-10 → 0-100
+            all_case_means.extend(tool_case_means)
+            if tool_avg < 6.0:
+                fix_hints.append(
+                    f"Tool '{tool.name}' error messages scored {tool_avg:.1f}/10 — "
+                    f"return structured errors that name the failing field and expected type"
+                )
+
+    if not all_case_means:
+        return DimensionScore(
+            name="error_legibility",
+            score=0.0,
+            details={"reason": "no scores collected", "judge_trials": trials},
+            fix_hints=fix_hints,
+        )
+
+    overall_mean = sum(all_case_means) / len(all_case_means)
+    overall_score = round(overall_mean * 10, 1)  # 0-10 → 0-100
+    avg_var = sum(all_variances) / len(all_variances) if all_variances else 0.0
+
+    return DimensionScore(
+        name="error_legibility",
+        score=overall_score,
+        details={
+            "per_tool": per_tool,
+            "judge_trials": trials,
+            "avg_variance": round(avg_var, 4),
+        },
+        fix_hints=fix_hints[:5],
+    )
+
+
 def _stub_dimension(name: str) -> DimensionScore:
     return DimensionScore(
         name=name,
@@ -226,9 +368,11 @@ async def score_all(
         run_results = await run_tasks(tasks, client, provider, trials=trials)
         selection = score_selection_accuracy(run_results)
         correctness = score_call_correctness(run_results)
+        error_leg = await score_error_legibility(tools, client, provider, trials=trials)
     else:
         selection = _stub_dimension("selection_accuracy")
         correctness = _stub_dimension("call_correctness")
+        error_leg = _stub_dimension("error_legibility")
 
     dimensions = [
         schema,
@@ -236,7 +380,7 @@ async def score_all(
         _stub_dimension("discoverability"),
         selection,
         correctness,
-        _stub_dimension("error_legibility"),
+        error_leg,
         _stub_dimension("robustness"),
         _stub_dimension("docs_manifest"),
     ]
