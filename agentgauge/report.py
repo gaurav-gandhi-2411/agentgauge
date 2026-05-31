@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import dataclasses
 import json
 
 from rich.console import Console
@@ -54,11 +53,6 @@ def render_text(report: ScoredReport, console: Console | None = None) -> None:
             console.print(f"  {i}. [{dim_name}] {hint}")
 
     console.print()
-
-
-def render_json(report: ScoredReport) -> str:
-    """Serialize a ScoredReport to indented JSON."""
-    return json.dumps(dataclasses.asdict(report), indent=2, default=str)
 
 
 def render_json_stable(report: ScoredReport) -> str:
