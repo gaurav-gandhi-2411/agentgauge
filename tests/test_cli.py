@@ -10,6 +10,7 @@ from typer.testing import CliRunner
 
 from agentgauge.cli import app
 from agentgauge.client import MCPClient, ServerInfo, ToolCallResult
+from agentgauge.scorer import ScoredReport
 
 ECHO_TOOL = Tool(
     name="echo",
@@ -55,6 +56,48 @@ def test_version_flag() -> None:
     result = runner.invoke(app, ["--version"])
     assert result.exit_code == 0
     assert "0.1.0" in result.output
+
+
+def test_ci_exits_zero_when_above_threshold() -> None:
+    runner = CliRunner()
+    mock_client = _make_mock_client()
+    fake_ctx = (MagicMock(), MagicMock(), MagicMock(), MagicMock())
+    mock_report = ScoredReport(overall=80.0, tool_count=1, dimensions=[])
+
+    with (
+        patch(
+            "agentgauge.cli.connect_stdio",
+            new=AsyncMock(return_value=(mock_client, fake_ctx)),
+        ),
+        patch("agentgauge.cli.cleanup_connection", new=AsyncMock()),
+        patch("agentgauge.cli.score_all", new=AsyncMock(return_value=mock_report)),
+    ):
+        result = runner.invoke(
+            app, ["ci", "examples/echo_server.py", "--mock", "--min-score", "70"]
+        )
+
+    assert result.exit_code == 0, result.output
+
+
+def test_ci_exits_one_when_below_threshold() -> None:
+    runner = CliRunner()
+    mock_client = _make_mock_client()
+    fake_ctx = (MagicMock(), MagicMock(), MagicMock(), MagicMock())
+    mock_report = ScoredReport(overall=40.0, tool_count=1, dimensions=[])
+
+    with (
+        patch(
+            "agentgauge.cli.connect_stdio",
+            new=AsyncMock(return_value=(mock_client, fake_ctx)),
+        ),
+        patch("agentgauge.cli.cleanup_connection", new=AsyncMock()),
+        patch("agentgauge.cli.score_all", new=AsyncMock(return_value=mock_report)),
+    ):
+        result = runner.invoke(
+            app, ["ci", "examples/echo_server.py", "--mock", "--min-score", "70"]
+        )
+
+    assert result.exit_code == 1, result.output
 
 
 def test_scan_echo_server_subprocess() -> None:

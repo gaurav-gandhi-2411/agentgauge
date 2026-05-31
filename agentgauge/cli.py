@@ -11,7 +11,7 @@ from rich.console import Console
 from agentgauge import __version__
 from agentgauge.client import cleanup_connection, connect_http, connect_stdio
 from agentgauge.providers import MockProvider, OllamaProvider
-from agentgauge.report import render_html, render_json, render_text
+from agentgauge.report import render_html, render_json_stable, render_text
 from agentgauge.scorer import score_all
 
 # Model the judge rubric was calibrated against. Scores are model-specific:
@@ -76,7 +76,7 @@ async def _scan_async(
     trials: int,
     out: Path | None,
     mock: bool,
-) -> None:
+) -> float:
     console = Console()
     provider = MockProvider() if mock else OllamaProvider(model)
 
@@ -106,7 +106,7 @@ async def _scan_async(
         if out is not None:
             suffix = out.suffix.lower()
             if suffix == ".json":
-                out.write_text(render_json(report), encoding="utf-8")
+                out.write_text(render_json_stable(report), encoding="utf-8")
                 console.print(f"[dim]JSON report written to {out}[/dim]")
             elif suffix == ".html":
                 out.write_text(render_html(report), encoding="utf-8")
@@ -116,5 +116,40 @@ async def _scan_async(
                     f"[yellow]Warning: unsupported output format '{suffix}' — skipping write[/yellow]"
                 )
 
+        return report.overall
+
     finally:
         await cleanup_connection(ctx)
+
+
+@app.command()
+def ci(
+    target: Annotated[str, typer.Argument(help="Path to MCP server script, or HTTP/SSE URL")],
+    model: Annotated[
+        str,
+        typer.Option(
+            "--model",
+            "-m",
+            help=(
+                f"Ollama model name (default: calibrated judge model '{CALIBRATED_JUDGE_MODEL}'). "
+                "Changing this shifts absolute score bands — results are not comparable "
+                "across judge models."
+            ),
+        ),
+    ] = CALIBRATED_JUDGE_MODEL,
+    trials: Annotated[int, typer.Option("--trials", "-t", help="LLM trials per dimension")] = 1,
+    mock: Annotated[
+        bool, typer.Option("--mock", help="Use mock LLM provider (no network needed)")
+    ] = False,
+    min_score: Annotated[
+        int,
+        typer.Option(
+            "--min-score",
+            help="Minimum required overall score (0–100). Exits 1 if overall_score < this value.",
+        ),
+    ] = 0,
+) -> None:
+    """Scan an MCP server and exit 1 if the overall score is below --min-score."""
+    overall = asyncio.run(_scan_async(target, model=model, trials=trials, out=None, mock=mock))
+    if overall < min_score:
+        raise typer.Exit(1)

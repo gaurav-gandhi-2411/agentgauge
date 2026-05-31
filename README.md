@@ -113,6 +113,38 @@ agentgauge scan <target>
 
 ---
 
+## JSON output schema
+
+When using `--out report.json`, the emitted file has exactly this structure:
+
+```json
+{
+  "schema_version": "1.0",
+  "overall_score": 72.5,
+  "dimensions": [
+    {"name": "schema_completeness", "score": 77.8, "weight": 0.25},
+    {"name": "description_quality",  "score": 70.0, "weight": 0.25},
+    {"name": "discoverability",      "score": 60.0, "weight": 0.15},
+    {"name": "selection_accuracy",   "score": 75.0, "weight": 0.15},
+    {"name": "call_correctness",     "score": 60.0, "weight": 0.10},
+    {"name": "error_legibility",     "score": 65.0, "weight": 0.05},
+    {"name": "robustness",           "score": 50.0, "weight": 0.03},
+    {"name": "docs_manifest",        "score": 20.0, "weight": 0.02}
+  ]
+}
+```
+
+| Field | Type | Description |
+|---|---|---|
+| `schema_version` | `string` | Fixed at `"1.0"` for this schema generation |
+| `overall_score` | `float` | Weighted sum across all eight dimensions (0–100) |
+| `dimensions` | `list` | One entry per dimension, any order |
+| `dimensions[].name` | `string` | Dimension identifier (see scoring table above) |
+| `dimensions[].score` | `float` | Dimension score (0–100) |
+| `dimensions[].weight` | `float` | Contribution weight (all weights sum to 1.0) |
+
+---
+
 ## Development
 
 ```bash

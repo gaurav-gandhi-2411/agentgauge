@@ -7,7 +7,7 @@ from rich.console import Console
 from rich.table import Table
 from rich.text import Text
 
-from agentgauge.scorer import ScoredReport
+from agentgauge.scorer import DIMENSION_WEIGHTS, ScoredReport
 
 
 def render_text(report: ScoredReport, console: Console | None = None) -> None:
@@ -59,6 +59,20 @@ def render_text(report: ScoredReport, console: Console | None = None) -> None:
 def render_json(report: ScoredReport) -> str:
     """Serialize a ScoredReport to indented JSON."""
     return json.dumps(dataclasses.asdict(report), indent=2, default=str)
+
+
+def render_json_stable(report: ScoredReport) -> str:
+    """Serialize a ScoredReport to the stable versioned JSON schema."""
+    dimensions = [
+        {"name": dim.name, "score": dim.score, "weight": DIMENSION_WEIGHTS.get(dim.name, 0.0)}
+        for dim in report.dimensions
+    ]
+    doc: dict[str, object] = {
+        "schema_version": "1.0",
+        "overall_score": report.overall,
+        "dimensions": dimensions,
+    }
+    return json.dumps(doc, indent=2)
 
 
 def render_html(report: ScoredReport) -> str:
