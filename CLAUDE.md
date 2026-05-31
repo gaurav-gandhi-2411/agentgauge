@@ -12,8 +12,9 @@ agentgauge/
   providers.py  # Provider protocol + OllamaProvider + MockProvider
   tasks.py      # Task generator (stub — see TASKS.md)
   runner.py     # Agent runner (stub — see TASKS.md)
-  scorer.py     # Rubric scoring: schema-completeness + description-quality fully implemented;
-                # other dimensions stubbed
+  scorer.py     # Rubric scoring: schema-completeness, description-quality, selection-accuracy,
+                # call-correctness, error-legibility, robustness, docs-manifest implemented;
+                # discoverability stubbed
   report.py     # Rich text report renderer
   cli.py        # typer CLI: agentgauge scan <target> [--model] [--trials N] [--out] [--mock]
 examples/
@@ -61,8 +62,8 @@ uv run pytest
 | selection_accuracy   | 15%    | implemented   |
 | call_correctness     | 10%    | implemented   |
 | error_legibility     | 5%     | implemented   |
-| robustness           | 3%     | TODO          |
-| docs_manifest        | 2%     | TODO          |
+| robustness           | 3%     | implemented   |
+| docs_manifest        | 2%     | implemented   |
 
 ## Judge model and calibration
 
@@ -91,6 +92,34 @@ aspirational for llama3.1:8b. Measured values (5 trials, 2026-05-31):
 **Updating calibration:** Run `scripts/validate_error_judge.py` (ad-hoc, not
 committed), record before/after tables, update the `CALIBRATED_JUDGE_MODEL`
 constant in `cli.py` and these notes.
+
+## docs_manifest calibration notes
+
+**Fetch path validation (real sites, 2026-05-31):**
+- redirect-following confirmed working: docs.anthropic.com (301→200, 166k chars) is fetched.
+- 404 / connection-error / stdio (no base_url) confirmed: all floor at exactly 20.0 with
+  fix hint "No llms.txt found — add one at /llms.txt."
+- fetch_llms_txt uses follow_redirects=True and swallows all errors; never raises into scorer.
+
+**Judge prompt confirmed (agent-usefulness framing, not generic doc quality):**
+The prompt explicitly asks whether the document lets an AI agent understand:
+(a) what the server does overall, (b) which tools exist and their purpose,
+(c) when and how to use each tool.
+Verified against the live built string — no collapse to generic "is this good documentation?".
+
+**What this dimension GUARANTEES (model-independent, locked by mock tests):**
+- Ordering: present-good scores above present-poor (gap ≥ 40 pts asserted)
+- Floor: absent / stdio / 404 always returns exactly 20.0 (deliberate signal)
+
+**What is NOT guaranteed (absolute bands are model-dependent):**
+Unlike error_legibility, docs_manifest has no real-model calibration run. Real-judge
+validation was blocked by VRAM contention (see PR #17 discussion). The 20–100 linear
+mapping is structurally sound but exact band values (where a "good" llms.txt actually
+lands on llama3.1:8b) are unmeasured. Use ordering and gap comparisons only.
+
+**Known limitation:** Only the first 8000 chars of the fetched document are fed to the
+judge (~4000 tokens). Files where tool descriptions start after that window will score
+lower than their full content warrants. Run a calibration pass when this matters.
 
 ## MCP SDK notes
 

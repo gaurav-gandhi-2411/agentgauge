@@ -485,6 +485,115 @@ async def score_robustness(tools: list[Tool], client: MCPClient) -> DimensionSco
     )
 
 
+DOCS_MANIFEST_FLOOR = 20.0
+
+
+async def score_docs_manifest(
+    tools: list[Tool],
+    fetched_doc: str | None,
+    provider: Provider,
+    *,
+    trials: int = 3,
+) -> DimensionScore:
+    """LLM-judge quality of an llms.txt manifest.
+
+    absent/404/error/stdio → floor score (20.0) with a fix hint.
+    present → LLM-judge 0–10, mapped linearly to 20–100 so absent and present-garbage
+    converge near the floor while present-good rises.
+
+    Fetch path validation (real sites, 2026-05-31):
+    - redirect-following confirmed: sites like docs.anthropic.com (301→200) are now reached.
+    - 404/connection-error path confirmed: floors at 20.0 with fix hint.
+    - stdio (no base_url) confirmed: floors at 20.0.
+
+    Judge prompt targets agent-usefulness explicitly:
+    (a) what the server does overall
+    (b) which tools exist and their purpose
+    (c) when and how to use each tool
+    These three questions are present verbatim. The prompt does not collapse to generic
+    "is this good documentation?".
+
+    What this dimension GUARANTEES (model-independent, locked by tests):
+    - Ordering: present-good scores above present-poor (gap ≥ 40 pts by mock assertion)
+    - Floor: absent/stdio/404 always returns exactly 20.0
+
+    What is NOT guaranteed (absolute bands are model-dependent):
+    - Unlike error_legibility, this dimension has no real-model calibration run against
+      llama3.1:8b. The 20–100 mapping is structurally sound but exact band values (e.g.
+      where a "good" MCP llms.txt actually lands) are unmeasured. Use ordering and gap
+      comparisons, not absolute thresholds, until a calibration run is done.
+
+    Known limitation: only the first 8000 chars of the fetched document are fed to the judge.
+    Files where substantive tool descriptions begin after 8000 chars will score below their
+    full content warrants.
+    """
+    if fetched_doc is None:
+        return DimensionScore(
+            name="docs_manifest",
+            score=DOCS_MANIFEST_FLOOR,
+            details={"status": "absent"},
+            fix_hints=[
+                "No llms.txt found — agents have no manifest to discover capabilities. "
+                "Add one at /llms.txt."
+            ],
+        )
+
+    judge_scores: list[float] = []
+    for trial_idx in range(trials):
+        prompt = (
+            "You are evaluating an MCP server's llms.txt manifest for AI agent readiness.\n"
+            "Rate this document 0-10 on how well it helps an AI agent understand:\n"
+            "(a) what the server does overall\n"
+            "(b) which tools exist and their purpose\n"
+            "(c) when and how to use each tool\n\n"
+            "Scoring guide:\n"
+            "- 9-10: Comprehensive — all tools described with purpose, parameters, and when to use\n"
+            "- 6-8: Good — most tools described clearly\n"
+            "- 3-5: Partial — few tools described or very brief coverage\n"
+            "- 0-2: Poor — present but useless (no tool descriptions, placeholder content)\n\n"
+            # 8000 chars (~4000 tokens) gives the judge enough window to read real tool
+            # descriptions without overflowing an 8B context. 2000 chars was too small —
+            # it chopped before any tool content on link-index files like the MCP docs.
+            f"llms.txt content:\n{fetched_doc[:8000]}\n\n"
+            "Reply with ONLY a number 0-10."
+        )
+        resp = await provider.chat([Message(role="user", content=prompt)], seed=42 + trial_idx)
+        m = re.search(r"\b(\d+(?:\.\d+)?)\b", resp)
+        if m:
+            judge_scores.append(min(float(m.group(1)), 10.0))
+
+    if not judge_scores:
+        return DimensionScore(
+            name="docs_manifest",
+            score=DOCS_MANIFEST_FLOOR,
+            details={"status": "parse_error"},
+            fix_hints=["Could not parse LLM scores for llms.txt"],
+        )
+
+    mean = sum(judge_scores) / len(judge_scores)
+    variance = sum((s - mean) ** 2 for s in judge_scores) / len(judge_scores)
+    # Map 0–10 → 20–100 so absent and present-garbage converge near the floor
+    score = DOCS_MANIFEST_FLOOR + (mean / 10.0) * (100.0 - DOCS_MANIFEST_FLOOR)
+
+    fix_hints: list[str] = []
+    if mean < 6.0:
+        fix_hints.append(
+            f"llms.txt scored {mean:.1f}/10 — expand it to describe each tool's "
+            "purpose, parameters, and when to use it"
+        )
+
+    return DimensionScore(
+        name="docs_manifest",
+        score=round(score, 1),
+        details={
+            "judge_score_mean": round(mean, 2),
+            "judge_trials": trials,
+            "avg_variance": round(variance, 4),
+        },
+        fix_hints=fix_hints,
+    )
+
+
 def _stub_dimension(name: str) -> DimensionScore:
     return DimensionScore(
         name=name,
@@ -500,12 +609,16 @@ async def score_all(
     *,
     client: MCPClient | None = None,
     trials: int = 1,
+    base_url: str | None = None,
 ) -> ScoredReport:
+    from agentgauge.client import fetch_llms_txt
     from agentgauge.runner import run_tasks
     from agentgauge.tasks import generate_tasks
 
     schema = score_schema_completeness(tools)
     description = await score_description_quality(tools, provider, trials=trials)
+    fetched_doc = await fetch_llms_txt(base_url)
+    docs = await score_docs_manifest(tools, fetched_doc, provider, trials=trials)
 
     if client is not None:
         tasks = generate_tasks(tools)
@@ -528,7 +641,7 @@ async def score_all(
         correctness,
         error_leg,
         robustness,
-        _stub_dimension("docs_manifest"),
+        docs,
     ]
 
     dim_map = {d.name: d for d in dimensions}
