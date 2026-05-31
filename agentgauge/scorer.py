@@ -654,6 +654,11 @@ _COLLISION_THRESHOLD = 0.8
 # Per-collision deduction from the aggregate heuristic (0–1 scale), capped at 0.30.
 _COLLISION_PENALTY = 0.15
 
+# Blend weight for the deterministic heuristic sub-score.  ≥ 0.50 guarantees that
+# a name-collision penalty from the heuristic is never fully overridden by a noisy
+# judge trial that happens to rate confusable tools highly.
+_HEURISTIC_BLEND_WEIGHT = 0.60
+
 
 def _heuristic_subscore(
     tools: list[Tool],
@@ -726,14 +731,50 @@ def _heuristic_subscore(
     return score, fix_hints, collision_pairs, per_tool
 
 
+def _parse_distinguish_score(resp: str) -> float | None:
+    """Extract the DISTINGUISH score from a judge response.
+
+    Tries three strategies in order:
+    1. Labeled: finds 'DISTINGUISH: N' (case-insensitive) — the intended format.
+    2. Last number: takes the last digit sequence in the response.  When the model
+       answers with two lines (CLARITY first, then DISTINGUISH), the last number is
+       the DISTINGUISH score.
+    3. First number: plain bare-number fallback for single-number responses.
+
+    Returns None only when the response contains no digit at all.
+    """
+    # Strategy 1: explicit DISTINGUISH label
+    m = re.search(r"DISTINGUISH\s*:?\s*(\d+(?:\.\d+)?)", resp, re.IGNORECASE)
+    if m:
+        return min(float(m.group(1)), 10.0)
+
+    # Strategy 2: last number (handles "CLARITY: 8\nDISTINGUISH: 4" even without label)
+    all_nums = re.findall(r"\b(\d+(?:\.\d+)?)\b", resp)
+    if len(all_nums) >= 2:
+        return min(float(all_nums[-1]), 10.0)
+
+    # Strategy 3: single bare number
+    if all_nums:
+        return min(float(all_nums[0]), 10.0)
+
+    return None
+
+
 async def _judge_discoverability(
     tools: list[Tool], provider: Provider, *, trials: int
 ) -> tuple[float, float, list[str]]:
     """LLM judge sub-score for tool-catalog discoverability (0–100).
 
-    Presents tool names + one-line descriptions (NOT full schemas) and asks the model
-    to rate how well an agent could understand and distinguish tools.  Same multi-trial
-    + variance pattern used by score_error_legibility and score_docs_manifest.
+    Asks the model to rate the catalog on two explicit dimensions and extracts only
+    the DISTINGUISH score, which is the signal this dimension cares about.  Using
+    two labeled lines prevents the model from silently blending clarity and
+    distinguishability into one opaque number — the behaviour observed in spot-checks
+    where a confusable trio scored 8/10 because individual tool clarity was high even
+    though distinguishability was rated 4/10 internally.
+
+    Parser priority: DISTINGUISH label > last number > first number.  The last-number
+    fallback handles the common case where the model answers both dimensions but omits
+    labels.
 
     Returns: (score_0_100, variance, fix_hints)
     """
@@ -741,25 +782,28 @@ async def _judge_discoverability(
         f"- {t.name}: {(t.description or '(no description)').splitlines()[0]}" for t in tools
     )
     prompt = (
-        "You are evaluating an MCP server's tool catalog for AI agent clarity.\n"
+        "You are evaluating an MCP server's tool catalog for AI agent discoverability.\n"
         f"Here are the available tools (name and one-line description only):\n{catalog}\n\n"
-        "Rate 0-10 how well an AI agent could:\n"
-        "(a) understand what each tool does from its name and description\n"
-        "(b) DISTINGUISH overlapping or similarly-named tools to pick the right one\n\n"
-        "Scoring guide:\n"
-        "- 9-10: All tools clearly named and described; no confusable pairs\n"
-        "- 6-8: Most tools clear; minor overlap or ambiguity in 1-2 tools\n"
-        "- 3-5: Several tools generic, poorly described, or confusable\n"
-        "- 0-2: Many generic names, missing descriptions, or multiple confusable pairs\n\n"
-        "Reply with ONLY a number 0-10."
+        "Rate the catalog on TWO dimensions (each 0-10):\n"
+        "CLARITY: How well does each tool's name and description explain what it does?\n"
+        "DISTINGUISH: How easily can an AI agent tell confusable or similarly-named tools apart "
+        "and pick the right one?\n\n"
+        "Scoring guide for DISTINGUISH (the key metric for this evaluation):\n"
+        "- 9-10: No confusable pairs; every tool has a clearly distinct name and purpose\n"
+        "- 6-8: Minor overlap — 1-2 tools are somewhat similar but differentiable from context\n"
+        "- 3-5: Several tools share similar names or purposes; an agent would frequently confuse them\n"
+        "- 0-2: Multiple near-identical names or purposes; an agent cannot reliably pick the right tool\n\n"
+        "Reply with EXACTLY two lines, no other text:\n"
+        "CLARITY: <number>\n"
+        "DISTINGUISH: <number>"
     )
 
     judge_scores: list[float] = []
     for trial_idx in range(trials):
         resp = await provider.chat([Message(role="user", content=prompt)], seed=42 + trial_idx)
-        m = re.search(r"\b(\d+(?:\.\d+)?)\b", resp)
-        if m:
-            judge_scores.append(min(float(m.group(1)), 10.0))
+        val = _parse_distinguish_score(resp)
+        if val is not None:
+            judge_scores.append(val)
 
     if not judge_scores:
         return 50.0, 0.0, []
@@ -782,9 +826,13 @@ async def score_discoverability(
 ) -> DimensionScore:
     """Score how navigable the tool catalog is for an agent discovering the right tool.
 
-    50/50 blend of two sub-scores, both reported in details for transparency:
-    - heuristic_score: deterministic static analysis (name quality + collision detection)
-    - judge_score: LLM judge rating catalog clarity and distinguishability
+    60/40 blend of two sub-scores, both reported in details for transparency:
+    - heuristic_score (60%): deterministic static analysis (name quality + collision detection)
+    - judge_score (40%): LLM judge rating catalog distinguishability specifically
+
+    The heuristic weight is >= 0.50 so that a name-collision penalty is never fully
+    overridden by a noisy judge trial.  The judge contributes signal on semantic
+    clarity that the heuristic cannot measure.
 
     This dimension is STATIC — it judges the catalog surface itself, not agent task
     performance (that is selection_accuracy's job).
@@ -800,7 +848,7 @@ async def score_discoverability(
     heuristic, h_hints, collision_pairs, per_tool_pts = _heuristic_subscore(tools)
     judge, judge_var, j_hints = await _judge_discoverability(tools, provider, trials=trials)
 
-    final = 0.5 * heuristic + 0.5 * judge
+    final = _HEURISTIC_BLEND_WEIGHT * heuristic + (1.0 - _HEURISTIC_BLEND_WEIGHT) * judge
 
     # Surface most-actionable hints first; cap noise at 5.
     all_hints = (h_hints + j_hints)[:5]

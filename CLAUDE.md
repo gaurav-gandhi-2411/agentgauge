@@ -58,7 +58,7 @@ uv run pytest
 |----------------------|--------|---------------|
 | schema_completeness  | 25%    | implemented   |
 | description_quality  | 25%    | implemented   |
-| discoverability      | 15%    | TODO          |
+| discoverability      | 15%    | implemented   |
 | selection_accuracy   | 15%    | implemented   |
 | call_correctness     | 10%    | implemented   |
 | error_legibility     | 5%     | implemented   |
@@ -121,12 +121,50 @@ lands on llama3.1:8b) are unmeasured. Use ordering and gap comparisons only.
 judge (~4000 tokens). Files where tool descriptions start after that window will score
 lower than their full content warrants. Run a calibration pass when this matters.
 
+## Remote judge (GCP) — use when local VRAM is contended
+
+When `nvidia-smi` shows < 5 GB free VRAM (e.g. other models or apps occupying the GPU),
+run the judge on Cloud Run instead of local Ollama:
+
+```bash
+gcloud run services proxy agentgauge-judge --port=11434 --region=us-central1 --project=expense-tracker-498014
+```
+
+AgentGauge's existing `OllamaProvider` (`BASE_URL = http://localhost:11434`) picks this
+up transparently — no code change needed. Run the proxy in one terminal, then run
+`agentgauge scan` (or any spot-check script) in another.
+
+**Port conflict:** if local Ollama is already on 11434, stop it first
+(`ollama stop` / kill PID) or use `--port=11435` and point scripts at `localhost:11435`.
+
+**Service details:**
+- Service name: `agentgauge-judge`
+- Region: `us-central1`, project: `expense-tracker-498014`
+- Private (IAM-auth only, `--no-allow-unauthenticated`)
+- Scale-to-zero, max 1 instance, NVIDIA L4 GPU, 32 GB RAM
+- Model weights stored in GCS bucket `agentgauge-judge-models-expense-tracker`
+  (persists across cold starts — no re-pull needed)
+
+**Latency (measured 2026-05-31):**
+- Cold start (container + GPU init + Ollama ready): ~3–4 min (Cloud Run startup probe)
+- First inference after cold start (load weights GCS→VRAM): ~8s additional
+- Warm inference (model already in VRAM): ~1.2s end-to-end
+
+**CRITICAL — do NOT change the model:**
+The judge MUST remain `llama3.1:8b`. All rubric calibration (error_legibility,
+description_quality, discoverability) was done against this exact model. Substituting
+a different or larger model (e.g. qwen3:8b, llama3.1:70b) invalidates score comparability
+with any previously recorded results. If you pull a different model for experimentation,
+pull it into a separate Ollama instance, not this service.
+
 ## Real-model spot checks — VRAM prerequisite
 
 Before running any real-model validation script (e.g. `scripts/validate_error_judge.py`),
 run `ollama ps` and confirm no large model is currently resident in GPU memory. VRAM
 contention can starve the 8B judge into CPU fallback or timeouts, producing artificially
 low or unstable scores that are not representative of normal operation.
+
+If local VRAM is unavailable, use the remote judge above instead.
 
 ## MCP SDK notes
 

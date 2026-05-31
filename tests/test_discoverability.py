@@ -7,6 +7,7 @@ from agentgauge.scorer import (
     DIMENSION_WEIGHTS,
     _heuristic_subscore,
     _levenshtein,
+    _parse_distinguish_score,
     score_all,
     score_discoverability,
 )
@@ -86,6 +87,41 @@ def test_levenshtein_asymmetric_inputs_symmetric_result() -> None:
     assert _levenshtein("abc", "xyz") == _levenshtein("xyz", "abc")
 
 
+# ── _parse_distinguish_score ──────────────────────────────────────────────────
+
+
+def test_parse_distinguish_labeled_format() -> None:
+    # Happy path: model follows the new format exactly.
+    assert _parse_distinguish_score("CLARITY: 8\nDISTINGUISH: 4") == 4.0
+
+
+def test_parse_distinguish_labeled_case_insensitive() -> None:
+    assert _parse_distinguish_score("clarity: 8\ndistinguish: 6") == 6.0
+
+
+def test_parse_distinguish_labeled_beats_last_number() -> None:
+    # Label should win over last-number strategy even when label is first.
+    assert _parse_distinguish_score("DISTINGUISH: 3\nCLARITY: 9") == 3.0
+
+
+def test_parse_distinguish_two_unlabeled_takes_last() -> None:
+    # Model answers two numbers without labels — last is assumed to be DISTINGUISH.
+    assert _parse_distinguish_score("8\n4") == 4.0
+
+
+def test_parse_distinguish_single_bare_number() -> None:
+    # Legacy / bare-number fallback for simple responses.
+    assert _parse_distinguish_score("7") == 7.0
+
+
+def test_parse_distinguish_clamps_to_10() -> None:
+    assert _parse_distinguish_score("DISTINGUISH: 11") == 10.0
+
+
+def test_parse_distinguish_no_digit_returns_none() -> None:
+    assert _parse_distinguish_score("no number here") is None
+
+
 # ── _heuristic_subscore ───────────────────────────────────────────────────────
 
 
@@ -162,7 +198,9 @@ async def test_discoverability_no_tools_returns_zero() -> None:
 
 
 async def test_discoverability_details_expose_both_subscores() -> None:
-    result = await score_discoverability(GOOD_TOOLS, MockProvider(responses=["8"]), trials=1)
+    result = await score_discoverability(
+        GOOD_TOOLS, MockProvider(responses=["CLARITY: 8\nDISTINGUISH: 8"]), trials=1
+    )
     assert "heuristic_score" in result.details
     assert "judge_score" in result.details
     assert "judge_trials" in result.details
@@ -172,10 +210,14 @@ async def test_discoverability_details_expose_both_subscores() -> None:
 
 
 async def test_discoverability_good_catalog_mock_high_scores_above_bad_mock_low() -> None:
-    # Good catalog, mock judge=9 → judge_score=90, heuristic≈100 → blend≈95
-    good = await score_discoverability(GOOD_TOOLS, MockProvider(responses=["9"]), trials=1)
-    # Bad catalog, mock judge=2 → judge_score=20, heuristic≈43 → blend≈31
-    bad = await score_discoverability(BAD_TOOLS, MockProvider(responses=["2"]), trials=1)
+    # Good catalog: mock DISTINGUISH=9 → judge_score=90, heuristic≈100 → blend≈96
+    good = await score_discoverability(
+        GOOD_TOOLS, MockProvider(responses=["CLARITY: 9\nDISTINGUISH: 9"]), trials=1
+    )
+    # Bad catalog: mock DISTINGUISH=2 → judge_score=20, heuristic≈43 → blend≈34
+    bad = await score_discoverability(
+        BAD_TOOLS, MockProvider(responses=["CLARITY: 2\nDISTINGUISH: 2"]), trials=1
+    )
     gap = good.score - bad.score
     assert gap >= 40.0, (
         f"Good catalog ({good.score}) should beat bad catalog ({bad.score}) "
@@ -183,15 +225,17 @@ async def test_discoverability_good_catalog_mock_high_scores_above_bad_mock_low(
     )
 
 
-async def test_discoverability_judge_score_is_half_weight() -> None:
-    # With a perfect heuristic catalog and mock judge=6:
-    # blend = 0.5 * 100 + 0.5 * 60 = 80.0
-    result = await score_discoverability(GOOD_TOOLS, MockProvider(responses=["6"]), trials=1)
+async def test_discoverability_blend_is_60_40_heuristic() -> None:
+    # With a perfect heuristic catalog (GOOD_TOOLS) and mock DISTINGUISH=6:
+    # blend = 0.60 * 100 + 0.40 * 60 = 84.0
+    result = await score_discoverability(
+        GOOD_TOOLS, MockProvider(responses=["CLARITY: 8\nDISTINGUISH: 6"]), trials=1
+    )
     h = result.details["heuristic_score"]
     j = result.details["judge_score"]
-    expected = round(0.5 * h + 0.5 * j, 1)
+    expected = round(0.60 * h + 0.40 * j, 1)
     assert abs(result.score - expected) < 0.5, (
-        f"Blend mismatch: expected {expected}, got {result.score}"
+        f"Blend mismatch: expected {expected} (60/40), got {result.score}"
     )
 
 
@@ -204,7 +248,9 @@ async def test_discoverability_good_catalog_no_fix_hints_from_heuristic() -> Non
 
 
 async def test_discoverability_bad_catalog_has_fix_hints() -> None:
-    result = await score_discoverability(BAD_TOOLS, MockProvider(responses=["3"]), trials=1)
+    result = await score_discoverability(
+        BAD_TOOLS, MockProvider(responses=["CLARITY: 3\nDISTINGUISH: 3"]), trials=1
+    )
     assert len(result.fix_hints) > 0
 
 
@@ -215,7 +261,15 @@ async def test_discoverability_name_is_discoverability() -> None:
 
 async def test_discoverability_multi_trial_details() -> None:
     result = await score_discoverability(
-        GOOD_TOOLS, MockProvider(responses=["8", "9", "7"]), trials=3
+        GOOD_TOOLS,
+        MockProvider(
+            responses=[
+                "CLARITY: 8\nDISTINGUISH: 8",
+                "CLARITY: 9\nDISTINGUISH: 9",
+                "CLARITY: 7\nDISTINGUISH: 7",
+            ]
+        ),
+        trials=3,
     )
     assert result.details["judge_trials"] == 3
     assert isinstance(result.details["avg_variance"], float)
