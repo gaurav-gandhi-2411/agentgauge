@@ -8,6 +8,12 @@ Autonomous runs: pick the single top TODO, implement it, move to IN-REVIEW.
 
 ## TODO
 
+*(empty)*
+
+---
+
+## IN PROGRESS (manual)
+
 ### T6 — Discoverability dimension
 
 **Priority:** P3
