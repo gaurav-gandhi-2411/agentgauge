@@ -4,7 +4,7 @@
 
 [![CI](https://github.com/gaurav-gandhi-2411/agentgauge/actions/workflows/ci.yml/badge.svg)](https://github.com/gaurav-gandhi-2411/agentgauge/actions/workflows/ci.yml)
 
-> **Early / WIP.** Five of the eight scoring dimensions are implemented. The project is under active development.
+> **v1 complete.** All eight scoring dimensions are implemented. The core CLI scanner is functional.
 
 ---
 
@@ -75,12 +75,12 @@ Example output (`agentgauge scan examples/echo_server.py --mock --trials 1`):
 |---|---|---|---|
 | `schema_completeness` | 25% | Parameter types, descriptions, required/optional present | **Implemented** |
 | `description_quality` | 25% | An agent can choose and call the tool from its description alone (LLM judge) | **Implemented** |
-| `selection_accuracy` | 15% | Given a task description, agent picks the right tool (N trials, % correct) | **Implemented** (T1) |
-| `call_correctness` | 10% | Agent constructs valid arguments; server accepts the call | **Implemented** (T1) |
-| `discoverability` | 15% | Tool names are distinct and self-explanatory (heuristic + LLM judge) | In progress |
-| `error_legibility` | 5% | Error responses are understandable and actionable to an agent | **Implemented** (T2) |
-| `robustness` | 3% | Server handles malformed inputs gracefully without crashing | In progress |
-| `docs_manifest` | 2% | Quality and presence of `llms.txt` / tool-level docs | In progress |
+| `selection_accuracy` | 15% | Given a task description, agent picks the right tool (N trials, % correct) | **Implemented** |
+| `call_correctness` | 10% | Agent constructs valid arguments; server accepts the call | **Implemented** |
+| `discoverability` | 15% | Tool names are distinct and self-explanatory (heuristic + LLM judge) | **Implemented** |
+| `error_legibility` | 5% | Error responses are understandable and actionable to an agent | **Implemented** |
+| `robustness` | 3% | Server handles malformed inputs gracefully without crashing | **Implemented** |
+| `docs_manifest` | 2% | Quality and presence of `llms.txt` / tool-level docs | **Implemented** |
 
 Overall score = weighted sum across all eight dimensions (0–100).
 
@@ -164,15 +164,9 @@ Coverage: **87%** across 41 tests. Threshold enforced at 60%.
 
 ## Roadmap
 
-Items are tracked in [TASKS.md](TASKS.md). Current backlog (in priority order):
+v1 is complete — all eight scoring dimensions are implemented and `agentgauge ci` provides an exit-code gate for CI pipelines. See [ROADMAP.md](ROADMAP.md) for the v2 plan.
 
-- **T2** — Error-legibility scoring (`call_tool_with_bad_input` + LLM judge on error messages)
-- **T3** — Robustness scoring (fuzz-lite: null values, extra fields, wrong types)
-- **T4** — JSON + HTML report output (`--out report.json` / `--out report.html`)
-- **T5** — Docs/manifest scoring (fetch + judge `llms.txt`)
-- **T6** — Discoverability scoring (heuristic + LLM judge on tool names)
-
-v2 (not started): auto-generate improved tool descriptions as a PR against your server repo; CI action that fails on score regression.
+v2 (not started): auto-fix loop (generate improved tool descriptions as a PR); hosted dashboard with per-server history; CI action that fails on score regression.
 
 ---
 
