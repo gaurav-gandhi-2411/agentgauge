@@ -594,6 +594,232 @@ async def score_docs_manifest(
     )
 
 
+def _levenshtein(a: str, b: str) -> int:
+    """Standard dynamic-programming Levenshtein distance (edit distance)."""
+    if len(a) < len(b):
+        return _levenshtein(b, a)
+    if not b:
+        return len(a)
+    prev = list(range(len(b) + 1))
+    for ca in a:
+        curr = [prev[0] + 1]
+        for j, cb in enumerate(b):
+            curr.append(min(prev[j + 1] + 1, curr[-1] + 1, prev[j] + (ca != cb)))
+        prev = curr
+    return prev[-1]
+
+
+# Names that are obviously generic/placeholder and carry no semantic signal.
+_GENERIC_NAMES: frozenset[str] = frozenset(
+    {
+        "tool",
+        "tool1",
+        "tool2",
+        "tool3",
+        "test",
+        "foo",
+        "bar",
+        "baz",
+        "qux",
+        "do_thing",
+        "run_it",
+        "my_tool",
+        "some_tool",
+        "func",
+        "function",
+        "method",
+        "handler",
+        "process",
+        "action",
+        "cmd",
+        "command",
+        "op",
+        "operation",
+        "util",
+        "utility",
+        "helper",
+        "misc",
+        "other",
+        "thing",
+        "stuff",
+        "new_tool",
+        "example",
+    }
+)
+
+# Two tool names whose normalized edit-distance similarity meets this threshold
+# are flagged as a confusable (near-duplicate) collision.
+_COLLISION_THRESHOLD = 0.8
+
+# Per-collision deduction from the aggregate heuristic (0–1 scale), capped at 0.30.
+_COLLISION_PENALTY = 0.15
+
+
+def _heuristic_subscore(
+    tools: list[Tool],
+) -> tuple[float, list[str], list[tuple[str, str]], dict[str, int]]:
+    """Deterministic heuristic sub-score for discoverability (0–100).
+
+    Per-tool rules (each earns 0–3 points):
+    - +1  name is not in the generic/placeholder set
+    - +1  name length > 3 characters (very short names are uninformative)
+    - +1  description is present and non-empty
+
+    Collision penalty: each near-duplicate pair (normalized edit-distance similarity
+    >= 0.8) deducts 0.15 from the aggregate, capped at 0.30 total.
+
+    Returns: (score_0_100, fix_hints, collision_pairs, per_tool_points)
+    """
+    fix_hints: list[str] = []
+    per_tool: dict[str, int] = {}
+    total_points = 0
+
+    for tool in tools:
+        name_lower = tool.name.lower()
+        pts = 0
+
+        if name_lower not in _GENERIC_NAMES:
+            pts += 1
+        else:
+            fix_hints.append(
+                f"Tool '{tool.name}' has a non-descriptive placeholder name — "
+                "rename it to describe its action (e.g. 'send_email', not 'do_thing')"
+            )
+
+        if len(tool.name) > 3:
+            pts += 1
+        else:
+            fix_hints.append(
+                f"Tool '{tool.name}' has a very short name — "
+                "use a longer, action-based name so agents can identify its purpose"
+            )
+
+        if tool.description and tool.description.strip():
+            pts += 1
+        else:
+            fix_hints.append(
+                f"Tool '{tool.name}' has no description — add one so agents understand what it does"
+            )
+
+        per_tool[tool.name] = pts
+        total_points += pts
+
+    aggregate = total_points / (len(tools) * 3)
+
+    # Pairwise near-duplicate detection via normalized edit distance.
+    names = [t.name for t in tools]
+    collision_pairs: list[tuple[str, str]] = []
+    for i in range(len(names)):
+        for j in range(i + 1, len(names)):
+            a, b = names[i].lower(), names[j].lower()
+            max_len = max(len(a), len(b), 1)
+            sim = 1.0 - _levenshtein(a, b) / max_len
+            if sim >= _COLLISION_THRESHOLD:
+                collision_pairs.append((names[i], names[j]))
+                fix_hints.append(
+                    f"Tools '{names[i]}' and '{names[j]}' have confusingly similar names — "
+                    "consider renaming one to make them clearly distinct"
+                )
+
+    collision_penalty = min(len(collision_pairs) * _COLLISION_PENALTY, 0.30)
+    score = max(0.0, aggregate - collision_penalty) * 100
+    return score, fix_hints, collision_pairs, per_tool
+
+
+async def _judge_discoverability(
+    tools: list[Tool], provider: Provider, *, trials: int
+) -> tuple[float, float, list[str]]:
+    """LLM judge sub-score for tool-catalog discoverability (0–100).
+
+    Presents tool names + one-line descriptions (NOT full schemas) and asks the model
+    to rate how well an agent could understand and distinguish tools.  Same multi-trial
+    + variance pattern used by score_error_legibility and score_docs_manifest.
+
+    Returns: (score_0_100, variance, fix_hints)
+    """
+    catalog = "\n".join(
+        f"- {t.name}: {(t.description or '(no description)').splitlines()[0]}" for t in tools
+    )
+    prompt = (
+        "You are evaluating an MCP server's tool catalog for AI agent clarity.\n"
+        f"Here are the available tools (name and one-line description only):\n{catalog}\n\n"
+        "Rate 0-10 how well an AI agent could:\n"
+        "(a) understand what each tool does from its name and description\n"
+        "(b) DISTINGUISH overlapping or similarly-named tools to pick the right one\n\n"
+        "Scoring guide:\n"
+        "- 9-10: All tools clearly named and described; no confusable pairs\n"
+        "- 6-8: Most tools clear; minor overlap or ambiguity in 1-2 tools\n"
+        "- 3-5: Several tools generic, poorly described, or confusable\n"
+        "- 0-2: Many generic names, missing descriptions, or multiple confusable pairs\n\n"
+        "Reply with ONLY a number 0-10."
+    )
+
+    judge_scores: list[float] = []
+    for trial_idx in range(trials):
+        resp = await provider.chat([Message(role="user", content=prompt)], seed=42 + trial_idx)
+        m = re.search(r"\b(\d+(?:\.\d+)?)\b", resp)
+        if m:
+            judge_scores.append(min(float(m.group(1)), 10.0))
+
+    if not judge_scores:
+        return 50.0, 0.0, []
+
+    mean = sum(judge_scores) / len(judge_scores)
+    variance = sum((s - mean) ** 2 for s in judge_scores) / len(judge_scores)
+    score = mean * 10  # 0-10 → 0-100
+
+    fix_hints: list[str] = []
+    if mean < 6.0:
+        fix_hints.append(
+            f"Tool catalog scored {mean:.1f}/10 for agent clarity — "
+            "review names and descriptions for distinctness and specificity"
+        )
+    return score, variance, fix_hints
+
+
+async def score_discoverability(
+    tools: list[Tool], provider: Provider, *, trials: int = 1
+) -> DimensionScore:
+    """Score how navigable the tool catalog is for an agent discovering the right tool.
+
+    50/50 blend of two sub-scores, both reported in details for transparency:
+    - heuristic_score: deterministic static analysis (name quality + collision detection)
+    - judge_score: LLM judge rating catalog clarity and distinguishability
+
+    This dimension is STATIC — it judges the catalog surface itself, not agent task
+    performance (that is selection_accuracy's job).
+    """
+    if not tools:
+        return DimensionScore(
+            name="discoverability",
+            score=0.0,
+            details={"reason": "no tools"},
+            fix_hints=["Add tools to your MCP server"],
+        )
+
+    heuristic, h_hints, collision_pairs, per_tool_pts = _heuristic_subscore(tools)
+    judge, judge_var, j_hints = await _judge_discoverability(tools, provider, trials=trials)
+
+    final = 0.5 * heuristic + 0.5 * judge
+
+    # Surface most-actionable hints first; cap noise at 5.
+    all_hints = (h_hints + j_hints)[:5]
+
+    return DimensionScore(
+        name="discoverability",
+        score=round(final, 1),
+        details={
+            "heuristic_score": round(heuristic, 1),
+            "judge_score": round(judge, 1),
+            "judge_trials": trials,
+            "avg_variance": round(judge_var, 4),
+            "per_tool_heuristic": per_tool_pts,
+            "collision_pairs": collision_pairs,
+        },
+        fix_hints=all_hints,
+    )
+
+
 def _stub_dimension(name: str) -> DimensionScore:
     return DimensionScore(
         name=name,
@@ -633,10 +859,12 @@ async def score_all(
         error_leg = _stub_dimension("error_legibility")
         robustness = _stub_dimension("robustness")
 
+    discoverability = await score_discoverability(tools, provider, trials=trials)
+
     dimensions = [
         schema,
         description,
-        _stub_dimension("discoverability"),
+        discoverability,
         selection,
         correctness,
         error_leg,

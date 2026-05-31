@@ -121,6 +121,13 @@ lands on llama3.1:8b) are unmeasured. Use ordering and gap comparisons only.
 judge (~4000 tokens). Files where tool descriptions start after that window will score
 lower than their full content warrants. Run a calibration pass when this matters.
 
+## Real-model spot checks — VRAM prerequisite
+
+Before running any real-model validation script (e.g. `scripts/validate_error_judge.py`),
+run `ollama ps` and confirm no large model is currently resident in GPU memory. VRAM
+contention can starve the 8B judge into CPU fallback or timeouts, producing artificially
+low or unstable scores that are not representative of normal operation.
+
 ## MCP SDK notes
 
 - `mcp>=1.3.0` — `mcp.client.stdio.stdio_client`, `mcp.client.sse.sse_client`

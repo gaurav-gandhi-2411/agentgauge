@@ -25,3 +25,36 @@ jobs:
 
       - name: Run verify.sh
         run: bash scripts/verify.sh
+
+  hygiene:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check commit hygiene — no claude.ai session URLs or Co-authored-by Claude trailers
+        run: |
+          set -euo pipefail
+          if [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then
+            RANGE="origin/main..HEAD"
+          else
+            # Push to main: check only the newly pushed commit(s).
+            BEFORE="${{ github.event.before }}"
+            SHA="${{ github.sha }}"
+            if [ "$BEFORE" = "0000000000000000000000000000000000000000" ] || ! git cat-file -e "$BEFORE" 2>/dev/null; then
+              RANGE="HEAD^..HEAD"
+            else
+              RANGE="$BEFORE..$SHA"
+            fi
+          fi
+          MSGS=$(git log "$RANGE" --format='%B' 2>/dev/null || git log -1 --format='%B')
+          if echo "$MSGS" | grep -qF 'claude.ai/code/session'; then
+            echo "ERROR: commit message contains a claude.ai/code/session URL — remove it before merging"
+            exit 1
+          fi
+          if echo "$MSGS" | grep -iqF 'co-authored-by: claude'; then
+            echo "ERROR: commit message contains a Co-authored-by: Claude trailer — remove it before merging"
+            exit 1
+          fi
+          echo "OK: commit hygiene verified"
