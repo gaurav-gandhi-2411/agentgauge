@@ -8,54 +8,7 @@ Autonomous runs: pick the single top TODO, implement it, move to IN-REVIEW.
 
 ## TODO
 
-### T7 — JSON report schema stabilization + `agentgauge ci` exit code
-
-**Priority:** P2
-**Category:** Mechanical / schema / CLI — no judge calls, fully mock-testable
-
-#### Part A — versioned JSON schema
-
-`agentgauge scan --out report.json` must emit a JSON document with top-level keys **exactly**:
-
-```json
-{
-  "schema_version": "1.0",
-  "overall_score": <float>,
-  "dimensions": [
-    {"name": "<dimension>", "score": <float>, "weight": <float>},
-    ...
-  ]
-}
-```
-
-No other top-level keys. `dimensions` is a list (not a flat object), one entry per dimension,
-in any order. All 8 dimension names must appear:
-`schema_completeness`, `description_quality`, `discoverability`,
-`selection_accuracy`, `call_correctness`, `error_legibility`,
-`robustness`, `docs_manifest`.
-
-**Acceptance criteria:**
-- A new test asserts the emitted JSON has **exactly** the top-level keys
-  `{schema_version, overall_score, dimensions}` — no extras, no missing.
-- The same test asserts `schema_version == "1.0"` and that all 8 dimension names
-  appear in the `dimensions` list.
-- `README.md` gains a "JSON output schema" section documenting the exact shape above,
-  with field types and the fixed `schema_version` value.
-- All existing tests continue to pass.
-
-#### Part B — `agentgauge ci` subcommand
-
-Add `agentgauge ci <target> --min-score N` (integer, 0–100):
-- Runs the same scan as `agentgauge scan` (accepts same flags: `--model`, `--trials`,
-  `--mock`).
-- Exits `0` if `overall_score >= N`.
-- Exits `1` if `overall_score < N`.
-
-**Acceptance criteria:**
-- Test using `MockProvider`: assert exit code `0` when mock overall ≥ threshold.
-- Test using `MockProvider`: assert exit code `1` when mock overall < threshold.
-- `--mock` flag wires through so no network/Ollama dependency in tests.
-- `agentgauge ci --help` lists `--min-score` with a description.
+*(empty)*
 
 ---
 
@@ -84,6 +37,13 @@ test suite guarantees ordering + actionability gap regardless of which model is 
 ---
 
 ## DONE
+
+### T7 — JSON report schema stabilization + `agentgauge ci` exit code
+
+**Priority:** P2
+**Merged:** `claude/eloquent-johnson-i7MQv` — feat(report,cli): T7 — stable JSON schema and ci subcommand
+
+---
 
 ### T6 — Discoverability dimension
 
