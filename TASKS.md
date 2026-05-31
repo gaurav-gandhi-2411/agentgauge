@@ -6,20 +6,6 @@ Autonomous runs: pick the single top TODO, implement it, move to IN-REVIEW.
 
 ---
 
-## IN PROGRESS (manual)
-
-### T5 — Docs/manifest dimension
-
-**Priority:** P3
-**Acceptance criteria:**
-- `scorer.py`: `score_docs_manifest(target_url, provider)` fetches `<base_url>/llms.txt` and
-  any tool-level docs linked from it; asks the provider to rate completeness 0-10 per tool.
-  Falls back gracefully (score=0, no crash) if no `llms.txt` exists. Integrated into `score_all`.
-- Tests: mock `httpx` (no network); mock provider.
-- `./scripts/verify.sh` exits 0.
-
----
-
 ## TODO
 
 ### T6 — Discoverability dimension
@@ -54,6 +40,13 @@ test suite guarantees ordering + actionability gap regardless of which model is 
 ---
 
 ## DONE
+
+### T5 — Docs/manifest dimension
+
+**Priority:** P3
+**Merged:** PR #17 — feat(scorer): T5 — docs/manifest dimension
+
+---
 
 ### T4 — JSON + HTML report output
 

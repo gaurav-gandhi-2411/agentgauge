@@ -497,8 +497,35 @@ async def score_docs_manifest(
 ) -> DimensionScore:
     """LLM-judge quality of an llms.txt manifest.
 
-    absent/404/error → floor score (20.0) with a fix hint.
-    present → judge 0–10, mapped linearly to 20–100 so the floor holds for garbage content.
+    absent/404/error/stdio → floor score (20.0) with a fix hint.
+    present → LLM-judge 0–10, mapped linearly to 20–100 so absent and present-garbage
+    converge near the floor while present-good rises.
+
+    Fetch path validation (real sites, 2026-05-31):
+    - redirect-following confirmed: sites like docs.anthropic.com (301→200) are now reached.
+    - 404/connection-error path confirmed: floors at 20.0 with fix hint.
+    - stdio (no base_url) confirmed: floors at 20.0.
+
+    Judge prompt targets agent-usefulness explicitly:
+    (a) what the server does overall
+    (b) which tools exist and their purpose
+    (c) when and how to use each tool
+    These three questions are present verbatim. The prompt does not collapse to generic
+    "is this good documentation?".
+
+    What this dimension GUARANTEES (model-independent, locked by tests):
+    - Ordering: present-good scores above present-poor (gap ≥ 40 pts by mock assertion)
+    - Floor: absent/stdio/404 always returns exactly 20.0
+
+    What is NOT guaranteed (absolute bands are model-dependent):
+    - Unlike error_legibility, this dimension has no real-model calibration run against
+      llama3.1:8b. The 20–100 mapping is structurally sound but exact band values (e.g.
+      where a "good" MCP llms.txt actually lands) are unmeasured. Use ordering and gap
+      comparisons, not absolute thresholds, until a calibration run is done.
+
+    Known limitation: only the first 8000 chars of the fetched document are fed to the judge.
+    Files where substantive tool descriptions begin after 8000 chars will score below their
+    full content warrants.
     """
     if fetched_doc is None:
         return DimensionScore(
