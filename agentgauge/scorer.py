@@ -397,6 +397,20 @@ def _robustness_probes(tool: Tool) -> list[ErrorProbe]:
 
 
 async def score_robustness(tools: list[Tool], client: MCPClient) -> DimensionScore:
+    """Score each tool on three-way probe outcome classification.
+
+    Per probe:
+      graceful_rejection — call_tool returns success=False (server signalled an error).
+                           Full credit: the server handles bad input safely.
+      silent_accept      — call_tool returns success=True on deliberately malformed input.
+                           Zero credit: the server accepted invalid arguments without complaint.
+                           Distinct from a crash — this is a validation gap, not a runtime failure.
+      crash              — call_tool raises an unhandled exception.
+                           Zero credit: the server has an unhandled error path.
+
+    Scoring weight: graceful_rejection=1, silent_accept=0, crash=0.
+    score = graceful_rejections / total_probes * 100
+    """
     if not tools:
         return DimensionScore(
             name="robustness",
@@ -406,43 +420,65 @@ async def score_robustness(tools: list[Tool], client: MCPClient) -> DimensionSco
         )
 
     total_probes = 0
-    structured_count = 0
+    graceful_count = 0
+    crash_count = 0
+    silent_accept_count = 0
     per_tool: dict[str, dict[str, Any]] = {}
     fix_hints: list[str] = []
 
     for tool in tools:
         probes = _robustness_probes(tool)
-        tool_structured = 0
+        tool_graceful = 0
+        tool_crashes = 0
+        tool_silent = 0
 
         for probe in probes:
             total_probes += 1
             try:
-                await client.call_tool(tool.name, probe.args)
-                tool_structured += 1
-                structured_count += 1
+                result = await client.call_tool(tool.name, probe.args)
+                if result.success:
+                    # Server returned success=True on malformed input — silent accept.
+                    tool_silent += 1
+                    silent_accept_count += 1
+                else:
+                    # Server signalled an error (success=False) — graceful rejection.
+                    tool_graceful += 1
+                    graceful_count += 1
             except Exception:
-                pass  # unhandled crash — not counted as structured
+                # call_tool itself raised — unhandled crash.
+                tool_crashes += 1
+                crash_count += 1
 
-        tool_pct = (tool_structured / len(probes)) * 100
+        tool_pct = (tool_graceful / len(probes)) * 100
         per_tool[tool.name] = {
-            "structured": tool_structured,
+            "graceful_rejections": tool_graceful,
+            "crashes": tool_crashes,
+            "silent_accepts": tool_silent,
             "total": len(probes),
             "score": round(tool_pct, 1),
         }
-        if tool_structured < len(probes):
+        if tool_crashes > 0:
             fix_hints.append(
                 f"Tool '{tool.name}' crashed on "
-                f"{len(probes) - tool_structured}/{len(probes)} malformed-input probes — "
+                f"{tool_crashes}/{len(probes)} malformed-input probes — "
                 f"ensure all error paths return structured errors"
             )
+        if tool_silent > 0:
+            fix_hints.append(
+                f"Tool '{tool.name}' silently accepted malformed input on "
+                f"{tool_silent}/{len(probes)} probes — "
+                f"add input validation to reject bad arguments with an error"
+            )
 
-    overall = (structured_count / total_probes) * 100 if total_probes else 0.0
+    overall = (graceful_count / total_probes) * 100 if total_probes else 0.0
     return DimensionScore(
         name="robustness",
         score=round(overall, 1),
         details={
             "total_probes": total_probes,
-            "structured_errors": structured_count,
+            "graceful_rejections": graceful_count,
+            "crashes": crash_count,
+            "silent_accepts": silent_accept_count,
             "per_tool": per_tool,
         },
         fix_hints=fix_hints[:5],
