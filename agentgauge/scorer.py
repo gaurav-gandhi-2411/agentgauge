@@ -594,6 +594,297 @@ async def score_docs_manifest(
     )
 
 
+def _levenshtein(a: str, b: str) -> int:
+    """Standard dynamic-programming Levenshtein distance (edit distance)."""
+    if len(a) < len(b):
+        return _levenshtein(b, a)
+    if not b:
+        return len(a)
+    prev = list(range(len(b) + 1))
+    for ca in a:
+        curr = [prev[0] + 1]
+        for j, cb in enumerate(b):
+            curr.append(min(prev[j + 1] + 1, curr[-1] + 1, prev[j] + (ca != cb)))
+        prev = curr
+    return prev[-1]
+
+
+# Names that are obviously generic/placeholder and carry no semantic signal.
+_GENERIC_NAMES: frozenset[str] = frozenset(
+    {
+        "tool",
+        "tool1",
+        "tool2",
+        "tool3",
+        "test",
+        "foo",
+        "bar",
+        "baz",
+        "qux",
+        "do_thing",
+        "run_it",
+        "my_tool",
+        "some_tool",
+        "func",
+        "function",
+        "method",
+        "handler",
+        "process",
+        "action",
+        "cmd",
+        "command",
+        "op",
+        "operation",
+        "util",
+        "utility",
+        "helper",
+        "misc",
+        "other",
+        "thing",
+        "stuff",
+        "new_tool",
+        "example",
+    }
+)
+
+# Two tool names whose normalized edit-distance similarity meets this threshold
+# are flagged as a confusable (near-duplicate) collision.
+_COLLISION_THRESHOLD = 0.8
+
+# Per-collision deduction from the aggregate heuristic (0–1 scale), capped at 0.30.
+_COLLISION_PENALTY = 0.15
+
+# Blend weight for the deterministic heuristic sub-score.  ≥ 0.50 guarantees that
+# a name-collision penalty from the heuristic is never fully overridden by a noisy
+# judge trial that happens to rate confusable tools highly.
+_HEURISTIC_BLEND_WEIGHT = 0.60
+
+
+def _heuristic_subscore(
+    tools: list[Tool],
+) -> tuple[float, list[str], list[tuple[str, str]], dict[str, int]]:
+    """Deterministic heuristic sub-score for discoverability (0–100).
+
+    Per-tool rules (each earns 0–3 points):
+    - +1  name is not in the generic/placeholder set
+    - +1  name length > 3 characters (very short names are uninformative)
+    - +1  description is present and non-empty
+
+    Collision penalty: each near-duplicate pair (normalized edit-distance similarity
+    >= 0.8) deducts 0.15 from the aggregate, capped at 0.30 total.
+
+    Returns: (score_0_100, fix_hints, collision_pairs, per_tool_points)
+    """
+    fix_hints: list[str] = []
+    per_tool: dict[str, int] = {}
+    total_points = 0
+
+    for tool in tools:
+        name_lower = tool.name.lower()
+        pts = 0
+
+        if name_lower not in _GENERIC_NAMES:
+            pts += 1
+        else:
+            fix_hints.append(
+                f"Tool '{tool.name}' has a non-descriptive placeholder name — "
+                "rename it to describe its action (e.g. 'send_email', not 'do_thing')"
+            )
+
+        if len(tool.name) > 3:
+            pts += 1
+        else:
+            fix_hints.append(
+                f"Tool '{tool.name}' has a very short name — "
+                "use a longer, action-based name so agents can identify its purpose"
+            )
+
+        if tool.description and tool.description.strip():
+            pts += 1
+        else:
+            fix_hints.append(
+                f"Tool '{tool.name}' has no description — add one so agents understand what it does"
+            )
+
+        per_tool[tool.name] = pts
+        total_points += pts
+
+    aggregate = total_points / (len(tools) * 3)
+
+    # Pairwise near-duplicate detection via normalized edit distance.
+    names = [t.name for t in tools]
+    collision_pairs: list[tuple[str, str]] = []
+    for i in range(len(names)):
+        for j in range(i + 1, len(names)):
+            a, b = names[i].lower(), names[j].lower()
+            max_len = max(len(a), len(b), 1)
+            sim = 1.0 - _levenshtein(a, b) / max_len
+            if sim >= _COLLISION_THRESHOLD:
+                collision_pairs.append((names[i], names[j]))
+                fix_hints.append(
+                    f"Tools '{names[i]}' and '{names[j]}' have confusingly similar names — "
+                    "consider renaming one to make them clearly distinct"
+                )
+
+    collision_penalty = min(len(collision_pairs) * _COLLISION_PENALTY, 0.30)
+    score = max(0.0, aggregate - collision_penalty) * 100
+    return score, fix_hints, collision_pairs, per_tool
+
+
+def _parse_distinguish_score(resp: str) -> float | None:
+    """Extract the DISTINGUISH score from a judge response.
+
+    Tries three strategies in order:
+    1. Labeled: finds 'DISTINGUISH: N' (case-insensitive) — the intended format.
+    2. Last number: takes the last digit sequence in the response.  When the model
+       answers with two lines (CLARITY first, then DISTINGUISH), the last number is
+       the DISTINGUISH score.
+    3. First number: plain bare-number fallback for single-number responses.
+
+    Returns None only when the response contains no digit at all.
+    """
+    # Strategy 1: explicit DISTINGUISH label
+    m = re.search(r"DISTINGUISH\s*:?\s*(\d+(?:\.\d+)?)", resp, re.IGNORECASE)
+    if m:
+        return min(float(m.group(1)), 10.0)
+
+    # Strategy 2: last number (handles "CLARITY: 8\nDISTINGUISH: 4" even without label)
+    all_nums = re.findall(r"\b(\d+(?:\.\d+)?)\b", resp)
+    if len(all_nums) >= 2:
+        return min(float(all_nums[-1]), 10.0)
+
+    # Strategy 3: single bare number
+    if all_nums:
+        return min(float(all_nums[0]), 10.0)
+
+    return None
+
+
+async def _judge_discoverability(
+    tools: list[Tool], provider: Provider, *, trials: int
+) -> tuple[float, float, list[str]]:
+    """LLM judge sub-score for tool-catalog discoverability (0–100).
+
+    Asks the model to rate the catalog on two explicit dimensions and extracts only
+    the DISTINGUISH score, which is the signal this dimension cares about.  Using
+    two labeled lines prevents the model from silently blending clarity and
+    distinguishability into one opaque number — the behaviour observed in spot-checks
+    where a confusable trio scored 8/10 because individual tool clarity was high even
+    though distinguishability was rated 4/10 internally.
+
+    Parser priority: DISTINGUISH label > last number > first number.  The last-number
+    fallback handles the common case where the model answers both dimensions but omits
+    labels.
+
+    Returns: (score_0_100, variance, fix_hints)
+    """
+    catalog = "\n".join(
+        f"- {t.name}: {(t.description or '(no description)').splitlines()[0]}" for t in tools
+    )
+    prompt = (
+        "You are evaluating an MCP server's tool catalog for AI agent discoverability.\n"
+        f"Here are the available tools (name and one-line description only):\n{catalog}\n\n"
+        "Rate the catalog on TWO dimensions (each 0-10):\n"
+        "CLARITY: How well does each tool's name and description explain what it does?\n"
+        "DISTINGUISH: How easily can an AI agent tell confusable or similarly-named tools apart "
+        "and pick the right one?\n\n"
+        "Scoring guide for DISTINGUISH (the key metric for this evaluation):\n"
+        "- 9-10: No confusable pairs; every tool has a clearly distinct name and purpose\n"
+        "- 6-8: Minor overlap — 1-2 tools are somewhat similar but differentiable from context\n"
+        "- 3-5: Several tools share similar names or purposes; an agent would frequently confuse them\n"
+        "- 0-2: Multiple near-identical names or purposes; an agent cannot reliably pick the right tool\n\n"
+        "Reply with EXACTLY two lines, no other text:\n"
+        "CLARITY: <number>\n"
+        "DISTINGUISH: <number>"
+    )
+
+    judge_scores: list[float] = []
+    for trial_idx in range(trials):
+        resp = await provider.chat([Message(role="user", content=prompt)], seed=42 + trial_idx)
+        val = _parse_distinguish_score(resp)
+        if val is not None:
+            judge_scores.append(val)
+
+    if not judge_scores:
+        return 50.0, 0.0, []
+
+    mean = sum(judge_scores) / len(judge_scores)
+    variance = sum((s - mean) ** 2 for s in judge_scores) / len(judge_scores)
+    score = mean * 10  # 0-10 → 0-100
+
+    fix_hints: list[str] = []
+    if mean < 6.0:
+        fix_hints.append(
+            f"Tool catalog scored {mean:.1f}/10 for agent clarity — "
+            "review names and descriptions for distinctness and specificity"
+        )
+    return score, variance, fix_hints
+
+
+async def score_discoverability(
+    tools: list[Tool], provider: Provider, *, trials: int = 1
+) -> DimensionScore:
+    """Score how navigable the tool catalog is for an agent discovering the right tool.
+
+    60/40 blend of two sub-scores, both reported in details for transparency:
+    - heuristic_score (60%): deterministic static analysis — name quality + Levenshtein
+      collision detection.  This is the floor: a near-duplicate pair (edit-distance
+      similarity >= 0.8) always deducts points regardless of what the judge says.
+    - judge_score (40%): LLM judge DISTINGUISH sub-score extracted from a two-line
+      CLARITY/DISTINGUISH response.  Measures whether an agent can tell similarly-named
+      tools apart — the semantic signal the heuristic cannot detect.
+
+    The heuristic weight (_HEURISTIC_BLEND_WEIGHT = 0.60) ensures the deterministic
+    collision penalty is never fully overridden by a noisy judge trial.
+
+    What this dimension GUARANTEES (model-independent, locked by mock tests):
+    - Ordering: good catalog (clear names, no collisions) scores above bad
+      (placeholder names, near-duplicate pairs) by >= 40 pts.
+    - Heuristic collision floor: each near-duplicate pair deducts >= 15 pts from the
+      heuristic sub-score regardless of judge output.
+
+    What is NOT guaranteed (absolute bands are model-dependent):
+    - Judge bands shift with the pinned model.  Measured on llama3.1:8b (5 trials):
+        clear/distinct  DISTINGUISH mean=7.6/10  judge=76/100  blended=90.4
+        confusable      DISTINGUISH mean=6.0/10  judge=60/100  blended=75.0
+        placeholder     DISTINGUISH mean=3.6/10  judge=36/100  blended=47.7
+      Gap clear→confusable: +16 pts (judge), ~1.3 sigma — separation is stable but
+      not wide.  Use blended ordering comparisons, not absolute thresholds.
+
+    This dimension is STATIC — it judges the catalog surface itself, not agent task
+    performance (that is selection_accuracy's job).
+    """
+    if not tools:
+        return DimensionScore(
+            name="discoverability",
+            score=0.0,
+            details={"reason": "no tools"},
+            fix_hints=["Add tools to your MCP server"],
+        )
+
+    heuristic, h_hints, collision_pairs, per_tool_pts = _heuristic_subscore(tools)
+    judge, judge_var, j_hints = await _judge_discoverability(tools, provider, trials=trials)
+
+    final = _HEURISTIC_BLEND_WEIGHT * heuristic + (1.0 - _HEURISTIC_BLEND_WEIGHT) * judge
+
+    # Surface most-actionable hints first; cap noise at 5.
+    all_hints = (h_hints + j_hints)[:5]
+
+    return DimensionScore(
+        name="discoverability",
+        score=round(final, 1),
+        details={
+            "heuristic_score": round(heuristic, 1),
+            "judge_score": round(judge, 1),
+            "judge_trials": trials,
+            "avg_variance": round(judge_var, 4),
+            "per_tool_heuristic": per_tool_pts,
+            "collision_pairs": collision_pairs,
+        },
+        fix_hints=all_hints,
+    )
+
+
 def _stub_dimension(name: str) -> DimensionScore:
     return DimensionScore(
         name=name,
@@ -633,10 +924,12 @@ async def score_all(
         error_leg = _stub_dimension("error_legibility")
         robustness = _stub_dimension("robustness")
 
+    discoverability = await score_discoverability(tools, provider, trials=trials)
+
     dimensions = [
         schema,
         description,
-        _stub_dimension("discoverability"),
+        discoverability,
         selection,
         correctness,
         error_leg,

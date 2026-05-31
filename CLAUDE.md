@@ -58,7 +58,7 @@ uv run pytest
 |----------------------|--------|---------------|
 | schema_completeness  | 25%    | implemented   |
 | description_quality  | 25%    | implemented   |
-| discoverability      | 15%    | TODO          |
+| discoverability      | 15%    | implemented   |
 | selection_accuracy   | 15%    | implemented   |
 | call_correctness     | 10%    | implemented   |
 | error_legibility     | 5%     | implemented   |
@@ -120,6 +120,86 @@ lands on llama3.1:8b) are unmeasured. Use ordering and gap comparisons only.
 **Known limitation:** Only the first 8000 chars of the fetched document are fed to the
 judge (~4000 tokens). Files where tool descriptions start after that window will score
 lower than their full content warrants. Run a calibration pass when this matters.
+
+## discoverability calibration notes
+
+**Judge sub-score is DISTINGUISH, not a holistic clarity score.**
+The prompt asks for two labeled lines (`CLARITY: N` / `DISTINGUISH: N`).  Only
+`DISTINGUISH` is extracted (via `_parse_distinguish_score` — label → last-number →
+first-number fallback).  This fixes the pre-calibration bug where the model's
+internally computed distinguishability score (e.g. 4/10) was discarded because the
+parser grabbed the first number (the CLARITY score, e.g. 8/10).
+
+**Blend: 60% heuristic / 40% judge (`_HEURISTIC_BLEND_WEIGHT = 0.60`).**
+The heuristic sub-score includes a Levenshtein collision penalty (−15 pts per near-
+duplicate pair, capped at −30 pts).  The ≥0.50 heuristic weight ensures this penalty
+is never fully overridden by a noisy judge trial.
+
+**Measured calibration (Cloud Run llama3.1:8b, 5 trials, 2026-05-31):**
+
+| Catalog | DISTINGUISH trials | Mean | σ | Judge | Blended |
+|---------|-------------------|------|---|-------|---------|
+| clear/distinct | 8, 9, 9, 6, 6 | 7.60 | 1.36 | 76/100 | 90.4 |
+| confusable pair | 8, 6, 6, 6, 4 | 6.00 | 1.26 | 60/100 | 75.0 |
+| placeholder | 2, 6, 6, 2, 2 | 3.60 | 1.96 | 36/100 | 47.7 |
+
+Gap clear→confusable: +16 pts judge, +15.4 pts blended. Both exceed σ_confusable
+(1.26 pts) — separation is stable but not wide (~1σ). Format compliance: 100%.
+
+**What this dimension GUARANTEES (model-independent, locked by mock tests):**
+- Ordering: good catalog (clear names, no collisions) beats bad by ≥ 40 pts.
+- Heuristic collision floor: near-duplicate pair always deducts ≥ 15 pts regardless
+  of judge output.
+
+**What is NOT guaranteed (absolute bands are model-dependent):**
+Absolute blended scores shift with the judge model. Use ordering and gap comparisons,
+not absolute thresholds. The confusable catalog will always score below the clear
+catalog, but the exact margin depends on the model's interpretation of "distinguishable".
+
+## Remote judge (GCP) — use when local VRAM is contended
+
+When `nvidia-smi` shows < 5 GB free VRAM (e.g. other models or apps occupying the GPU),
+run the judge on Cloud Run instead of local Ollama:
+
+```bash
+gcloud run services proxy agentgauge-judge --port=11434 --region=us-central1 --project=expense-tracker-498014
+```
+
+AgentGauge's existing `OllamaProvider` (`BASE_URL = http://localhost:11434`) picks this
+up transparently — no code change needed. Run the proxy in one terminal, then run
+`agentgauge scan` (or any spot-check script) in another.
+
+**Port conflict:** if local Ollama is already on 11434, stop it first
+(`ollama stop` / kill PID) or use `--port=11435` and point scripts at `localhost:11435`.
+
+**Service details:**
+- Service name: `agentgauge-judge`
+- Region: `us-central1`, project: `expense-tracker-498014`
+- Private (IAM-auth only, `--no-allow-unauthenticated`)
+- Scale-to-zero, max 1 instance, NVIDIA L4 GPU, 32 GB RAM
+- Model weights stored in GCS bucket `agentgauge-judge-models-expense-tracker`
+  (persists across cold starts — no re-pull needed)
+
+**Latency (measured 2026-05-31):**
+- Cold start (container + GPU init + Ollama ready): ~3–4 min (Cloud Run startup probe)
+- First inference after cold start (load weights GCS→VRAM): ~8s additional
+- Warm inference (model already in VRAM): ~1.2s end-to-end
+
+**CRITICAL — do NOT change the model:**
+The judge MUST remain `llama3.1:8b`. All rubric calibration (error_legibility,
+description_quality, discoverability) was done against this exact model. Substituting
+a different or larger model (e.g. qwen3:8b, llama3.1:70b) invalidates score comparability
+with any previously recorded results. If you pull a different model for experimentation,
+pull it into a separate Ollama instance, not this service.
+
+## Real-model spot checks — VRAM prerequisite
+
+Before running any real-model validation script (e.g. `scripts/validate_error_judge.py`),
+run `ollama ps` and confirm no large model is currently resident in GPU memory. VRAM
+contention can starve the 8B judge into CPU fallback or timeouts, producing artificially
+low or unstable scores that are not representative of normal operation.
+
+If local VRAM is unavailable, use the remote judge above instead.
 
 ## MCP SDK notes
 
