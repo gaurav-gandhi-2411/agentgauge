@@ -357,6 +357,98 @@ async def score_error_legibility(
     )
 
 
+def _robustness_probes(tool: Tool) -> list[ErrorProbe]:
+    schema = tool.inputSchema or {}
+    properties: dict[str, Any] = schema.get("properties", {})
+    required: list[str] = schema.get("required", [])
+
+    first_required = required[0] if required else None
+    first_prop = list(properties.keys())[0] if properties else None
+    target = first_required or first_prop
+
+    wrong_type_map: dict[str, Any] = {
+        "string": 99999,
+        "integer": "not_a_number",
+        "number": "not_a_number",
+        "boolean": [1, 2, 3],
+        "array": "not_an_array",
+        "object": 42,
+    }
+
+    # Probe 1: null value on a known param
+    null_args: dict[str, Any] = {target: None} if target else {"__null__": None}
+    # Probe 2: extra unknown field injected
+    extra_args: dict[str, Any] = {"__unknown_field__": "unexpected_value"}
+    # Probe 3: wrong type on first required param (or all-nulls fallback)
+    if first_required:
+        prop_type = properties.get(first_required, {}).get("type", "string")
+        bad_val: Any = wrong_type_map.get(prop_type, 99999)
+        wrong_args: dict[str, Any] = {first_required: bad_val}
+        wrong_label = f"wrong_type_{first_required}"
+    else:
+        wrong_args = {k: None for k in properties} if properties else {"__all_nulls__": None}
+        wrong_label = "all_nulls"
+
+    return [
+        ErrorProbe(label="null_value", args=null_args),
+        ErrorProbe(label="extra_fields", args=extra_args),
+        ErrorProbe(label=wrong_label, args=wrong_args),
+    ]
+
+
+async def score_robustness(tools: list[Tool], client: MCPClient) -> DimensionScore:
+    if not tools:
+        return DimensionScore(
+            name="robustness",
+            score=0.0,
+            details={"reason": "no tools"},
+            fix_hints=["Add tools to your MCP server"],
+        )
+
+    total_probes = 0
+    structured_count = 0
+    per_tool: dict[str, dict[str, Any]] = {}
+    fix_hints: list[str] = []
+
+    for tool in tools:
+        probes = _robustness_probes(tool)
+        tool_structured = 0
+
+        for probe in probes:
+            total_probes += 1
+            try:
+                await client.call_tool(tool.name, probe.args)
+                tool_structured += 1
+                structured_count += 1
+            except Exception:
+                pass  # unhandled crash — not counted as structured
+
+        tool_pct = (tool_structured / len(probes)) * 100
+        per_tool[tool.name] = {
+            "structured": tool_structured,
+            "total": len(probes),
+            "score": round(tool_pct, 1),
+        }
+        if tool_structured < len(probes):
+            fix_hints.append(
+                f"Tool '{tool.name}' crashed on "
+                f"{len(probes) - tool_structured}/{len(probes)} malformed-input probes — "
+                f"ensure all error paths return structured errors"
+            )
+
+    overall = (structured_count / total_probes) * 100 if total_probes else 0.0
+    return DimensionScore(
+        name="robustness",
+        score=round(overall, 1),
+        details={
+            "total_probes": total_probes,
+            "structured_errors": structured_count,
+            "per_tool": per_tool,
+        },
+        fix_hints=fix_hints[:5],
+    )
+
+
 def _stub_dimension(name: str) -> DimensionScore:
     return DimensionScore(
         name=name,
@@ -385,10 +477,12 @@ async def score_all(
         selection = score_selection_accuracy(run_results)
         correctness = score_call_correctness(run_results)
         error_leg = await score_error_legibility(tools, client, provider, trials=trials)
+        robustness = await score_robustness(tools, client)
     else:
         selection = _stub_dimension("selection_accuracy")
         correctness = _stub_dimension("call_correctness")
         error_leg = _stub_dimension("error_legibility")
+        robustness = _stub_dimension("robustness")
 
     dimensions = [
         schema,
@@ -397,7 +491,7 @@ async def score_all(
         selection,
         correctness,
         error_leg,
-        _stub_dimension("robustness"),
+        robustness,
         _stub_dimension("docs_manifest"),
     ]
 
