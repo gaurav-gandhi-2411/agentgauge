@@ -8,19 +8,6 @@ Autonomous runs: pick the single top TODO, implement it, move to IN-REVIEW.
 
 ## TODO
 
-### T3 — Robustness dimension
-
-**Priority:** P2
-**Acceptance criteria:**
-- `scorer.py`: `score_robustness(tools, client)` fuzzes each tool with at least three
-  malformed-input cases (null values, extra fields, wrong types); verifies no crash / no
-  unhandled exception (i.e., errors are returned, not raised). Score is % of probes that
-  return a structured error rather than crash.
-- Tests: mock `client.call_tool` to simulate crash vs. structured-error responses; deterministic.
-- `./scripts/verify.sh` exits 0.
-
----
-
 ### T4 — JSON + HTML report output
 
 **Priority:** P2
@@ -78,6 +65,13 @@ test suite guarantees ordering + actionability gap regardless of which model is 
 ---
 
 ## DONE
+
+### T3 — Robustness dimension
+
+**Priority:** P2
+**Merged:** `claude/eloquent-feynman-AMWOk` — feat: implement T3 robustness scoring dimension
+
+---
 
 ### T2 — Error-legibility dimension
 
