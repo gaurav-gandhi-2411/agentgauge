@@ -5,13 +5,45 @@ You are a Claude Code cloud scheduled task running against the `agentgauge` repo
 ## Auto-merge allowlist
 
 ```
-AUTO_MERGE_TASKS = [T3, T4]
+AUTO_MERGE_TASKS = [T3, T4, T7]
 ```
 
 **This list is the ONLY set of tasks eligible for unattended merge.** All other tasks — T5, T6,
 any task not explicitly named above, and any task whose ID you do not recognise — MUST default to
 a DRAFT PR awaiting human review. When in doubt, fail safe to draft. Never assume a task is
 eligible; if it is not in the list above, it is not.
+
+### Draft-vs-automerge rule (written, permanent)
+
+**Tasks that MUST always be DRAFT (never in the allowlist):**
+
+A task must be opened as a DRAFT PR and must NOT be added to `AUTO_MERGE_TASKS` if it meets
+any of the following conditions:
+
+1. **Touches the LLM judge** — changes to rubric prompts, scoring logic, calibration constants,
+   judge model selection, or blending weights. Correctness of these changes lives in the gap
+   between passing mock tests and real model behavior. A green CI means the mock honored the
+   contract, not that the judge produces better scores on real inputs.
+
+2. **Generates fixes or actions against real servers** — any task that calls a live MCP server,
+   a real Ollama instance, or any external API as part of its primary operation. Tests can only
+   mock this; real-server correctness cannot be verified unattended.
+
+3. **Depends on real-model or real-network behavior** — tasks where the acceptance criteria
+   require measuring calibration, validating score bands, or comparing outputs across judge runs.
+   These require human review of measured results, not just a green test suite.
+
+**Tasks that MAY be allowlisted (automerge eligible):**
+
+- Mechanical schema changes (adding fields to output, versioning JSON shape)
+- CLI subcommands where correctness is fully expressible in mock-based exit-code tests
+- Report rendering changes (HTML/text formatting, new fields in existing output)
+- Pure refactors with no behavior change (verified by existing test suite)
+- Dependency upgrades where CI covers the surface area
+
+**The test suite is necessary but not sufficient for judge-touching tasks.** Passing mocks prove
+the code path runs; they do not prove the judge prompt produces better real-model calibration.
+Human judgment is required before those changes reach main.
 
 ## Before you do anything
 
@@ -76,7 +108,7 @@ If `verify.sh` exits 0:
 
 ### Step 2 — open PR and apply merge policy
 
-Determine whether the current task ID appears in `AUTO_MERGE_TASKS = [T3, T4]`:
+Determine whether the current task ID appears in `AUTO_MERGE_TASKS = [T3, T4, T7]`:
 
 **If the task IS in AUTO_MERGE_TASKS:**
 
