@@ -12,9 +12,9 @@ agentgauge/
   providers.py  # Provider protocol + OllamaProvider + MockProvider
   tasks.py      # Task generator (stub — see TASKS.md)
   runner.py     # Agent runner (stub — see TASKS.md)
-  scorer.py     # Rubric scoring: schema-completeness, description-quality, selection-accuracy,
-                # call-correctness, error-legibility, robustness, docs-manifest implemented;
-                # discoverability stubbed
+  scorer.py     # Rubric scoring: all 8 dimensions implemented — schema-completeness,
+                # description-quality, selection-accuracy, call-correctness, error-legibility,
+                # robustness, docs-manifest, discoverability
   report.py     # Rich text report renderer
   cli.py        # typer CLI: agentgauge scan <target> [--model] [--trials N] [--out] [--mock]
 examples/

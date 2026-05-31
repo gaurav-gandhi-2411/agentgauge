@@ -20,10 +20,7 @@ Autonomous runs: pick the single top TODO, implement it, move to IN-REVIEW.
 
 ## IN-REVIEW
 
-### T8 — Remove duplicate render_json
-
-**Priority:** P3
-**Branch:** `claude/eloquent-johnson-e0J9d`
+*(empty)*
 
 ---
 
@@ -40,6 +37,13 @@ test suite guarantees ordering + actionability gap regardless of which model is 
 ---
 
 ## DONE
+
+### T8 — Remove duplicate render_json
+
+**Priority:** P3
+**Merged:** `claude/eloquent-johnson-e0J9d` — refactor(report): T8 — remove duplicate render_json, migrate test to stable schema (#23)
+
+---
 
 ### T7 — JSON report schema stabilization + `agentgauge ci` exit code
 
