@@ -8,29 +8,7 @@ Autonomous runs: pick the single top TODO, implement it, move to IN-REVIEW.
 
 ## TODO
 
-### T8 — Remove duplicate render_json
-
-**Priority:** P3
-**Category:** Mechanical / refactor — no judge calls, no real server, no real-model/network
-behavior. Auto-merge eligible.
-
-**Context:** `report.py` has two functions: `render_json_stable` (the pinned public `"1.0"` schema
-the CLI writes to `--out` files) and the old `render_json` (emits `{overall, dimensions,
-tool_count}`) which is no longer called by the CLI but is still exported and referenced by one
-legacy test. Risk: a future caller that imports `render_json` instead of `render_json_stable` would
-silently emit the wrong schema and break the public contract.
-
-**Acceptance criteria:**
-
-- Delete `render_json` from `report.py`.
-- Migrate `test_render_json_parses` to test `render_json_stable` instead. The migrated test must
-  assert the stable schema exactly: top-level keys are exactly `{schema_version, overall_score,
-  dimensions}`, `schema_version == "1.0"`, each entry in `dimensions` has keys `{name, score,
-  weight}`, and all 8 dimension names are present.
-- Grep the codebase to confirm no other caller references the deleted `render_json`; if any exists,
-  repoint it to `render_json_stable`.
-- No change to `render_json_stable`'s output or signature.
-- `verify.sh` exits 0: ruff, mypy, all tests pass.
+*(empty)*
 
 ---
 
@@ -42,7 +20,10 @@ silently emit the wrong schema and break the public contract.
 
 ## IN-REVIEW
 
-*(empty)*
+### T8 — Remove duplicate render_json
+
+**Priority:** P3
+**Branch:** `claude/eloquent-johnson-e0J9d`
 
 ---
 
