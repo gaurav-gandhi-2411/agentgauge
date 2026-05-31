@@ -2,6 +2,17 @@
 
 You are a Claude Code cloud scheduled task running against the `agentgauge` repository.
 
+## Auto-merge allowlist
+
+```
+AUTO_MERGE_TASKS = [T3, T4]
+```
+
+**This list is the ONLY set of tasks eligible for unattended merge.** All other tasks — T5, T6,
+any task not explicitly named above, and any task whose ID you do not recognise — MUST default to
+a DRAFT PR awaiting human review. When in doubt, fail safe to draft. Never assume a task is
+eligible; if it is not in the list above, it is not.
+
 ## Before you do anything
 
 1. Read `CLAUDE.md` — architecture, conventions, the rule that the LLM is ALWAYS mocked in tests.
@@ -19,9 +30,9 @@ criteria.
 gh pr list --state open --search "<task-id>" --json number,title,headRefName
 ```
 
-For example, for T2:
+For example, for T3:
 ```bash
-gh pr list --state open --search "T2" --json number,title,headRefName
+gh pr list --state open --search "T3" --json number,title,headRefName
 ```
 
 - If a matching open PR exists → **skip that item** and pick the next eligible TODO.
@@ -53,13 +64,48 @@ Run `./scripts/verify.sh`. It exits 0 only if:
 ## Commit and PR
 
 If `verify.sh` exits 0:
+
+### Step 1 — commit
+
 - Commit with conventional-commit message: `feat(scope): description`
 - **Do NOT include claude.ai session URLs in commit bodies.**
 - Push branch: `git push origin claude/<task-name>`
-- Open a DRAFT PR using `gh pr create --draft`
-- In TASKS.md on your branch, move the item from TODO to IN-REVIEW (this makes your intent
-  visible even before the PR is merged — the human reviewer can see the task state at a glance)
-- Commit that TASKS.md update as a separate `chore: move <task> to IN-REVIEW` commit
+- In TASKS.md on your branch, move the item from TODO to DONE (not IN-REVIEW — the auto-merge
+  path skips human review, so the board must reflect the final state immediately).
+- Commit that TASKS.md update as a separate `chore: move <task> to DONE` commit.
+
+### Step 2 — open PR and apply merge policy
+
+Determine whether the current task ID appears in `AUTO_MERGE_TASKS = [T3, T4]`:
+
+**If the task IS in AUTO_MERGE_TASKS:**
+
+1. Open a **non-draft** PR:
+   ```bash
+   gh pr create --title "..." --body "..."
+   ```
+   (omit `--draft` — branch protection still gates the merge on the required `verify` check)
+
+2. Enable GitHub native auto-merge gated on the required status check:
+   ```bash
+   gh pr merge <PR_NUMBER> --auto --squash
+   ```
+   - This schedules the merge for when `verify` passes. It does **not** merge immediately.
+   - Do **not** use `--merge` without `--auto`. Do **not** push directly to main.
+   - If the `gh pr merge --auto` command fails for any reason (repo setting not enabled,
+     permissions error, etc.) — leave the PR open as non-draft and report the failure.
+     Do **not** attempt to force or work around it.
+
+3. Report the PR link and confirm auto-merge was enabled.
+
+**If the task is NOT in AUTO_MERGE_TASKS (or the task ID is unrecognised):**
+
+1. Open a **DRAFT** PR:
+   ```bash
+   gh pr create --draft --title "..." --body "..."
+   ```
+2. Do **not** call `gh pr merge` at all.
+3. Report the PR link. The human will review and merge.
 
 If `verify.sh` does not exit 0:
 - Do NOT commit
@@ -71,8 +117,9 @@ If `verify.sh` does not exit 0:
 
 Always end your run with a brief report (5-10 lines):
 - Task selected
-- Open-PR check result (any skipped tasks and why)
+- Open-PR dedup check result (any skipped tasks and why)
 - What was implemented
 - `verify.sh` result (exit code + any relevant failure lines)
 - PR link (if created)
+- Merge policy applied (auto-merge enabled / draft / failed-safe to draft)
 - Any blockers or caveats
