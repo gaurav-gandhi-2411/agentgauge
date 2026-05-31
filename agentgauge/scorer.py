@@ -524,7 +524,10 @@ async def score_docs_manifest(
             "- 6-8: Good — most tools described clearly\n"
             "- 3-5: Partial — few tools described or very brief coverage\n"
             "- 0-2: Poor — present but useless (no tool descriptions, placeholder content)\n\n"
-            f"llms.txt content:\n{fetched_doc[:2000]}\n\n"
+            # 8000 chars (~4000 tokens) gives the judge enough window to read real tool
+            # descriptions without overflowing an 8B context. 2000 chars was too small —
+            # it chopped before any tool content on link-index files like the MCP docs.
+            f"llms.txt content:\n{fetched_doc[:8000]}\n\n"
             "Reply with ONLY a number 0-10."
         )
         resp = await provider.chat([Message(role="user", content=prompt)], seed=42 + trial_idx)

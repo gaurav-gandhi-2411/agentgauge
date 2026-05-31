@@ -96,12 +96,14 @@ async def fetch_llms_txt(base_url: str | None) -> str | None:
 
     stdio servers have no base URL — pass None and this returns None immediately.
     All network/timeout errors are swallowed; the scorer handles absent as the floor case.
+    follow_redirects=True: many sites (e.g. docs.anthropic.com) serve llms.txt behind a 301;
+    without this, those sites silently floor at 20.0 even though rich content is available.
     """
     if base_url is None:
         return None
     url = base_url.rstrip("/") + "/llms.txt"
     try:
-        async with httpx.AsyncClient(timeout=5.0) as http_client:
+        async with httpx.AsyncClient(timeout=5.0, follow_redirects=True) as http_client:
             resp = await http_client.get(url)
             if resp.status_code == 200:
                 return resp.text

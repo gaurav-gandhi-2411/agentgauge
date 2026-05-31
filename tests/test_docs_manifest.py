@@ -76,6 +76,27 @@ async def test_fetch_llms_txt_connection_error_returns_none() -> None:
     assert result is None
 
 
+async def test_fetch_llms_txt_follows_301_redirect() -> None:
+    """Regression: the pre-fix code (no follow_redirects) returned None on a 301.
+
+    Without follow_redirects=True, sites like docs.anthropic.com silently floor at 20.0
+    even though 160k+ chars of real content are available at the redirected URL.
+    This test fails against the old code and passes with the fix.
+    """
+    redirected_body = "# Redirected Server\n\nTools: echo, add\n"
+    with respx.mock:
+        respx.get("http://example.com/llms.txt").mock(
+            return_value=httpx.Response(
+                301, headers={"location": "http://cdn.example.com/llms.txt"}
+            )
+        )
+        respx.get("http://cdn.example.com/llms.txt").mock(
+            return_value=httpx.Response(200, text=redirected_body)
+        )
+        result = await fetch_llms_txt("http://example.com")
+    assert result == redirected_body
+
+
 # ── score_docs_manifest — absent path ─────────────────────────────────────────
 
 
