@@ -14,16 +14,7 @@ Autonomous runs: pick the single top TODO, implement it, move to IN-REVIEW.
 
 ## IN PROGRESS (manual)
 
-### T6 — Discoverability dimension
-
-**Priority:** P3
-**Acceptance criteria:**
-- `scorer.py`: `score_discoverability(tools)` is a heuristic + LLM-judge hybrid:
-  (a) static: are tool names distinct, non-generic (`do_thing`, `run_it` score low)?
-  (b) LLM judge: given the list of tool names only (no descriptions), can an agent guess
-  what each does? Score 0-10 per tool, averaged to 0-100. Integrated into `score_all`.
-- Tests: deterministic with MockProvider; cover static heuristic path too.
-- `./scripts/verify.sh` exits 0.
+*(empty)*
 
 ---
 
@@ -46,6 +37,13 @@ test suite guarantees ordering + actionability gap regardless of which model is 
 ---
 
 ## DONE
+
+### T6 — Discoverability dimension
+
+**Priority:** P3
+**Merged:** PR #18 — fix(scorer): discoverability judge extracts DISTINGUISH score reliably
+
+---
 
 ### T5 — Docs/manifest dimension
 

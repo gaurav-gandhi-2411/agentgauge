@@ -827,12 +827,29 @@ async def score_discoverability(
     """Score how navigable the tool catalog is for an agent discovering the right tool.
 
     60/40 blend of two sub-scores, both reported in details for transparency:
-    - heuristic_score (60%): deterministic static analysis (name quality + collision detection)
-    - judge_score (40%): LLM judge rating catalog distinguishability specifically
+    - heuristic_score (60%): deterministic static analysis — name quality + Levenshtein
+      collision detection.  This is the floor: a near-duplicate pair (edit-distance
+      similarity >= 0.8) always deducts points regardless of what the judge says.
+    - judge_score (40%): LLM judge DISTINGUISH sub-score extracted from a two-line
+      CLARITY/DISTINGUISH response.  Measures whether an agent can tell similarly-named
+      tools apart — the semantic signal the heuristic cannot detect.
 
-    The heuristic weight is >= 0.50 so that a name-collision penalty is never fully
-    overridden by a noisy judge trial.  The judge contributes signal on semantic
-    clarity that the heuristic cannot measure.
+    The heuristic weight (_HEURISTIC_BLEND_WEIGHT = 0.60) ensures the deterministic
+    collision penalty is never fully overridden by a noisy judge trial.
+
+    What this dimension GUARANTEES (model-independent, locked by mock tests):
+    - Ordering: good catalog (clear names, no collisions) scores above bad
+      (placeholder names, near-duplicate pairs) by >= 40 pts.
+    - Heuristic collision floor: each near-duplicate pair deducts >= 15 pts from the
+      heuristic sub-score regardless of judge output.
+
+    What is NOT guaranteed (absolute bands are model-dependent):
+    - Judge bands shift with the pinned model.  Measured on llama3.1:8b (5 trials):
+        clear/distinct  DISTINGUISH mean=7.6/10  judge=76/100  blended=90.4
+        confusable      DISTINGUISH mean=6.0/10  judge=60/100  blended=75.0
+        placeholder     DISTINGUISH mean=3.6/10  judge=36/100  blended=47.7
+      Gap clear→confusable: +16 pts (judge), ~1.3 sigma — separation is stable but
+      not wide.  Use blended ordering comparisons, not absolute thresholds.
 
     This dimension is STATIC — it judges the catalog surface itself, not agent task
     performance (that is selection_accuracy's job).
