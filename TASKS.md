@@ -6,7 +6,7 @@ Autonomous runs: pick the single top TODO, implement it, move to IN-REVIEW.
 
 ---
 
-## TODO
+## IN PROGRESS (manual)
 
 ### T5 — Docs/manifest dimension
 
@@ -19,6 +19,8 @@ Autonomous runs: pick the single top TODO, implement it, move to IN-REVIEW.
 - `./scripts/verify.sh` exits 0.
 
 ---
+
+## TODO
 
 ### T6 — Discoverability dimension
 
