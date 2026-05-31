@@ -8,16 +8,14 @@ You are a Claude Code cloud scheduled task running against the `agentgauge` repo
 AUTO_MERGE_TASKS = [T3, T4, T7]
 ```
 
-**This list is the ONLY set of tasks eligible for unattended merge.** All other tasks — T5, T6,
-any task not explicitly named above, and any task whose ID you do not recognise — MUST default to
-a DRAFT PR awaiting human review. When in doubt, fail safe to draft. Never assume a task is
-eligible; if it is not in the list above, it is not.
+**This list is the ONLY set of tasks eligible for unattended merge.** All other tasks — any task
+not explicitly named above, and any task whose ID you do not recognise — MUST default to a DRAFT PR
+awaiting human review. When in doubt, fail safe to draft. Never assume a task is eligible; if it is
+not in the list above, it is not.
 
-### Draft-vs-automerge rule (written, permanent)
+### Draft-vs-auto-merge rule
 
-**Tasks that MUST always be DRAFT (never in the allowlist):**
-
-A task must be opened as a DRAFT PR and must NOT be added to `AUTO_MERGE_TASKS` if it meets
+Regardless of the allowlist, a task MUST be opened as a DRAFT PR for human review if it meets
 any of the following conditions:
 
 1. **Touches the LLM judge** — changes to rubric prompts, scoring logic, calibration constants,
@@ -42,8 +40,8 @@ any of the following conditions:
 - Dependency upgrades where CI covers the surface area
 
 **The test suite is necessary but not sufficient for judge-touching tasks.** Passing mocks prove
-the code path runs; they do not prove the judge prompt produces better real-model calibration.
-Human judgment is required before those changes reach main.
+the code path runs, not that real-model calibration or real-server behavior is correct — that gap
+requires human judgment. Mechanical/rendering/schema/refactor tasks may be auto-merged.
 
 ## Before you do anything
 
