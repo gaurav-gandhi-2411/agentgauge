@@ -15,20 +15,32 @@ Autonomous runs: pick the single top TODO, implement it, move to IN-REVIEW.
 
 #### Part A — versioned JSON schema
 
-`agentgauge scan --out report.json` must emit a JSON document that contains:
+`agentgauge scan --out report.json` must emit a JSON document with top-level keys **exactly**:
 
-- `schema_version` field (string, e.g. `"1"`)
-- `overall` score
-- One entry for each of the 8 scoring dimensions:
-  `schema_completeness`, `description_quality`, `discoverability`,
-  `selection_accuracy`, `call_correctness`, `error_legibility`,
-  `robustness`, `docs_manifest`
+```json
+{
+  "schema_version": "1.0",
+  "overall_score": <float>,
+  "dimensions": [
+    {"name": "<dimension>", "score": <float>, "weight": <float>},
+    ...
+  ]
+}
+```
+
+No other top-level keys. `dimensions` is a list (not a flat object), one entry per dimension,
+in any order. All 8 dimension names must appear:
+`schema_completeness`, `description_quality`, `discoverability`,
+`selection_accuracy`, `call_correctness`, `error_legibility`,
+`robustness`, `docs_manifest`.
 
 **Acceptance criteria:**
-- A new test asserts the emitted JSON contains all 8 dimension keys, an `overall`
-  key, and a `schema_version` key.
-- `schema_version` is documented in `README.md` (a brief "JSON output schema" section
-  listing the top-level fields and their types).
+- A new test asserts the emitted JSON has **exactly** the top-level keys
+  `{schema_version, overall_score, dimensions}` — no extras, no missing.
+- The same test asserts `schema_version == "1.0"` and that all 8 dimension names
+  appear in the `dimensions` list.
+- `README.md` gains a "JSON output schema" section documenting the exact shape above,
+  with field types and the fixed `schema_version` value.
 - All existing tests continue to pass.
 
 #### Part B — `agentgauge ci` subcommand
