@@ -4,6 +4,7 @@ import contextlib
 from dataclasses import dataclass, field
 from typing import Any
 
+import httpx
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.sse import sse_client
 from mcp.client.stdio import stdio_client
@@ -88,3 +89,22 @@ async def cleanup_connection(ctx_tuple: Any) -> None:
         await session_ctx.__aexit__(None, None, None)
     with contextlib.suppress(Exception):
         await ctx.__aexit__(None, None, None)
+
+
+async def fetch_llms_txt(base_url: str | None) -> str | None:
+    """Fetch <base_url>/llms.txt; return text on 200, None on 404/error/absent.
+
+    stdio servers have no base URL — pass None and this returns None immediately.
+    All network/timeout errors are swallowed; the scorer handles absent as the floor case.
+    """
+    if base_url is None:
+        return None
+    url = base_url.rstrip("/") + "/llms.txt"
+    try:
+        async with httpx.AsyncClient(timeout=5.0) as http_client:
+            resp = await http_client.get(url)
+            if resp.status_code == 200:
+                return resp.text
+    except Exception:
+        pass
+    return None

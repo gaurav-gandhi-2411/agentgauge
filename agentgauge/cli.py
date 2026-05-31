@@ -84,9 +84,11 @@ async def _scan_async(
 
     if target.startswith("http://") or target.startswith("https://"):
         client, ctx = await connect_http(target)
+        base_url: str | None = target
     else:
         # Use sys.executable so the subprocess inherits the active venv, not system Python.
         client, ctx = await connect_stdio(sys.executable, [target])
+        base_url = None  # stdio servers have no HTTP base URL; no llms.txt to fetch
 
     try:
         info = await client.introspect()
@@ -96,7 +98,9 @@ async def _scan_async(
             f"{len(info.prompts)} prompts[/dim]"
         )
 
-        report = await score_all(info.tools, provider, client=client, trials=trials)
+        report = await score_all(
+            info.tools, provider, client=client, trials=trials, base_url=base_url
+        )
         render_text(report, console)
 
         if out is not None:
