@@ -8,19 +8,6 @@ Autonomous runs: pick the single top TODO, implement it, move to IN-REVIEW.
 
 ## TODO
 
-### T4 — JSON + HTML report output
-
-**Priority:** P2
-**Acceptance criteria:**
-- `report.py`: `render_json(report) -> str` serializes `ScoredReport` to indented JSON with
-  all fields. `render_html(report) -> str` produces a self-contained single-file HTML page
-  (inline CSS, no external dependencies) with the score prominently displayed.
-- `cli.py`: `--out <file>` writes JSON when file ends in `.json`; HTML when `.html`.
-- Tests: `render_json` output parses with `json.loads`; HTML contains the overall score string.
-- `./scripts/verify.sh` exits 0.
-
----
-
 ### T5 — Docs/manifest dimension
 
 **Priority:** P3
@@ -65,6 +52,13 @@ test suite guarantees ordering + actionability gap regardless of which model is 
 ---
 
 ## DONE
+
+### T4 — JSON + HTML report output
+
+**Priority:** P2
+**Merged:** `claude/eloquent-feynman-8lVs8` — feat: add JSON and HTML report output formats
+
+---
 
 ### T3 — Robustness dimension
 

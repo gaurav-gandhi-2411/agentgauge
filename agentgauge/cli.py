@@ -11,7 +11,7 @@ from rich.console import Console
 from agentgauge import __version__
 from agentgauge.client import cleanup_connection, connect_http, connect_stdio
 from agentgauge.providers import MockProvider, OllamaProvider
-from agentgauge.report import render_text
+from agentgauge.report import render_html, render_json, render_text
 from agentgauge.scorer import score_all
 
 # Model the judge rubric was calibrated against. Scores are model-specific:
@@ -100,13 +100,17 @@ async def _scan_async(
         render_text(report, console)
 
         if out is not None:
-            import dataclasses
-            import json
-
-            out.write_text(
-                json.dumps(dataclasses.asdict(report), indent=2, default=str), encoding="utf-8"
-            )
-            console.print(f"[dim]JSON report written to {out}[/dim]")
+            suffix = out.suffix.lower()
+            if suffix == ".json":
+                out.write_text(render_json(report), encoding="utf-8")
+                console.print(f"[dim]JSON report written to {out}[/dim]")
+            elif suffix == ".html":
+                out.write_text(render_html(report), encoding="utf-8")
+                console.print(f"[dim]HTML report written to {out}[/dim]")
+            else:
+                console.print(
+                    f"[yellow]Warning: unsupported output format '{suffix}' — skipping write[/yellow]"
+                )
 
     finally:
         await cleanup_connection(ctx)
