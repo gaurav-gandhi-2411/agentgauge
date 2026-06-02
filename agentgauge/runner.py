@@ -4,6 +4,8 @@ import json
 from dataclasses import dataclass
 from typing import Any
 
+from mcp.types import Tool
+
 from agentgauge.client import MCPClient
 from agentgauge.providers import Message, Provider
 from agentgauge.tasks import Task
@@ -18,6 +20,28 @@ class RunResult:
     error: str | None = None
 
 
+def _build_tool_listing(tools: list[Tool]) -> str:
+    """Format tools as a one-line-per-tool listing for the selection prompt.
+
+    Shows name, description, and parameter names/types so the agent can distinguish
+    tools by description — not just by name. This ensures arm A and arm B present
+    different selection prompts when their descriptions differ (manipulation check).
+
+    Format: '<name> — <description> | <param>:<type>, ...'
+    """
+    lines = []
+    for tool in tools:
+        desc = (tool.description or "(no description)").split("\n")[0]
+        props = (tool.inputSchema or {}).get("properties", {})
+        param_parts = []
+        for pname, pschema in props.items():
+            ptype = pschema.get("type", "")
+            param_parts.append(f"{pname}:{ptype}" if ptype else pname)
+        param_str = ", ".join(param_parts) if param_parts else "(no params)"
+        lines.append(f"{tool.name} — {desc} | {param_str}")
+    return "\n".join(lines)
+
+
 async def run_tasks(
     tasks: list[Task],
     client: MCPClient,
@@ -28,12 +52,12 @@ async def run_tasks(
     """Ask the provider to select the right tool and construct arguments for each task.
 
     For each task, two prompts are sent:
-    1. Select the tool name from the available tools.
+    1. Select the tool name from the available tools (with descriptions + param types).
     2. Construct a JSON argument object for that tool.
     The tool is then called and the result recorded.
     """
     info = await client.introspect()
-    tool_names_str = ", ".join(t.name for t in info.tools)
+    tool_listing = _build_tool_listing(info.tools)
     tool_schema_map = {t.name: t.inputSchema for t in info.tools}
 
     results: list[RunResult] = []
@@ -44,7 +68,7 @@ async def run_tasks(
                     Message(
                         role="user",
                         content=(
-                            f"Available tools: {tool_names_str}\n"
+                            f"Available tools:\n{tool_listing}\n\n"
                             f"Task: {task.description}\n"
                             "Reply with ONLY the tool name to call, nothing else."
                         ),

@@ -111,27 +111,61 @@ success on this fixture. Rules:
 
 ---
 
-## Validity condition (pre-registration refinement, 2026-06-02)
+## Validity conditions (pre-registration refinements, 2026-06-02)
 
-**A run is VALID only if arm A scores ≤ 80% on at least one metric.** A run where arm A is
-saturated near 100% on ALL metrics is VOID — the instrument could not detect an effect — and must
-not be reported as a null about the thesis. A VOID run must be described as a ceiling effect, not
-as evidence that the fix has no behavioral impact.
+### Validity gate (global)
 
-**Run #1 was VOID (TaskTracker fixture, 2026-06-02):** arm A scored 100% on both selection_accuracy
-and call_correctness. Root cause: parameter names (`title`, `task_id`, `priority`, `due_date`) carry
-enough semantic signal for gemma2:9b to infer correct types without schema metadata. The fixer did
-raise the heuristic/judge score; the effect just doesn't show in agent behavior on obviously-named
-parameters.
+**A run is VALID only if arm A scores ≤ 80% on at least one metric.** A saturated arm A is a VOID
+run — the instrument cannot detect an effect — and must NOT be reported as a null about the thesis.
 
-Secondary finding (recorded, not suppressed): schema metadata appears redundant for capable
-LLMs when parameter semantics are unambiguous. This is a product-relevant boundary condition — the
-score predicts agent difficulty on genuinely ambiguous schemas, not on semantically transparent ones.
+### Per-metric validity gate (refinement, 2026-06-02)
 
-**Run #2 (current run):** redesigned fixture (`ObsStore`) with opaque tool names (`put_x`,
-`get_a`, `get_b`, `del_a`, `del_b`), confusable tool pairs with identical arm-A descriptions
-("Get." / "Del."), and 10 pre-specified tasks describing intent without naming the tool. Validity
-check is REQUIRED before interpreting A-vs-B: confirm arm A ≤ 80% on at least one metric first.
+**Each hypothesis is testable only on the metric where arm A has genuine headroom (≤ 80%).** A
+metric saturated on arm A is VOID FOR THAT HYPOTHESIS, independent of the other metric. Separately:
+- H1 (selection_accuracy) requires arm A selection_accuracy ≤ 80%
+- H2 (call_correctness) requires arm A call_correctness ≤ 80%
+
+### Manipulation check (required, 2026-06-02)
+
+**The treatment must be confirmed delivered before interpreting results.** Arm A and arm B must
+receive DIFFERENT selection prompts — confirmed by the CI assertion in `test_runner.py`. A run where
+b=0 AND c=0 (zero discordant pairs) AND arm A < 100% is a signal of failed manipulation, not a
+genuine null, and must be labelled VOID (broken manipulation).
+
+---
+
+## Run log
+
+### Run #1 — VOID (ceiling effect)
+
+Fixture: TaskTracker (4 tools, 4 tasks × 3 trials). Agent: gemma2:9b. Date: 2026-06-02.
+Arm A: 100% / 100%. VOID — arm A saturated on both metrics.
+Root cause: parameter names (`title`, `task_id`, `priority`, `due_date`) are semantically
+obvious; gemma2:9b inferred correct types without any schema guidance.
+Note: this is a boundary condition, NOT "score doesn't predict success." It means schema metadata
+is redundant for capable LLMs on obviously-named parameters. Recorded for the record.
+
+### Run #2 — VOID (broken manipulation)
+
+Fixture: ObsStore (5 tools, 10 tasks × 5 trials). Agent: gemma2:9b. Date: 2026-06-02.
+Arm A: selection=60% (VALID headroom), call=100% (saturated).
+VOID — broken manipulation: runner.py showed only tool NAMES in the selection prompt, not
+descriptions. Arms A and B had IDENTICAL selection-step inputs. b=0, c=0 (zero discordant pairs)
+confirms neither arm had a different treatment — this was the same experiment run twice, not an A/B.
+Root cause: runner.py's selection prompt was `"Available tools: {names}\nTask: {desc}"` — no
+descriptions exposed. Arm B's fixer-improved descriptions were invisible to the agent.
+Fix applied: runner.py now builds a per-tool listing showing name, description, and param types.
+CI assertion added: `test_selection_prompts_differ_between_vague_and_informative_descriptions`.
+
+### Run #3 — pending
+
+Fixture: ObsStore (same as run #2). Agent: gemma2:9b. Date: TBD.
+Pre-conditions to confirm before interpreting:
+1. Manipulation check passes: prompts differ between arms (asserted in CI, confirmed in output).
+2. H1 validity: arm A selection_accuracy ≤ 80%.
+3. H2 validity: arm A call_correctness ≤ 80% OR mark H2 UNTESTABLE on this fixture.
+If H2 arm A is still saturated (call_correctness cannot be made to fail reliably with gemma2:9b on
+these param names), mark H2 UNTESTABLE on this fixture/model and focus on H1 only.
 
 ---
 
@@ -141,8 +175,11 @@ check is REQUIRED before interpreting A-vs-B: confirm arm A ≤ 80% on at least 
   enterprise claim requires the real-third-party-server follow-up (next increment).
 - A local third-family agent establishes the effect cheaply; the headline number customers will
   weigh needs the real target agent class (frontier / Claude), which is API spend — escalate.
-- Run #1 (VOID): gemma2:9b saturated on semantically obvious parameter names. The effect of the
-  fix on agent behavior is untested until a valid (arm A ≤ 80%) run is completed.
+- H2 (call_correctness): gemma2:9b may remain saturated even after the runner fix. If arm A
+  call_correctness stays at 100%, H2 will be marked UNTESTABLE on this fixture/model.
+  Creating genuine call_correctness headroom for a capable model requires either (a) truly
+  opaque enum/format values that can't be guessed from parameter names + context, or (b) a
+  weaker/constrained agent. Do not fake headroom to chase H2.
 
 ## Housekeeping
 
