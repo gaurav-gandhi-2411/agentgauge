@@ -20,7 +20,11 @@ Autonomous runs: pick the single top TODO, implement it, move to IN-REVIEW.
 
 ## IN-REVIEW
 
-*(empty)*
+### T11 — real-judge validation harness + before/after protocol
+
+**Priority:** P2
+**Status:** Real-judge gate run on examples/echo_server.py — results in DRAFT PR description.
+Awaiting human review of before/after table.
 
 ---
 
@@ -37,6 +41,20 @@ test suite guarantees ordering + actionability gap regardless of which model is 
 ---
 
 ## DONE
+
+### T10 — generation step (Provider-pluggable, generator ≠ judge)
+
+**Priority:** P2
+**Merged:** `claude/auto-fix-loop` — feat(fixer): T9/T10 — auto-fix loop Increment 1
+
+---
+
+### T9 — fixer.py skeleton + accept/reject gate + diff emit
+
+**Priority:** P2
+**Merged:** `claude/auto-fix-loop` — feat(fixer): T9/T10 — auto-fix loop Increment 1
+
+---
 
 ### T8 — Remove duplicate render_json
 

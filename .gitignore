@@ -61,3 +61,8 @@ reports/
 
 # Worktrees
 .claude/worktrees/
+
+# Ad-hoc spot-check scripts (uncommitted per convention)
+scripts/spot_check_discoverability_judge.py
+scripts/validate_t5_docs_manifest.py
+scripts/spot_check_fixer.py

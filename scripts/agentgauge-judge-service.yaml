@@ -1,0 +1,53 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: agentgauge-judge
+  namespace: "242393598566"
+  annotations:
+    run.googleapis.com/ingress: all
+    run.googleapis.com/maxScale: "1"
+    run.googleapis.com/minScale: "0"
+spec:
+  template:
+    metadata:
+      annotations:
+        autoscaling.knative.dev/maxScale: "1"
+        autoscaling.knative.dev/minScale: "0"
+        run.googleapis.com/execution-environment: gen2
+        run.googleapis.com/cpu-throttling: "false"
+        run.googleapis.com/gpu-zonal-redundancy-disabled: "true"
+    spec:
+      containerConcurrency: 80
+      timeoutSeconds: 3600
+      serviceAccountName: 242393598566-compute@developer.gserviceaccount.com
+      containers:
+        - image: ollama/ollama
+          ports:
+            - name: http1
+              containerPort: 8080
+          env:
+            - name: OLLAMA_HOST
+              value: "0.0.0.0:8080"
+            - name: OLLAMA_MODELS
+              value: "/root/.ollama/models"
+          resources:
+            limits:
+              cpu: "8"
+              memory: 32Gi
+              nvidia.com/gpu: "1"
+          volumeMounts:
+            - name: ollama-models
+              mountPath: /root/.ollama/models
+          startupProbe:
+            tcpSocket:
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            failureThreshold: 90
+            timeoutSeconds: 3
+      volumes:
+        - name: ollama-models
+          csi:
+            driver: gcsfuse.run.googleapis.com
+            volumeAttributes:
+              bucketName: agentgauge-judge-models-expense-tracker
