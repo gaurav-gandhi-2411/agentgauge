@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Any
 
 import pytest
 from mcp.types import Tool
@@ -17,6 +18,7 @@ from agentgauge.fixer import (
     _patch_source_required,
     _patch_source_schema_props,
     assert_generator_ne_judge,
+    deep_merge,
     run_fixer,
 )
 from agentgauge.providers import MockProvider
@@ -599,3 +601,153 @@ async def test_run_fixer_schema_overmarking_guard_in_full_pipeline(tmp_path: Pat
         if '"required"' in report.patched_source
         else ""
     )
+
+
+# ── T14: deep_merge + non-destructive keyword preservation ──────────────────
+
+
+def test_deep_merge_preserves_keys_absent_from_incoming() -> None:
+    existing = {"type": "string", "default": "Hello", "enum": ["Hello", "Hi"]}
+    incoming = {"type": "string", "description": "Greeting prefix"}
+    result = deep_merge(existing, incoming)
+    assert result["default"] == "Hello"
+    assert result["enum"] == ["Hello", "Hi"]
+    assert result["description"] == "Greeting prefix"
+    assert result["type"] == "string"
+
+
+def test_deep_merge_incoming_scalar_wins() -> None:
+    existing = {"type": "integer", "minimum": 0}
+    incoming = {"type": "number", "description": "A value"}
+    result = deep_merge(existing, incoming)
+    assert result["type"] == "number"  # incoming wins
+    assert result["minimum"] == 0  # existing preserved
+
+
+def test_deep_merge_recurses_into_nested_dicts() -> None:
+    existing = {"items": {"type": "string", "format": "date"}}
+    incoming = {"items": {"type": "string", "description": "A date"}}
+    result = deep_merge(existing, incoming)
+    assert result["items"]["format"] == "date"  # preserved
+    assert result["items"]["description"] == "A date"  # added
+
+
+def test_deep_merge_list_from_incoming_wins() -> None:
+    existing = {"enum": ["a", "b", "c"]}
+    incoming = {"enum": ["x", "y"]}
+    result = deep_merge(existing, incoming)
+    assert result["enum"] == ["x", "y"]  # incoming list wins (scalars/lists override)
+
+
+def test_deep_merge_keyword_preservation_matrix() -> None:
+    """All existing keywords survive when generator returns only {type, description}."""
+    existing = {
+        "type": "string",
+        "default": "Hello",
+        "enum": ["Hello", "Hi", "Hey"],
+        "minimum": 1,
+        "format": "uri",
+        "items": {"type": "string"},
+        "properties": {"nested": {"type": "boolean"}},
+    }
+    incoming = {"type": "string", "description": "A parameter"}
+    result = deep_merge(existing, incoming)
+
+    assert result["default"] == "Hello"
+    assert result["enum"] == ["Hello", "Hi", "Hey"]
+    assert result["minimum"] == 1
+    assert result["format"] == "uri"
+    assert result["items"] == {"type": "string"}
+    assert result["properties"] == {"nested": {"type": "boolean"}}
+    assert result["description"] == "A parameter"
+    assert result["type"] == "string"
+
+
+def test_deep_merge_param_only_in_existing_unchanged() -> None:
+    """Param not touched by generator survives in merged_props."""
+    existing_props = {"untouched": {"type": "integer", "minimum": 0}, "touched": {}}
+    new_props = {"touched": {"type": "string", "description": "val"}}
+    merged: dict[str, Any] = {}
+    for param, schema in existing_props.items():
+        merged[param] = deep_merge(schema, new_props[param]) if param in new_props else schema
+    for param, schema in new_props.items():
+        if param not in existing_props:
+            merged[param] = schema
+    assert merged["untouched"] == {"type": "integer", "minimum": 0}
+    assert merged["touched"] == {"type": "string", "description": "val"}
+
+
+def test_deep_merge_param_only_in_generator_added() -> None:
+    """Param that exists only in generator output is added."""
+    existing_props: dict[str, Any] = {}
+    new_props = {"new_param": {"type": "boolean", "description": "A flag"}}
+    merged: dict[str, Any] = {}
+    for param, schema in existing_props.items():
+        merged[param] = deep_merge(schema, new_props[param]) if param in new_props else schema
+    for param, schema in new_props.items():
+        if param not in existing_props:
+            merged[param] = schema
+    assert "new_param" in merged
+    assert merged["new_param"]["type"] == "boolean"
+
+
+async def test_run_fixer_greet_hits_100_with_preserved_default(tmp_path: Path) -> None:
+    """greet.prefix has default='Hello'. Generator returns only {type, description} for prefix.
+    Non-destructive merge preserves the default. Over-marking guard strips prefix from required.
+    Scorer awards 3rd point for default is not None -> greet scores 100."""
+    source = (
+        "types.Tool(\n"
+        '    name="greet",\n'
+        '    description="",\n'
+        "    inputSchema={\n"
+        '        "type": "object",\n'
+        '        "properties": {\n'
+        '            "name": {},\n'
+        '            "prefix": {"default": "Hello"},\n'
+        "        },\n"
+        "    },\n"
+        ")"
+    )
+    src_file = tmp_path / "server.py"
+    src_file.write_text(source)
+
+    greet_tool = Tool(
+        name="greet",
+        description="",
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "name": {},
+                "prefix": {"default": "Hello"},
+            },
+        },
+    )
+
+    # Generator returns realistic two-field output (only type + description per param)
+    gen_response = (
+        '{"properties": {"name": {"type": "string", "description": "Name of the person to greet"}, '
+        '"prefix": {"type": "string", "description": "Greeting prefix"}}, '
+        '"required": ["name", "prefix"]}'
+    )
+    generator = MockProvider(responses=[gen_response])
+    judge = MockProvider(responses=[])
+
+    report = await run_fixer(
+        [greet_tool],
+        generator,
+        judge,
+        src_file,
+        ["schema_completeness"],
+        trials=1,
+        min_delta=10.0,
+    )
+
+    assert len(report.accepted) == 1
+    cand = report.accepted[0]
+    assert cand.tool_name == "greet"
+    assert cand.candidate_score == pytest.approx(100.0), (
+        f"Expected 100 but got {cand.candidate_score} — default not preserved?"
+    )
+    # Guard must have stripped prefix from required
+    assert "prefix" not in cand.new_required
+    assert "name" in cand.new_required

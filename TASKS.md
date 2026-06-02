@@ -20,7 +20,10 @@ Autonomous runs: pick the single top TODO, implement it, move to IN-REVIEW.
 
 ## IN-REVIEW
 
-*(empty)*
+### T14 — Non-destructive schema merge (fixer data-loss bug)
+
+**Priority:** P1
+**PR:** claude/t14-nondestructive-merge
 
 ---
 

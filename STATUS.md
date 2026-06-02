@@ -50,7 +50,10 @@ models — always record the model alongside any stored score.
   the judge) and validates each fix via deterministic re-score (schema_completeness) or an LLM-judge
   trial gate (description_quality). Schema fixes add type, description, and `required` arrays to each
   parameter; fixes are accepted only when the delta exceeds a configurable threshold. An over-marking
-  guard prevents params with defaults from being added to `required`. Emits a unified diff;
+  guard prevents params with defaults from being added to `required`. Schema fixes are
+  non-destructive: existing per-param keywords (`default`, `enum`, `minimum`, `format`, `items`,
+  nested `properties`) are preserved; the generator's `type` and `description` overlay them without
+  replacing the entire param schema. Emits a unified diff;
   `--apply` writes fixes back to the source file. Real-judge validation (T11) run against
   `llama3.1:8b` on `examples/echo_server.py` — results recorded in CLAUDE.md.
 - Test suite: 88.74% coverage (179 tests), all LLM calls mocked — CI runs with no network and no credentials.
