@@ -20,7 +20,33 @@ Autonomous runs: pick the single top TODO, implement it, move to IN-REVIEW.
 
 ## IN-REVIEW
 
-*(empty)*
+### T16 — Held-out fixture + real A/B run
+
+**Priority:** P1
+**Branch:** `claude/ab-ground-truth` · **PR:** TBD
+
+Acceptance criteria:
+1. `examples/mediocre_server.py` committed with documented degradations.
+2. `scripts/run_ab_experiment.py` runs the fixer on arm A and executes the paired A/B with a
+   third-family agent (≠ llama3.1:8b judge, ≠ qwen3:8b generator).
+3. Pre-registered result table (selection_accuracy + call_correctness: A, B, delta, noise floor,
+   McNemar verdict) in PR description with honest effect/null/negative verdict.
+4. verify.sh green; coverage ≥ 60%.
+
+---
+
+### T15 — Paired A/B harness
+
+**Priority:** P1
+**Branch:** `claude/ab-ground-truth` · **PR:** TBD
+
+Acceptance criteria:
+1. `agentgauge/ab_harness.py` with `run_paired_ab`, `compute_mcnemar`,
+   `assert_agent_ne_judge_ne_generator`.
+2. CI tests pass: mock delta/noise/McNemar assertions; A-vs-A noise=0; mismatched names raises.
+3. verify.sh green; coverage ≥ 60%.
+
+---
 
 ---
 
