@@ -2,10 +2,7 @@ from __future__ import annotations
 
 from collections import Counter
 
-import pytest
-
 from evals.fixtures.t17_tasks import CLUSTER_MAP, TASKS
-
 
 # ── stability screen helper ───────────────────────────────────────────────────
 
@@ -16,7 +13,9 @@ def stability_screen(
     trials: int,  # noqa: ARG001 — kept for signature symmetry with scripts/run_t17_oracle_ab.py
 ) -> list[bool]:
     """Return keep-mask. A task is kept if |successes_run1 - successes_run2| <= 1."""
-    return [abs(s1 - s2) <= 1 for s1, s2 in zip(task_successes_run1, task_successes_run2)]
+    return [
+        abs(s1 - s2) <= 1 for s1, s2 in zip(task_successes_run1, task_successes_run2, strict=True)
+    ]
 
 
 # ── Group 1: Fixture integrity ────────────────────────────────────────────────
