@@ -18,7 +18,7 @@ import tempfile
 from pathlib import Path
 
 # Pre-specified tasks for the grounded fixture (transform pipeline).
-# 2 tasks per tool × 5 tools = 10 tasks.
+# 2 tasks per tool x 5 tools = 10 tasks.
 _GROUNDED_TASKS = [
     ("transform_scale", "Multiply 4.0 by 2.5 and add 0.5 to the result"),
     ("transform_scale", "Apply a 50% amplitude reduction and subtract 3.0 from value 8.0"),
@@ -73,7 +73,7 @@ def _print_result_table(
     validity_msg = (
         f"VALID (arm A below ceiling on {'selection' if arm_a_sel <= 80 else 'correctness'})"
         if valid
-        else f"VOID — arm A saturated ({arm_a_sel:.1f}%sel / {arm_a_cor:.1f}%corr >= 80% both)"
+        else f"VOID -- arm A saturated ({arm_a_sel:.1f}%sel / {arm_a_cor:.1f}%corr >= 80% both)"
     )
     print(f"Validity: {validity_msg}")
     print("=" * 72)
@@ -102,7 +102,7 @@ def _print_result_table(
 
 
 async def run_harm_gate(agent_model: str, trials: int) -> None:
-    """HARM GATE: ObsStore (opaque names) — abstain fires, Arm B >= Arm A."""
+    """HARM GATE: ObsStore (opaque names) -- abstain fires, Arm B >= Arm A."""
     import agentgauge.ab_harness as ab
     from agentgauge.client import cleanup_connection, connect_stdio
     from agentgauge.fixer import run_fixer
@@ -174,17 +174,17 @@ async def run_harm_gate(agent_model: str, trials: int) -> None:
             )
 
             _print_result_table(
-                "Tx HARM GATE — ObsStore (abstain fires → Arm B = Arm A)",
+                "Tx HARM GATE -- ObsStore (abstain fires -> Arm B = Arm A)",
                 agent_model,
                 result,
                 len(tasks),
                 validity_note=(
-                    "abstain fires on all tools → arm B = arm A → harm gate trivially satisfied"
+                    "abstain fires on all tools -> arm B = arm A -> harm gate trivially satisfied"
                 ),
             )
 
             if result.selection_delta >= 0:
-                print("\nHARM GATE: PASS (Arm B selection_accuracy >= Arm A — regression removed)")
+                print("\nHARM GATE: PASS (Arm B selection_accuracy >= Arm A -- regression removed)")
             else:
                 print(
                     f"\nHARM GATE: FAIL (Arm B < Arm A by {abs(result.selection_delta):.1f}%)"
@@ -236,7 +236,7 @@ async def run_upside(agent_model: str, trials: int) -> None:
             )
 
             valid1 = _print_result_table(
-                "Tx UPSIDE STEP 1 — grounded + ORACLE vs empty descriptions",
+                "Tx UPSIDE STEP 1 -- grounded + ORACLE vs empty descriptions",
                 agent_model,
                 result_step1,
                 len(tasks),
@@ -248,10 +248,10 @@ async def run_upside(agent_model: str, trials: int) -> None:
                     f"\nUPSIDE STEP 1: POSITIVE (Oracle Arm B > Arm A on selection, "
                     f"delta={result_step1.selection_delta:+.1f}%)"
                 )
-                print("→ Proceeding to step 2 (fixer-generated descriptions).")
+                print("-> Proceeding to step 2 (fixer-generated descriptions).")
             elif not valid1:
                 print(f"\nUPSIDE STEP 1: VOID (arm A saturated, run invalid)")
-                print("→ Upside unestablished on this fixture/model.")
+                print("-> Upside unestablished on this fixture/model.")
                 return
             else:
                 print(
@@ -259,7 +259,7 @@ async def run_upside(agent_model: str, trials: int) -> None:
                     f"delta={result_step1.selection_delta:+.1f}%)"
                 )
                 print(
-                    "→ GLOBAL ABSTAIN BRANCH: description_quality generation has no "
+                    "-> GLOBAL ABSTAIN BRANCH: description_quality generation has no "
                     "selection upside for this agent. Correct behavior: abstain globally."
                 )
                 return
@@ -299,10 +299,10 @@ async def run_upside(agent_model: str, trials: int) -> None:
             for entry in fix_report.abstained:
                 print(f"  ABSTAINED: {entry}")
         for c in fix_report.accepted:
-            print(f"  ACCEPTED: {c.tool_name} — {c.new_description[:80]!r}")
+            print(f"  ACCEPTED: {c.tool_name} -- {c.new_description[:80]!r}")
 
         if not fix_report.patched_source:
-            print("WARNING: No fixer changes — arm B = arm A (null result expected)")
+            print("WARNING: No fixer changes -- arm B = arm A (null result expected)")
             patched = grounded_a.read_text(encoding="utf-8")
         else:
             patched = fix_report.patched_source
@@ -334,7 +334,7 @@ async def run_upside(agent_model: str, trials: int) -> None:
             )
 
             valid2 = _print_result_table(
-                "Tx UPSIDE STEP 2 — grounded + FIXER output vs empty descriptions",
+                "Tx UPSIDE STEP 2 -- grounded + FIXER output vs empty descriptions",
                 agent_model,
                 result_step2,
                 len(tasks),
