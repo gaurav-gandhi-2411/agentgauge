@@ -45,12 +45,13 @@ models — always record the model alongside any stored score.
   unavailable — proxy command in CLAUDE.md.
 - Calibration runs completed for `error_legibility` and `discoverability` against `llama3.1:8b`
   (5 trials each, 2026-05-31). Results recorded in CLAUDE.md.
-- Test suite: 87%+ coverage, all LLM calls mocked — CI runs with no network and no credentials.
+- Test suite: 88.32% coverage (169 tests), all LLM calls mocked — CI runs with no network and no credentials.
 
 ## What is NOT built yet
 
-- **Auto-fix loop** (v2 differentiator): generate improved tool descriptions / schemas as a PR against
-  the target server repo. This is the planned revenue core.
+- **Auto-fix loop — real-judge gate** (T11): `agentgauge fix` command is implemented (T9/T10) but
+  requires a human-reviewed before/after calibration run against `llama3.1:8b` before it can be
+  trusted in production. Mock tests pass; real-model validation is pending (T11 in IN-REVIEW).
 - **CI action** beyond `agentgauge ci`: a GitHub Actions action that installs and runs AgentGauge
   inside a user's own CI workflow.
 - **Hosted dashboard**: per-server history, regression alerts, subscription tier.
