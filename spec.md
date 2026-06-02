@@ -157,15 +157,31 @@ descriptions exposed. Arm B's fixer-improved descriptions were invisible to the 
 Fix applied: runner.py now builds a per-tool listing showing name, description, and param types.
 CI assertion added: `test_selection_prompts_differ_between_vague_and_informative_descriptions`.
 
-### Run #3 — pending
+### Run #3 — VOID (ceiling, arm A 90% selection)
 
-Fixture: ObsStore (same as run #2). Agent: gemma2:9b. Date: TBD.
+Fixture: ObsStore v1 (`rid`/`op` params). Agent: gemma2:9b. Date: 2026-06-02.
+Arm A: selection=90%, call=100%. VOID — arm A above 80% ceiling on both metrics.
+Root cause: the new runner format shows param names (`rid` vs `op` in the selection listing).
+Even with identical "Get." descriptions, the param name contrast (`rid` = record ID, `op` = op)
+was sufficient for the agent to achieve 90% selection. The degraded descriptions were irrelevant
+once params were visible.
+Secondary (not interpretable, VOID): arm B scored 70% — WORSE than arm A. The fixer's verbose,
+inaccurate descriptions ("transfers a value from a source...") confused the agent more than the
+terse "Get." + visible param names. Recorded as a data point, not as a thesis finding.
+
+### Run #4 — pending
+
+Fixture: ObsStore v4 (all confusable pairs have IDENTICAL param names {sid, key}).
+Agent: gemma2:9b. Date: TBD.
+get_a and get_b: both have {sid, key} — same desc, same params → agent cannot distinguish.
+del_a and del_b: both have {sid, key} — same desc, same params → agent cannot distinguish.
+Expected arm A selection: ~60-70% (only descriptions can disambiguate; both say "Get."/"Del.").
+H2 (call_correctness): headroom from enum constraints on key (get_b: sum/min/max/avg;
+del_b: hard/soft). If arm A call_correctness drops below 80% → H2 testable. Otherwise UNTESTABLE.
 Pre-conditions to confirm before interpreting:
-1. Manipulation check passes: prompts differ between arms (asserted in CI, confirmed in output).
+1. Manipulation check: arm A and arm B selection prompts differ (asserted in CI).
 2. H1 validity: arm A selection_accuracy ≤ 80%.
-3. H2 validity: arm A call_correctness ≤ 80% OR mark H2 UNTESTABLE on this fixture.
-If H2 arm A is still saturated (call_correctness cannot be made to fail reliably with gemma2:9b on
-these param names), mark H2 UNTESTABLE on this fixture/model and focus on H1 only.
+3. H2 validity: arm A call_correctness ≤ 80% OR mark H2 UNTESTABLE.
 
 ---
 

@@ -1,46 +1,51 @@
 from __future__ import annotations
 
-# T16 held-out fixture — arm A (degraded). ObsStore API — run #2.
+# T16 held-out fixture — arm A (degraded). ObsStore API — run #4.
 #
-# Previous fixture (TaskTracker, run #1) was VOID: arm A saturated at 100% because parameter
-# names (title, task_id, priority) were semantically obvious to gemma2:9b. This fixture is
-# hardened with opaque tool names + confusable pairs so arm A actually fails.
+# Run history:
+#   Run #1 (TaskTracker) VOID: ceiling — semantically obvious param names (title, task_id).
+#   Run #2 (ObsStore v1, `rid`/`op` params) VOID: broken manipulation — runner showed only
+#     tool names; arms A/B had identical selection prompts; b=0/c=0.
+#   Run #3 (ObsStore v1, runner fixed) VOID: ceiling — arm A 90% (> 80% ceiling).
+#     Root cause: param names `rid` vs `op` already distinguished confusable pairs, so
+#     arm A achieved 90% without needing descriptions. arm B was WORSE (70%) — fixer's
+#     verbose, inaccurate descriptions confused the agent more than the terse "Get." + param
+#     names. Run is VOID (arm A > 80%), so this finding is not interpretable.
+#   Run #4 (this fixture): identical param names (`key`) for all confusable pairs.
+#     Now ONLY descriptions can distinguish get_a from get_b, and del_a from del_b.
+#     Arm A both pairs described as "Get." and "Del." with identical {sid, key} params
+#     → agent CANNOT distinguish from either description or param names → ~50% selection.
+#     Arm B: fixer adds disambiguating descriptions → agent should distinguish correctly.
 #
-# Degradations (pre-registered for T16 A/B experiment, run #2):
+# Degradations (pre-registered for T16 A/B, run #4):
 #
 # 1. put_x: description "Put." (vague).
-#    Parameters sid/rid/x/t have no type, no description, no required array.
-#    - x = numeric measurement value (float); t = unix timestamp (integer).
-#    - Names are opaque; without schema guidance the agent may omit x/t entirely
-#      (they are not mentioned in the task description) → Required-field failures.
-#    PRE-REGISTERED: arm A call_correctness failure from missing x/t.
+#    Parameters {sid, key, val, ts} have no type, no description, no required array.
+#    PRE-REGISTERED: arm A may omit val/ts (not in task) or pass wrong types.
 #
-# 2. get_a: description "Get." IDENTICAL to get_b — confusable pair.
-#    Parameters sid/rid with no type, no description, no required.
-#    - Purpose: retrieve a specific stored data point by record ID.
-#    PRE-REGISTERED: arm A selection_accuracy ≈ 50% for get_a/get_b tasks because
-#    both tools have the same description and opaque suffixes (a vs b give no signal).
+# 2. get_a: description "Get." IDENTICAL to get_b.
+#    Parameters {sid, key} — SAME NAMES as get_b. key = record ID (string).
+#    PRE-REGISTERED: arm A selection ≈ 50% for get_a/get_b tasks — agent sees identical
+#    description AND identical param names; cannot distinguish without descriptions.
 #
-# 3. get_b: description "Get." IDENTICAL to get_a — confusable pair.
-#    Parameters sid/op with no type, no description, no required.
-#    - Purpose: compute an aggregate statistic (op = "mean"/"min"/"max"/"count").
-#    - op is strictly validated server-side; without a description listing valid values,
-#      the agent may pass "average"/"sum"/"total" → enum validation failure.
-#    PRE-REGISTERED: arm A call_correctness failure from invalid op values.
+# 3. get_b: description "Get." IDENTICAL to get_a.
+#    Parameters {sid, key} — SAME NAMES as get_a. key = aggregation fn ("sum"/"min"/"max"/"avg").
+#    PRE-REGISTERED: arm A selection ≈ 50%; call_correctness headroom from enum constraint
+#    on key — agent may pass "average"/"total"/"aggregate" (invalid) without schema guidance.
 #
-# 4. del_a: description "Del." IDENTICAL to del_b — confusable pair.
-#    Parameters sid/rid with no type, no description, no required.
-#    - Purpose: delete a specific data point by record ID.
-#    PRE-REGISTERED: arm A selection_accuracy ≈ 50% for del_a/del_b tasks.
+# 4. del_a: description "Del." IDENTICAL to del_b.
+#    Parameters {sid, key} — SAME NAMES as del_b. key = record ID to delete.
+#    PRE-REGISTERED: arm A selection ≈ 50%; cannot distinguish del_a from del_b by desc or params.
 #
-# 5. del_b: description "Del." IDENTICAL to del_a — confusable pair.
-#    Parameters sid with no type, no description, no required.
-#    - Purpose: delete all data points for an entire session.
-#    PRE-REGISTERED: arm A selection_accuracy ≈ 50% for del_a/del_b tasks.
+# 5. del_b: description "Del." IDENTICAL to del_a.
+#    Parameters {sid, key} — SAME NAMES as del_a. key = "hard"/"soft" (delete mode for session).
+#    PRE-REGISTERED: arm A selection ≈ 50%; call_correctness headroom from mode enum.
 #
-# Fixed version (arm B): apply `agentgauge fix` on this file with qwen3:8b generator.
-# The fixer adds types + descriptions to params and distinct descriptions to each tool.
-# Only metadata changes; behavior is identical.
+# H1 (selection_accuracy): testable — arm A expected ≈ 60-70% (below 80% ceiling).
+# H2 (call_correctness): testable if arm A drops below 80% from enum failures; else UNTESTABLE.
+#
+# Fixed version (arm B): apply `agentgauge fix`. Fixer adds types + descriptions that
+# distinguish get_a from get_b and del_a from del_b. Only metadata changes.
 import asyncio
 
 import mcp.types as types
@@ -49,12 +54,12 @@ from mcp.server.lowlevel.server import NotificationOptions
 from mcp.server.models import InitializationOptions
 from mcp.server.stdio import stdio_server
 
-server = Server("obsstore-mediocre")
+server = Server("obsstore-v4")
 
-# In-memory store: {session_id: {record_id: {x, t}}}
 _store: dict[int, dict[str, dict]] = {}
 
-_VALID_OPS: frozenset[str] = frozenset({"mean", "min", "max", "count"})
+_VALID_AGG: frozenset[str] = frozenset({"sum", "min", "max", "avg"})
+_VALID_DEL_MODE: frozenset[str] = frozenset({"hard", "soft"})
 
 
 @server.list_tools()
@@ -62,63 +67,64 @@ async def list_tools() -> list[types.Tool]:
     return [
         types.Tool(
             name="put_x",
-            description="Put.",  # DEGRADED: vague, no param guidance
-            inputSchema={
-                "type": "object",
-                "properties": {
-                    "sid": {},  # DEGRADED: should be integer session ID
-                    "rid": {},  # DEGRADED: should be string record ID
-                    "x": {},  # DEGRADED: should be float measurement value (required)
-                    "t": {},  # DEGRADED: should be integer unix timestamp (required)
-                },
-                # DEGRADED: missing required — agent has no signal x and t are required
-            },
-        ),
-        types.Tool(
-            name="get_a",
-            description="Get.",  # DEGRADED: identical to get_b — confusable pair
+            description="Put.",  # DEGRADED
             inputSchema={
                 "type": "object",
                 "properties": {
                     "sid": {},  # DEGRADED: integer session ID
-                    "rid": {},  # DEGRADED: string record ID
+                    "key": {},  # DEGRADED: string record key
+                    "val": {},  # DEGRADED: float measurement value (required)
+                    "ts": {},  # DEGRADED: integer unix timestamp (required)
+                },
+                # DEGRADED: missing required
+            },
+        ),
+        types.Tool(
+            name="get_a",
+            description="Get.",  # DEGRADED: IDENTICAL to get_b
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "sid": {},  # DEGRADED: integer session ID
+                    "key": {},  # DEGRADED: string record key — SAME NAME as get_b
                 },
                 # DEGRADED: missing required
             },
         ),
         types.Tool(
             name="get_b",
-            description="Get.",  # DEGRADED: identical to get_a — confusable pair
+            description="Get.",  # DEGRADED: IDENTICAL to get_a
             inputSchema={
                 "type": "object",
                 "properties": {
                     "sid": {},  # DEGRADED: integer session ID
-                    "op": {},  # DEGRADED: string enum "mean"/"min"/"max"/"count" — no hint
+                    "key": {},  # DEGRADED: aggregation fn ("sum"/"min"/"max"/"avg") — SAME NAME as get_a
                 },
-                # DEGRADED: missing required; op enum not exposed
+                # DEGRADED: missing required; key enum not exposed
             },
         ),
         types.Tool(
             name="del_a",
-            description="Del.",  # DEGRADED: identical to del_b — confusable pair
+            description="Del.",  # DEGRADED: IDENTICAL to del_b
             inputSchema={
                 "type": "object",
                 "properties": {
                     "sid": {},  # DEGRADED: integer session ID
-                    "rid": {},  # DEGRADED: string record ID
+                    "key": {},  # DEGRADED: record key to delete — SAME NAME as del_b
                 },
                 # DEGRADED: missing required
             },
         ),
         types.Tool(
             name="del_b",
-            description="Del.",  # DEGRADED: identical to del_a — confusable pair
+            description="Del.",  # DEGRADED: IDENTICAL to del_a
             inputSchema={
                 "type": "object",
                 "properties": {
                     "sid": {},  # DEGRADED: integer session ID
+                    "key": {},  # DEGRADED: delete mode ("hard"/"soft") — SAME NAME as del_a
                 },
-                # DEGRADED: missing required
+                # DEGRADED: missing required; key enum not exposed
             },
         ),
     ]
@@ -131,92 +137,76 @@ async def call_tool(
     if name == "put_x":
         sid = arguments.get("sid")
         if not isinstance(sid, int) or isinstance(sid, bool):
-            raise TypeError(
-                f"'sid' must be an integer session ID, got {type(sid).__name__!r}. "
-                'Example: {"sid": 1}'
-            )
-        rid = arguments.get("rid")
-        if not isinstance(rid, str) or not rid:
-            raise TypeError(
-                f"'rid' must be a non-empty string record ID, got {type(rid).__name__!r}. "
-                'Example: {"rid": "r-001"}'
-            )
-        x = arguments.get("x")
-        if x is None:
-            raise ValueError(
-                "Required field 'x' (numeric measurement value) is missing. Example: {\"x\": 4.2}"
-            )
-        if not isinstance(x, (int, float)) or isinstance(x, bool):
-            raise TypeError(
-                f"'x' must be a number (int or float), got {type(x).__name__!r}. "
-                'Example: {"x": 4.2}'
-            )
-        t = arguments.get("t")
-        if t is None:
-            raise ValueError(
-                "Required field 't' (unix timestamp integer) is missing. "
-                'Example: {"t": 1717200000}'
-            )
-        if not isinstance(t, int) or isinstance(t, bool):
-            raise TypeError(
-                f"'t' must be an integer unix timestamp, got {type(t).__name__!r}. "
-                'Example: {"t": 1717200000}'
-            )
-        _store.setdefault(sid, {})[rid] = {"x": x, "t": t}
-        return [types.TextContent(type="text", text=f"Stored: sid={sid} rid={rid!r} x={x} t={t}")]
+            raise TypeError(f"'sid' must be an integer, got {type(sid).__name__!r}")
+        key = arguments.get("key")
+        if not isinstance(key, str) or not key:
+            raise TypeError(f"'key' must be a non-empty string, got {type(key).__name__!r}")
+        val = arguments.get("val")
+        if val is None:
+            raise ValueError("Required field 'val' (measurement value) is missing")
+        if not isinstance(val, (int, float)) or isinstance(val, bool):
+            raise TypeError(f"'val' must be a number, got {type(val).__name__!r}")
+        ts = arguments.get("ts")
+        if ts is None:
+            raise ValueError("Required field 'ts' (unix timestamp) is missing")
+        if not isinstance(ts, int) or isinstance(ts, bool):
+            raise TypeError(f"'ts' must be an integer unix timestamp, got {type(ts).__name__!r}")
+        _store.setdefault(sid, {})[key] = {"val": val, "ts": ts}
+        return [types.TextContent(type="text", text=f"stored key={key!r} val={val} ts={ts}")]
 
     if name == "get_a":
         sid = arguments.get("sid")
         if not isinstance(sid, int) or isinstance(sid, bool):
             raise TypeError(f"'sid' must be an integer, got {type(sid).__name__!r}")
-        rid = arguments.get("rid")
-        if not isinstance(rid, str) or not rid:
-            raise TypeError(f"'rid' must be a non-empty string, got {type(rid).__name__!r}")
-        entry = _store.get(sid, {}).get(rid)
+        key = arguments.get("key")
+        if not isinstance(key, str) or not key:
+            raise TypeError(f"'key' must be a non-empty string, got {type(key).__name__!r}")
+        entry = _store.get(sid, {}).get(key)
         if entry is None:
-            return [types.TextContent(type="text", text=f"Not found: sid={sid} rid={rid!r}")]
+            return [types.TextContent(type="text", text=f"not found: sid={sid} key={key!r}")]
         return [types.TextContent(type="text", text=str(entry))]
 
     if name == "get_b":
         sid = arguments.get("sid")
         if not isinstance(sid, int) or isinstance(sid, bool):
             raise TypeError(f"'sid' must be an integer, got {type(sid).__name__!r}")
-        op = arguments.get("op")
-        if op is None:
+        key = arguments.get("key")
+        if key is None:
             raise ValueError(
-                f"Required field 'op' is missing. Valid values: {sorted(_VALID_OPS)!r}"
+                f"Required field 'key' is missing. Valid values: {sorted(_VALID_AGG)!r}"
             )
-        if op not in _VALID_OPS:
+        if key not in _VALID_AGG:
             raise ValueError(
-                f"'op' must be one of {sorted(_VALID_OPS)!r}, got {op!r}. "
-                "Use 'mean', 'min', 'max', or 'count'."
+                f"'key' must be one of {sorted(_VALID_AGG)!r} for aggregation, got {key!r}"
             )
         records = list(_store.get(sid, {}).values())
         if not records:
-            return [types.TextContent(type="text", text="No records found")]
-        vals = [r["x"] for r in records]
-        if op == "mean":
-            result: float | int = sum(vals) / len(vals)
-        elif op == "min":
+            return [types.TextContent(type="text", text="no records")]
+        vals = [r["val"] for r in records]
+        if key == "sum":
+            result: float | int = sum(vals)
+        elif key == "min":
             result = min(vals)
-        elif op == "max":
+        elif key == "max":
             result = max(vals)
-        else:  # count
-            result = len(vals)
-        return [types.TextContent(type="text", text=f"{op}={result}")]
+        else:  # avg
+            result = sum(vals) / len(vals)
+        return [types.TextContent(type="text", text=f"{key}={result}")]
 
     if name == "del_a":
         sid = arguments.get("sid")
         if not isinstance(sid, int) or isinstance(sid, bool):
             raise TypeError(f"'sid' must be an integer, got {type(sid).__name__!r}")
-        rid = arguments.get("rid")
-        if not isinstance(rid, str) or not rid:
-            raise TypeError(f"'rid' must be a non-empty string, got {type(rid).__name__!r}")
-        removed = _store.get(sid, {}).pop(rid, None)
+        key = arguments.get("key")
+        if not isinstance(key, str) or not key:
+            raise TypeError(
+                f"'key' must be a non-empty string record key, got {type(key).__name__!r}"
+            )
+        removed = _store.get(sid, {}).pop(key, None)
         return [
             types.TextContent(
                 type="text",
-                text=f"Deleted: sid={sid} rid={rid!r}" if removed else f"Not found: {rid!r}",
+                text=f"deleted key={key!r}" if removed else f"not found: {key!r}",
             )
         ]
 
@@ -224,8 +214,21 @@ async def call_tool(
         sid = arguments.get("sid")
         if not isinstance(sid, int) or isinstance(sid, bool):
             raise TypeError(f"'sid' must be an integer, got {type(sid).__name__!r}")
+        key = arguments.get("key")
+        if key is None:
+            raise ValueError(
+                f"Required field 'key' (delete mode) is missing. Valid: {sorted(_VALID_DEL_MODE)!r}"
+            )
+        if key not in _VALID_DEL_MODE:
+            raise ValueError(
+                f"'key' must be one of {sorted(_VALID_DEL_MODE)!r} for delete mode, got {key!r}"
+            )
         n = len(_store.pop(sid, {}))
-        return [types.TextContent(type="text", text=f"Deleted session {sid} ({n} records)")]
+        return [
+            types.TextContent(
+                type="text", text=f"deleted session {sid} ({n} records, mode={key!r})"
+            )
+        ]
 
     raise ValueError(f"Unknown tool: {name!r}")
 
@@ -236,7 +239,7 @@ async def main() -> None:
             read_stream,
             write_stream,
             InitializationOptions(
-                server_name="obsstore-mediocre",
+                server_name="obsstore-v4",
                 server_version="0.1.0",
                 capabilities=server.get_capabilities(
                     notification_options=NotificationOptions(),

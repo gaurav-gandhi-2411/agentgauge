@@ -24,27 +24,29 @@ import tempfile
 from pathlib import Path
 
 # 10 pre-specified tasks (2 per tool) describing intent WITHOUT naming the tool.
-# These exercise the confusable pairs (get_a/get_b, del_a/del_b) and the opaque
-# required params (put_x: x and t not mentioned in task → arm A may omit them).
+# Run #4 fixture: all confusable pairs have identical param names {sid, key}.
+# Agent on arm A cannot distinguish tools by description ("Get."/"Del.") OR param names.
+# Only arm B's fixer-improved descriptions allow correct selection.
 #
 # task.tool_name is the CORRECT tool to call for selection_accuracy scoring.
-# Descriptions are intentionally natural-language, not tool-name hints.
 _PRE_SPECIFIED_TASKS = [
-    # put_x: store a data point — x and t are not in the task description
-    ("put_x", "Add a data point to session 1 with record ID 'r-001'"),
-    ("put_x", "Add another data point to session 2 with ID 'r-002'"),
-    # get_a: retrieve a specific record — confusable with get_b
-    ("get_a", "Get record 'r-001' from session 1"),
-    ("get_a", "Retrieve record 'r-002' from session 2 by its ID"),
-    # get_b: compute aggregate — confusable with get_a
-    ("get_b", "Get a computed statistic for session 1"),
-    ("get_b", "Compute an aggregate measure for session 2"),
-    # del_a: delete a specific record — confusable with del_b
-    ("del_a", "Delete record 'r-001' from session 1, leaving other records intact"),
-    ("del_a", "Remove the single entry 'r-002' from session 2"),
-    # del_b: delete an entire session — confusable with del_a
-    ("del_b", "Erase all data in session 1 entirely"),
-    ("del_b", "Clear all records in session 2"),
+    # put_x: unique tool — val and ts are not mentioned in task (tests missing-required headroom)
+    ("put_x", "Add a data point to session 1 under key 'k-001'"),
+    ("put_x", "Store a measurement in session 2 under key 'k-002'"),
+    # get_a: retrieve a specific record — confusable with get_b (same desc + same params)
+    ("get_a", "Get the stored entry for key 'k-001' in session 1"),
+    ("get_a", "Look up the item with key 'k-002' in session 2"),
+    # get_b: compute aggregate — confusable with get_a (same desc + same params {sid, key})
+    # Tasks do NOT name the enum value — agent must infer or know the valid values
+    ("get_b", "Compute the total across all values in session 1"),
+    ("get_b", "Get the aggregate maximum for session 2"),
+    # del_a: delete a specific record — confusable with del_b (same desc + same params {sid, key})
+    ("del_a", "Delete only the entry 'k-001' from session 1, leaving other entries"),
+    ("del_a", "Remove just the item 'k-002' from session 2"),
+    # del_b: delete entire session — confusable with del_a (same desc + same params {sid, key})
+    # Tasks do NOT name the mode value — agent must know "hard"/"soft"
+    ("del_b", "Wipe all data in session 1 entirely"),
+    ("del_b", "Clear everything stored in session 2"),
 ]
 
 
@@ -98,7 +100,7 @@ async def run(agent_model: str, trials: int) -> None:
             mode="w",
             suffix=".py",
             delete=False,
-            prefix="obsstore_fixed_",
+            prefix="obsstore_v4_fixed_",
             encoding="utf-8",
         ) as f:
             f.write(patched)
