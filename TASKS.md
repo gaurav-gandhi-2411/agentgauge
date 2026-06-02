@@ -20,6 +20,13 @@ Autonomous runs: pick the single top TODO, implement it, move to IN-REVIEW.
 
 ## IN-REVIEW
 
+### T13 — cost pre-filter (skip generation on already-good tools)
+
+**Priority:** P2
+**PR:** claude/t13-cost-prefilter
+
+---
+
 ### T14 — Non-destructive schema merge (fixer data-loss bug)
 
 **Priority:** P1
@@ -28,15 +35,6 @@ Autonomous runs: pick the single top TODO, implement it, move to IN-REVIEW.
 ---
 
 ## FUTURE / DEFERRED
-
-### T13 — skip tools already above band X before generating (cost pre-filter)
-
-Skip calling the generator for tools whose baseline score already exceeds a configurable
-threshold (e.g. `--skip-above 80`). Avoids burning generator tokens on tools that are
-already well-scored. Implementation: add a `skip_above` param to `run_fixer`; tools
-scoring above threshold go into `report.skipped` with a "already_above_threshold" reason.
-
----
 
 ### Re-calibrate judge bands against a ≥30B model
 

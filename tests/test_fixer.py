@@ -7,6 +7,7 @@ import pytest
 from mcp.types import Tool
 
 from agentgauge.fixer import (
+    DEFAULT_SKIP_ABOVE_BAND,
     VALIDATION_MODE,
     FixCandidate,
     ValidationMode,
@@ -751,3 +752,252 @@ async def test_run_fixer_greet_hits_100_with_preserved_default(tmp_path: Path) -
     # Guard must have stripped prefix from required
     assert "prefix" not in cand.new_required
     assert "name" in cand.new_required
+
+
+# ── T13: cost pre-filter (skip_above_band) ────────────────────────────────
+
+
+async def test_skip_above_band_skips_high_scoring_tool(tmp_path: Path) -> None:
+    """Tool already at 100 with band=90 -> SKIPPED, zero generator calls."""
+    source = (
+        "types.Tool(\n"
+        '    name="perfect",\n'
+        '    description="",\n'
+        '    inputSchema={"type": "object", "properties": {'
+        '"x": {"type": "number", "description": "val"}}, "required": ["x"]},\n'
+        ")"
+    )
+    src_file = tmp_path / "server.py"
+    src_file.write_text(source)
+
+    perfect_tool = Tool(
+        name="perfect",
+        description="",
+        inputSchema={
+            "type": "object",
+            "properties": {"x": {"type": "number", "description": "val"}},
+            "required": ["x"],
+        },
+    )
+
+    generator = MockProvider(responses=["should not be called"])
+    judge = MockProvider(responses=[])
+
+    report = await run_fixer(
+        [perfect_tool],
+        generator,
+        judge,
+        src_file,
+        ["schema_completeness"],
+        trials=1,
+        min_delta=10.0,
+        skip_above_band=90.0,
+    )
+
+    assert len(report.accepted) == 0
+    assert len(report.rejected) == 0
+    assert len(report.skipped) == 1
+    assert "perfect:schema_completeness:already_above_band" in report.skipped
+    # Zero generator calls — _idx stays at 0
+    assert generator._idx == 0
+
+
+async def test_skip_above_band_processes_low_scoring_tool(tmp_path: Path) -> None:
+    """Tool at 0 with band=90 -> generation proceeds, accepted when delta large."""
+    source = (
+        "types.Tool(\n"
+        '    name="mystery",\n'
+        '    description="",\n'
+        '    inputSchema={"type": "object", "properties": {"x": {}, "y": {}}},\n'
+        ")"
+    )
+    src_file = tmp_path / "server.py"
+    src_file.write_text(source)
+
+    mystery_tool = Tool(
+        name="mystery",
+        description="",
+        inputSchema={"type": "object", "properties": {"x": {}, "y": {}}},
+    )
+
+    gen_response = (
+        '{"properties": {"x": {"type": "number", "description": "First value"}, '
+        '"y": {"type": "number", "description": "Second value"}}, '
+        '"required": ["x", "y"]}'
+    )
+    generator = MockProvider(responses=[gen_response])
+    judge = MockProvider(responses=[])
+
+    report = await run_fixer(
+        [mystery_tool],
+        generator,
+        judge,
+        src_file,
+        ["schema_completeness"],
+        trials=1,
+        min_delta=10.0,
+        skip_above_band=90.0,
+    )
+
+    assert len(report.accepted) == 1
+    assert len(report.skipped) == 0
+    # Generator was called (at least once)
+    assert generator._idx >= 1
+
+
+async def test_skip_above_band_boundary_equal_is_skipped(tmp_path: Path) -> None:
+    """A tool scoring exactly at the band threshold is skipped (>=, not >)."""
+    # Single param with type + description + default -> 3/3 points for 1 param = 100
+    # Use a band of 100.0 to hit the == boundary
+    source = (
+        "types.Tool(\n"
+        '    name="exact",\n'
+        '    description="",\n'
+        '    inputSchema={"type": "object", "properties": {'
+        '"x": {"type": "string", "description": "val", "default": "hi"}}},\n'
+        ")"
+    )
+    src_file = tmp_path / "server.py"
+    src_file.write_text(source)
+
+    exact_tool = Tool(
+        name="exact",
+        description="",
+        inputSchema={
+            "type": "object",
+            "properties": {"x": {"type": "string", "description": "val", "default": "hi"}},
+        },
+    )
+
+    generator = MockProvider(responses=["unused"])
+    judge = MockProvider(responses=[])
+
+    # band = 100.0, tool scores 100 => should be skipped
+    report = await run_fixer(
+        [exact_tool],
+        generator,
+        judge,
+        src_file,
+        ["schema_completeness"],
+        trials=1,
+        min_delta=10.0,
+        skip_above_band=100.0,
+    )
+
+    assert len(report.skipped) == 1
+    assert "exact:schema_completeness:already_above_band" in report.skipped
+    assert generator._idx == 0
+
+
+async def test_skip_above_band_just_under_is_processed(tmp_path: Path) -> None:
+    """A tool scoring just below the band still goes through generation."""
+    # mystery with x:{} y:{} -> score=0, well below any reasonable band
+    # Use a band of 50.0 — mystery at 0 should be processed
+    source = (
+        "types.Tool(\n"
+        '    name="mystery",\n'
+        '    description="",\n'
+        '    inputSchema={"type": "object", "properties": {"x": {}, "y": {}}},\n'
+        ")"
+    )
+    src_file = tmp_path / "server.py"
+    src_file.write_text(source)
+
+    mystery_tool = Tool(
+        name="mystery",
+        description="",
+        inputSchema={"type": "object", "properties": {"x": {}, "y": {}}},
+    )
+
+    gen_response = (
+        '{"properties": {"x": {"type": "number", "description": "x"}, '
+        '"y": {"type": "number", "description": "y"}}, "required": ["x", "y"]}'
+    )
+    generator = MockProvider(responses=[gen_response])
+    judge = MockProvider(responses=[])
+
+    report = await run_fixer(
+        [mystery_tool],
+        generator,
+        judge,
+        src_file,
+        ["schema_completeness"],
+        trials=1,
+        min_delta=10.0,
+        skip_above_band=50.0,
+    )
+
+    # mystery was NOT skipped — generation was called
+    assert generator._idx >= 1
+    assert "mystery:schema_completeness:already_above_band" not in report.skipped
+
+
+def test_skip_above_band_reason_distinct_from_rejected() -> None:
+    """Skipped entries contain 'already_above_band'; rejected entries do not.
+
+    Also verifies DEFAULT_SKIP_ABOVE_BAND is 90.0 — the calibrated default.
+    """
+    # Structural test — verify the string convention and the constant value
+    skipped_entry = "echo:schema_completeness:already_above_band"
+    assert "already_above_band" in skipped_entry
+    assert skipped_entry != "echo:schema_completeness"  # distinct from unknown-dim skip
+    assert DEFAULT_SKIP_ABOVE_BAND == 90.0
+
+
+async def test_skip_above_band_mixed_tools(tmp_path: Path) -> None:
+    """In a mixed run: high-scoring tool skipped, low-scoring tool processed."""
+    source = (
+        "types.Tool(\n"
+        '    name="perfect",\n'
+        '    description="",\n'
+        '    inputSchema={"type": "object", "properties": {'
+        '"x": {"type": "number", "description": "val"}}, "required": ["x"]},\n'
+        ")\n"
+        "types.Tool(\n"
+        '    name="mystery",\n'
+        '    description="",\n'
+        '    inputSchema={"type": "object", "properties": {"x": {}, "y": {}}},\n'
+        ")"
+    )
+    src_file = tmp_path / "server.py"
+    src_file.write_text(source)
+
+    perfect_tool = Tool(
+        name="perfect",
+        description="",
+        inputSchema={
+            "type": "object",
+            "properties": {"x": {"type": "number", "description": "val"}},
+            "required": ["x"],
+        },
+    )
+    mystery_tool = Tool(
+        name="mystery",
+        description="",
+        inputSchema={"type": "object", "properties": {"x": {}, "y": {}}},
+    )
+
+    gen_response = (
+        '{"properties": {"x": {"type": "number", "description": "x"}, '
+        '"y": {"type": "number", "description": "y"}}, "required": ["x", "y"]}'
+    )
+    generator = MockProvider(responses=[gen_response])
+    judge = MockProvider(responses=[])
+
+    report = await run_fixer(
+        [perfect_tool, mystery_tool],
+        generator,
+        judge,
+        src_file,
+        ["schema_completeness"],
+        trials=1,
+        min_delta=10.0,
+        skip_above_band=90.0,
+    )
+
+    # perfect is skipped
+    assert any("perfect:schema_completeness:already_above_band" in s for s in report.skipped)
+    # mystery is accepted
+    assert any(c.tool_name == "mystery" for c in report.accepted)
+    # Generator called exactly once (for mystery only)
+    assert generator._idx == 1

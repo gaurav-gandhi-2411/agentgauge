@@ -53,7 +53,9 @@ models — always record the model alongside any stored score.
   guard prevents params with defaults from being added to `required`. Schema fixes are
   non-destructive: existing per-param keywords (`default`, `enum`, `minimum`, `format`, `items`,
   nested `properties`) are preserved; the generator's `type` and `description` overlay them without
-  replacing the entire param schema. Emits a unified diff;
+  replacing the entire param schema. A cost pre-filter (`--skip-above-band`, default 90) skips
+  generation entirely for tools already scoring at or above the band — these appear as SKIPPED with
+  reason `already_above_band` and make zero generator calls. Emits a unified diff;
   `--apply` writes fixes back to the source file. Real-judge validation (T11) run against
   `llama3.1:8b` on `examples/echo_server.py` — results recorded in CLAUDE.md.
 - Test suite: 88.74% coverage (179 tests), all LLM calls mocked — CI runs with no network and no credentials.
