@@ -20,22 +20,47 @@ Autonomous runs: pick the single top TODO, implement it, move to IN-REVIEW.
 
 ## IN-REVIEW
 
-*(empty)*
+### Tx — Generator abstains on opaque tool names (fixer description quality)
+
+**Branch:** claude/tx-abstain-no-harm — DRAFT PR, A/B complete, per-task analysis pending.
+
+Grounding detection added to `fixer.py`: when all tokens in a tool name are either
+single-character or in the `_GENERIC_TOKENS` vocabulary (get, set, put, del, etc.),
+`is_low_grounding` returns True and `run_fixer` records `ABSTAINED` instead of calling
+the generator. Degenerate-guard CI test asserts `transform_scale` does NOT abstain.
+A/B results: harm gate PASS (ObsStore all abstain, delta=0%); upside step 1 POSITIVE
+(oracle +20pp, p<0.05); upside step 2 DIRECTIONAL (+10pp, b+c=5<10, significance pending
+powered re-run — see Tx-val below).
 
 ---
 
 ## FUTURE / DEFERRED
 
-### Tx — Generator must abstain on opaque tool names (fixer description quality)
+### Tx-val — Powered upside re-run (grounded-fixture significance)
 
-T15/T16 A/B found that qwen3:8b fabricates plausible-but-wrong descriptions when tool names
-carry no semantic signal (`get_a`, `get_b`). The generator needs a guard: when the tool name
-and existing schema do not provide enough grounding, the generator should abstain (skip
-description generation) or flag uncertainty rather than hallucinating a description.
+Tx step 2 showed a directional +10pp improvement (Arm B 90% vs Arm A 80%) but is
+underpowered: only ~2 tasks had headroom (Arm A at 80%, just at the ceiling), and the
+McNemar b+c=5 <10 makes chi-square unreliable. The "fixer improves selection" claim requires
+a properly powered, task-clustered analysis.
 
-**Scope:** `fixer.py` generation logic only — no scorer.py changes.
-**Routing:** draft-forcing #2/#3 (changes generator behavior; real-agent validation required),
-NOT condition #1 (does not touch judge/scorer/rubrics/calibration). Own spec required.
+**Acceptance criteria:**
+- New grounded fixture with >= 30 tasks, designed so Arm A baseline is ~50-60% (not 80%).
+  Tool names must be meaningful enough to avoid abstain AND tasks must be ambiguous enough
+  to create real headroom under Arm A.
+- **Task stability pre-screen:** before running the full A/B, run Arm A alone twice; drop
+  any task where Arm A accuracy varies by more than 1 trial across runs (run-to-run-flaky
+  tasks corrupt the task-level analysis). Tx's normalize tasks were flaky (0/5 in both
+  full runs but arm B varied) and must be excluded or replaced.
+- Analysis clustered by task (task is the unit; trials are repeated measures). Use a sign
+  test on tasks (B>A vs B<A) or a mixed-effects model, not trial-level McNemar.
+- **Detector generalization check:** before the A/B, verify the grounding detector handles
+  opaque names beyond get/put/del -- e.g. single-letter names (`a`, `b`), numeric suffixes
+  (`tool_1`, `op_2`), non-CRUD generic verbs (`process_x`, `handle_z`), and CamelCase
+  variants (`GetA`, `SetB`). Confirm each correctly returns `is_low_grounding=True`.
+  Document any names where the detector fails and add CI coverage for the new cases.
+- Only THEN claim "fixer improves selection" in STATUS.md or PR descriptions.
+
+**Pre-condition:** own spec; do NOT inherit Tx's fixtures or tasks unchanged.
 
 ---
 

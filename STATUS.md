@@ -71,7 +71,27 @@ models — always record the model alongside any stored score.
   validated. H2 (`call_correctness`) was UNTESTABLE on this fixture/model: gemma2:9b saturated
   at 100% from training priors regardless of schema quality. Not a null — the agent didn't need
   schema guidance to construct valid calls. Candidate next steps in TASKS.md (Tx/Ty/Tz).
-- Test suite: 89.48% coverage (218 tests), all LLM calls mocked — CI runs with no network and no credentials.
+- **Tx (IN-REVIEW, branch `claude/tx-abstain-no-harm`):** Generator now abstains on
+  low-grounding tool names (0 meaningful semantic tokens after stripping generic verbs and
+  single-char suffixes). New `ABSTAINED` status in `FixReport`, distinct from
+  ACCEPTED/REJECTED/SKIPPED. Degenerate-guard CI test prevents abstain-everything. Real-agent
+  A/B results (gemma2:9b, 10 tasks x 5 trials):
+  - **Harm gate (ObsStore):** PASS. Abstain fired on all 5 opaque tools; Arm B = Arm A = 70.0%
+    selection (delta +0.0%); regression removed.
+  - **Upside step 1 (grounded + oracle):** POSITIVE, pending reproduction. Oracle descriptions
+    improved Arm B to 100% vs Arm A 80.0% (delta +20pp; McNemar b=10 c=0 chi2=8.10 p<0.05).
+    Upside appears real on this fixture, BUT the only task with headroom was transform_normalize
+    (0/5 arm A), and that task proved unstable run-to-run in step 2 (0/5 arm B in run 2).
+    Result is directionally strong but not independently reproduced. Pending Tx-val re-run.
+  - **Upside step 2 (grounded + fixer output):** NO TASK-LEVEL EFFECT. Two independent A/B runs
+    with fixer output: run 1 showed +10pp (trial-level McNemar b=5 c=0, b+c=5); run 2 showed
+    +0pp. Per-task breakdown reveals both runs had Arm A errors confined to transform_normalize
+    tasks only (0/5 each); all other 8 tasks were 5/5 in both arms on both runs. Run 1's b=5
+    flips were concentrated in the 2 normalize tasks and did not reproduce in run 2. Task-level
+    sign test (task is the unit): discordant=0 in run 2; no task showed consistent improvement.
+    Conclusion: no reproducible task-level upside demonstrated for fixer descriptions on this
+    fixture. Powered re-run required (>=30 tasks, Arm A ~50-60%). Tracked as Tx-val in TASKS.md.
+- Test suite: 228 tests, 89.61% coverage, all LLM calls mocked — CI runs with no network and no credentials.
 
 ## What is NOT built yet
 

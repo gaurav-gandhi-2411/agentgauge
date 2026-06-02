@@ -12,6 +12,7 @@ from agentgauge.fixer import (
     FixCandidate,
     ValidationMode,
     _apply_overmarking_guard,
+    _count_grounding_tokens,
     _generate_description,
     _generate_schema_props,
     _judge_desc_trials,
@@ -20,6 +21,7 @@ from agentgauge.fixer import (
     _patch_source_schema_props,
     assert_generator_ne_judge,
     deep_merge,
+    is_low_grounding,
     run_fixer,
 )
 from agentgauge.providers import MockProvider
@@ -1000,4 +1002,232 @@ async def test_skip_above_band_mixed_tools(tmp_path: Path) -> None:
     # mystery is accepted
     assert any(c.tool_name == "mystery" for c in report.accepted)
     # Generator called exactly once (for mystery only)
+    assert generator._idx == 1
+
+
+# ── Tx: Grounding detection ────────────────────────────────────────────────────
+
+
+def test_is_low_grounding_true_for_single_char_suffix() -> None:
+    """get_a, del_b, put_x → single-char suffix after generic verb → low grounding."""
+    for name in ("get_a", "del_b", "put_x", "set_z"):
+        tool = Tool(name=name, description="", inputSchema={})
+        assert is_low_grounding(tool), f"Expected low grounding for {name!r}"
+
+
+def test_is_low_grounding_false_for_grounded_tool() -> None:
+    """transform_scale, compute_median, search_products → carry domain signal."""
+    for name in ("transform_scale", "compute_median", "search_products", "fetch_sensor_value"):
+        tool = Tool(name=name, description="", inputSchema={})
+        assert not is_low_grounding(tool), f"Expected grounded (not low) for {name!r}"
+
+
+def test_count_grounding_tokens_zero_for_opaque() -> None:
+    """_count_grounding_tokens returns 0 for opaque tool names."""
+    assert _count_grounding_tokens("get_a") == 0
+    assert _count_grounding_tokens("del_b") == 0
+    assert _count_grounding_tokens("put_x") == 0
+
+
+def test_count_grounding_tokens_positive_for_grounded() -> None:
+    """_count_grounding_tokens returns > 0 for tools with domain tokens."""
+    assert _count_grounding_tokens("transform_scale") >= 1
+    assert _count_grounding_tokens("compute_median") >= 1
+
+
+# ── Tx: ABSTAINED behavior in run_fixer ───────────────────────────────────────
+
+
+async def test_abstain_fires_on_opaque_description_quality(tmp_path: Path) -> None:
+    """Opaque tool name → description_quality → ABSTAINED, original preserved, zero generator calls."""
+    source = 'types.Tool(\n    name="get_a",\n    description="Get.",\n    inputSchema={},\n)'
+    src_file = tmp_path / "server.py"
+    src_file.write_text(source)
+
+    opaque_tool = Tool(name="get_a", description="Get.", inputSchema={})
+    generator = MockProvider(responses=["should not be called"])
+    judge = MockProvider(responses=["1"] * 10)  # judge would be called for baseline if we got there
+
+    report = await run_fixer(
+        [opaque_tool],
+        generator,
+        judge,
+        src_file,
+        ["description_quality"],
+        trials=5,
+        min_delta=10.0,
+    )
+
+    # Abstained — not in accepted, rejected, or skipped
+    assert len(report.abstained) == 1
+    assert "get_a:description_quality:low_grounding" in report.abstained
+    assert len(report.accepted) == 0
+    assert len(report.rejected) == 0
+    # No generator call made
+    assert generator._idx == 0
+    # No judge call made (we never reached baseline scoring)
+    assert judge._idx == 0
+
+
+async def test_abstain_preserves_original_description(tmp_path: Path) -> None:
+    """When ABSTAINED, the original description is untouched in source."""
+    source = 'types.Tool(\n    name="del_b",\n    description="Del.",\n    inputSchema={},\n)'
+    src_file = tmp_path / "server.py"
+    src_file.write_text(source)
+
+    opaque_tool = Tool(name="del_b", description="Del.", inputSchema={})
+    generator = MockProvider(responses=[])
+    judge = MockProvider(responses=[])
+
+    report = await run_fixer(
+        [opaque_tool],
+        generator,
+        judge,
+        src_file,
+        ["description_quality"],
+    )
+
+    assert len(report.abstained) == 1
+    # Source not modified — no diff, no patched_source
+    assert not report.diff_text
+    assert not report.patched_source
+
+
+async def test_abstain_not_fired_for_schema_completeness(tmp_path: Path) -> None:
+    """Opaque tool name + schema_completeness → grounding check NOT applied → generation fires."""
+    source = (
+        "types.Tool(\n"
+        '    name="get_a",\n'
+        '    description="",\n'
+        '    inputSchema={"type": "object", "properties": {"x": {}, "y": {}}},\n'
+        ")"
+    )
+    src_file = tmp_path / "server.py"
+    src_file.write_text(source)
+
+    opaque_tool = Tool(
+        name="get_a",
+        description="",
+        inputSchema={"type": "object", "properties": {"x": {}, "y": {}}},
+    )
+
+    gen_response = (
+        '{"properties": {"x": {"type": "number", "description": "First value"}, '
+        '"y": {"type": "number", "description": "Second value"}}, "required": ["x", "y"]}'
+    )
+    generator = MockProvider(responses=[gen_response])
+    judge = MockProvider(responses=[])
+
+    report = await run_fixer(
+        [opaque_tool],
+        generator,
+        judge,
+        src_file,
+        ["schema_completeness"],
+        trials=1,
+        min_delta=10.0,
+    )
+
+    # schema_completeness path unaffected — generation fired
+    assert len(report.abstained) == 0
+    assert generator._idx >= 1
+    assert len(report.accepted) == 1
+
+
+async def test_degenerate_guard_grounded_tool_generates(tmp_path: Path) -> None:
+    """DEGENERATE-GUARD: a clearly-grounded tool must NOT abstain on description_quality.
+
+    Prevents the degenerate solution of abstaining on everything.
+    """
+    source = 'types.Tool(\n    name="transform_scale",\n    description="",\n    inputSchema={},\n)'
+    src_file = tmp_path / "server.py"
+    src_file.write_text(source)
+
+    grounded_tool = Tool(name="transform_scale", description="", inputSchema={})
+
+    # Generator returns a description; judge scores it high enough to accept
+    generator = MockProvider(responses=["Applies a linear scale transformation."])
+    # Baseline: 5 trials = 10/100; candidate: 5 trials = 90/100 → accepted
+    judge = MockProvider(responses=["1"] * 5 + ["9"] * 5)
+
+    report = await run_fixer(
+        [grounded_tool],
+        generator,
+        judge,
+        src_file,
+        ["description_quality"],
+        trials=5,
+        min_delta=10.0,
+    )
+
+    # Tool is grounded → abstain did NOT fire
+    assert len(report.abstained) == 0, (
+        "DEGENERATE GUARD FAILED: transform_scale (grounded tool) should not abstain"
+    )
+    # Generator was called
+    assert generator._idx >= 1
+    # Result is in accepted or rejected (either is fine — we just need generation to have fired)
+    total = len(report.accepted) + len(report.rejected)
+    assert total == 1, f"Expected 1 candidate (accepted or rejected), got {total}"
+
+
+async def test_abstained_distinct_from_skipped_and_rejected(tmp_path: Path) -> None:
+    """ABSTAINED is a separate list from skipped and rejected; entries follow format tool:dim:reason."""
+    source = 'types.Tool(\n    name="put_x",\n    description="Put.",\n    inputSchema={},\n)'
+    src_file = tmp_path / "server.py"
+    src_file.write_text(source)
+
+    opaque_tool = Tool(name="put_x", description="Put.", inputSchema={})
+    provider = MockProvider(responses=[])
+
+    report = await run_fixer(
+        [opaque_tool],
+        provider,
+        provider,
+        src_file,
+        ["description_quality"],
+    )
+
+    # Exactly one abstained entry
+    assert len(report.abstained) == 1
+    assert report.abstained[0] == "put_x:description_quality:low_grounding"
+    # Not in skipped
+    assert not any("put_x" in s for s in report.skipped)
+    # Not in rejected
+    assert not any(c.tool_name == "put_x" for c in report.rejected)
+    # Not in accepted
+    assert not any(c.tool_name == "put_x" for c in report.accepted)
+
+
+async def test_mixed_opaque_and_grounded_tools(tmp_path: Path) -> None:
+    """Mixed run: opaque tool abstains, grounded tool generates. Proves abstain is selective."""
+    source = (
+        'types.Tool(\n    name="get_a",\n    description="Get.",\n    inputSchema={},\n)\n'
+        'types.Tool(\n    name="transform_scale",\n    description="",\n    inputSchema={},\n)'
+    )
+    src_file = tmp_path / "server.py"
+    src_file.write_text(source)
+
+    opaque = Tool(name="get_a", description="Get.", inputSchema={})
+    grounded = Tool(name="transform_scale", description="", inputSchema={})
+
+    # Only one generate call (for grounded tool); judge calls for grounded tool
+    generator = MockProvider(responses=["Applies a linear scale transformation."])
+    judge = MockProvider(responses=["1"] * 5 + ["9"] * 5)
+
+    report = await run_fixer(
+        [opaque, grounded],
+        generator,
+        judge,
+        src_file,
+        ["description_quality"],
+        trials=5,
+        min_delta=10.0,
+    )
+
+    # get_a abstained
+    assert any("get_a:description_quality:low_grounding" in s for s in report.abstained)
+    # transform_scale did NOT abstain
+    assert not any("transform_scale" in s for s in report.abstained)
+    # Generator called for transform_scale only (idx=1)
     assert generator._idx == 1
