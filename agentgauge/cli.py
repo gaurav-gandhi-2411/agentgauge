@@ -12,6 +12,7 @@ from agentgauge import __version__
 from agentgauge.client import cleanup_connection, connect_http, connect_stdio
 from agentgauge.fixer import (
     DEFAULT_MIN_DELTA,
+    DEFAULT_SKIP_ABOVE_BAND,
     DEFAULT_TRIALS,
     JUDGE_MODEL_DEFAULT,
     assert_generator_ne_judge,
@@ -152,6 +153,13 @@ def fix(
     min_delta: Annotated[
         float, typer.Option("--min-delta", help="Minimum score delta to accept a fix")
     ] = DEFAULT_MIN_DELTA,
+    skip_above_band: Annotated[
+        float,
+        typer.Option(
+            "--skip-above-band",
+            help="Skip generation for tools already at or above this score",
+        ),
+    ] = DEFAULT_SKIP_ABOVE_BAND,
     out_diff: Annotated[
         Path | None, typer.Option("--out-diff", help="Write unified diff to file")
     ] = None,
@@ -171,6 +179,7 @@ def fix(
             judge_model=judge_model,
             trials=trials,
             min_delta=min_delta,
+            skip_above_band=skip_above_band,
             out_diff=out_diff,
             apply=apply,
             mock=mock,
@@ -186,6 +195,7 @@ async def _fix_async(
     judge_model: str,
     trials: int,
     min_delta: float,
+    skip_above_band: float,
     out_diff: Path | None,
     apply: bool,
     mock: bool,
@@ -224,6 +234,7 @@ async def _fix_async(
             dim_list,
             trials=trials,
             min_delta=min_delta,
+            skip_above_band=skip_above_band,
         )
 
         # Print results
@@ -241,8 +252,10 @@ async def _fix_async(
         for s in report.skipped:
             console.print(f"[dim]SKIPPED {s}[/dim]")
 
+        generated = len(report.accepted) + len(report.rejected)
         console.print(
-            f"\n{len(report.accepted)} accepted, "
+            f"\n{generated} generated, "
+            f"{len(report.accepted)} accepted, "
             f"{len(report.rejected)} rejected, "
             f"{len(report.skipped)} skipped"
         )

@@ -30,6 +30,7 @@ VALIDATION_MODE: dict[str, ValidationMode] = {
 
 JUDGE_MODEL_DEFAULT = "llama3.1:8b"
 DEFAULT_MIN_DELTA = 10.0
+DEFAULT_SKIP_ABOVE_BAND = 90.0
 DEFAULT_TRIALS = 5
 
 
@@ -354,6 +355,7 @@ async def run_fixer(
     *,
     trials: int = DEFAULT_TRIALS,
     min_delta: float = DEFAULT_MIN_DELTA,
+    skip_above_band: float = DEFAULT_SKIP_ABOVE_BAND,
 ) -> FixReport:
     """Run the auto-fix loop for the given tools and scoring dimensions.
 
@@ -363,6 +365,8 @@ async def run_fixer(
     - The candidate is scored using the same method as the baseline.
     - The fix is accepted only if delta > threshold (strict greater-than).
       For JUDGE_BASED, threshold = max(sigma_of_baseline, min_delta).
+    - Tools whose baseline score is already >= skip_above_band are skipped before generation
+      (reported as skipped with reason "already_above_band"; no generator call is made).
 
     After all decisions, accepted fixes are applied to the source file and a unified diff
     is generated.
@@ -391,6 +395,11 @@ async def run_fixer(
                 baseline_sigma = (
                     statistics.stdev(baseline_scores) if len(baseline_scores) >= 2 else 0.0
                 )
+
+            # ── Cost pre-filter ──────────────────────────────────────────────
+            if baseline_score >= skip_above_band:
+                report.skipped.append(f"{tool.name}:{dim}:already_above_band")
+                continue
 
             # ── Generate candidate ────────────────────────────────────────────
             merged_required: list[str] = []
