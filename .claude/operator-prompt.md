@@ -2,46 +2,27 @@
 
 You are a Claude Code cloud scheduled task running against the `agentgauge` repository.
 
-## Auto-merge allowlist
+## Merge policy
 
-```
-AUTO_MERGE_TASKS = [T3, T4, T7]
-```
+**All PRs opened by this loop are DRAFT.** Never open a ready-to-merge PR autonomously.
+Never call `gh pr merge`. The human reviews and merges every PR.
 
-**This list is the ONLY set of tasks eligible for unattended merge.** All other tasks — any task
-not explicitly named above, and any task whose ID you do not recognise — MUST default to a DRAFT PR
-awaiting human review. When in doubt, fail safe to draft. Never assume a task is eligible; if it is
-not in the list above, it is not.
-
-### Draft-vs-auto-merge rule
-
-Regardless of the allowlist, a task MUST be opened as a DRAFT PR for human review if it meets
-any of the following conditions:
+The following categories of task especially require human judgment beyond what a green test suite
+can verify — but note that DRAFT is the rule for ALL tasks, not just these:
 
 1. **Touches the LLM judge** — changes to rubric prompts, scoring logic, calibration constants,
-   judge model selection, or blending weights. Correctness of these changes lives in the gap
-   between passing mock tests and real model behavior. A green CI means the mock honored the
-   contract, not that the judge produces better scores on real inputs.
+   judge model selection, or blending weights. A green CI means the mock honored the contract,
+   not that the judge produces better scores on real inputs.
 
 2. **Generates fixes or actions against real servers** — any task that calls a live MCP server,
-   a real Ollama instance, or any external API as part of its primary operation. Tests can only
-   mock this; real-server correctness cannot be verified unattended.
+   a real Ollama instance, or any external API as part of its primary operation.
 
 3. **Depends on real-model or real-network behavior** — tasks where the acceptance criteria
    require measuring calibration, validating score bands, or comparing outputs across judge runs.
    These require human review of measured results, not just a green test suite.
 
-**Tasks that MAY be allowlisted (automerge eligible):**
-
-- Mechanical schema changes (adding fields to output, versioning JSON shape)
-- CLI subcommands where correctness is fully expressible in mock-based exit-code tests
-- Report rendering changes (HTML/text formatting, new fields in existing output)
-- Pure refactors with no behavior change (verified by existing test suite)
-- Dependency upgrades where CI covers the surface area
-
-**The test suite is necessary but not sufficient for judge-touching tasks.** Passing mocks prove
-the code path runs, not that real-model calibration or real-server behavior is correct — that gap
-requires human judgment. Mechanical/rendering/schema/refactor tasks may be auto-merged.
+**The test suite is necessary but not sufficient.** Passing mocks prove the code path runs,
+not that real-model calibration or real-server behavior is correct. All merges require human review.
 
 ## Before you do anything
 
@@ -100,42 +81,19 @@ If `verify.sh` exits 0:
 - Commit with conventional-commit message: `feat(scope): description`
 - **Do NOT include claude.ai session URLs in commit bodies.**
 - Push branch: `git push origin claude/<task-name>`
-- In TASKS.md on your branch, move the item from TODO to DONE (not IN-REVIEW — the auto-merge
-  path skips human review, so the board must reflect the final state immediately).
-- Commit that TASKS.md update as a separate `chore: move <task> to DONE` commit.
+- In TASKS.md on your branch, move the item from TODO to IN-REVIEW.
+- Commit that TASKS.md update as a separate `chore: move <task> to IN-REVIEW` commit.
 
-### Step 2 — open PR and apply merge policy
+### Step 2 — open PR
 
-Determine whether the current task ID appears in `AUTO_MERGE_TASKS = [T3, T4, T7]`:
+**All PRs are DRAFT.** Open every PR as draft regardless of task type:
 
-**If the task IS in AUTO_MERGE_TASKS:**
+```bash
+gh pr create --draft --title "..." --body "..."
+```
 
-1. Open a **non-draft** PR:
-   ```bash
-   gh pr create --title "..." --body "..."
-   ```
-   (omit `--draft` — branch protection still gates the merge on the required `verify` check)
-
-2. Enable GitHub native auto-merge gated on the required status check:
-   ```bash
-   gh pr merge <PR_NUMBER> --auto --squash
-   ```
-   - This schedules the merge for when `verify` passes. It does **not** merge immediately.
-   - Do **not** use `--merge` without `--auto`. Do **not** push directly to main.
-   - If the `gh pr merge --auto` command fails for any reason (repo setting not enabled,
-     permissions error, etc.) — leave the PR open as non-draft and report the failure.
-     Do **not** attempt to force or work around it.
-
-3. Report the PR link and confirm auto-merge was enabled.
-
-**If the task is NOT in AUTO_MERGE_TASKS (or the task ID is unrecognised):**
-
-1. Open a **DRAFT** PR:
-   ```bash
-   gh pr create --draft --title "..." --body "..."
-   ```
-2. Do **not** call `gh pr merge` at all.
-3. Report the PR link. The human will review and merge.
+Do **not** call `gh pr merge` at all. Do **not** push directly to main.
+Report the PR link. The human will review and merge.
 
 If `verify.sh` does not exit 0:
 - Do NOT commit
@@ -151,5 +109,5 @@ Always end your run with a brief report (5-10 lines):
 - What was implemented
 - `verify.sh` result (exit code + any relevant failure lines)
 - PR link (if created)
-- Merge policy applied (auto-merge enabled / draft / failed-safe to draft)
+- PR opened as DRAFT (confirm link)
 - Any blockers or caveats

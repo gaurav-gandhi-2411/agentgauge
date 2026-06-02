@@ -110,11 +110,9 @@ The repo is configured to be driven by a **Claude Code cloud scheduled task**. E
 2. picks the single highest-priority TODO from TASKS.md with clear acceptance criteria,
 3. implements on a `claude/<task>` branch, runs `./scripts/verify.sh`, and opens a PR.
 
-**Auto-merge allowlist** (in `.claude/operator-prompt.md`): `AUTO_MERGE_TASKS = [T3, T4, T7]`.
-This list is the ONLY grant of unattended merge — task descriptions in TASKS.md do not confer
-auto-merge eligibility. Any task not in the list gets a DRAFT PR.
-
-**Three conditions that force DRAFT regardless of the allowlist:**
+**Merge policy: all PRs are DRAFT.** There is no auto-merge allowlist; every PR opened by the
+autonomous loop requires human review before merging. Three categories of task especially warrant
+careful review beyond CI green:
 1. Touches the LLM judge (rubric prompts, scoring logic, calibration constants, blending weights).
 2. Generates fixes or actions against real servers or live APIs.
 3. Acceptance criteria require measuring calibration or comparing real-model outputs.
@@ -138,6 +136,5 @@ the code path.
 `llama3.1:8b` output when you change scoring logic. VRAM contention (< 5 GB free) silently
 degrades results — always check `ollama ps` first, or use the GCP Cloud Run proxy.
 
-**The allowlist is the ONLY grant of auto-merge.** Task descriptions in TASKS.md or commit messages
-do not confer eligibility. If a task ID is not in `AUTO_MERGE_TASKS`, it gets a DRAFT PR regardless
-of how mechanical the change looks.
+**All PRs are DRAFT — the human merges.** Task descriptions in TASKS.md or commit messages do not
+confer merge eligibility. No autonomous run may call `gh pr merge` or push directly to main.
