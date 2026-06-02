@@ -58,14 +58,19 @@ models — always record the model alongside any stored score.
   reason `already_above_band` and make zero generator calls. Emits a unified diff;
   `--apply` writes fixes back to the source file. Real-judge validation (T11) run against
   `llama3.1:8b` on `examples/echo_server.py` — results recorded in CLAUDE.md.
-- Test suite: 88.74% coverage (179 tests), all LLM calls mocked — CI runs with no network and no credentials.
+- Test suite: 89.35% coverage (210 tests), all LLM calls mocked — CI runs with no network and no credentials.
 
 ## What is NOT built yet
 
-- **T15/T16 A/B ground truth (in-review):** Paired A/B harness (`ab_harness.py`) and held-out
-  fixture server (`examples/mediocre_server.py`) implemented. Real-agent A/B result with
-  `gemma2:9b` agent pending run (see `scripts/run_ab_experiment.py`). Do NOT add any
-  "fixes improve real agent performance" claim until the measured delta is in the PR description.
+- **T15/T16 A/B ground truth (in-review, PR open):** Paired A/B harness (`ab_harness.py`) and
+  held-out fixture server (`examples/mediocre_server.py`) implemented. Real-agent A/B run
+  completed (gemma2:9b, 4 tasks × 3 trials, 2026-06-02):
+  - selection_accuracy: A=100% B=100% delta=0.0% noise=0.0% — NULL (tool names already clear)
+  - call_correctness:  A=100% B=100% delta=0.0% noise=0.0% — NULL (saturation: gemma2:9b infers
+    correct types from parameter names without schema guidance)
+  **Diagnosis:** saturated agent — the fixer raises the heuristic/judge score but does NOT
+  improve a capable agent's task success when parameter names are semantically obvious.
+  Do NOT add "fixes improve real agent performance" — the measured delta does not support it.
 - **CI action** beyond `agentgauge ci`: a GitHub Actions action that installs and runs AgentGauge
   inside a user's own CI workflow.
 - **Hosted dashboard**: per-server history, regression alerts, subscription tier.
