@@ -58,7 +58,20 @@ models — always record the model alongside any stored score.
   reason `already_above_band` and make zero generator calls. Emits a unified diff;
   `--apply` writes fixes back to the source file. Real-judge validation (T11) run against
   `llama3.1:8b` on `examples/echo_server.py` — results recorded in CLAUDE.md.
-- Test suite: 88.74% coverage (179 tests), all LLM calls mocked — CI runs with no network and no credentials.
+- **A/B ground-truth harness (T15/T16, PR #31):** `agentgauge/ab_harness.py` added — paired A/B
+  harness with McNemar's test, A-vs-A noise floor, identical-task-set enforcement. Selection step
+  in `runner.py` now presents tool descriptions + param types to the agent (not just names);
+  manipulation-check CI-asserted (`test_selection_prompts_differ_between_vague_and_informative_descriptions`).
+  **Finding (scoped to opaque-named tools):** on a fixture where tool names carry no semantic signal
+  (`get_a`/`get_b`/`del_a`/`del_b`), qwen3:8b fabricated plausible-but-wrong descriptions (e.g.
+  record-key param labelled "API key for authentication"). Two valid A/B runs both showed arm B ≤
+  arm A on `selection_accuracy` (delta −10%, McNemar b=0 c=5). The heuristic/judge score can point
+  opposite to agent behavior in this regime. This is NOT a general claim that the fixer harms —
+  `schema_completeness` gains on `echo_server.py` (mystery/greet tools) stand as previously
+  validated. H2 (`call_correctness`) was UNTESTABLE on this fixture/model: gemma2:9b saturated
+  at 100% from training priors regardless of schema quality. Not a null — the agent didn't need
+  schema guidance to construct valid calls. Candidate next steps in TASKS.md (Tx/Ty/Tz).
+- Test suite: 89.48% coverage (218 tests), all LLM calls mocked — CI runs with no network and no credentials.
 
 ## What is NOT built yet
 
