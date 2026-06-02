@@ -1,74 +1,83 @@
-# spec.md — T12: Generator emits `required` arrays
+# spec.md — T14: Non-destructive schema merge (fixer data-loss bug)
 
-**Repo:** github.com/gaurav-gandhi-2411/agentgauge · **Base:** `main` (after PR #26 merge) ·
-**Branch:** `claude/t12-required-arrays`
-**Routing:** DRAFT PR. Generation-only — does NOT touch scorer.py, so NOT draft-forcing #1.
-Real-generator-dependent, so committed tests mock the generator; the required-array correctness
-check is the human-reviewed gate. NOT in `AUTO_MERGE_TASKS`.
-
----
-
-## Problem
-
-Increment 1 left `mystery.schema_completeness` at 66.7/100: the generator adds type + description
-but never emits a `required` array, so the heuristic's third point (required params / params with
-defaults) is never earned. Every tool with mandatory params caps at 2/3. T12 closes this.
+**Repo:** github.com/gaurav-gandhi-2411/agentgauge · **Base:** `main` @ d35d935 ·
+**Branch:** `claude/t14-nondestructive-merge`
+**Routing:** DRAFT PR. Touches `fixer.py` merge logic only — does NOT touch scorer.py, judge,
+rubrics, or calibration, so NOT draft-forcing #1. Merge correctness is fully CI-provable;
+the real-generator run is confirmation. NOT in `AUTO_MERGE_TASKS`.
 
 ---
 
-## The real hazard (read before implementing)
+## Problem (found by the greet diagnostic)
 
-Score-green ≠ correct, again. The schema_completeness heuristic only checks that `required` is
-populated — it does NOT check that the right params are in it. So an LLM that marks an **optional**
-param required would *raise the score while making the schema wrong*. Over-marking is a correctness
-regression the heuristic rewards. T12 must be conservative and the gate must verify semantic
-correctness, not just the delta.
+The fixer's schema merge is destructive. At the merge site (`fixer.py`, ~L399):
 
-**Ground truth = the tool signature.** For Python MCP fixtures (echo_server.py), a param with no
-default is required; a param with a default is optional. When source is reachable, derive required-ness
-from the signature. When only the introspected schema is available (generic remote servers), infer
-conservatively from signature-absent signal and mark required ONLY on strong evidence.
+    merged_props = {**existing_props, **new_props}
+
+For any param the generator returns, `new_props[param]` REPLACES the entire existing param schema.
+The generator prompt (~L92) constrains output to exactly `{type, description}`, so every other
+JSON Schema keyword on a touched param is erased — `default`, `enum`, `minimum`/`maximum`,
+`format`, `items`, nested `properties`, etc.
+
+`greet.prefix` lost its `default: "Hello"`. Visible symptom: 83.3 (the scorer's third sub-point
+needs `param in required OR default is not None`, and both are now false). Real harm: the emitted
+"fix" deletes the default, so the schema now misrepresents an optional param as if it had no
+default. The fixer is DEGRADING the interface it claims to improve.
+
+This is a fixer bug, not a scorer ceiling. scorer.py (L81–82) explicitly rewards defaulted params;
+it has no structural cap.
+
+## Why this jumps the queue
+
+Ahead of T13 (real-server cost pre-filter) and the runner ground-truth work: the fixer currently
+strips constraints from any schema it touches. Pointing it at a real third-party server would
+silently delete `enum`/`min`/`max`/`default` — the opposite of the product's premise. Must land
+before anything runs against a real server, and before "improves schema_completeness" is claimed
+for optional-param tools.
 
 ---
 
 ## Scope
 
-**IN:** `fixer.py` generation step emits a `required` array as part of the schema fix for
-`schema_completeness`. Conservative required-ness inference. Target fixture = echo_server.py.
+**IN:** replace the destructive merge with a non-destructive deep merge that PRESERVES existing
+per-param keywords the generator didn't return, while letting the generator override the fields it
+did return (type, description). Recursive for dict-valued keywords. Schema fixes only.
 
-**OUT:** new dimensions; the "skip tools already above band" cost pre-filter (queue as T13);
-anything touching scorer.py.
+**OUT:** pruning/removing existing keywords (generator may override values, not delete keys);
+new dimensions; the cost pre-filter (T13).
+
+## Design
+
+- Param level: for a param present in both, `deep_merge(existing[param], new[param])` — generator
+  output overlays existing — instead of replacement. Params only in `existing` are untouched;
+  params only in `new` are added.
+- `deep_merge` semantics: dict values merge recursively (so nested `properties` / `items` survive);
+  scalar and list values from the generator win; existing keys absent from generator output are kept.
+- Over-marking guard is unchanged and stays correct: a preserved `default` keeps the param optional
+  and out of `required`; the scorer's `default is not None` branch then legitimately awards the
+  third point.
 
 ---
 
 ## Acceptance criteria
 
-1. When fixing `schema_completeness`, the candidate schema includes a `required` array.
-2. **Deterministic re-score:** `mystery.schema_completeness` 66.7 → 100.0 (exact, no trials),
-   *provided* mystery's x/y are intended required (confirm from signature — step 1 of kickoff).
-3. **Correctness gate (human-reviewed, the point of T12):** generated `required` for mystery matches
-   signature-derived required exactly — x and y both present, nothing extra.
-4. **No over-marking:** a tool with an optional (defaulted) param must NOT have that param in
-   `required`. If echo_server has no such tool, the executor adds a fixture tool with a defaulted
-   param and asserts it stays out of `required`.
-5. **No regression:** `add` / `echo` (already 100) unchanged; good-tool descriptions not churned.
-6. scorer.py untouched; `generator_model != judge_model` still asserted; verify.sh green,
-   coverage ≥ 60%; committed tests mock the generator (seed 42, no network).
+1. **CI (deterministic, MockProvider, seed 42, no network) — the core proof:**
+   - Param with existing `{default, enum, minimum, format, items, nested properties}` + generator
+     returning only `{type, description}` → merged param keeps ALL existing keywords AND takes the
+     generator's type/description.
+   - Param only in existing: unchanged. Param only in generator: added.
+   - Over-marking guard still strips defaulted params from `required`.
+   - Deterministic re-score: `greet.schema_completeness` reaches 100 with a mock generator returning
+     the realistic two-field `prefix` output (proves the merge, not the model).
+2. **Real-generator (manual, in PR description):** run on `echo_server` with qwen3:8b. Confirm
+   `greet` → 100 AND the emitted diff for `prefix` still contains `default: "Hello"`. `mystery`
+   still 100; `add`/`echo` unchanged. PRINT the emitted `prefix` schema so the reviewer can SEE the
+   default survived.
+3. scorer.py untouched; `generator_model != judge_model` still asserted; verify.sh green;
+   coverage ≥ 60%; committed tests mock the generator.
 
----
+## Housekeeping
 
-## Validation
-
-- CI: MockProvider returns a candidate with a known `required` array; assert the schema-merge and
-  re-score plumbing are correct, and that the over-marking guard rejects/strips a defaulted param.
-- Real-generator (manual, in PR description): run the fix on echo_server with qwen3:8b; record the
-  emitted `required` arrays per tool and the schema_completeness before/after. Reviewer confirms
-  required-ness is semantically correct against signatures, not just that the score rose.
-
----
-
-## If x/y are NOT meant to be required
-
-Then 66.7 is the correct ceiling for mystery and T12 narrows to: emit `required` only where the
-signature/semantics warrant, and the acceptance number for mystery is its true arity, not 100.
-Confirm before generating.
+- TASKS.md: add T14 (TODO → IN-REVIEW on completion). T13 stays in FUTURE/DEFERRED.
+- STATUS.md: once landed, note schema fixes are non-destructive (preserve existing constraints).
+  Only then is "improves schema_completeness" safe to state for optional-param tools.
