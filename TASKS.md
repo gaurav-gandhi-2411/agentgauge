@@ -22,20 +22,38 @@ Autonomous runs: pick the single top TODO, implement it, move to IN-REVIEW.
 
 ### Tx — Generator abstains on opaque tool names (fixer description quality)
 
-**Branch:** claude/tx-abstain-no-harm — DRAFT PR pending real-agent A/B results.
+**Branch:** claude/tx-abstain-no-harm — DRAFT PR, A/B complete, per-task analysis pending.
 
 Grounding detection added to `fixer.py`: when all tokens in a tool name are either
 single-character or in the `_GENERIC_TOKENS` vocabulary (get, set, put, del, etc.),
 `is_low_grounding` returns True and `run_fixer` records `ABSTAINED` instead of calling
-the generator. Harm gate: opaque ObsStore tools (get_a/del_b/put_x) all abstain → arm B
-= arm A → delta ≥ 0 trivially satisfied. Upside gate: grounded fixture (`transform_*`
-tools, empty descriptions) — grounding check passes so fixer generates; real-agent A/B
-pending. Degenerate-guard CI test asserts that `transform_scale` (clearly grounded) does
-NOT abstain.
+the generator. Degenerate-guard CI test asserts `transform_scale` does NOT abstain.
+A/B results: harm gate PASS (ObsStore all abstain, delta=0%); upside step 1 POSITIVE
+(oracle +20pp, p<0.05); upside step 2 DIRECTIONAL (+10pp, b+c=5<10, significance pending
+powered re-run — see Tx-val below).
 
 ---
 
 ## FUTURE / DEFERRED
+
+### Tx-val — Powered upside re-run (grounded-fixture significance)
+
+Tx step 2 showed a directional +10pp improvement (Arm B 90% vs Arm A 80%) but is
+underpowered: only ~2 tasks had headroom (Arm A at 80%, just at the ceiling), and the
+McNemar b+c=5 <10 makes chi-square unreliable. The "fixer improves selection" claim requires
+a properly powered, task-clustered analysis.
+
+**Acceptance criteria:**
+- New grounded fixture with ≥ 30 tasks, designed so Arm A baseline is ~50–60% (not 80%).
+  This requires tool names meaningful enough to avoid abstain but tasks ambiguous enough
+  to create real headroom.
+- Analysis clustered by task (task is the unit; trials are repeated measures). Use a
+  sign test on tasks (B>A vs B<A) or mixed-effects model, not trial-level McNemar.
+- Only THEN claim "fixer improves selection" in STATUS.md or PR descriptions.
+
+**Pre-condition:** own spec; do NOT inherit Tx's fixtures or tasks unchanged.
+
+---
 
 ### Ty — H2 headroom fixture (call_correctness testable)
 
