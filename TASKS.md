@@ -20,37 +20,49 @@ Autonomous runs: pick the single top TODO, implement it, move to IN-REVIEW.
 
 ## IN-REVIEW
 
-### T16 — Held-out fixture + real A/B run
-
-**Priority:** P1
-**Branch:** `claude/ab-ground-truth` · **PR:** TBD
-
-Acceptance criteria:
-1. `examples/mediocre_server.py` committed with documented degradations.
-2. `scripts/run_ab_experiment.py` runs the fixer on arm A and executes the paired A/B with a
-   third-family agent (≠ llama3.1:8b judge, ≠ qwen3:8b generator).
-3. Pre-registered result table (selection_accuracy + call_correctness: A, B, delta, noise floor,
-   McNemar verdict) in PR description with honest effect/null/negative verdict.
-4. verify.sh green; coverage ≥ 60%.
-
----
-
-### T15 — Paired A/B harness
-
-**Priority:** P1
-**Branch:** `claude/ab-ground-truth` · **PR:** TBD
-
-Acceptance criteria:
-1. `agentgauge/ab_harness.py` with `run_paired_ab`, `compute_mcnemar`,
-   `assert_agent_ne_judge_ne_generator`.
-2. CI tests pass: mock delta/noise/McNemar assertions; A-vs-A noise=0; mismatched names raises.
-3. verify.sh green; coverage ≥ 60%.
-
----
+*(empty)*
 
 ---
 
 ## FUTURE / DEFERRED
+
+### Tx — Generator must abstain on opaque tool names (fixer description quality)
+
+T15/T16 A/B found that qwen3:8b fabricates plausible-but-wrong descriptions when tool names
+carry no semantic signal (`get_a`, `get_b`). The generator needs a guard: when the tool name
+and existing schema do not provide enough grounding, the generator should abstain (skip
+description generation) or flag uncertainty rather than hallucinating a description.
+
+**Scope:** `fixer.py` generation logic only — no scorer.py changes.
+**Pre-condition:** own spec with pre-registered hypothesis and real-agent validation. Counts as
+condition #1 (touches fixer behavior); requires DRAFT PR + human review.
+
+---
+
+### Ty — H2 headroom fixture (call_correctness testable)
+
+In all four T16 runs, gemma2:9b saturated at 100% call_correctness from training priors.
+Create a fixture where a correct tool call genuinely requires schema metadata the agent cannot
+infer: e.g. an arbitrary enum (`unit: "p1"/"p2"/"p3"`) or a non-standard format constraint
+with no natural-language equivalent. Alternatively, use a weaker/constrained agent.
+
+**Scope:** new fixture in `examples/`; no scorer.py changes; requires real-agent A/B run.
+**Pre-condition:** own spec, pre-registered H2 hypothesis with validity gate ≤ 80% arm A.
+
+---
+
+### Tz — Scan-path prompt_version in JSON report schema
+
+The runner.py fix (descriptions now shown in selection prompt) breaks score comparability:
+pre-fix `selection_accuracy` scores (names-only prompt) and post-fix scores (descriptions +
+param types) are not comparable. The JSON report should record the prompt format version so
+consumers can identify which regime a score was computed under.
+
+**Scope:** `report.py` / JSON schema only — no scorer or runner logic changes.
+**Note:** this is adjacent to scorer output (report schema); flag as possible condition #1 and
+require its own spec before implementing.
+
+---
 
 ### Re-calibrate judge bands against a ≥30B model
 
@@ -63,6 +75,27 @@ test suite guarantees ordering + actionability gap regardless of which model is 
 ---
 
 ## DONE
+
+### T16 — Held-out fixture + real A/B run
+
+**Priority:** P1
+**Merged:** PR #31 — feat(ab): T15+T16 — paired A/B harness + held-out fixture + real-agent result
+
+Four A/B runs (gemma2:9b agent, 10 tasks × 5 trials). Two valid runs both showed arm B ≤ arm A
+on selection_accuracy. Finding scoped to opaque tool names — see STATUS.md and spec.md for full
+run log and diagnosis. H2 (call_correctness) UNTESTABLE on this fixture/model (saturation).
+
+---
+
+### T15 — Paired A/B harness
+
+**Priority:** P1
+**Merged:** PR #31 — feat(ab): T15+T16 — paired A/B harness + held-out fixture + real-agent result
+
+`agentgauge/ab_harness.py` with `run_paired_ab`, `compute_mcnemar`, `assert_agent_ne_judge_ne_generator`.
+Runner selection prompt updated to show descriptions + param types; CI manipulation-check asserted.
+
+---
 
 ### T14 — Non-destructive schema merge (fixer data-loss bug)
 

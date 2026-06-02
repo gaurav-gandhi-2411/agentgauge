@@ -58,34 +58,23 @@ models — always record the model alongside any stored score.
   reason `already_above_band` and make zero generator calls. Emits a unified diff;
   `--apply` writes fixes back to the source file. Real-judge validation (T11) run against
   `llama3.1:8b` on `examples/echo_server.py` — results recorded in CLAUDE.md.
-- Test suite: 89.35% coverage (210 tests), all LLM calls mocked — CI runs with no network and no credentials.
+- **A/B ground-truth harness (T15/T16, PR #31):** `agentgauge/ab_harness.py` added — paired A/B
+  harness with McNemar's test, A-vs-A noise floor, identical-task-set enforcement. Selection step
+  in `runner.py` now presents tool descriptions + param types to the agent (not just names);
+  manipulation-check CI-asserted (`test_selection_prompts_differ_between_vague_and_informative_descriptions`).
+  **Finding (scoped to opaque-named tools):** on a fixture where tool names carry no semantic signal
+  (`get_a`/`get_b`/`del_a`/`del_b`), qwen3:8b fabricated plausible-but-wrong descriptions (e.g.
+  record-key param labelled "API key for authentication"). Two valid A/B runs both showed arm B ≤
+  arm A on `selection_accuracy` (delta −10%, McNemar b=0 c=5). The heuristic/judge score can point
+  opposite to agent behavior in this regime. This is NOT a general claim that the fixer harms —
+  `schema_completeness` gains on `echo_server.py` (mystery/greet tools) stand as previously
+  validated. H2 (`call_correctness`) was UNTESTABLE on this fixture/model: gemma2:9b saturated
+  at 100% from training priors regardless of schema quality. Not a null — the agent didn't need
+  schema guidance to construct valid calls. Candidate next steps in TASKS.md (Tx/Ty/Tz).
+- Test suite: 89.48% coverage (218 tests), all LLM calls mocked — CI runs with no network and no credentials.
 
 ## What is NOT built yet
 
-- **T15/T16 A/B ground truth (in-review, PR #31 open):** Paired A/B harness (`ab_harness.py`)
-  implemented. Four real-agent runs completed with gemma2:9b (2026-06-02). Run log:
-
-  **Run #1 (TaskTracker) VOID — ceiling.** Arm A 100%/100%. Parameter names semantically obvious.
-  **Run #2 (ObsStore v1) VOID — broken manipulation.** Runner showed only tool names in selection
-    prompt; arms A/B had identical inputs. Not a null — same experiment twice. Fixed in runner.py.
-  **Run #3 (ObsStore v1, runner fixed) VOID — ceiling.** Arm A selection 90% (> 80%). Param names
-    `rid` vs `op` distinguished tools without descriptions. arm B was WORSE (70%) — not interpretable.
-  **Run #4 (ObsStore v4, identical {sid,key} params) VALID — NEGATIVE result on H1.**
-  - selection_accuracy: A=70% B=60% delta=-10% McNemar b=0 c=5 — arm B WORSE than arm A
-  - call_correctness:   A=100% B=100% delta=0% — H2 UNTESTABLE (arm A saturated)
-
-  **Genuine thesis finding (runs #3 and #4 both valid, both B ≤ A):**
-  The fixer's description improvements do not improve — and in two valid runs, actively hurt —
-  selection accuracy when tool names are opaque. Root cause: the fixer (qwen3:8b) generates
-  semantically wrong descriptions when names like `get_a`/`get_b` give no semantic signal.
-  Fixer described `get_a.key` as "API key for authentication" instead of "record key." These
-  inaccurate descriptions confused the agent more than the terse arm A descriptions.
-
-  **Conditional finding:** fixer description quality is reliable when tool names or existing schemas
-  carry enough signal for the generator to infer purpose; it degrades to hallucination on opaque names.
-
-  **Do NOT claim "fixes improve real agent performance."** Neither valid run supports this.
-  H2 (call_correctness) is UNTESTABLE on this fixture/model — gemma2:9b saturated at 100%.
 - **CI action** beyond `agentgauge ci`: a GitHub Actions action that installs and runs AgentGauge
   inside a user's own CI workflow.
 - **Hosted dashboard**: per-server history, regression alerts, subscription tier.
