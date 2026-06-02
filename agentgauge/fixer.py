@@ -48,6 +48,7 @@ class FixCandidate:
     rejection_reason: str = ""
     new_description: str = ""
     new_schema_props: dict[str, Any] = field(default_factory=dict)
+    new_required: list[str] = field(default_factory=list)
 
 
 @dataclass
@@ -82,15 +83,19 @@ _DESC_GENERATOR_PROMPT = (
 
 _SCHEMA_GENERATOR_PROMPT = (
     "You are improving MCP tool parameter metadata for AI agent usability.\n"
-    "For the tool below, generate improved parameter metadata.\n\n"
+    "For the tool below, generate improved parameter metadata AND identify required parameters.\n\n"
     "Tool name: {name}\n"
     "Current properties JSON: {properties}\n\n"
-    "Reply with ONLY a valid JSON object mapping each parameter name to its improved metadata.\n"
-    'Each parameter must have exactly these two fields: "type" and "description".\n'
+    "Reply with ONLY a valid JSON object with exactly these two keys:\n"
+    '  "properties": an object mapping each parameter name to its improved metadata\n'
+    '  "required": a list of parameter names that are required (have no default value)\n\n'
+    'Each parameter in properties must have exactly these two fields: "type" and "description".\n'
     "Use standard JSON Schema types: string, integer, number, boolean, array, object.\n"
+    "A parameter is required if it has no default value; optional if it has one.\n"
     "Example format:\n"
-    '{{"x": {{"type": "number", "description": "First input value"}}, '
-    '"y": {{"type": "number", "description": "Second input value"}}}}\n\n'
+    '{{"properties": {{"x": {{"type": "number", "description": "First input value"}}, '
+    '"y": {{"type": "number", "description": "Second input value"}}}}, '
+    '"required": ["x", "y"]}}\n\n'
     "Reply with ONLY the JSON object, no markdown fences, no other text."
 )
 
@@ -143,11 +148,15 @@ async def _generate_description(tool: Tool, generator: Provider) -> str:
     return resp.strip()
 
 
-async def _generate_schema_props(tool: Tool, generator: Provider) -> dict[str, Any]:
-    """Generate improved parameter metadata for `tool` using the generator model.
+async def _generate_schema_props(
+    tool: Tool, generator: Provider
+) -> tuple[dict[str, Any], list[str]]:
+    """Generate improved parameter metadata and required list for tool.
 
-    Returns a dict mapping param names to {type, description} dicts.
-    Returns {} if the response cannot be parsed as valid JSON.
+    Returns (props, required) where props maps param names to {type, description} dicts
+    and required is a list of parameter names with no default value.
+    Supports both new format {"properties": {...}, "required": [...]} and old flat format.
+    Returns ({}, []) if the response cannot be parsed as valid JSON.
     """
     schema = tool.inputSchema or {}
     properties = schema.get("properties", {})
@@ -162,10 +171,16 @@ async def _generate_schema_props(tool: Tool, generator: Provider) -> dict[str, A
     try:
         result = json.loads(cleaned.strip())
         if isinstance(result, dict):
-            return result
-        return {}
+            if "properties" in result:
+                props = result.get("properties", {})
+                required = result.get("required", [])
+                if isinstance(props, dict) and isinstance(required, list):
+                    return props, [str(r) for r in required if isinstance(r, str)]
+            # Fallback: old flat format, no required
+            return result, []
+        return {}, []
     except (json.JSONDecodeError, ValueError):
-        return {}
+        return {}, []
 
 
 def _patch_source_description(source: str, tool_name: str, new_desc: str) -> str:
@@ -199,6 +214,24 @@ def _patch_source_description(source: str, tool_name: str, new_desc: str) -> str
     return "".join(result_lines)
 
 
+def _apply_overmarking_guard(
+    derived_required: list[str],
+    existing_props: dict[str, Any],
+    new_props: dict[str, Any],
+) -> list[str]:
+    """Remove params from required if they have a default in existing or generated props.
+
+    A param with a default is optional by definition; marking it required is a schema
+    error even if it would raise the heuristic score.
+    """
+    return [
+        param
+        for param in derived_required
+        if existing_props.get(param, {}).get("default") is None
+        and new_props.get(param, {}).get("default") is None
+    ]
+
+
 def _patch_source_schema_props(source: str, tool_name: str, new_props: dict[str, Any]) -> str:
     """Replace empty property dicts ({}) for given param names in the tool's source block.
 
@@ -230,6 +263,74 @@ def _patch_source_schema_props(source: str, tool_name: str, new_props: dict[str,
             block,
         )
 
+    return source[:start_idx] + block + source[end_idx:]
+
+
+def _patch_source_required(source: str, tool_name: str, required: list[str]) -> str:
+    """Add or replace the "required" array in tool_name's inputSchema block in source.
+
+    Locates the tool block, finds the "properties": {...} sub-dict, and inserts
+    "required": [...] immediately after the properties closing brace.
+    If "required" already exists in the block, replaces it in-place.
+    """
+    if not required:
+        return source
+
+    name_pattern = f'name="{tool_name}"'
+    start_idx = source.find(name_pattern)
+    if start_idx == -1:
+        return source
+
+    next_tool_match = re.search(r"types\.Tool\s*\(", source[start_idx + len(name_pattern) :])
+    end_idx = (
+        start_idx + len(name_pattern) + next_tool_match.start() if next_tool_match else len(source)
+    )
+
+    block = source[start_idx:end_idx]
+    required_json = json.dumps(required)
+
+    # Replace existing "required": [...] if present
+    existing_m = re.search(r'"required"\s*:\s*\[[^\]]*\]', block)
+    if existing_m:
+        block = (
+            block[: existing_m.start()] + f'"required": {required_json}' + block[existing_m.end() :]
+        )
+        return source[:start_idx] + block + source[end_idx:]
+
+    # Find "properties": { ... } and insert "required" after its closing brace
+    props_m = re.search(r'"properties"\s*:\s*\{', block)
+    if not props_m:
+        return source
+
+    brace_start = block.index("{", props_m.start())
+    depth, close_pos = 0, -1
+    for i, ch in enumerate(block[brace_start:], brace_start):
+        if ch == "{":
+            depth += 1
+        elif ch == "}":
+            depth -= 1
+            if depth == 0:
+                close_pos = i
+                break
+    if close_pos == -1:
+        return source
+
+    # Skip the comma that follows the closing brace
+    after = close_pos + 1
+    if after < len(block) and block[after] == ",":
+        after += 1
+
+    # Detect indentation of the "properties" line to match alignment
+    line_start = block.rfind("\n", 0, props_m.start()) + 1
+    indent = ""
+    for ch in block[line_start:]:
+        if ch in (" ", "\t"):
+            indent += ch
+        else:
+            break
+
+    insert = f'\n{indent}"required": {required_json},'
+    block = block[:after] + insert + block[after:]
     return source[:start_idx] + block + source[end_idx:]
 
 
@@ -281,6 +382,7 @@ async def run_fixer(
                 )
 
             # ── Generate candidate ────────────────────────────────────────────
+            merged_required: list[str] = []
             if dim == "description_quality":
                 new_desc = await _generate_description(tool, generator)
                 candidate_tool = Tool(
@@ -290,12 +392,21 @@ async def run_fixer(
                 )
                 new_props: dict[str, Any] = {}
             else:  # schema_completeness
-                new_props = await _generate_schema_props(tool, generator)
+                new_props, derived_required = await _generate_schema_props(tool, generator)
                 # Merge new_props into a copy of existing properties
                 existing_schema = dict(tool.inputSchema or {})
                 existing_props: dict[str, Any] = dict(existing_schema.get("properties", {}))
                 merged_props = {**existing_props, **new_props}
-                merged_schema = {**existing_schema, "properties": merged_props}
+                # Over-marking guard: strip params with defaults before adding to required
+                guarded_required = _apply_overmarking_guard(
+                    derived_required, existing_props, new_props
+                )
+                # Merge with any pre-existing required array
+                existing_required = list(existing_schema.get("required", []))
+                merged_required = sorted(set(existing_required) | set(guarded_required))
+                merged_schema: dict[str, Any] = {**existing_schema, "properties": merged_props}
+                if merged_required:
+                    merged_schema["required"] = merged_required
                 candidate_tool = Tool(
                     name=tool.name,
                     description=tool.description,
@@ -353,6 +464,7 @@ async def run_fixer(
                 rejection_reason=rejection_reason,
                 new_description=new_desc,
                 new_schema_props=new_props,
+                new_required=merged_required,
             )
 
             if accepted:
@@ -373,6 +485,10 @@ async def run_fixer(
             patched = _patch_source_schema_props(
                 patched, candidate.tool_name, candidate.new_schema_props
             )
+            if candidate.new_required:
+                patched = _patch_source_required(
+                    patched, candidate.tool_name, candidate.new_required
+                )
 
     if report.accepted:
         diff_lines = list(
