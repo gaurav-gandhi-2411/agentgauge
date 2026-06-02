@@ -93,16 +93,34 @@ models — always record the model alongside any stored score.
     fixture. Powered re-run required (>=30 tasks, Arm A ~50-60%). Tracked as Tx-val in TASKS.md.
 - **T17 (IN-REVIEW, branch `claude/t17-selection-limited`):** 8 confusable clusters (16 tools,
   32 pre-registered tasks). CI: 8 new tests pass (fixture integrity, stability-screen logic,
-  manipulation check). Q1 oracle A/B (gemma2:9b, 2026-06-03): **FIXTURE QUALITY FAILURE** —
-  Arm A baseline 81.2% on stability run (all 32 tasks surviving). Exceeds the pre-registered
-  70% headroom ceiling; run aborted per spec. Task-clustered oracle table not run.
-  **Finding:** gemma2:9b resolves semantically-plausible tool names (search_documents vs
-  query_records, send_message vs dispatch_event, etc.) from name tokens alone at 81%+ accuracy,
-  without any description signal. The "confusable" regime as designed is not selection-limited
-  for this model class. Achieving genuine name-level ambiguity for gemma2:9b appears to require
-  shorter, more syntactically opaque, or context-free names (abbreviated or synthetic) rather
-  than verbose domain-specific names the model can parse semantically. Tx-val fixture design
-  should account for this finding when targeting Arm A ~50-60%.
+  manipulation check). Q1 oracle A/B (gemma2:9b, 2026-06-03): **ABORTED — fixture-quality,
+  headroom 81.2% > 70% target. NOT a null result** (oracle was never run; no comparison made).
+  Arm A resolved 81.2% correctly from names alone (all 32 tasks surviving stability screen);
+  task-clustered oracle table not run per pre-registration.
+
+  **Cross-run through-line (3 fixtures, no description-recoverable selection-limited regime found):**
+  Every fixture to date has landed in one of two dead zones for gemma2:9b:
+  - *Self-describing names* (run #1 — `transform_scale`, `transform_normalize`, etc.):
+    agent picks from the name → Arm A saturated, no headroom.
+  - *Verbose-domain names* (T17 — `search_documents`/`query_records`, `send_message`/
+    `dispatch_event`, etc.): names are drawn from standard software vocabulary gemma2:9b
+    has strong priors for → 81.2% from names alone, no headroom.
+  - *Opaque names* (ObsStore — `get_a`/`get_b`/`del_a`/`del_b`): names carry no semantic
+    signal, but descriptions cannot recover it either (fixer hallucinated plausible-but-wrong
+    descriptions; real-agent A/B arm B ≤ arm A). No headroom AND not description-recoverable.
+
+  Taken together: there is no fixture design tested so far where (a) names are ambiguous enough
+  that gemma2:9b cannot pick correctly from them, AND (b) descriptions contain recoverable
+  signal that would close the gap. The middle regime — confusable names where descriptions
+  disambiguate — may not exist for this model class on standard API vocabulary.
+
+  **Implication:** `selection_accuracy` may be behaviorally description-insensitive for
+  capable agents. A model either resolves the tool from its name (and descriptions are
+  irrelevant) or the name is so opaque that descriptions carry no useful signal either.
+  `description_quality` (25%) and `discoverability` (15%) are measuring something that does
+  not appear to move agent behavior on selection for gemma2:9b. This is a construct-validity
+  concern for these dimensions, not just a fixture-design failure. Design decision required
+  before any re-run — see TASKS.md.
 - Test suite: 236 tests, 89.61% coverage, all LLM calls mocked — CI runs with no network and no credentials.
 
 ## What is NOT built yet
