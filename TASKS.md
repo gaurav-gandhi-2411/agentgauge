@@ -20,6 +20,21 @@ Autonomous runs: pick the single top TODO, implement it, move to IN-REVIEW.
 
 ## IN-REVIEW
 
+### T17 — Selection-limited fixture (Q1: does description-help exist?)
+
+**Branch:** claude/t17-selection-limited — DRAFT PR, Q1 oracle A/B pending.
+
+8 confusable clusters (2 tools each, 32 pre-registered tasks). Arm A: empty
+descriptions. Arm B: ORACLE (pre-registered, hand-written) descriptions. The
+question: when an agent is genuinely selection-limited (names are plausible but
+ambiguous), does the best-possible description improve selection_accuracy?
+
+If POSITIVE: Tx-val re-points to the T17 fixture; Q2 (fixer-realization) queued.
+If NULL: record that description_quality + discoverability are behaviorally inert
+for gemma2:9b on tool selection in STATUS.md.
+
+---
+
 ### Tx — Generator abstains on opaque tool names (fixer description quality)
 
 **Branch:** claude/tx-abstain-no-harm — DRAFT PR, A/B complete, per-task analysis pending.
