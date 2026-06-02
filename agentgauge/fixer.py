@@ -33,6 +33,114 @@ DEFAULT_MIN_DELTA = 10.0
 DEFAULT_SKIP_ABOVE_BAND = 90.0
 DEFAULT_TRIALS = 5
 
+# Tokens in tool names that carry no domain-specific semantic signal.
+# A tool name with only these tokens + single-char tokens is considered opaque.
+_GENERIC_TOKENS: frozenset[str] = frozenset(
+    {
+        "get",
+        "set",
+        "put",
+        "del",
+        "delete",
+        "create",
+        "update",
+        "list",
+        "fetch",
+        "post",
+        "add",
+        "remove",
+        "do",
+        "run",
+        "exec",
+        "execute",
+        "handle",
+        "process",
+        "send",
+        "receive",
+        "read",
+        "write",
+        "push",
+        "pull",
+        "new",
+        "make",
+        "build",
+        "init",
+        "start",
+        "stop",
+        "reset",
+        "load",
+        "save",
+        "check",
+        "test",
+        "use",
+        "show",
+        "find",
+        "apply",
+        "call",
+        "return",
+        "transform",
+        "convert",
+        "compute",
+        "calculate",
+        "move",
+        "copy",
+        "merge",
+        "data",
+        "item",
+        "object",
+        "value",
+        "result",
+        "info",
+        "output",
+        "input",
+        "query",
+        "request",
+        "response",
+        "action",
+        "task",
+        "job",
+        "by",
+        "for",
+        "of",
+        "to",
+        "in",
+        "on",
+        "with",
+        "from",
+        "at",
+        "as",
+    }
+)
+
+
+def _tokenize_identifier(s: str) -> list[str]:
+    """Split identifier on underscores and camelCase boundaries, lowercase."""
+    # Insert boundary before uppercase letter preceded by lowercase (camelCase split)
+    s = re.sub(r"([a-z])([A-Z])", r"\1_\2", s)
+    return [tok.lower() for tok in s.split("_") if tok]
+
+
+def _count_grounding_tokens(name: str) -> int:
+    """Count tokens in a tool name that carry domain-specific semantic signal.
+
+    A token is a grounding token when: length > 1 AND not in _GENERIC_TOKENS.
+    """
+    return sum(1 for t in _tokenize_identifier(name) if len(t) > 1 and t not in _GENERIC_TOKENS)
+
+
+def is_low_grounding(tool: Tool) -> bool:
+    """Return True when the tool name lacks domain-specific semantic signal.
+
+    Conservative by design: false-abstain (missing upside) is acceptable;
+    false-confident-generate (fabricating a wrong description) is the harm.
+    Fires when _count_grounding_tokens == 0: all name tokens are either
+    single characters (a, b, x) or generic verbs/nouns (get, set, put, etc.).
+
+    Examples that return True: get_a, del_b, put_x, set_data
+    Examples that return False: transform_scale, compute_median, search_products
+    """
+    return _count_grounding_tokens(tool.name) == 0
+
 
 @dataclass
 class FixCandidate:
@@ -57,6 +165,7 @@ class FixReport:
     accepted: list[FixCandidate] = field(default_factory=list)
     rejected: list[FixCandidate] = field(default_factory=list)
     skipped: list[str] = field(default_factory=list)
+    abstained: list[str] = field(default_factory=list)  # tool:dim:reason entries
     diff_text: str = ""
     patched_source: str = ""
 
@@ -380,6 +489,11 @@ async def run_fixer(
                 continue
 
             mode = VALIDATION_MODE[dim]
+
+            # ── Abstain check (description_quality only) ──────────────────────
+            if dim == "description_quality" and is_low_grounding(tool):
+                report.abstained.append(f"{tool.name}:{dim}:low_grounding")
+                continue  # Original description unchanged; no LLM calls made.
 
             # ── Baseline scoring ──────────────────────────────────────────────
             if mode == ValidationMode.DETERMINISTIC:
