@@ -20,6 +20,14 @@ Autonomous runs: pick the single top TODO, implement it, move to IN-REVIEW.
 
 ## IN-REVIEW
 
+### T12 — generator emits `required` arrays in schema fixes
+
+**Priority:** P2
+**Status:** Implemented — fixer.py emits required array; over-marking guard strips defaulted params.
+Awaiting human review of real-generator before/after table (in PR description).
+
+---
+
 ### T11 — real-judge validation harness + before/after protocol
 
 **Priority:** P2
@@ -29,6 +37,15 @@ Awaiting human review of before/after table.
 ---
 
 ## FUTURE / DEFERRED
+
+### T13 — skip tools already above band X before generating (cost pre-filter)
+
+Skip calling the generator for tools whose baseline score already exceeds a configurable
+threshold (e.g. `--skip-above 80`). Avoids burning generator tokens on tools that are
+already well-scored. Implementation: add a `skip_above` param to `run_fixer`; tools
+scoring above threshold go into `report.skipped` with a "already_above_threshold" reason.
+
+---
 
 ### Re-calibrate judge bands against a ≥30B model
 

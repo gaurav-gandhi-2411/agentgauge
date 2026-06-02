@@ -61,6 +61,18 @@ async def list_tools() -> list[types.Tool]:
                 },
             },
         ),
+        # Intentionally mixed schema — one required param, one optional with default
+        types.Tool(
+            name="greet",
+            description="",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "name": {},
+                    "prefix": {"default": "Hello"},
+                },
+            },
+        ),
     ]
 
 
@@ -75,6 +87,9 @@ async def call_tool(
         return [types.TextContent(type="text", text=str(result))]
     if name == "mystery":
         return [types.TextContent(type="text", text="???")]
+    if name == "greet":
+        prefix = arguments.get("prefix", "Hello")
+        return [types.TextContent(type="text", text=f"{prefix}, {arguments.get('name', '')}!")]
     raise ValueError(f"Unknown tool: {name}")
 
 

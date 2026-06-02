@@ -9,10 +9,12 @@ from agentgauge.fixer import (
     VALIDATION_MODE,
     FixCandidate,
     ValidationMode,
+    _apply_overmarking_guard,
     _generate_description,
     _generate_schema_props,
     _judge_desc_trials,
     _patch_source_description,
+    _patch_source_required,
     _patch_source_schema_props,
     assert_generator_ne_judge,
     run_fixer,
@@ -209,8 +211,9 @@ async def test_run_fixer_schema_accepted(tmp_path: Path) -> None:
     )
 
     gen_response = (
-        '{"x": {"type": "number", "description": "First value"}, '
-        '"y": {"type": "number", "description": "Second value"}}'
+        '{"properties": {"x": {"type": "number", "description": "First value"}, '
+        '"y": {"type": "number", "description": "Second value"}}, '
+        '"required": ["x", "y"]}'
     )
     generator = MockProvider(responses=[gen_response])
     judge = MockProvider(responses=["7"])  # judge not called for DETERMINISTIC dim
@@ -332,25 +335,30 @@ async def test_generate_description_strips_whitespace() -> None:
 
 async def test_generate_schema_props_parses_json() -> None:
     tool = Tool(name="mystery", description="", inputSchema={"properties": {"x": {}}})
-    json_resp = '{"x": {"type": "number", "description": "Input value"}}'
+    json_resp = (
+        '{"properties": {"x": {"type": "number", "description": "Input value"}}, "required": ["x"]}'
+    )
     provider = MockProvider(responses=[json_resp])
-    result = await _generate_schema_props(tool, provider)
-    assert result == {"x": {"type": "number", "description": "Input value"}}
+    props, required = await _generate_schema_props(tool, provider)
+    assert props == {"x": {"type": "number", "description": "Input value"}}
+    assert required == ["x"]
 
 
 async def test_generate_schema_props_strips_markdown_fence() -> None:
     tool = Tool(name="mystery", description="", inputSchema={"properties": {"x": {}}})
-    fenced = '```json\n{"x": {"type": "string", "description": "A value"}}\n```'
+    fenced = '```json\n{"properties": {"x": {"type": "string", "description": "A value"}}, "required": ["x"]}\n```'
     provider = MockProvider(responses=[fenced])
-    result = await _generate_schema_props(tool, provider)
-    assert result == {"x": {"type": "string", "description": "A value"}}
+    props, required = await _generate_schema_props(tool, provider)
+    assert props == {"x": {"type": "string", "description": "A value"}}
+    assert required == ["x"]
 
 
 async def test_generate_schema_props_returns_empty_on_invalid_json() -> None:
     tool = Tool(name="mystery", description="", inputSchema={"properties": {"x": {}}})
     provider = MockProvider(responses=["not valid json"])
-    result = await _generate_schema_props(tool, provider)
-    assert result == {}
+    props, required = await _generate_schema_props(tool, provider)
+    assert props == {}
+    assert required == []
 
 
 # ── T10: Judge trials ─────────────────────────────────────────────────────────
@@ -402,3 +410,192 @@ async def test_run_fixer_unknown_dim_is_skipped(tmp_path: Path) -> None:
     assert "mystery:nonexistent_dim" in report.skipped
     assert len(report.accepted) == 0
     assert len(report.rejected) == 0
+
+
+# ── T12: Over-marking guard ────────────────────────────────────────────────────
+
+
+def test_apply_overmarking_guard_keeps_required_params() -> None:
+    result = _apply_overmarking_guard(["x", "y"], {"x": {}, "y": {}}, {})
+    assert result == ["x", "y"]
+
+
+def test_apply_overmarking_guard_strips_defaulted_param() -> None:
+    existing_props = {"name": {}, "prefix": {"default": "Hello"}}
+    result = _apply_overmarking_guard(["name", "prefix"], existing_props, {})
+    assert result == ["name"]
+    assert "prefix" not in result
+
+
+def test_apply_overmarking_guard_strips_generated_default() -> None:
+    new_props = {"x": {"type": "number", "description": "val", "default": 0}}
+    result = _apply_overmarking_guard(["x"], {}, new_props)
+    assert result == []
+
+
+def test_apply_overmarking_guard_empty_derived_required() -> None:
+    result = _apply_overmarking_guard([], {"x": {}}, {})
+    assert result == []
+
+
+# ── T12: _patch_source_required ───────────────────────────────────────────────
+
+
+def test_patch_source_required_adds_array_after_properties() -> None:
+    source = (
+        "types.Tool(\n"
+        '    name="mystery",\n'
+        '    description="",\n'
+        "    inputSchema={\n"
+        '        "type": "object",\n'
+        '        "properties": {\n'
+        '            "x": {"type": "number", "description": "val"},\n'
+        '            "y": {"type": "number", "description": "val"},\n'
+        "        },\n"
+        "    },\n"
+        ")"
+    )
+    result = _patch_source_required(source, "mystery", ["x", "y"])
+    assert '"required": ["x", "y"]' in result
+
+
+def test_patch_source_required_replaces_existing_required() -> None:
+    source = (
+        "types.Tool(\n"
+        '    name="mystery",\n'
+        '    description="",\n'
+        "    inputSchema={\n"
+        '        "type": "object",\n'
+        '        "properties": {"x": {}},\n'
+        '        "required": ["old"],\n'
+        "    },\n"
+        ")"
+    )
+    result = _patch_source_required(source, "mystery", ["x"])
+    assert '"required": ["x"]' in result
+    assert '"required": ["old"]' not in result
+
+
+def test_patch_source_required_no_properties_returns_unchanged() -> None:
+    source = 'name="mystery"\ninputSchema={}'
+    result = _patch_source_required(source, "mystery", ["x"])
+    assert result == source
+
+
+def test_patch_source_required_empty_required_returns_unchanged() -> None:
+    source = 'name="mystery"\n"properties": {"x": {}}'
+    result = _patch_source_required(source, "mystery", [])
+    assert result == source
+
+
+# ── T12: score 66.7 → 100 integration ─────────────────────────────────────────
+
+
+async def test_run_fixer_schema_required_lifts_score_to_100(tmp_path: Path) -> None:
+    """mystery (no types, no descriptions, no required) scores 0 baseline.
+    Generator returns types + descriptions + required=["x","y"].
+    Candidate scores 100. delta=100 > 10 → accepted. candidate.new_required = ["x", "y"]."""
+    source = (
+        "types.Tool(\n"
+        '    name="mystery",\n'
+        '    description="",\n'
+        '    inputSchema={"type": "object", "properties": {"x": {}, "y": {}}},\n'
+        ")"
+    )
+    src_file = tmp_path / "server.py"
+    src_file.write_text(source)
+
+    mystery_tool = Tool(
+        name="mystery",
+        description="",
+        inputSchema={"type": "object", "properties": {"x": {}, "y": {}}},
+    )
+
+    gen_response = (
+        '{"properties": {"x": {"type": "number", "description": "First operand"}, '
+        '"y": {"type": "number", "description": "Second operand"}}, '
+        '"required": ["x", "y"]}'
+    )
+    generator = MockProvider(responses=[gen_response])
+    judge = MockProvider(responses=[])
+
+    report = await run_fixer(
+        [mystery_tool],
+        generator,
+        judge,
+        src_file,
+        ["schema_completeness"],
+        trials=1,
+        min_delta=10.0,
+    )
+
+    assert len(report.accepted) == 1
+    cand = report.accepted[0]
+    assert cand.tool_name == "mystery"
+    assert cand.candidate_score == pytest.approx(100.0)
+    assert cand.baseline_score == pytest.approx(0.0)
+    assert cand.new_required == ["x", "y"]
+    assert '"required"' in report.patched_source
+
+
+async def test_run_fixer_schema_overmarking_guard_in_full_pipeline(tmp_path: Path) -> None:
+    """Greet tool: name (required), prefix (optional, default='Hello').
+    Generator marks both as required. Guard must strip prefix from required.
+    Patched source must NOT have prefix in required array."""
+    source = (
+        "types.Tool(\n"
+        '    name="greet",\n'
+        '    description="",\n'
+        "    inputSchema={\n"
+        '        "type": "object",\n'
+        '        "properties": {\n'
+        '            "name": {},\n'
+        '            "prefix": {"default": "Hello"},\n'
+        "        },\n"
+        "    },\n"
+        ")"
+    )
+    src_file = tmp_path / "server.py"
+    src_file.write_text(source)
+
+    greet_tool = Tool(
+        name="greet",
+        description="",
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "name": {},
+                "prefix": {"default": "Hello"},
+            },
+        },
+    )
+
+    # Generator (incorrectly) marks both name and prefix as required
+    gen_response = (
+        '{"properties": {"name": {"type": "string", "description": "Name to greet"}, '
+        '"prefix": {"type": "string", "description": "Greeting prefix"}}, '
+        '"required": ["name", "prefix"]}'
+    )
+    generator = MockProvider(responses=[gen_response])
+    judge = MockProvider(responses=[])
+
+    report = await run_fixer(
+        [greet_tool],
+        generator,
+        judge,
+        src_file,
+        ["schema_completeness"],
+        trials=1,
+        min_delta=10.0,
+    )
+
+    assert len(report.accepted) == 1
+    cand = report.accepted[0]
+    assert "name" in cand.new_required
+    assert "prefix" not in cand.new_required
+    # Patched source must not have "prefix" in required
+    assert '"prefix"' not in (
+        report.patched_source.split('"required"')[1]
+        if '"required"' in report.patched_source
+        else ""
+    )
