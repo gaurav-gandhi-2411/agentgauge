@@ -44,11 +44,20 @@ McNemar b+c=5 <10 makes chi-square unreliable. The "fixer improves selection" cl
 a properly powered, task-clustered analysis.
 
 **Acceptance criteria:**
-- New grounded fixture with ≥ 30 tasks, designed so Arm A baseline is ~50–60% (not 80%).
-  This requires tool names meaningful enough to avoid abstain but tasks ambiguous enough
-  to create real headroom.
-- Analysis clustered by task (task is the unit; trials are repeated measures). Use a
-  sign test on tasks (B>A vs B<A) or mixed-effects model, not trial-level McNemar.
+- New grounded fixture with >= 30 tasks, designed so Arm A baseline is ~50-60% (not 80%).
+  Tool names must be meaningful enough to avoid abstain AND tasks must be ambiguous enough
+  to create real headroom under Arm A.
+- **Task stability pre-screen:** before running the full A/B, run Arm A alone twice; drop
+  any task where Arm A accuracy varies by more than 1 trial across runs (run-to-run-flaky
+  tasks corrupt the task-level analysis). Tx's normalize tasks were flaky (0/5 in both
+  full runs but arm B varied) and must be excluded or replaced.
+- Analysis clustered by task (task is the unit; trials are repeated measures). Use a sign
+  test on tasks (B>A vs B<A) or a mixed-effects model, not trial-level McNemar.
+- **Detector generalization check:** before the A/B, verify the grounding detector handles
+  opaque names beyond get/put/del -- e.g. single-letter names (`a`, `b`), numeric suffixes
+  (`tool_1`, `op_2`), non-CRUD generic verbs (`process_x`, `handle_z`), and CamelCase
+  variants (`GetA`, `SetB`). Confirm each correctly returns `is_low_grounding=True`.
+  Document any names where the detector fails and add CI coverage for the new cases.
 - Only THEN claim "fixer improves selection" in STATUS.md or PR descriptions.
 
 **Pre-condition:** own spec; do NOT inherit Tx's fixtures or tasks unchanged.
