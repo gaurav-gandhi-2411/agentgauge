@@ -91,7 +91,19 @@ models — always record the model alongside any stored score.
     sign test (task is the unit): discordant=0 in run 2; no task showed consistent improvement.
     Conclusion: no reproducible task-level upside demonstrated for fixer descriptions on this
     fixture. Powered re-run required (>=30 tasks, Arm A ~50-60%). Tracked as Tx-val in TASKS.md.
-- Test suite: 228 tests, 89.61% coverage, all LLM calls mocked — CI runs with no network and no credentials.
+- **T17 (IN-REVIEW, branch `claude/t17-selection-limited`):** 8 confusable clusters (16 tools,
+  32 pre-registered tasks). CI: 8 new tests pass (fixture integrity, stability-screen logic,
+  manipulation check). Q1 oracle A/B (gemma2:9b, 2026-06-03): **FIXTURE QUALITY FAILURE** —
+  Arm A baseline 81.2% on stability run (all 32 tasks surviving). Exceeds the pre-registered
+  70% headroom ceiling; run aborted per spec. Task-clustered oracle table not run.
+  **Finding:** gemma2:9b resolves semantically-plausible tool names (search_documents vs
+  query_records, send_message vs dispatch_event, etc.) from name tokens alone at 81%+ accuracy,
+  without any description signal. The "confusable" regime as designed is not selection-limited
+  for this model class. Achieving genuine name-level ambiguity for gemma2:9b appears to require
+  shorter, more syntactically opaque, or context-free names (abbreviated or synthetic) rather
+  than verbose domain-specific names the model can parse semantically. Tx-val fixture design
+  should account for this finding when targeting Arm A ~50-60%.
+- Test suite: 236 tests, 89.61% coverage, all LLM calls mocked — CI runs with no network and no credentials.
 
 ## What is NOT built yet
 

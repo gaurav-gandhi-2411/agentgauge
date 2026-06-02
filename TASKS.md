@@ -22,16 +22,25 @@ Autonomous runs: pick the single top TODO, implement it, move to IN-REVIEW.
 
 ### T17 — Selection-limited fixture (Q1: does description-help exist?)
 
-**Branch:** claude/t17-selection-limited — DRAFT PR, Q1 oracle A/B pending.
+**Branch:** claude/t17-selection-limited — DRAFT PR.
 
 8 confusable clusters (2 tools each, 32 pre-registered tasks). Arm A: empty
-descriptions. Arm B: ORACLE (pre-registered, hand-written) descriptions. The
-question: when an agent is genuinely selection-limited (names are plausible but
-ambiguous), does the best-possible description improve selection_accuracy?
+descriptions. Arm B: ORACLE (pre-registered, hand-written) descriptions.
 
-If POSITIVE: Tx-val re-points to the T17 fixture; Q2 (fixer-realization) queued.
-If NULL: record that description_quality + discoverability are behaviorally inert
-for gemma2:9b on tool selection in STATUS.md.
+**Q1 oracle A/B result (gemma2:9b, 2026-06-03): FIXTURE QUALITY FAILURE.**
+Pre-check aborted: Arm A baseline 81.2% (stability run 1, all 32 tasks surviving,
+3 trials each). Above the 70% headroom ceiling — insufficient room for descriptions
+to show an effect. gemma2:9b resolves semantically-plausible names (search_documents
+vs query_records, send_message vs dispatch_event, etc.) from name tokens alone,
+without descriptions. The "confusable" regime was not achieved for this model.
+
+Per spec, no interpretation is permitted past a failed headroom check. The
+task-clustered oracle table was not run.
+
+Key finding: achieving the confusable-name regime for gemma2:9b requires names
+that are more syntactically opaque — abbreviated, context-free, or synthetic
+(e.g. op_a / op_b / fn_search / fn_query) rather than verbose domain names the
+model can parse semantically. Tx-val fixture design should account for this.
 
 ---
 
