@@ -1,113 +1,109 @@
-# spec.md — Tx: Generator abstains (do-no-harm) on low-grounding tool names
+# spec.md — T17: Selection-limited fixture — does description-help exist at all?
 
-**Repo:** github.com/gaurav-gandhi-2411/agentgauge · **Base:** `main` @ 0917779 ·
-**Branch:** `claude/tx-abstain-no-harm`
-**Routing:** DRAFT PR. Changes generator behavior in `fixer.py` — draft-forcing #2/#3 (validation
-needs a real-agent A/B), but **NOT condition #1** (does not touch the judge, scorer, rubrics,
-calibration, or blending weights). NOT in `AUTO_MERGE_TASKS`.
+**Repo:** github.com/gaurav-gandhi-2411/agentgauge · **Base:** `main` @ a4652b5 ·
+**Branch:** `claude/t17-selection-limited`
+**Routing:** DRAFT PR. Draft-forcing #2/#3 (real agent vs served server, measured deltas).
+**NOT condition #1** — adds a fixture + task set + an oracle A/B run; no judge/scorer/rubric/
+calibration/generator changes. NOT in `AUTO_MERGE_TASKS`.
 
-**This spec, committed at branch start, IS the pre-registration.** Do not edit hypotheses,
-thresholds, or fixture definitions after seeing results.
+**This spec, committed at branch start, IS the pre-registration.** Fixture clusters, gold mappings,
+oracle descriptions, headroom target, and analysis plan are fixed before the run and not edited after.
 
 ---
 
-## Why
+## What this tests (and what it is NOT)
 
-The T16 ground-truth run (#4, valid) found the fixer's description generation ACTIVELY HARMS
-selection on opaque-named tools: qwen3:8b fabricated a confident wrong description (`get_a`'s
-record-id param described as an "authentication key"), and the wrong description misled the agent
-worse than the original vague `"Get."`. Replicated across runs #3 and #4 (Arm B <= Arm A, delta
--10%). Tx makes the generator do no harm: when it lacks evidence to describe a tool correctly, it
-must NOT fabricate.
+This is a CONSTRUCT-VALIDITY test of the description-facing score dimensions, not a fixer test. The
+question: when an agent is GENUINELY selection-limited (the tool name alone is insufficient to pick
+correctly), does a best-possible (ORACLE) description improve `selection_accuracy`? The oracle is the
+upper bound of what any description-fix could ever achieve. If the oracle does not move selection
+here, no fixer can, and `description_quality` (25%) + `discoverability` (15%) are measuring something
+behaviorally inert for this agent class.
 
-## The degenerate solution — and the guard against it (read this first)
+The fixer is deliberately EXCLUDED (oracle-only). The fixer cannot generate a disambiguator from an
+ambiguous-name + empty-description — the information is not in the source to recover (the same wall
+the agent hits). Whether the fixer can realize description-help where the info IS recoverable from
+the tool definition is Q2 — a separate downstream experiment, only worth running if Q1 is positive.
 
-"Abstain on low-grounding tools" is trivially satisfiable by abstaining on EVERYTHING: then Arm B =
-Arm A, the harm gate passes, and the description_quality feature is silently gutted while the report
-says "fixed." The harm gate alone is gameable. Therefore Tx is accepted ONLY if it passes BOTH:
-- **Harm gate (ObsStore, opaque names):** abstain fires → Arm B selection_accuracy >= Arm A (the
-  -10% regression is removed).
-- **Upside gate (grounded fixture):** abstain does NOT fire → the fixer's grounded description still
-  helps → Arm B > Arm A.
+## Why CONFUSABLE, not opaque or obvious (the design core)
 
-Passing harm but failing upside = the degenerate solution. Reject it.
+Three regimes; prior runs each hit a different one:
+- Self-describing names (run #1): agent picks from the name -> no headroom.
+- Opaque names (ObsStore get_a): no disambiguating signal exists anywhere -> unfixable, hallucination-bait.
+- CONFUSABLE (this fixture): names are individually plausible but ambiguous between candidates; the
+  disambiguator legitimately lives in the description. The only regime where description_quality is
+  supposed to matter.
 
-## A prerequisite we have not established
+## Anti-tautology guard (read before building the fixture)
 
-No valid run has EVER shown a good description improving selection for gemma2:9b (run #2, the only
-candidate, had the names-only manipulation bug). So before claiming the fixer "preserves upside," Tx
-must first prove the upside EXISTS: on the grounded fixture, a hand-written ORACLE good description
-must make Arm B > Arm A. Pre-registered branch:
-- If the oracle achieves B > A → the upside is real; require the fixer's generation to also achieve
-  it (abstain must not fire there).
-- If even the oracle cannot beat A → description-based selection help does not exist for this agent.
-  Then the correct product behavior is to ABSTAIN GLOBALLY on selection-facing descriptions, and the
-  finding is: description_quality generation has no selection upside for capable agents, only
-  downside. Report that straight — do not engineer an upside.
+Do NOT build clusters where the description trivially IS the answer, or where the task text lexically
+echoes the oracle description — that re-derives "text the agent can read helps" by fiat. The real
+question is whether gemma2:9b ATTENDS TO and USES a description to disambiguate when names are
+ambiguous, vs picking by name lexical-match regardless (what it did on easy tasks). So:
+- Task phrasing must NOT copy oracle-description vocabulary; phrase tasks by user intent.
+- The null (oracle does NOT beat Arm A even here -> gemma ignores descriptions when it needs them)
+  is a FIRST-CLASS outcome. Report it straight; do not adjust the fixture to force a positive.
 
 ---
 
 ## Scope
 
-**IN:** safety of selection-facing description generation in `fixer.py` — detection of low grounding,
-an abstain behavior, the do-no-harm contract, validation on selection_accuracy.
+**IN:** a confusable-cluster fixture (Arm A realistically-vague descriptions; Arm B oracle
+descriptions); a powered, stability-screened task set; the Q1 oracle A/B on `selection_accuracy`
+using the existing T15 harness.
 
-**OUT:** `call_correctness` (saturated/untestable — that's Ty's headroom fixture); the
-`schema_completeness` path (deterministic type/description/required + non-destructive merge — proven,
-unaffected, leave it); other dimensions.
+**OUT:** the fixer / generated descriptions (Q2, downstream); `call_correctness` (Ty); rubric/scorer
+changes; the other dimensions (discoverability shares this premise and is implicated by the result,
+but is not separately run here).
 
-## Design
+## Fixture design
 
-- **Do-no-harm contract:** for any tool, the description the fixer emits must be no worse for agent
-  selection than the original. Default-safe action on abstain = leave the ORIGINAL description
-  unchanged (do not emit a generated one). New report status `ABSTAINED`, distinct from
-  ACCEPTED / REJECTED / SKIPPED.
-- **Detection (CC chooses mechanism, justify it) — must be conservative:** false-abstain is
-  acceptable; false-confident-generate is the harm. Candidates:
-  (a) deterministic grounding signal from evidence in the tool definition (meaningful tokens in the
-      tool/param names, presence of a non-trivial existing description, type info), or
-  (b) generate-then-verify: reject a generated description that introduces concepts absent from the
-      tool definition (the `get_a`->"authentication" failure mode), abstain instead.
-  Whatever the mechanism, it must satisfy the CI cases below and the two real-agent gates.
-- **Do NOT use the scoring judge (`llama3.1:8b`) for any grounding/verification step** — keep the
-  scoring judge out of the generator path so the two never entangle. Use the generator model or a
-  separate verifier.
+- 6-10 confusable CLUSTERS, each 2-3 tools whose names are individually plausible for overlapping
+  intents but only one is correct per task; the disambiguator lives only in the description (e.g.
+  search/query/lookup; list/enumerate; send/post/dispatch). Real-server-plausible, not gibberish.
+- Arm A: realistically-vague or empty descriptions (what a sloppy real server ships) -> the agent
+  must guess among the cluster.
+- Arm B: ORACLE descriptions -- factual, correct, what a careful author writes. Committed up front.
+- Gold mapping: each task -> exactly one correct cluster member. Document, per cluster, WHY the name
+  is ambiguous (the headroom mechanism) and the pre-registered expected direction.
 
-## Required fixtures
+## Rigor (carry forward every lesson)
 
-1. **Harm fixture = ObsStore (opaque names), already built.** Reuse the run-#4 fixture unchanged.
-2. **Upside fixture = grounded-but-vague (new):** tools with MEANINGFUL names and params but
-   poor/empty descriptions, where the original (Arm A) causes some wrong selections (headroom) and a
-   correct grounded description should disambiguate. Include the ORACLE description (hand-written,
-   correct) to establish the upside ceiling. Document each tool and the pre-registered expected
-   direction.
+- Headroom: target Arm A selection_accuracy ~50-60% (real room for an effect; not 80% boundary, not
+  saturated). Confirm before interpreting.
+- STABILITY pre-screen: run Arm A twice; DROP any task whose success flips by >1 trial; report how
+  many dropped. (This is the normalize-instability fix that burned Tx step 2.) If too many drop,
+  that's a fixture-quality failure -- report, don't paper over.
+- Power: >= 30 surviving tasks. Analysis CLUSTERED BY TASK (task is the unit; trials are repeated
+  measures): sign test / Wilcoxon on task-level deltas, NOT trial-level McNemar.
+- Manipulation check (already CI-asserted in the harness): Arm A vs Arm B prompts differ.
+- Agent = gemma2:9b, != judge (llama3.1:8b) != generator (qwen3:8b). selection_accuracy is
+  deterministic (no LLM scorer in the loop). Assert agent identity.
+- No post-hoc tuning of fixture, gold, or oracle after seeing results.
 
 ---
 
 ## Acceptance criteria
 
-1. **CI (deterministic, MockProvider, seed 42, no network):**
-   - Detection: on opaque inputs → ABSTAINED, original description preserved, no generated text
-     emitted. On grounded inputs → generation fires.
-   - ABSTAINED reported distinctly from ACCEPTED/REJECTED/SKIPPED.
-   - **Degenerate-guard test:** assert the generator does NOT abstain on a clearly-grounded tool
-     (prevents abstain-always). At least one grounded fixture tool must produce a generated
-     description in CI.
-   - schema_completeness path unaffected (mystery/greet still reach 100 in existing tests).
-2. **Real-agent A/B (manual, in PR description — the deliverable), gemma2:9b (!= judge != generator):**
-   Reuse the T15 harness. For EACH run, before interpreting, confirm via the harness: per-metric
-   Arm-A headroom (<=80% on selection) AND the manipulation check (A vs B prompts differ).
-   - **Harm gate:** ObsStore — Arm B selection_accuracy >= Arm A (regression removed). Report table.
-   - **Upside, step 1:** grounded fixture with ORACLE description — confirm Arm B > Arm A (upside
-     exists). If not, switch to the global-abstain branch above and report that finding.
-   - **Upside, step 2 (only if step 1 positive):** grounded fixture with the FIXER's generated
-     description — confirm Arm B > Arm A (abstain did not fire; value preserved).
-   - State outcomes honestly. Do not tune fixtures or detection after seeing results.
-3. scorer.py / judge / rubrics / calibration untouched; generator != judge asserted; verify.sh
-   green; coverage >= 60%; committed tests use mocks.
+1. **CI (deterministic, seed 42, no network):** fixture loads; each task has exactly one gold member;
+   the stability-screen drop logic works on a synthetic flaky-task case; the manipulation check holds
+   (Arm A vs Arm B prompts differ given the two description sets). No real model in committed tests.
+2. **Real-agent Q1 oracle A/B (manual, in PR description -- the deliverable):**
+   - Pre-checks reported FIRST: Arm A ~50-60% and stable (post-screen), N>=30 surviving tasks,
+     manipulation check pass.
+   - Report the task-clustered table: Arm A, Arm B(oracle), task-level delta, sign/Wilcoxon result.
+   - Honest verdict on the pre-registered branch:
+     - POSITIVE (oracle > A): description-help EXISTS in the selection-limited regime. The
+       description dimensions have real behavioral headroom here. -> Tx-val should be re-pointed to
+       THIS fixture, and Q2 (fixer realizes it) becomes the next experiment.
+     - NULL (oracle ~ A): gemma ignores descriptions even when provably selection-limited ->
+       foundational finding: description_quality/discoverability are behaviorally inert for this
+       agent class on tool selection. Report it; do not engineer around it.
+3. scorer.py / judge / rubrics / calibration / generator untouched; verify.sh green; coverage >= 60%.
 
 ## Housekeeping
 
-- TASKS.md: Tx -> IN-REVIEW on completion. STATUS.md: record the measured gates (harm removed;
-  upside preserved OR global-abstain finding). Do not claim the fixer "improves selection" unless
-  the upside gate passed with the fixer's own output.
+- TASKS.md: add T17. If Q1 POSITIVE, update Tx-val to run on the T17 fixture (not easy tasks) and
+  queue Q2 (fixer-realization on an info-recoverable variant). If NULL, record the construct-validity
+  finding in STATUS.md against description_quality + discoverability.
+- STATUS.md: record the measured Q1 result (positive or null) precisely; claim nothing beyond it.

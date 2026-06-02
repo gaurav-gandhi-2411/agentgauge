@@ -20,6 +20,40 @@ Autonomous runs: pick the single top TODO, implement it, move to IN-REVIEW.
 
 ## IN-REVIEW
 
+### T17 — Selection-limited fixture (Q1: does description-help exist?)
+
+**Branch:** claude/t17-selection-limited — DRAFT PR.
+
+8 confusable clusters (2 tools each, 32 pre-registered tasks). Arm A: empty
+descriptions. Arm B: ORACLE (pre-registered, hand-written) descriptions.
+
+**Q1 oracle A/B result (gemma2:9b, 2026-06-03): ABORTED — fixture-quality, NOT a null.**
+Pre-check aborted: Arm A baseline 81.2% (stability run 1, all 32 tasks surviving,
+3 trials each). Above the 70% headroom ceiling. Task-clustered oracle table not run
+per pre-registration; no A-vs-B comparison was made.
+
+**Cross-run through-line:** T17 completes a three-fixture pattern. Every fixture tested
+has landed in a dead zone — either names are self-describing (saturated Arm A), verbose-
+domain names the model resolves from priors (T17, 81.2%), or opaque names where
+descriptions carry no recoverable signal either (ObsStore). No fixture has produced
+the middle regime: names ambiguous enough to need descriptions, descriptions informative
+enough to help.
+
+**⚠ Do NOT attempt a "shorter/opaque names" redesign.** Shortening names or making
+them more abbreviated slides toward the ObsStore regime — where names are signal-less
+AND descriptions are not description-recoverable (fixer-generated descriptions were
+hallucinated; real-agent arm B ≤ arm A). That regime does not test description-recovery;
+it tests hallucination tolerance. It is not a valid probe of description_quality or
+discoverability.
+
+**Design decision required before any T17 rebuild.** The question is whether a confusable-
+name regime exists at all for this agent class, or whether `selection_accuracy` is
+structurally description-insensitive for gemma2:9b. See STATUS.md for the cross-run
+framing. Rebuild only with a pre-registered fixture design that has a principled argument
+for why the target names are ambiguous-but-recoverable (not just shorter/opaque).
+
+---
+
 ### Tx — Generator abstains on opaque tool names (fixer description quality)
 
 **Branch:** claude/tx-abstain-no-harm — DRAFT PR, A/B complete, per-task analysis pending.
