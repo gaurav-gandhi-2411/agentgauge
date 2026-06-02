@@ -111,12 +111,38 @@ success on this fixture. Rules:
 
 ---
 
+## Validity condition (pre-registration refinement, 2026-06-02)
+
+**A run is VALID only if arm A scores ≤ 80% on at least one metric.** A run where arm A is
+saturated near 100% on ALL metrics is VOID — the instrument could not detect an effect — and must
+not be reported as a null about the thesis. A VOID run must be described as a ceiling effect, not
+as evidence that the fix has no behavioral impact.
+
+**Run #1 was VOID (TaskTracker fixture, 2026-06-02):** arm A scored 100% on both selection_accuracy
+and call_correctness. Root cause: parameter names (`title`, `task_id`, `priority`, `due_date`) carry
+enough semantic signal for gemma2:9b to infer correct types without schema metadata. The fixer did
+raise the heuristic/judge score; the effect just doesn't show in agent behavior on obviously-named
+parameters.
+
+Secondary finding (recorded, not suppressed): schema metadata appears redundant for capable
+LLMs when parameter semantics are unambiguous. This is a product-relevant boundary condition — the
+score predicts agent difficulty on genuinely ambiguous schemas, not on semantically transparent ones.
+
+**Run #2 (current run):** redesigned fixture (`ObsStore`) with opaque tool names (`put_x`,
+`get_a`, `get_b`, `del_a`, `del_b`), confusable tool pairs with identical arm-A descriptions
+("Get." / "Del."), and 10 pre-specified tasks describing intent without naming the tool. Validity
+check is REQUIRED before interpreting A-vs-B: confirm arm A ≤ 80% on at least one metric first.
+
+---
+
 ## Known limits (state them)
 
 - The held-out fixture is hand-degraded; it tests the MECHANISM, not external validity. The
   enterprise claim requires the real-third-party-server follow-up (next increment).
 - A local third-family agent establishes the effect cheaply; the headline number customers will
   weigh needs the real target agent class (frontier / Claude), which is API spend — escalate.
+- Run #1 (VOID): gemma2:9b saturated on semantically obvious parameter names. The effect of the
+  fix on agent behavior is untested until a valid (arm A ≤ 80%) run is completed.
 
 ## Housekeeping
 

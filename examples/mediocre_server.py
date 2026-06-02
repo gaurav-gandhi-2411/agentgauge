@@ -1,40 +1,46 @@
 from __future__ import annotations
 
-# T16 held-out fixture — arm A (original / degraded).
-# DO NOT tune these degradations against the fixer's behavior.
-# Each degradation is documented with the pre-registered expected direction.
+# T16 held-out fixture — arm A (degraded). ObsStore API — run #2.
 #
-# Degradations applied (pre-registered):
+# Previous fixture (TaskTracker, run #1) was VOID: arm A saturated at 100% because parameter
+# names (title, task_id, priority) were semantically obvious to gemma2:9b. This fixture is
+# hardened with opaque tool names + confusable pairs so arm A actually fails.
 #
-# 1. create_task:
-#    - Description "Create a task item." — vague, no param guidance
-#    - Parameters have no `type` or `description` fields (bare `{}`)
-#    - No `required` array — agent has no signal that `title` is mandatory
-#    PRE-REGISTERED: arm A agent may omit `title` (required) or pass `priority` as
-#    a string "3" instead of integer 3, or pass `due_date` in a non-ISO format.
-#    All these trigger server-side validation failures → success=False.
+# Degradations (pre-registered for T16 A/B experiment, run #2):
 #
-# 2. get_task:
-#    - Description "Get." — extremely vague
-#    - `task_id` has no `type` or `description`; no `required` array
-#    PRE-REGISTERED: agent may pass task_id as "1" (string) instead of 1 (integer).
-#    Server strictly checks isinstance(task_id, int) → failure.
+# 1. put_x: description "Put." (vague).
+#    Parameters sid/rid/x/t have no type, no description, no required array.
+#    - x = numeric measurement value (float); t = unix timestamp (integer).
+#    - Names are opaque; without schema guidance the agent may omit x/t entirely
+#      (they are not mentioned in the task description) → Required-field failures.
+#    PRE-REGISTERED: arm A call_correctness failure from missing x/t.
 #
-# 3. list_tasks:
-#    - Description "List." — vague, no status/limit guidance
-#    - `status` and `limit` have no `type` or `description`
-#    PRE-REGISTERED: agent may pass status="incomplete" (not a valid enum value) or
-#    limit="10" (string instead of integer).
+# 2. get_a: description "Get." IDENTICAL to get_b — confusable pair.
+#    Parameters sid/rid with no type, no description, no required.
+#    - Purpose: retrieve a specific stored data point by record ID.
+#    PRE-REGISTERED: arm A selection_accuracy ≈ 50% for get_a/get_b tasks because
+#    both tools have the same description and opaque suffixes (a vs b give no signal).
 #
-# 4. complete_task:
-#    - Description "Done." — ambiguous (could mean close, archive, finish)
-#    - `task_id` and `note` have no `type` or `description`; no `required` array
-#    PRE-REGISTERED: same as get_task.
+# 3. get_b: description "Get." IDENTICAL to get_a — confusable pair.
+#    Parameters sid/op with no type, no description, no required.
+#    - Purpose: compute an aggregate statistic (op = "mean"/"min"/"max"/"count").
+#    - op is strictly validated server-side; without a description listing valid values,
+#      the agent may pass "average"/"sum"/"total" → enum validation failure.
+#    PRE-REGISTERED: arm A call_correctness failure from invalid op values.
+#
+# 4. del_a: description "Del." IDENTICAL to del_b — confusable pair.
+#    Parameters sid/rid with no type, no description, no required.
+#    - Purpose: delete a specific data point by record ID.
+#    PRE-REGISTERED: arm A selection_accuracy ≈ 50% for del_a/del_b tasks.
+#
+# 5. del_b: description "Del." IDENTICAL to del_a — confusable pair.
+#    Parameters sid with no type, no description, no required.
+#    - Purpose: delete all data points for an entire session.
+#    PRE-REGISTERED: arm A selection_accuracy ≈ 50% for del_a/del_b tasks.
 #
 # Fixed version (arm B): apply `agentgauge fix` on this file with qwen3:8b generator.
-# The fixer adds types, descriptions, and `required` arrays to all parameters.
-# Behavior is identical; only tool metadata changes.
-
+# The fixer adds types + descriptions to params and distinct descriptions to each tool.
+# Only metadata changes; behavior is identical.
 import asyncio
 
 import mcp.types as types
@@ -43,59 +49,74 @@ from mcp.server.lowlevel.server import NotificationOptions
 from mcp.server.models import InitializationOptions
 from mcp.server.stdio import stdio_server
 
-server = Server("tasktracker-mediocre")
+server = Server("obsstore-mediocre")
 
-# In-memory task store: {task_id: {title, priority, due_date, status, note}}
-_tasks: dict[int, dict] = {}
-_next_id = 1
+# In-memory store: {session_id: {record_id: {x, t}}}
+_store: dict[int, dict[str, dict]] = {}
+
+_VALID_OPS: frozenset[str] = frozenset({"mean", "min", "max", "count"})
 
 
 @server.list_tools()
 async def list_tools() -> list[types.Tool]:
     return [
         types.Tool(
-            name="create_task",
-            description="Create a task item.",  # DEGRADED: vague, no param guidance
+            name="put_x",
+            description="Put.",  # DEGRADED: vague, no param guidance
             inputSchema={
                 "type": "object",
                 "properties": {
-                    "title": {},  # DEGRADED: no type, no description
-                    "priority": {},  # DEGRADED: no type, no description (should be int 1-5)
-                    "due_date": {},  # DEGRADED: no type, no description (should be YYYY-MM-DD)
+                    "sid": {},  # DEGRADED: should be integer session ID
+                    "rid": {},  # DEGRADED: should be string record ID
+                    "x": {},  # DEGRADED: should be float measurement value (required)
+                    "t": {},  # DEGRADED: should be integer unix timestamp (required)
                 },
-                # DEGRADED: missing required — agent has no signal title is mandatory
+                # DEGRADED: missing required — agent has no signal x and t are required
             },
         ),
         types.Tool(
-            name="get_task",
-            description="Get.",  # DEGRADED: extremely vague
+            name="get_a",
+            description="Get.",  # DEGRADED: identical to get_b — confusable pair
             inputSchema={
                 "type": "object",
                 "properties": {
-                    "task_id": {},  # DEGRADED: no type, no description (should be integer)
+                    "sid": {},  # DEGRADED: integer session ID
+                    "rid": {},  # DEGRADED: string record ID
                 },
                 # DEGRADED: missing required
             },
         ),
         types.Tool(
-            name="list_tasks",
-            description="List.",  # DEGRADED: vague
+            name="get_b",
+            description="Get.",  # DEGRADED: identical to get_a — confusable pair
             inputSchema={
                 "type": "object",
                 "properties": {
-                    "status": {},  # DEGRADED: no type, no description (should be 'open'|'done'|'all')
-                    "limit": {},  # DEGRADED: no type, no description (should be integer)
+                    "sid": {},  # DEGRADED: integer session ID
+                    "op": {},  # DEGRADED: string enum "mean"/"min"/"max"/"count" — no hint
                 },
+                # DEGRADED: missing required; op enum not exposed
             },
         ),
         types.Tool(
-            name="complete_task",
-            description="Done.",  # DEGRADED: ambiguous — close? archive? finish?
+            name="del_a",
+            description="Del.",  # DEGRADED: identical to del_b — confusable pair
             inputSchema={
                 "type": "object",
                 "properties": {
-                    "task_id": {},  # DEGRADED: no type, no description (should be integer)
-                    "note": {},  # DEGRADED: no type, no description (optional completion note)
+                    "sid": {},  # DEGRADED: integer session ID
+                    "rid": {},  # DEGRADED: string record ID
+                },
+                # DEGRADED: missing required
+            },
+        ),
+        types.Tool(
+            name="del_b",
+            description="Del.",  # DEGRADED: identical to del_a — confusable pair
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "sid": {},  # DEGRADED: integer session ID
                 },
                 # DEGRADED: missing required
             },
@@ -107,108 +128,104 @@ async def list_tools() -> list[types.Tool]:
 async def call_tool(
     name: str, arguments: dict
 ) -> list[types.TextContent | types.ImageContent | types.EmbeddedResource]:
-    global _next_id
-
-    if name == "create_task":
-        title = arguments.get("title")
-        if not isinstance(title, str) or not title.strip():
-            raise ValueError(
-                "Required parameter 'title' must be a non-empty string. "
-                'Example: {"title": "Write tests"}'
-            )
-        priority = arguments.get("priority", 3)
-        if not isinstance(priority, int) or isinstance(priority, bool):
+    if name == "put_x":
+        sid = arguments.get("sid")
+        if not isinstance(sid, int) or isinstance(sid, bool):
             raise TypeError(
-                f"Parameter 'priority' must be an integer 1-5, got {type(priority).__name__!r}. "
-                'Example: {"priority": 2}'
+                f"'sid' must be an integer session ID, got {type(sid).__name__!r}. "
+                'Example: {"sid": 1}'
             )
-        if not 1 <= priority <= 5:
-            raise ValueError(
-                f"Parameter 'priority' must be 1-5 (got {priority}). "
-                "1=highest priority, 5=lowest."
-            )
-        due_date = arguments.get("due_date")
-        if due_date is not None:
-            import re
-
-            if not isinstance(due_date, str) or not re.match(
-                r"^\d{4}-\d{2}-\d{2}$", due_date
-            ):
-                raise ValueError(
-                    f"Parameter 'due_date' must be YYYY-MM-DD format (got {due_date!r}). "
-                    'Example: {"due_date": "2026-06-30"}'
-                )
-        task_id = _next_id
-        _next_id += 1
-        _tasks[task_id] = {
-            "title": title,
-            "priority": priority,
-            "due_date": due_date,
-            "status": "open",
-            "note": None,
-        }
-        return [types.TextContent(type="text", text=f"Created task {task_id}: {title!r}")]
-
-    if name == "get_task":
-        task_id = arguments.get("task_id")
-        if task_id is None:
-            raise ValueError(
-                "Required parameter 'task_id' is missing. "
-                'Example: {"task_id": 1}'
-            )
-        if not isinstance(task_id, int) or isinstance(task_id, bool):
+        rid = arguments.get("rid")
+        if not isinstance(rid, str) or not rid:
             raise TypeError(
-                f"Parameter 'task_id' must be an integer, got {type(task_id).__name__!r}. "
-                'Example: {"task_id": 1}'
+                f"'rid' must be a non-empty string record ID, got {type(rid).__name__!r}. "
+                'Example: {"rid": "r-001"}'
             )
-        task = _tasks.get(task_id)
-        if task is None:
-            return [types.TextContent(type="text", text=f"No task with id={task_id}")]
-        return [types.TextContent(type="text", text=str(task))]
-
-    if name == "list_tasks":
-        status = arguments.get("status", "all")
-        if status not in ("open", "done", "all"):
+        x = arguments.get("x")
+        if x is None:
             raise ValueError(
-                f"Parameter 'status' must be 'open', 'done', or 'all' (got {status!r}). "
-                "Omit to get all tasks."
+                "Required field 'x' (numeric measurement value) is missing. Example: {\"x\": 4.2}"
             )
-        limit = arguments.get("limit", 50)
-        if not isinstance(limit, int) or isinstance(limit, bool):
+        if not isinstance(x, (int, float)) or isinstance(x, bool):
             raise TypeError(
-                f"Parameter 'limit' must be an integer (got {type(limit).__name__!r}). "
-                'Example: {"limit": 10}'
+                f"'x' must be a number (int or float), got {type(x).__name__!r}. "
+                'Example: {"x": 4.2}'
             )
-        if not 1 <= limit <= 100:
-            raise ValueError(f"Parameter 'limit' must be 1-100 (got {limit}).")
-        filtered = [
-            {"id": tid, **t}
-            for tid, t in _tasks.items()
-            if status == "all" or t["status"] == status
+        t = arguments.get("t")
+        if t is None:
+            raise ValueError(
+                "Required field 't' (unix timestamp integer) is missing. "
+                'Example: {"t": 1717200000}'
+            )
+        if not isinstance(t, int) or isinstance(t, bool):
+            raise TypeError(
+                f"'t' must be an integer unix timestamp, got {type(t).__name__!r}. "
+                'Example: {"t": 1717200000}'
+            )
+        _store.setdefault(sid, {})[rid] = {"x": x, "t": t}
+        return [types.TextContent(type="text", text=f"Stored: sid={sid} rid={rid!r} x={x} t={t}")]
+
+    if name == "get_a":
+        sid = arguments.get("sid")
+        if not isinstance(sid, int) or isinstance(sid, bool):
+            raise TypeError(f"'sid' must be an integer, got {type(sid).__name__!r}")
+        rid = arguments.get("rid")
+        if not isinstance(rid, str) or not rid:
+            raise TypeError(f"'rid' must be a non-empty string, got {type(rid).__name__!r}")
+        entry = _store.get(sid, {}).get(rid)
+        if entry is None:
+            return [types.TextContent(type="text", text=f"Not found: sid={sid} rid={rid!r}")]
+        return [types.TextContent(type="text", text=str(entry))]
+
+    if name == "get_b":
+        sid = arguments.get("sid")
+        if not isinstance(sid, int) or isinstance(sid, bool):
+            raise TypeError(f"'sid' must be an integer, got {type(sid).__name__!r}")
+        op = arguments.get("op")
+        if op is None:
+            raise ValueError(
+                f"Required field 'op' is missing. Valid values: {sorted(_VALID_OPS)!r}"
+            )
+        if op not in _VALID_OPS:
+            raise ValueError(
+                f"'op' must be one of {sorted(_VALID_OPS)!r}, got {op!r}. "
+                "Use 'mean', 'min', 'max', or 'count'."
+            )
+        records = list(_store.get(sid, {}).values())
+        if not records:
+            return [types.TextContent(type="text", text="No records found")]
+        vals = [r["x"] for r in records]
+        if op == "mean":
+            result: float | int = sum(vals) / len(vals)
+        elif op == "min":
+            result = min(vals)
+        elif op == "max":
+            result = max(vals)
+        else:  # count
+            result = len(vals)
+        return [types.TextContent(type="text", text=f"{op}={result}")]
+
+    if name == "del_a":
+        sid = arguments.get("sid")
+        if not isinstance(sid, int) or isinstance(sid, bool):
+            raise TypeError(f"'sid' must be an integer, got {type(sid).__name__!r}")
+        rid = arguments.get("rid")
+        if not isinstance(rid, str) or not rid:
+            raise TypeError(f"'rid' must be a non-empty string, got {type(rid).__name__!r}")
+        removed = _store.get(sid, {}).pop(rid, None)
+        return [
+            types.TextContent(
+                type="text",
+                text=f"Deleted: sid={sid} rid={rid!r}" if removed else f"Not found: {rid!r}",
+            )
         ]
-        return [types.TextContent(type="text", text=str(filtered[:limit]))]
 
-    if name == "complete_task":
-        task_id = arguments.get("task_id")
-        if task_id is None:
-            raise ValueError(
-                "Required parameter 'task_id' is missing. "
-                'Example: {"task_id": 1}'
-            )
-        if not isinstance(task_id, int) or isinstance(task_id, bool):
-            raise TypeError(
-                f"Parameter 'task_id' must be an integer, got {type(task_id).__name__!r}. "
-                'Example: {"task_id": 1}'
-            )
-        note = arguments.get("note")
-        if note is not None and not isinstance(note, str):
-            raise TypeError("Parameter 'note' must be a string if provided.")
-        task = _tasks.get(task_id)
-        if task is None:
-            return [types.TextContent(type="text", text=f"No task with id={task_id}")]
-        task["status"] = "done"
-        task["note"] = note
-        return [types.TextContent(type="text", text=f"Task {task_id} marked complete.")]
+    if name == "del_b":
+        sid = arguments.get("sid")
+        if not isinstance(sid, int) or isinstance(sid, bool):
+            raise TypeError(f"'sid' must be an integer, got {type(sid).__name__!r}")
+        n = len(_store.pop(sid, {}))
+        return [types.TextContent(type="text", text=f"Deleted session {sid} ({n} records)")]
 
     raise ValueError(f"Unknown tool: {name!r}")
 
@@ -219,7 +236,7 @@ async def main() -> None:
             read_stream,
             write_stream,
             InitializationOptions(
-                server_name="tasktracker-mediocre",
+                server_name="obsstore-mediocre",
                 server_version="0.1.0",
                 capabilities=server.get_capabilities(
                     notification_options=NotificationOptions(),
