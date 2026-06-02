@@ -20,24 +20,22 @@ Autonomous runs: pick the single top TODO, implement it, move to IN-REVIEW.
 
 ## IN-REVIEW
 
-*(empty)*
+### Tx — Generator abstains on opaque tool names (fixer description quality)
+
+**Branch:** claude/tx-abstain-no-harm — DRAFT PR pending real-agent A/B results.
+
+Grounding detection added to `fixer.py`: when all tokens in a tool name are either
+single-character or in the `_GENERIC_TOKENS` vocabulary (get, set, put, del, etc.),
+`is_low_grounding` returns True and `run_fixer` records `ABSTAINED` instead of calling
+the generator. Harm gate: opaque ObsStore tools (get_a/del_b/put_x) all abstain → arm B
+= arm A → delta ≥ 0 trivially satisfied. Upside gate: grounded fixture (`transform_*`
+tools, empty descriptions) — grounding check passes so fixer generates; real-agent A/B
+pending. Degenerate-guard CI test asserts that `transform_scale` (clearly grounded) does
+NOT abstain.
 
 ---
 
 ## FUTURE / DEFERRED
-
-### Tx — Generator must abstain on opaque tool names (fixer description quality)
-
-T15/T16 A/B found that qwen3:8b fabricates plausible-but-wrong descriptions when tool names
-carry no semantic signal (`get_a`, `get_b`). The generator needs a guard: when the tool name
-and existing schema do not provide enough grounding, the generator should abstain (skip
-description generation) or flag uncertainty rather than hallucinating a description.
-
-**Scope:** `fixer.py` generation logic only — no scorer.py changes.
-**Routing:** draft-forcing #2/#3 (changes generator behavior; real-agent validation required),
-NOT condition #1 (does not touch judge/scorer/rubrics/calibration). Own spec required.
-
----
 
 ### Ty — H2 headroom fixture (call_correctness testable)
 

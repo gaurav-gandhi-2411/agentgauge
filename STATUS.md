@@ -71,7 +71,12 @@ models — always record the model alongside any stored score.
   validated. H2 (`call_correctness`) was UNTESTABLE on this fixture/model: gemma2:9b saturated
   at 100% from training priors regardless of schema quality. Not a null — the agent didn't need
   schema guidance to construct valid calls. Candidate next steps in TASKS.md (Tx/Ty/Tz).
-- Test suite: 89.48% coverage (218 tests), all LLM calls mocked — CI runs with no network and no credentials.
+- **Tx (IN-REVIEW):** Generator now abstains on low-grounding tool names (0 meaningful semantic
+  tokens after stripping generic verbs and single-char suffixes). New `ABSTAINED` status in
+  `FixReport`, distinct from ACCEPTED/REJECTED/SKIPPED. Harm gate (ObsStore → abstain fires →
+  delta = 0%), upside gate (grounded fixture), and degenerate-guard CI test all pre-registered;
+  real-agent A/B pending. Branch: `claude/tx-abstain-no-harm`.
+- Test suite: coverage updated (232+ tests), all LLM calls mocked — CI runs with no network and no credentials.
 
 ## What is NOT built yet
 
