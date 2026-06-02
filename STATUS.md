@@ -62,15 +62,30 @@ models — always record the model alongside any stored score.
 
 ## What is NOT built yet
 
-- **T15/T16 A/B ground truth (in-review, PR open):** Paired A/B harness (`ab_harness.py`) and
-  held-out fixture server (`examples/mediocre_server.py`) implemented. Real-agent A/B run
-  completed (gemma2:9b, 4 tasks × 3 trials, 2026-06-02):
-  - selection_accuracy: A=100% B=100% delta=0.0% noise=0.0% — NULL (tool names already clear)
-  - call_correctness:  A=100% B=100% delta=0.0% noise=0.0% — NULL (saturation: gemma2:9b infers
-    correct types from parameter names without schema guidance)
-  **Diagnosis:** saturated agent — the fixer raises the heuristic/judge score but does NOT
-  improve a capable agent's task success when parameter names are semantically obvious.
-  Do NOT add "fixes improve real agent performance" — the measured delta does not support it.
+- **T15/T16 A/B ground truth (in-review, PR #31 open):** Paired A/B harness (`ab_harness.py`)
+  implemented. Two real-agent runs completed with gemma2:9b, both NULL — diagnosed below.
+
+  **Run #1 — TaskTracker fixture (VOID, 4 tasks × 3 trials, 2026-06-02):**
+  Both metrics at 100% on arm A — ceiling effect. Parameter names (`title`, `task_id`, `priority`)
+  were semantically obvious; gemma2:9b inferred correct types without schema guidance. Run is VOID
+  by the pre-registered validity condition (arm A must be ≤ 80% on at least one metric).
+
+  **Run #2 — ObsStore fixture (VALID, 10 tasks × 5 trials, 2026-06-02):**
+  - selection_accuracy: A=60% B=60% delta=+0.0% — NULL — STRUCTURAL: runner.py's selection
+    prompt shows only tool names, never descriptions. Description fixes are invisible to the
+    selection step. `selection_accuracy` cannot detect description-quality improvements with
+    the current runner design regardless of fixture quality. This is the "score measures the
+    wrong thing" scenario (diagnosis b in spec).
+  - call_correctness:  A=100% B=100% delta=+0.0% — NULL — SATURATION: gemma2:9b constructs
+    valid args even for opaque schema params (sid/rid/x/t, op enum), ignoring or overriding the
+    schema guidance with its own training-time knowledge.
+
+  **Overall findings (both runs):** The fixer raises heuristic/judged scores, but those scores
+  do NOT predict behavioral improvement for gemma2:9b on either fixture. Two independent
+  diagnoses: (1) obvious param names → agent doesn't need schema metadata; (2) runner design →
+  selection prompt structurally excludes descriptions.
+
+  Do NOT claim "fixes improve real agent performance" — neither run supports this.
 - **CI action** beyond `agentgauge ci`: a GitHub Actions action that installs and runs AgentGauge
   inside a user's own CI workflow.
 - **Hosted dashboard**: per-server history, regression alerts, subscription tier.
