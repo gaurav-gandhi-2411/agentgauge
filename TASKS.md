@@ -34,8 +34,8 @@ and existing schema do not provide enough grounding, the generator should abstai
 description generation) or flag uncertainty rather than hallucinating a description.
 
 **Scope:** `fixer.py` generation logic only — no scorer.py changes.
-**Pre-condition:** own spec with pre-registered hypothesis and real-agent validation. Counts as
-condition #1 (touches fixer behavior); requires DRAFT PR + human review.
+**Routing:** draft-forcing #2/#3 (changes generator behavior; real-agent validation required),
+NOT condition #1 (does not touch judge/scorer/rubrics/calibration). Own spec required.
 
 ---
 
