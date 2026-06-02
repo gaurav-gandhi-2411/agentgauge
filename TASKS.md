@@ -20,19 +20,7 @@ Autonomous runs: pick the single top TODO, implement it, move to IN-REVIEW.
 
 ## IN-REVIEW
 
-### T12 — generator emits `required` arrays in schema fixes
-
-**Priority:** P2
-**Status:** Implemented — fixer.py emits required array; over-marking guard strips defaulted params.
-Awaiting human review of real-generator before/after table (in PR description).
-
----
-
-### T11 — real-judge validation harness + before/after protocol
-
-**Priority:** P2
-**Status:** Real-judge gate run on examples/echo_server.py — results in DRAFT PR description.
-Awaiting human review of before/after table.
+*(empty)*
 
 ---
 
@@ -59,17 +47,31 @@ test suite guarantees ordering + actionability gap regardless of which model is 
 
 ## DONE
 
+### T12 — generator emits `required` arrays in schema fixes
+
+**Priority:** P2
+**Merged:** PR #28 (03cefd4) — feat(fixer): T12 — emit required arrays in schema fixes with over-marking guard
+
+---
+
+### T11 — real-judge validation harness + before/after protocol
+
+**Priority:** P2
+**Merged:** PR #26 (69e5fdd) — feat(fixer): T9/T10/T11 — auto-fix loop Increment 1
+
+---
+
 ### T10 — generation step (Provider-pluggable, generator ≠ judge)
 
 **Priority:** P2
-**Merged:** `claude/auto-fix-loop` — feat(fixer): T9/T10 — auto-fix loop Increment 1
+**Merged:** PR #26 (69e5fdd) — feat(fixer): T9/T10/T11 — auto-fix loop Increment 1
 
 ---
 
 ### T9 — fixer.py skeleton + accept/reject gate + diff emit
 
 **Priority:** P2
-**Merged:** `claude/auto-fix-loop` — feat(fixer): T9/T10 — auto-fix loop Increment 1
+**Merged:** PR #26 (69e5fdd) — feat(fixer): T9/T10/T11 — auto-fix loop Increment 1
 
 ---
 

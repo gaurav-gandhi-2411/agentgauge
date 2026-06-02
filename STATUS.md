@@ -1,6 +1,6 @@
 # AgentGauge — Project Status
 
-> Current as of 2026-06-01. Update this file when significant milestones land.
+> Current as of 2026-06-02. Update this file when significant milestones land.
 
 ---
 
@@ -45,13 +45,18 @@ models — always record the model alongside any stored score.
   unavailable — proxy command in CLAUDE.md.
 - Calibration runs completed for `error_legibility` and `discoverability` against `llama3.1:8b`
   (5 trials each, 2026-05-31). Results recorded in CLAUDE.md.
-- Test suite: 88.32% coverage (169 tests), all LLM calls mocked — CI runs with no network and no credentials.
+- `agentgauge fix` command (T9/T10/T11/T12): generates improved descriptions and schema metadata
+  for low-scoring tools. Uses a configurable generator model (default: `qwen3:8b`, must differ from
+  the judge) and validates each fix via deterministic re-score (schema_completeness) or an LLM-judge
+  trial gate (description_quality). Schema fixes add type, description, and `required` arrays to each
+  parameter; fixes are accepted only when the delta exceeds a configurable threshold. An over-marking
+  guard prevents params with defaults from being added to `required`. Emits a unified diff;
+  `--apply` writes fixes back to the source file. Real-judge validation (T11) run against
+  `llama3.1:8b` on `examples/echo_server.py` — results recorded in CLAUDE.md.
+- Test suite: 88.74% coverage (179 tests), all LLM calls mocked — CI runs with no network and no credentials.
 
 ## What is NOT built yet
 
-- **Auto-fix loop — real-judge gate** (T11): `agentgauge fix` command is implemented (T9/T10) but
-  requires a human-reviewed before/after calibration run against `llama3.1:8b` before it can be
-  trusted in production. Mock tests pass; real-model validation is pending (T11 in IN-REVIEW).
 - **CI action** beyond `agentgauge ci`: a GitHub Actions action that installs and runs AgentGauge
   inside a user's own CI workflow.
 - **Hosted dashboard**: per-server history, regression alerts, subscription tier.
