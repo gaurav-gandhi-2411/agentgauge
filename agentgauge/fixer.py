@@ -232,6 +232,17 @@ def _apply_overmarking_guard(
     ]
 
 
+def deep_merge(existing: dict[str, Any], incoming: dict[str, Any]) -> dict[str, Any]:
+    """Merge incoming over existing; recurse into nested dicts; preserve keys absent from incoming."""
+    result = dict(existing)
+    for key, val in incoming.items():
+        if key in result and isinstance(result[key], dict) and isinstance(val, dict):
+            result[key] = deep_merge(result[key], val)
+        else:
+            result[key] = val
+    return result
+
+
 def _patch_source_schema_props(source: str, tool_name: str, new_props: dict[str, Any]) -> str:
     """Replace empty property dicts ({}) for given param names in the tool's source block.
 
@@ -396,7 +407,14 @@ async def run_fixer(
                 # Merge new_props into a copy of existing properties
                 existing_schema = dict(tool.inputSchema or {})
                 existing_props: dict[str, Any] = dict(existing_schema.get("properties", {}))
-                merged_props = {**existing_props, **new_props}
+                merged_props: dict[str, Any] = {}
+                for param, schema in existing_props.items():
+                    merged_props[param] = (
+                        deep_merge(schema, new_props[param]) if param in new_props else schema
+                    )
+                for param, schema in new_props.items():
+                    if param not in existing_props:
+                        merged_props[param] = schema
                 # Over-marking guard: strip params with defaults before adding to required
                 guarded_required = _apply_overmarking_guard(
                     derived_required, existing_props, new_props
