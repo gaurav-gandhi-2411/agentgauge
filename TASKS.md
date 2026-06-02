@@ -20,17 +20,7 @@ Autonomous runs: pick the single top TODO, implement it, move to IN-REVIEW.
 
 ## IN-REVIEW
 
-### T13 — cost pre-filter (skip generation on already-good tools)
-
-**Priority:** P2
-**PR:** claude/t13-cost-prefilter
-
----
-
-### T14 — Non-destructive schema merge (fixer data-loss bug)
-
-**Priority:** P1
-**PR:** claude/t14-nondestructive-merge
+*(empty)*
 
 ---
 
@@ -47,6 +37,20 @@ test suite guarantees ordering + actionability gap regardless of which model is 
 ---
 
 ## DONE
+
+### T14 — Non-destructive schema merge (fixer data-loss bug)
+
+**Priority:** P1
+**Merged:** PR #29 (3579309) — feat(fixer): T14 — non-destructive schema merge (fixes default/enum/min erasure)
+
+---
+
+### T13 — cost pre-filter (skip generation on already-good tools)
+
+**Priority:** P2
+**Merged:** PR #30 (2d2d616) — feat(fixer): T13 — cost pre-filter skip generation on already-good tools
+
+---
 
 ### T12 — generator emits `required` arrays in schema fixes
 
