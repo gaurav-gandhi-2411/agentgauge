@@ -169,19 +169,36 @@ Secondary (not interpretable, VOID): arm B scored 70% — WORSE than arm A. The 
 inaccurate descriptions ("transfers a value from a source...") confused the agent more than the
 terse "Get." + visible param names. Recorded as a data point, not as a thesis finding.
 
-### Run #4 — pending
+### Run #4 — VALID, NEGATIVE on H1, UNTESTABLE on H2
 
-Fixture: ObsStore v4 (all confusable pairs have IDENTICAL param names {sid, key}).
-Agent: gemma2:9b. Date: TBD.
-get_a and get_b: both have {sid, key} — same desc, same params → agent cannot distinguish.
-del_a and del_b: both have {sid, key} — same desc, same params → agent cannot distinguish.
-Expected arm A selection: ~60-70% (only descriptions can disambiguate; both say "Get."/"Del.").
-H2 (call_correctness): headroom from enum constraints on key (get_b: sum/min/max/avg;
-del_b: hard/soft). If arm A call_correctness drops below 80% → H2 testable. Otherwise UNTESTABLE.
-Pre-conditions to confirm before interpreting:
-1. Manipulation check: arm A and arm B selection prompts differ (asserted in CI).
-2. H1 validity: arm A selection_accuracy ≤ 80%.
-3. H2 validity: arm A call_correctness ≤ 80% OR mark H2 UNTESTABLE.
+Fixture: ObsStore v4 ({sid,key} identical on all confusable pairs). Agent: gemma2:9b. Date: 2026-06-02.
+Tasks: 10 × 5 trials. Arm A: selection=70% (VALID), call=100% (VOID for H2).
+
+Validity: VALID — arm A selection 70% ≤ 80% ceiling ✓
+Manipulation check: selection prompts differed (fixer generated distinct descriptions for arm B) ✓
+
+Result:
+  selection_accuracy: A=70% B=60% delta=-10% noise=0% McNemar b=0 c=5 b+c<10
+  call_correctness:   A=100% B=100% delta=+0% noise=0% McNemar b=0 c=0
+
+H1 verdict: NEGATIVE (B < A, not B > A). Direction reversed from hypothesis.
+H2 verdict: UNTESTABLE (arm A call_correctness saturated at 100%).
+
+Diagnosis for H1 NEGATIVE: The fixer (qwen3:8b) generated semantically WRONG descriptions for
+both valid runs (#3 and #4) because the tool names (`get_a`, `get_b`, `del_a`, `del_b`, `put_x`)
+and param names (`key`, `sid`) are too opaque for the generator to infer purpose. Fixer described
+`get_a.key` as "API key for authentication" (not a record ID), `get_b` as "retrieves aggregate
+statistics by operation code" (close but with misleading framing). These inaccurate descriptions
+confused the agent MORE than the terse "Get." descriptions on arm A, which forced the agent to
+rely on task semantics alone.
+
+This is a genuine product finding, not a fixture artifact: **the fixer's description-quality
+improvements are conditionally reliable — they require the tool name or existing schema to carry
+enough signal for the generator to infer the correct purpose.** On fixtures where names are
+opaque, the fixer may generate descriptions that actively mislead rather than clarify.
+
+Run log now closed. Two valid runs (runs #3 and #4), both showing B ≤ A on selection_accuracy.
+H2 is UNTESTABLE on this fixture/model combination.
 
 ---
 
