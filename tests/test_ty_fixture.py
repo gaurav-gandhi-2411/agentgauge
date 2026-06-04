@@ -20,8 +20,7 @@ def stability_screen(
 ) -> list[bool]:
     """Return keep-mask. A task is kept if |successes_run1 - successes_run2| <= 1."""
     return [
-        abs(s1 - s2) <= 1
-        for s1, s2 in zip(task_successes_run1, task_successes_run2, strict=True)
+        abs(s1 - s2) <= 1 for s1, s2 in zip(task_successes_run1, task_successes_run2, strict=True)
     ]
 
 
