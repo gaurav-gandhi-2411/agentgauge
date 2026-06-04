@@ -175,7 +175,7 @@ VALID_ENUMS: dict[str, list[str]] = {
 
 def test_gold_constraint_values_are_valid_enum_members() -> None:
     """Every gold value in GOLD_CONSTRAINTS is a member of the declared enum for that param."""
-    for (tool, desc), constraints in GOLD_CONSTRAINTS.items():
+    for (tool, _desc), constraints in GOLD_CONSTRAINTS.items():
         for param, value in constraints.items():
             assert value in VALID_ENUMS[param], (
                 f"Gold value {value!r} for param {param!r} (tool={tool!r}) "

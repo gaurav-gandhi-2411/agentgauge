@@ -20,7 +20,20 @@ Autonomous runs: pick the single top TODO, implement it, move to IN-REVIEW.
 
 ## IN-REVIEW
 
-*(empty)*
+### Ty — H2 headroom fixture (call_correctness oracle A/B)
+
+**Branch:** `claude/ty-call-correctness`
+
+8-tool call-constraints fixture (4 easy / 4 hard with arbitrary enum codes).
+CI: fixture integrity, stability screen, manipulation check, inferability tests.
+Real-agent oracle A/B (gemma2:9b, 5 trials) pending.
+
+**Acceptance criteria (spec.md):**
+- Arm A call_correctness ~40-70% (real headroom); N >= 30 surviving tasks
+- Manipulation check: Arm A vs B schema listings differ
+- Inferability test: enum codes absent from param names and task text
+- Task-clustered sign/Wilcoxon on task-level deltas
+- Honest POSITIVE or NULL verdict recorded
 
 ---
 
@@ -51,18 +64,6 @@ a properly powered, task-clustered analysis.
 - Only THEN claim "fixer improves selection" in STATUS.md or PR descriptions.
 
 **Pre-condition:** own spec; do NOT inherit Tx's fixtures or tasks unchanged.
-
----
-
-### Ty — H2 headroom fixture (call_correctness testable)
-
-In all four T16 runs, gemma2:9b saturated at 100% call_correctness from training priors.
-Create a fixture where a correct tool call genuinely requires schema metadata the agent cannot
-infer: e.g. an arbitrary enum (`unit: "p1"/"p2"/"p3"`) or a non-standard format constraint
-with no natural-language equivalent. Alternatively, use a weaker/constrained agent.
-
-**Scope:** new fixture in `examples/`; no scorer.py changes; requires real-agent A/B run.
-**Pre-condition:** own spec, pre-registered H2 hypothesis with validity gate ≤ 80% arm A.
 
 ---
 

@@ -9,7 +9,6 @@ from __future__ import annotations
 #
 # The agent that reads the oracle enum can pick the correct code; Arm A's agent must guess.
 # Manipulation check: _build_tool_listing(arm_b_tools) != _build_tool_listing(arm_a_tools).
-
 import asyncio
 import json
 

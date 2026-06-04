@@ -7,7 +7,6 @@ from __future__ import annotations
 # ANTI-TAUTOLOGY RULE: task descriptions express user intent only.
 # They must NOT contain the enum value strings (ACQ_BURST, CODEC_R8, etc.).
 # The agent must get the correct value from the SCHEMA, not from the task text.
-
 from agentgauge.tasks import Task
 
 TASKS: list[Task] = [
