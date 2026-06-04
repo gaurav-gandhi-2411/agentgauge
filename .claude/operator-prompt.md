@@ -52,8 +52,21 @@ gh pr list --state open --search "T3" --json number,title,headRefName
   `claude/blocker-<date>` branch, open a DRAFT PR titled "Blocker report: all TODOs in
   review", and exit. **Never open a second PR for a task that already has one open.**
 
-If no item qualifies at all (all are ambiguous, blocked, or already in review), write the
-BLOCKER.md as above and exit. Do not invent work.
+If no item qualifies at all (all are ambiguous, blocked, or already in review), **before writing
+any BLOCKER.md**, check whether an open `claude/blocker-*` PR already exists:
+
+```bash
+gh pr list --state open --search "Blocker report" --json number,title,headRefName
+```
+
+- If an open blocker PR already exists → **do not open another one.** Instead, comment on the
+  existing PR with today's date and the current board state (e.g. `gh pr comment <number> --body
+  "Re-check <date>: board unchanged — TODO still empty, FUTURE/DEFERRED items still blocked."`),
+  then exit. One open blocker PR is enough; duplicate idle-path PRs add noise.
+- If no open blocker PR exists → write `BLOCKER.md`, commit to `claude/blocker-<date>`, open a
+  DRAFT PR titled "Blocker report: all TODOs in review", and exit.
+
+Do not invent work.
 
 ## Implement
 

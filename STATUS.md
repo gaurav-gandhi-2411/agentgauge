@@ -147,9 +147,10 @@ careful review beyond CI green:
 2. Generates fixes or actions against real servers or live APIs.
 3. Acceptance criteria require measuring calibration or comparing real-model outputs.
 
-**Current status: PAUSED.** The TASKS.md TODO queue is empty; there is no eligible work for the
-scheduled task to pick up. The autonomy infrastructure is in place and will resume when new TODOs
-are queued.
+**Current status: ACTIVE — idle.** The scheduled task runs daily at approximately 03:35 UTC. The
+TASKS.md TODO queue is currently empty, so each run takes the idle path: writes a `BLOCKER.md` and
+opens a draft blocker PR. All PRs opened by the loop are DRAFT; there is no auto-merge. The loop
+will pick up real work automatically when a new TODO item is queued with clear acceptance criteria.
 
 ---
 
