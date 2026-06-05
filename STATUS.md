@@ -91,6 +91,23 @@ models — always record the model alongside any stored score.
     sign test (task is the unit): discordant=0 in run 2; no task showed consistent improvement.
     Conclusion: no reproducible task-level upside demonstrated for fixer descriptions on this
     fixture. Powered re-run required (>=30 tasks, Arm A ~50-60%). Tracked as Tx-val in TASKS.md.
+- **Ty (IN-REVIEW, branch `claude/ty-call-correctness`):** Two-run oracle A/B on
+  `call_correctness`. CI: 268 tests, 89.61% coverage, all LLM mocked.
+  **Run 1 (PRELIMINARY — floor-effect):** 32 tasks, 16 hard with arbitrary enum codes
+  (ACQ_BURST/CODEC_R8 etc.). Hard-task Arm A = 0% by construction; aggregate 50% carried
+  by 16 inert easy tasks. Sign test on contested tasks: n_plus=16, n_minus=0, p=0.0000.
+  Technically POSITIVE but near-tautological (oracle supplied unguessable tokens; agent
+  echoed them). Not evidence of reliability improvement where agent had partial ability.
+  **Run 2 (FIXTURE FAILURE — partial-headroom design):** 30 tasks, all hard, mixed
+  constraints (format patterns [A-Z]{2}[0-9]{2}/ERR[0-9]{3}, semi-conventional enums,
+  non-standard units centiseconds/deciseconds). Stability screen: 0 dropped.
+  Arm A baseline = 33.3% < 40% gate → STOP. No A/B comparison made.
+  Format patterns and non-standard units proved harder for gemma2:9b than expected.
+  **Combined verdict: ABORTED.** Cannot establish a partial-headroom regime with these
+  constraint types for gemma2:9b. Schema quality in the call-construction stage remains
+  untested in a genuine partial-ability regime. A design with more conventional constraints
+  (standard integer ranges, familiar enum terms) is the candidate path to a non-tautological
+  partial-headroom test, but requires a fresh pre-registration.
 - **T17 (IN-REVIEW, branch `claude/t17-selection-limited`):** 8 confusable clusters (16 tools,
   32 pre-registered tasks). CI: 8 new tests pass (fixture integrity, stability-screen logic,
   manipulation check). Q1 oracle A/B (gemma2:9b, 2026-06-03): **ABORTED — fixture-quality,
@@ -121,7 +138,33 @@ models — always record the model alongside any stored score.
   not appear to move agent behavior on selection for gemma2:9b. This is a construct-validity
   concern for these dimensions, not just a fixture-design failure. Design decision required
   before any re-run — see TASKS.md.
-- Test suite: 236 tests, 89.61% coverage, all LLM calls mocked — CI runs with no network and no credentials.
+
+**Cross-experiment meta-finding (selection T17 + calls Ty):** The 40–70% partial-ability
+  window — where the agent has meaningful but imperfect ability in Arm A, leaving headroom
+  for oracle Arm B to improve — has proved narrow and hard to construct for gemma2:9b across
+  both dimensions tested:
+  - *Selection (T17):* Agent resolves tool selection at 81.2% from names alone on domain
+    vocabulary → Arm A above the 70% ceiling; no headroom.
+  - *Calls (Ty Run 2):* Agent succeeds at only 33.3% in Arm A on format/unit constraints →
+    below the 40% floor; still effectively a floor-effect regime.
+  Both dimensions landed outside the target window on the first attempt and require fixture
+  redesign to test. The window exists in principle but is sensitive to the agent's prior
+  knowledge about the specific vocabulary used.
+
+  **Candidate explanations to test next:**
+  - *(a) Guessable-but-error-prone constraints:* Use constraints the agent "knows" but
+    applies inconsistently — e.g., ISO date formats, HTTP status codes, standard SI units.
+    These should land in the 40–70% zone because the agent has partial exposure but not
+    perfect recall. Requires pre-registration and inferability guard.
+  - *(b) Weaker runner agent:* gemma2:9b may simply be too capable for 9B-class schema
+    vocabulary. A smaller model (e.g., gemma2:2b, phi3:mini) would have a lower knowledge
+    floor and more constraint-sensitive behavior, potentially landing Arm A in range without
+    fixture redesign. Trade-off: harder to generalize findings to production-grade agents.
+
+  Which fork to take (another Ty attempt vs. weaker-agent pivot vs. write the meta-finding
+  as the deliverable) is a design decision — tracked as open in TASKS.md.
+
+- Test suite: 268 tests, 89.61% coverage, all LLM calls mocked — CI runs with no network and no credentials.
 
 ## What is NOT built yet
 
