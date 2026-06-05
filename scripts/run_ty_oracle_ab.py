@@ -282,7 +282,7 @@ async def run(agent_model: str, trials: int, stability_trials: int) -> None:
         print("\n" + "=" * 96)
         print("Ty TASK-CLUSTERED RESULT TABLE")
         print(
-            f"{'Type':<6} {'Tool':<22} {'Task (truncated)':<40} {'A':>5} {'B':>5} {'Δ':>6}"
+            f"{'Type':<6} {'Tool':<22} {'Task (truncated)':<40} {'A':>5} {'B':>5} {'dlt':>6}"
         )
         print("-" * 96)
         for i, task in enumerate(surviving_tasks):
