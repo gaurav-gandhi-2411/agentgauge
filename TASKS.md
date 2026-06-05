@@ -53,7 +53,7 @@ in a genuine partial-ability regime.
 **Acceptance criteria met?** Manipulation check: PASS. Inferability: PASS. Headroom gate:
 FAIL (Run 1 trivially, Run 2 genuinely). Honest verdict: recorded (ABORTED).
 
-**PR:** pending (draft)
+**PR:** #36 (draft)
 
 ---
 

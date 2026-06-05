@@ -138,7 +138,33 @@ models — always record the model alongside any stored score.
   not appear to move agent behavior on selection for gemma2:9b. This is a construct-validity
   concern for these dimensions, not just a fixture-design failure. Design decision required
   before any re-run — see TASKS.md.
-- Test suite: 236 tests, 89.61% coverage, all LLM calls mocked — CI runs with no network and no credentials.
+
+**Cross-experiment meta-finding (selection T17 + calls Ty):** The 40–70% partial-ability
+  window — where the agent has meaningful but imperfect ability in Arm A, leaving headroom
+  for oracle Arm B to improve — has proved narrow and hard to construct for gemma2:9b across
+  both dimensions tested:
+  - *Selection (T17):* Agent resolves tool selection at 81.2% from names alone on domain
+    vocabulary → Arm A above the 70% ceiling; no headroom.
+  - *Calls (Ty Run 2):* Agent succeeds at only 33.3% in Arm A on format/unit constraints →
+    below the 40% floor; still effectively a floor-effect regime.
+  Both dimensions landed outside the target window on the first attempt and require fixture
+  redesign to test. The window exists in principle but is sensitive to the agent's prior
+  knowledge about the specific vocabulary used.
+
+  **Candidate explanations to test next:**
+  - *(a) Guessable-but-error-prone constraints:* Use constraints the agent "knows" but
+    applies inconsistently — e.g., ISO date formats, HTTP status codes, standard SI units.
+    These should land in the 40–70% zone because the agent has partial exposure but not
+    perfect recall. Requires pre-registration and inferability guard.
+  - *(b) Weaker runner agent:* gemma2:9b may simply be too capable for 9B-class schema
+    vocabulary. A smaller model (e.g., gemma2:2b, phi3:mini) would have a lower knowledge
+    floor and more constraint-sensitive behavior, potentially landing Arm A in range without
+    fixture redesign. Trade-off: harder to generalize findings to production-grade agents.
+
+  Which fork to take (another Ty attempt vs. weaker-agent pivot vs. write the meta-finding
+  as the deliverable) is a design decision — tracked as open in TASKS.md.
+
+- Test suite: 268 tests, 89.61% coverage, all LLM calls mocked — CI runs with no network and no credentials.
 
 ## What is NOT built yet
 
