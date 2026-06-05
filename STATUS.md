@@ -91,6 +91,23 @@ models — always record the model alongside any stored score.
     sign test (task is the unit): discordant=0 in run 2; no task showed consistent improvement.
     Conclusion: no reproducible task-level upside demonstrated for fixer descriptions on this
     fixture. Powered re-run required (>=30 tasks, Arm A ~50-60%). Tracked as Tx-val in TASKS.md.
+- **Ty (IN-REVIEW, branch `claude/ty-call-correctness`):** Two-run oracle A/B on
+  `call_correctness`. CI: 268 tests, 89.61% coverage, all LLM mocked.
+  **Run 1 (PRELIMINARY — floor-effect):** 32 tasks, 16 hard with arbitrary enum codes
+  (ACQ_BURST/CODEC_R8 etc.). Hard-task Arm A = 0% by construction; aggregate 50% carried
+  by 16 inert easy tasks. Sign test on contested tasks: n_plus=16, n_minus=0, p=0.0000.
+  Technically POSITIVE but near-tautological (oracle supplied unguessable tokens; agent
+  echoed them). Not evidence of reliability improvement where agent had partial ability.
+  **Run 2 (FIXTURE FAILURE — partial-headroom design):** 30 tasks, all hard, mixed
+  constraints (format patterns [A-Z]{2}[0-9]{2}/ERR[0-9]{3}, semi-conventional enums,
+  non-standard units centiseconds/deciseconds). Stability screen: 0 dropped.
+  Arm A baseline = 33.3% < 40% gate → STOP. No A/B comparison made.
+  Format patterns and non-standard units proved harder for gemma2:9b than expected.
+  **Combined verdict: ABORTED.** Cannot establish a partial-headroom regime with these
+  constraint types for gemma2:9b. Schema quality in the call-construction stage remains
+  untested in a genuine partial-ability regime. A design with more conventional constraints
+  (standard integer ranges, familiar enum terms) is the candidate path to a non-tautological
+  partial-headroom test, but requires a fresh pre-registration.
 - **T17 (IN-REVIEW, branch `claude/t17-selection-limited`):** 8 confusable clusters (16 tools,
   32 pre-registered tasks). CI: 8 new tests pass (fixture integrity, stability-screen logic,
   manipulation check). Q1 oracle A/B (gemma2:9b, 2026-06-03): **ABORTED — fixture-quality,

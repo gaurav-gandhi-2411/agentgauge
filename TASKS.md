@@ -24,16 +24,36 @@ Autonomous runs: pick the single top TODO, implement it, move to IN-REVIEW.
 
 **Branch:** `claude/ty-call-correctness`
 
-8-tool call-constraints fixture (4 easy / 4 hard with arbitrary enum codes).
-CI: fixture integrity, stability screen, manipulation check, inferability tests.
-Real-agent oracle A/B (gemma2:9b, 5 trials) pending.
+Two-run oracle A/B experiment on call_correctness. CI: fixture integrity, stability screen,
+manipulation check, inferability tests (268 tests, 89.61% coverage). Real-agent runs:
+gemma2:9b, 5 trials main / 3 stability.
 
-**Acceptance criteria (spec.md):**
-- Arm A call_correctness ~40-70% (real headroom); N >= 30 surviving tasks
-- Manipulation check: Arm A vs B schema listings differ
-- Inferability test: enum codes absent from param names and task text
-- Task-clustered sign/Wilcoxon on task-level deltas
-- Honest POSITIVE or NULL verdict recorded
+**Run 1 (PRELIMINARY — floor-effect design):**
+- 32 tasks: 16 easy (no constrained params) + 16 hard (arbitrary enum codes)
+- Hard-task Arm A: 0% by construction (ACQ_BURST/CODEC_R8 etc. are unguessable)
+- Aggregate Arm A: 50% (padded by easy tasks); headroom gate "passed" artificially
+- Sign test (contested tasks only): n_plus=16, n_minus=0, ties=0, p=0.0000
+- Verdict: technically POSITIVE but near-tautological (agent read the enum token from
+  schema and echoed it — not evidence of reliability improvement in a partial-ability regime)
+
+**Run 2 (FIXTURE FAILURE — Arm A below headroom gate):**
+- 30 tasks, all hard, mixed constraints: format patterns / semi-conventional enums / non-standard units
+- Stability screen: 0 tasks dropped
+- Arm A baseline (stability run 1): 33.3% → STOP (gate: 40–70%)
+- Format patterns (ERR[0-9]{3}, [A-Z]{2}[0-9]{2}) and non-standard units (centiseconds, deciseconds)
+  proved harder for gemma2:9b than expected; Arm A never reached partial-headroom regime
+- No A/B comparison made (pre-registered gate honored)
+
+**Combined verdict:** ABORTED on the non-tautological hypothesis. Cannot establish a
+partial-headroom regime with these constraint types for gemma2:9b. Run 1's tautological
+POSITIVE stands (oracle supplies an unguessable token → agent emits it) but this is not
+the product-relevant claim. Schema quality in the call-construction stage remains untested
+in a genuine partial-ability regime.
+
+**Acceptance criteria met?** Manipulation check: PASS. Inferability: PASS. Headroom gate:
+FAIL (Run 1 trivially, Run 2 genuinely). Honest verdict: recorded (ABORTED).
+
+**PR:** pending (draft)
 
 ---
 
