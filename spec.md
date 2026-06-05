@@ -1,104 +1,103 @@
-# spec.md — Ty: Does description/schema reduce malformed CALLS? (call_correctness)
+# spec.md — Ty2: call_correctness, guessable-but-error-prone constraints (last fixture attempt on gemma)
 
-**Repo:** github.com/gaurav-gandhi-2411/agentgauge · **Base:** `main` @ 54f8593 ·
-**Branch:** `claude/ty-call-correctness`
-**Routing:** DRAFT PR (all PRs are DRAFT — conservative policy). Draft-forcing #2/#3 (real agent vs
-served server, measured deltas). **NOT condition #1** — adds a fixture + task set + an oracle A/B; no
-judge/scorer/rubric/calibration/generator changes.
+**Repo:** github.com/gaurav-gandhi-2411/agentgauge · **Base:** `main` @ d138369 ·
+**Branch:** `claude/ty2-guessable-constraints`
+**Routing:** DRAFT PR (conservative policy). Draft-forcing #2/#3. NOT condition #1.
 
 **This spec, committed at branch start, IS the pre-registration.** Fixture, gold calls, oracle
-schemas, headroom target, and analysis plan are fixed before the run and not edited after.
+schemas, headroom target, constraint band, and analysis plan are fixed before the run, not edited after.
 
 ---
 
-## The question
+## Why this run, and why it is the LAST fixture attempt on gemma2:9b
 
-Selection turned out to be description-insensitive for a capable agent (run #1, ObsStore, T17): the
-agent picks the right tool from the name. Ty tests the next behavioral stage: once the right tool is
-selected, does a good description/schema reduce MALFORMED CALLS (wrong enum, wrong format/units,
-missing/!wrong required args)? This is where description_quality + schema_completeness are most
-likely to actually bite. Oracle schema = upper bound of what any fix could achieve.
+Ty aborted twice: Run 1 (arbitrary enums) -> Arm A hard = 0% (floor, tautological — oracle just
+hands over an unguessable token). Run 2 (exotic formats/units) -> 33% (floor, too hard). Neither hit
+the partial-ability band. The ONLY untested band is **guessable-but-error-prone**: constraints where
+CONVENTION gives the agent a noisy prior it gets right SOMETIMES and wrong OFTEN. That is the only
+regime where a positive delta means "schema improves the RELIABILITY of a partially-capable agent"
+(the real product claim) rather than "schema supplies a fact that exists nowhere else" (Run 1's
+near-tautology).
 
-## The headroom wall (primary design constraint — read first)
+**Pre-registered contingency:** if a well-targeted guessable band still cannot land contested Arm A
+in 40-70%, this experiment ABORTS and the conclusion is that the partial regime is unreachable by
+fixture design on gemma2:9b. That abort triggers the WEAKER-AGENT construct-validity test (own spec)
+— NOT a fourth gemma fixture. Do not rebuild on gemma again after this.
 
-`call_correctness` saturated at 100% on EVERY prior fixture because gemma2:9b builds valid args from
-convention (op="mean", ISO dates, obvious types). A fixture where schema info CAN help must require
-information the agent CANNOT guess from convention or param names. Otherwise it aborts at the
-headroom gate exactly like T17 (which died at 81.2% selection). Design the calls to need:
-- **Arbitrary enums:** valid value is a non-semantic token set, e.g. mode in ["xR2","xR7","xR9"] —
-  NOT "fast"/"slow"/"mean" which the agent guesses.
-- **Non-standard units/formats:** e.g. timestamp in centiseconds-since-boot (not epoch/ISO); weight
-  in grams with a 0-1000 bound; an ID format like "Z-####-Q".
-- **Required fields with no conventional default:** a mandatory arg the agent won't supply unless told.
-- **Inferability check:** for each, confirm the value is genuinely NOT derivable from the param name,
-  the task text, or common API convention. If gemma can guess it, it doesn't create headroom.
+## The constraint band (design core)
 
-Arm A (vague/empty schema) must therefore cause genuine call FAILURES; Arm B (oracle schema) supplies
-the non-guessable info.
+Constraints must be GUESSABLE-BUT-ERROR-PRONE: the agent's conventional prior is right part of the
+time, wrong part of the time. Not arbitrary (Run 1 floor), not exotic (Run 2 floor), not obvious
+(ceiling). Candidates:
+- **Near-miss enums:** plausible-English values that aren't the agent's first guess
+  (status="settled" not "completed"/"done"; priority="P1" not "high"; visibility="unlisted" not
+  "private"). Agent often picks a synonym the schema rejects.
+- **Format-precision:** a field the agent gets approximately right but mis-specifies — e.g. requires
+  full RFC3339 with timezone offset where the agent often emits a naive date; a code the schema
+  pins (HTTP 301 vs 302, currency as ISO-4217 "USD" not "$").
+- **Unit-magnitude:** real SI conventions where the agent sometimes uses the wrong magnitude
+  (grams vs kg, ms vs s) — partially right.
+- **Commonly-omitted required field:** a required arg with a conventional name the agent forgets
+  ~half the time (idempotency_key, api_version).
 
-## Anti-tautology guard
+Target: each contested task is one where gemma, with only Arm A's vague schema, succeeds ~40-70% of
+the time. Arm B's oracle schema states the exact member/format/unit/required so reliability can rise.
 
-Do NOT phrase the task so it states the enum value / format directly (that tests copying, not schema
-use). The agent must get the constraint from the SCHEMA, not the prompt. Tasks describe intent; the
-schema carries the machine-level requirement.
+## Anti-tautology + inferability (refined for this band)
+
+- The task states INTENT or CATEGORY only, never the exact value (no copying). Convention supplies a
+  noisy signal; the oracle schema supplies the exact requirement.
+- Inferability CI test (refined): the EXACT correct value must not appear in the task text or param
+  name (so Arm B isn't lookup), BUT the value must be CONVENTIONALLY PLAUSIBLE (so Arm A isn't floor).
+  Assert the first half in CI; justify the second half per-task in the fixture doc.
 
 ---
 
 ## Scope
 
-**IN:** a call-correctness fixture (Arm A vague schema; Arm B oracle schema with correct
-enums/formats/units/required); a powered, stability-screened task set; the oracle A/B on
-`call_correctness` via the T15 harness.
+**IN:** a guessable-constraint fixture (Arm A vague schema; Arm B oracle); powered, stability-screened
+contested task set; oracle A/B on `call_correctness` via the T15 harness. Selection trivially easy
+(one obvious tool/task) so the only measured variable is call well-formedness.
 
-**OUT:** the fixer / generated schemas (downstream Q2, only if oracle is positive); `selection_accuracy`
-(answered — insensitive); rubric/scorer changes; other dimensions.
+**OUT:** the fixer / generated schemas (downstream, only if positive); weaker-agent swap (the
+contingent NEXT experiment, own spec); rubric/scorer changes; inert easy padding tasks (drop them —
+Run 1's 16 easy tasks polluted the aggregate; keep at most a tiny sanity control, excluded from
+headroom and the test).
 
-## Fixture design
+## Rigor (unchanged from T17/Ty)
 
-- 6-10 tools, each with at least one call-critical constraint from the categories above. The CORRECT
-  selection must be easy (don't reintroduce the selection problem) — single obvious tool per task —
-  so the only variable measured is whether the CALL is well-formed.
-- Arm A: vague/empty parameter schemas (type only, or missing constraints) — realistic sloppy server.
-- Arm B: ORACLE schema — correct enum members, format/unit descriptions, required flags. Committed up front.
-- Gold call per task: the exact correct arguments (tool + arg values). call_correctness is scored
-  deterministically against this. Document, per tool, WHICH constraint is non-guessable and why.
-
-## Rigor (carry forward T17's lessons)
-
-- Headroom: target Arm A call_correctness ~40-70% (real room; not saturated). CONFIRM before
-  interpreting — this is the gate that killed T17; expect it to be the hard part here too.
-- STABILITY pre-screen: run Arm A twice; DROP tasks whose success flips by >1 trial; report count.
-  If too many drop -> fixture-quality failure, report, don't proceed.
-- Power: >= 30 surviving tasks. Analysis CLUSTERED BY TASK (sign test / Wilcoxon on task-level
-  deltas), NOT trial-level McNemar.
+- Headroom: contested Arm A `call_correctness` ~40-70%, measured on CONTESTED tasks only (not padded).
+  CONFIRM before interpreting. Outside the band (either direction) -> ABORT per contingency above.
+- Stability pre-screen: run Arm A twice; drop tasks flipping >1 trial; report count.
+- Power: >= 30 contested surviving tasks. Task-clustered analysis (sign/Wilcoxon on task-level
+  deltas), NOT trial-level McNemar; report effective N = contested (non-tied) tasks.
 - Manipulation check: Arm A vs Arm B schemas differ in the served listing (assert).
-- Agent = gemma2:9b, != judge (llama3.1:8b) != generator (qwen3:8b). call_correctness deterministic.
-- No post-hoc tuning of fixture, gold calls, or oracle after seeing results.
+- Agent = gemma2:9b, != judge != generator. call_correctness deterministic. `_is_correct_call`
+  must reward the SPECIFIC correctness (right member/format/unit/required), across the band — not a
+  single exact-string match on one field.
+- No post-hoc tuning after seeing results.
 
 ---
 
 ## Acceptance criteria
 
-1. **CI (deterministic, seed 42, no network):** fixture loads; each task has exactly one gold call;
-   stability-screen drop logic works on a synthetic flaky case; manipulation check holds (Arm A vs B
-   schemas differ); an inferability unit test asserts at least one constraint is absent from both the
-   param name and the task text. No real model in committed tests.
-2. **Real-agent oracle A/B (manual, in PR description — the deliverable):**
-   - Pre-checks reported FIRST: Arm A ~40-70% call_correctness and stable (post-screen), N>=30
-     surviving, manipulation pass. If headroom is wrong or too many drop -> STOP and report
-     (fixture-quality), do not interpret.
-   - Task-clustered table: Arm A, Arm B(oracle), per-task delta, sign/Wilcoxon result.
-   - Honest verdict on the pre-registered branch:
-     - POSITIVE (oracle > A): schema info reduces malformed calls — description_quality/
-       schema_completeness have real behavioral headroom on CALLS. -> Tx-val / a fixer-realization
-       experiment should run on THIS fixture.
-     - NULL (oracle ~ A): gemma builds correct calls without the schema even when info is
-       non-guessable -> the dimensions are behaviorally inert on calls too; combined with the
-       selection finding, a foundational result about the score's construct validity.
+1. **CI (deterministic, seed 42, no network):** fixture loads; one gold call per task; stability-screen
+   logic; manipulation check; inferability test (exact value absent from task text + param name);
+   gold-validity (each gold value is a valid member of its oracle constraint). No real model in tests.
+2. **Real-agent oracle A/B (manual, in PR description):**
+   - Pre-checks FIRST: contested Arm A in 40-70% and stable, N>=30 contested, manipulation pass.
+     If Arm A is outside 40-70% -> STOP, report ABORT + recommend the weaker-agent pivot. Do not interpret.
+   - Task-clustered table: Arm A, Arm B(oracle), per-task delta, sign/Wilcoxon, effective N.
+   - Honest verdict:
+     - POSITIVE (oracle > A): schema quality improves call reliability for a partially-capable agent
+       — the first located behavioral effect for a description-facing dimension. -> fixer-realization
+       experiment next, on this fixture.
+     - NULL (oracle ~ A): even when partially capable, gemma's call reliability is schema-insensitive
+       — strong construct-validity finding across both selection and calls.
 3. scorer.py / judge / rubrics / calibration / generator untouched; verify.sh green; coverage >= 60%.
 
 ## Housekeeping
 
-- Promote Ty into TASKS.md TODO with this spec referenced (makes it the one eligible item if the
-  scheduled task fires — but it's draft-forcing, so it would force DRAFT, not auto-anything).
-- STATUS.md: record the measured Ty result (positive or null) precisely; claim nothing beyond it.
+- TASKS.md: Ty2 (TODO -> IN-REVIEW). STATUS.md: record the measured result precisely. If ABORT,
+  record that the partial regime is unreachable by fixture design on gemma2:9b and queue the
+  weaker-agent construct-validity test as the next item.
