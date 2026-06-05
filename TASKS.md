@@ -20,6 +20,25 @@ Autonomous runs: pick the single top TODO, implement it, move to IN-REVIEW.
 
 ## IN-REVIEW
 
+### Ty2 — guessable-constraints oracle A/B (call_correctness, last gemma attempt)
+
+**Branch:** `claude/ty2-guessable-constraints`
+
+Oracle A/B on `call_correctness` using guessable-but-error-prone constraints. CI: 25 fixture
+tests (integrity, stability screen, manipulation check, inferability, gold-validity,
+`_is_correct_call` unit tests); 293 total tests, 89.61% coverage.
+
+30 contested tasks (5 per tool), 4 constraint types:
+- near-miss enums: `update_order_status` (settled/voided/disputed/processing/pending),
+  `create_support_ticket` (P1/P2/P3/P4), `set_asset_visibility` (public/unlisted/internal/archived)
+- format-precision: `schedule_callback` (RFC3339+offset vs naive datetime)
+- unit-magnitude: `set_request_timeout` (ms vs seconds, per-task range check)
+- commonly-omitted required field: `charge_customer` (idempotency_key presence)
+
+Real-agent results: pending (gemma2:9b, 5 trials, 3 stability).
+
+---
+
 ### Ty — H2 headroom fixture (call_correctness oracle A/B)
 
 **Branch:** `claude/ty-call-correctness`
