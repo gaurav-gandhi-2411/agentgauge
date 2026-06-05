@@ -1,6 +1,6 @@
 # AgentGauge — Project Status
 
-> Current as of 2026-06-02. Update this file when significant milestones land.
+> Current as of 2026-06-05. Update this file when significant milestones land.
 
 ---
 
@@ -164,7 +164,26 @@ models — always record the model alongside any stored score.
   Which fork to take (another Ty attempt vs. weaker-agent pivot vs. write the meta-finding
   as the deliverable) is a design decision — tracked as open in TASKS.md.
 
-- Test suite: 268 tests, 89.61% coverage, all LLM calls mocked — CI runs with no network and no credentials.
+- **Ty2 (IN-REVIEW, branch `claude/ty2-guessable-constraints`, 2026-06-05): ABORTED — partial
+  regime unreachable by fixture design on gemma2:9b.** Third and final attempt on gemma2:9b
+  for `call_correctness` partial-headroom oracle A/B. 30 contested tasks (all guessable-but-
+  error-prone): 5 near-miss enums per tool (`update_order_status`, `create_support_ticket`,
+  `set_asset_visibility`), 5 RFC3339-with-offset format tasks (`schedule_callback`), 5
+  unit-magnitude tasks (`set_request_timeout`, ms vs seconds), 5 idempotency-key presence
+  tasks (`charge_customer`). Stability screen: 0 tasks dropped. Manipulation check: PASS.
+  **Arm A baseline (stability run 1, 30 surviving tasks): 36.7% — below the 40% gate. STOP.**
+  No A/B comparison made per pre-registration.
+
+  **Outcome and implication:** Even with near-miss enums (settled/P1/unlisted), RFC3339 precision,
+  ms-magnitude, and idempotency_key — the most conventionally-plausible constraints tested —
+  gemma2:9b's Arm A accuracy (36.7%) still cannot reach the 40% floor required for a
+  non-tautological comparison. The partial-ability regime (40–70%) is unreachable by fixture
+  design on gemma2:9b across three progressive attempts (Run 1: arbitrary codes → 0%; Run 2:
+  exotic formats/units → 33.3%; Ty2: guessable-but-error-prone → 36.7%). Pre-registered
+  contingency triggered: **do not rebuild on gemma2:9b again.** Next step is the weaker-agent
+  construct-validity test (own spec, different agent model) per spec.md contingency.
+
+- Test suite: 293 tests, 89.61% coverage, all LLM calls mocked — CI runs with no network and no credentials.
 
 ## What is NOT built yet
 
