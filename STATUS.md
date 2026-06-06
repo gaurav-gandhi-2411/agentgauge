@@ -186,11 +186,12 @@ models — always record the model alongside any stored score.
   distinguishing dimension. On the 16 contested tasks (A=0%, B=100%): all 16 improved, none
   regressed. Sign test: n_plus=16, n_minus=0, ties=24, p=0.0000.
 
-  **Effect 2 — parse stabilization:**
-  Parse-failure rate: A=12.5% (25/200) → B=2.5% (5/200). With 60 near-identical names and no
-  descriptions, the model occasionally failed to produce a valid structured call; oracle descriptions
-  suppressed this. This contributes ~5–6 pp of the aggregate delta and is a distinct mechanism from
-  discrimination.
+  **Effect 2 — parse stabilization (separate finding):**
+  Parse-failure rate: A=12.5% (25/200) → B=2.5% (5/200). At 60-tool catalog density with empty
+  descriptions, the model intermittently failed to produce a valid structured call at all — it
+  selected nothing rather than the wrong thing. Oracle descriptions suppressed this. Mechanism:
+  catalog ambiguity destabilizes call formation, not just tool selection. This contributes
+  ~5–6 pp of the aggregate delta and is mechanistically distinct from the discrimination effect.
 
   **Scope — effect is on the confusable subset only:**
   16/40 tasks were contested (A=0%, B=100%). 22 tied at ceiling (A=100%, B=100%) — names alone
@@ -200,17 +201,20 @@ models — always record the model alongside any stored score.
   criterion is not cued by the task). The "+40 aggregate" should not be read as "+40 across all
   tool use" — the behavioral effect is entirely on the 16 confusable-but-discriminable tasks.
 
-  **What T18 does and does NOT establish:**
-  - `discoverability` (15%) is scored on exactly this regime — large catalog, within-family
-    distinguishability. T18 confirms the behavioral hypothesis the dimension was built for:
-    oracle discriminating descriptions measurably improve agent selection in the confusable
-    regime at scale. The effect is **scale-gated**: the confusable regime required density
-    (60 tools / 10 families). At T17 scale (16 tools / 8 clusters), standard API vocabulary
-    saturated Arm A at 81.2% without descriptions.
-  - This is NOT a general claim that "descriptions help agents." *Selection-among-few (T17):*
-    no headroom (Arm A = 81.2%, above 70% ceiling). *Call construction (Ty):* ABORTED on all
-    tested constraint types. The effect is scoped to confusable-at-scale selection, the one
-    regime where `discoverability`'s 15% weight is motivated.
+  **Cross-experiment map and scope:**
+
+  | Experiment | Dimension | Verdict | Why |
+  |------------|-----------|---------|-----|
+  | T17 (16 tools, 8 clusters) | selection | **inert** — ABORTED above ceiling | names saturated Arm A at 81.2%; descriptions never tested |
+  | Ty (call construction) | calls | **inconclusive** — ABORTED all runs | unguessable tokens → tautological; format/unit constraints → floor |
+  | T18 (60 tools, 10 families) | selection | **POSITIVE** | density created the confusable regime; discrimination +34.5 pp |
+
+  Effect is **scale-gated**: the confusable regime required 60-tool density. At T17's scale,
+  standard API vocabulary was self-disambiguating. This is NOT a general claim that "descriptions
+  help agents" — the effect is specific to large (≥60-tool) catalogs with real within-family
+  semantic distinctions (source, scope, permanence, channel, computation type). `discoverability`
+  (15%) is validated for the regime it was designed for. `description_quality` (25%) and
+  `call_correctness` effects remain unestablished.
 
 - Test suite: 268 tests, 89.61% coverage, all LLM calls mocked — CI runs with no network and no credentials.
 
