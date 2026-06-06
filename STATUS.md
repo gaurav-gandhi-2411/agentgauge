@@ -1,6 +1,6 @@
 # AgentGauge — Project Status
 
-> Current as of 2026-06-02. Update this file when significant milestones land.
+> Current as of 2026-06-07. Update this file when significant milestones land.
 
 ---
 
@@ -126,18 +126,23 @@ models — always record the model alongside any stored score.
     signal, but descriptions cannot recover it either (fixer hallucinated plausible-but-wrong
     descriptions; real-agent A/B arm B ≤ arm A). No headroom AND not description-recoverable.
 
-  Taken together: there is no fixture design tested so far where (a) names are ambiguous enough
-  that gemma2:9b cannot pick correctly from them, AND (b) descriptions contain recoverable
-  signal that would close the gap. The middle regime — confusable names where descriptions
-  disambiguate — may not exist for this model class on standard API vocabulary.
+  Taken together: at T17's scale (16 tools, 8 clusters), no fixture design placed Arm A in
+  the 40–70% headroom window. Standard API vocabulary saturated Arm A at 81.2%; opaque names
+  showed no description-recoverable signal.
 
-  **Implication:** `selection_accuracy` may be behaviorally description-insensitive for
-  capable agents. A model either resolves the tool from its name (and descriptions are
-  irrelevant) or the name is so opaque that descriptions carry no useful signal either.
-  `description_quality` (25%) and `discoverability` (15%) are measuring something that does
-  not appear to move agent behavior on selection for gemma2:9b. This is a construct-validity
-  concern for these dimensions, not just a fixture-design failure. Design decision required
-  before any re-run — see TASKS.md.
+  **Update (T18, 2026-06-07): The confusable regime was found at catalog scale.** A 60-tool
+  catalog (10 families × 6 near-neighbors) placed Arm A at 55.0% and oracle descriptions
+  raised discrimination accuracy to 97.4% (+34.5 pp on parse-success calls). The through-line
+  below applied at T17's scale; density was the missing variable, not a fundamental limit.
+
+  **Implication (pre-T18):** `selection_accuracy` may be behaviorally description-insensitive
+  for capable agents at small catalog sizes. A model either resolves the tool from its name
+  (descriptions irrelevant) or the name is so opaque descriptions carry no useful signal.
+  T18 showed this is scale-dependent: the description signal becomes necessary at 60 tools /
+  10 families, where names alone cannot distinguish within-family variants. `discoverability`
+  (15%) is validated for the regime it was designed for; the construct-validity concern from
+  T17 is resolved for that dimension. `description_quality` (25%) remains untested in an
+  analogous behavioral experiment. Design decision required — see TASKS.md.
 
 **Cross-experiment meta-finding (selection T17 + calls Ty):** The 40–70% partial-ability
   window — where the agent has meaningful but imperfect ability in Arm A, leaving headroom
@@ -163,6 +168,49 @@ models — always record the model alongside any stored score.
 
   Which fork to take (another Ty attempt vs. weaker-agent pivot vs. write the meta-finding
   as the deliverable) is a design decision — tracked as open in TASKS.md.
+
+- **T18 (IN-REVIEW, branch `claude/t18-discoverability-scale`):** Oracle A/B on `selection_accuracy`
+  with a 60-tool confusable catalog (10 families × 6 near-neighbors). Arm A = empty descriptions;
+  Arm B = oracle discriminating descriptions (each targets the within-family distinguishing
+  dimension: source, scope, permanence, channel, computation type, etc.). 40 pre-registered tasks,
+  5 trials per arm, gemma2:9b agent. GPU-exclusive run (watchdog-confirmed clean, 2026-06-07).
+
+  **POSITIVE. First located behavioral effect for a description-facing dimension.**
+
+  Decomposed result — the +40.0 pp aggregate contains two distinct effects:
+
+  **Effect 1 — discrimination (parse-success calls only):**
+  Arm A: 175/200 parse-success trials → 62.9% correct.
+  Arm B: 195/200 parse-success trials → 97.4% correct.
+  Discrimination delta: **+34.5 pp**. This is the gain from descriptions that target the within-family
+  distinguishing dimension. On the 16 contested tasks (A=0%, B=100%): all 16 improved, none
+  regressed. Sign test: n_plus=16, n_minus=0, ties=24, p=0.0000.
+
+  **Effect 2 — parse stabilization:**
+  Parse-failure rate: A=12.5% (25/200) → B=2.5% (5/200). With 60 near-identical names and no
+  descriptions, the model occasionally failed to produce a valid structured call; oracle descriptions
+  suppressed this. This contributes ~5–6 pp of the aggregate delta and is a distinct mechanism from
+  discrimination.
+
+  **Scope — effect is on the confusable subset only:**
+  16/40 tasks were contested (A=0%, B=100%). 22 tied at ceiling (A=100%, B=100%) — names alone
+  were sufficient for these. 2 tied at floor (A=0%, B=0%) — ambiguous gold, not agent failure:
+  `find_entries` competes with `lookup_data` (both exact-key lookup; task text doesn't specify
+  backend), `book_slot` competes with `plan_event` (both calendar tools; "prevents double-booking"
+  criterion is not cued by the task). The "+40 aggregate" should not be read as "+40 across all
+  tool use" — the behavioral effect is entirely on the 16 confusable-but-discriminable tasks.
+
+  **What T18 does and does NOT establish:**
+  - `discoverability` (15%) is scored on exactly this regime — large catalog, within-family
+    distinguishability. T18 confirms the behavioral hypothesis the dimension was built for:
+    oracle discriminating descriptions measurably improve agent selection in the confusable
+    regime at scale. The effect is **scale-gated**: the confusable regime required density
+    (60 tools / 10 families). At T17 scale (16 tools / 8 clusters), standard API vocabulary
+    saturated Arm A at 81.2% without descriptions.
+  - This is NOT a general claim that "descriptions help agents." *Selection-among-few (T17):*
+    no headroom (Arm A = 81.2%, above 70% ceiling). *Call construction (Ty):* ABORTED on all
+    tested constraint types. The effect is scoped to confusable-at-scale selection, the one
+    regime where `discoverability`'s 15% weight is motivated.
 
 - Test suite: 268 tests, 89.61% coverage, all LLM calls mocked — CI runs with no network and no credentials.
 
