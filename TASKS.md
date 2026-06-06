@@ -20,20 +20,6 @@ Autonomous runs: pick the single top TODO, implement it, move to IN-REVIEW.
 
 ## IN-REVIEW
 
-### T18 — Discoverability at scale (confusable catalog oracle A/B)
-
-**Branch:** `claude/t18-discoverability-scale` (draft PR pending)
-
-60-tool catalog in 10 families of 6 near-neighbors each. Oracle A/B tests whether discriminating
-descriptions improve selection when the agent faces dense distractor families at scale.
-
-**Acceptance criteria:**
-1. CI: catalog 60 tools, 10 families, 40 tasks, one gold per task, manipulation check, anti-tautology. verify.sh green.
-2. Real-agent: parse_failed reported first; pre-checks pass (contested Arm A 40-70%, stability, N>=30, manipulation). Task-clustered table + sign test. Honest three-way verdict.
-3. No scorer/judge/rubric/calibration changes.
-
----
-
 ## FUTURE / DEFERRED
 
 ### Tx-val — Powered upside re-run (grounded-fixture significance)
@@ -88,6 +74,14 @@ test suite guarantees ordering + actionability gap regardless of which model is 
 ---
 
 ## DONE
+
+### T18 — Discoverability at scale (confusable catalog oracle A/B)
+
+**Merged:** PR #41 — feat(t18): discoverability at scale — oracle A/B POSITIVE (+34.5pp discrimination, 60-tool confusable catalog)
+
+60-tool catalog (10 families × 6 near-neighbors), 40 pre-registered tasks, 5 trials per arm, gemma2:9b agent. GPU-exclusive run (watchdog-confirmed, 2026-06-07). **POSITIVE.** Within-family discrimination: +34.5 pp on parse-success calls (62.9% → 97.4%), 16/16 contested tasks improved, p=0.0000. Parse-stabilization separate finding: 12.5% → 2.5% malformed-call rate — catalog ambiguity destabilizes call formation at scale, not just selection. Effect is scale-gated (≥60-tool density required; T17 at 16 tools saturated Arm A at 81.2%). First located behavioral effect for a description-facing dimension.
+
+---
 
 ### Ty — H2 headroom fixture (call_correctness oracle A/B)
 
