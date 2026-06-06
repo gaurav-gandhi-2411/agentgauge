@@ -20,7 +20,17 @@ Autonomous runs: pick the single top TODO, implement it, move to IN-REVIEW.
 
 ## IN-REVIEW
 
-*(empty)*
+### T18 — Discoverability at scale (confusable catalog oracle A/B)
+
+**Branch:** `claude/t18-discoverability-scale` (draft PR pending)
+
+60-tool catalog in 10 families of 6 near-neighbors each. Oracle A/B tests whether discriminating
+descriptions improve selection when the agent faces dense distractor families at scale.
+
+**Acceptance criteria:**
+1. CI: catalog 60 tools, 10 families, 40 tasks, one gold per task, manipulation check, anti-tautology. verify.sh green.
+2. Real-agent: parse_failed reported first; pre-checks pass (contested Arm A 40-70%, stability, N>=30, manipulation). Task-clustered table + sign test. Honest three-way verdict.
+3. No scorer/judge/rubric/calibration changes.
 
 ---
 
