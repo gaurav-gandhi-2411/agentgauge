@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-import json
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 
 from mcp.types import Tool
 
+from agentgauge._json import extract_json_object
 from agentgauge.client import MCPClient
 from agentgauge.providers import Message, Provider
 from agentgauge.tasks import Task
@@ -18,6 +18,7 @@ class RunResult:
     constructed_args: dict[str, Any]
     success: bool
     error: str | None = None
+    parse_failed: bool = field(default=False)
 
 
 def _build_tool_listing(tools: list[Tool]) -> str:
@@ -91,10 +92,7 @@ async def run_tasks(
                     )
                 ]
             )
-            try:
-                constructed_args: dict[str, Any] = json.loads(args_resp.strip())
-            except (json.JSONDecodeError, ValueError):
-                constructed_args = {}
+            constructed_args, parse_failed = extract_json_object(args_resp)
 
             call_result = await client.call_tool(selected_tool or task.tool_name, constructed_args)
             results.append(
@@ -104,6 +102,7 @@ async def run_tasks(
                     constructed_args=constructed_args,
                     success=call_result.success,
                     error=call_result.error,
+                    parse_failed=parse_failed,
                 )
             )
     return results
