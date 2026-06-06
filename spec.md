@@ -1,104 +1,101 @@
-# spec.md — Ty: Does description/schema reduce malformed CALLS? (call_correctness)
+# spec.md — T18: discoverability at scale (DISTINGUISH among confusable tools)
 
-**Repo:** github.com/gaurav-gandhi-2411/agentgauge · **Base:** `main` @ 54f8593 ·
-**Branch:** `claude/ty-call-correctness`
-**Routing:** DRAFT PR (all PRs are DRAFT — conservative policy). Draft-forcing #2/#3 (real agent vs
-served server, measured deltas). **NOT condition #1** — adds a fixture + task set + an oracle A/B; no
-judge/scorer/rubric/calibration/generator changes.
+**Repo:** github.com/gaurav-gandhi-2411/agentgauge · **Base:** `main` (after #39 merge) ·
+**Branch:** `claude/t18-discoverability-scale`
+**Routing:** DRAFT PR. Draft-forcing #2/#3. NOT condition #1.
 
-**This spec, committed at branch start, IS the pre-registration.** Fixture, gold calls, oracle
-schemas, headroom target, and analysis plan are fixed before the run and not edited after.
+**This spec, committed at branch start, IS the pre-registration.** Fixture, gold mapping, oracle
+descriptions, headroom target, analysis plan fixed before the run, not edited after.
 
 ---
 
-## The question
+## What this tests
 
-Selection turned out to be description-insensitive for a capable agent (run #1, ObsStore, T17): the
-agent picks the right tool from the name. Ty tests the next behavioral stage: once the right tool is
-selected, does a good description/schema reduce MALFORMED CALLS (wrong enum, wrong format/units,
-missing/!wrong required args)? This is where description_quality + schema_completeness are most
-likely to actually bite. Oracle schema = upper bound of what any fix could achieve.
+The `discoverability` dimension (15%) scores DISTINGUISH: how well an agent tells confusable,
+similarly-named tools apart and picks the right one (per scorer.py:_judge_discoverability). Its
+behavioral analog is selection_accuracy UNDER CONFUSABILITY. T17 tested this at tiny scale (2-3-tool
+clusters) and saturated — gemma resolves a 3-tool toolbox from names. T18 tests the regime the
+dimension is actually about: **many tools, organized into dense families of near-neighbors**, where
+the target is buried among look-alikes and a DISCRIMINATING description is what separates it.
 
-## The headroom wall (primary design constraint — read first)
+## Why scale, not a weaker agent (strategic note, pre-registered)
 
-`call_correctness` saturated at 100% on EVERY prior fixture because gemma2:9b builds valid args from
-convention (op="mean", ISO dates, obvious types). A fixture where schema info CAN help must require
-information the agent CANNOT guess from convention or param names. Otherwise it aborts at the
-headroom gate exactly like T17 (which died at 81.2% selection). Design the calls to need:
-- **Arbitrary enums:** valid value is a non-semantic token set, e.g. mode in ["xR2","xR7","xR9"] —
-  NOT "fast"/"slow"/"mean" which the agent guesses.
-- **Non-standard units/formats:** e.g. timestamp in centiseconds-since-boot (not epoch/ISO); weight
-  in grams with a 0-1000 bound; an ID format like "Z-####-Q".
-- **Required fields with no conventional default:** a mandatory arg the agent won't supply unless told.
-- **Inferability check:** for each, confirm the value is genuinely NOT derivable from the param name,
-  the task text, or common API convention. If gemma can guess it, it doesn't create headroom.
+The product's real agents are frontier (more capable than gemma2:9b); a null on gemma predicts a
+stronger null on frontier. A weaker agent (gemma2:2b) tests AWAY from product reality and re-imports
+the "model helped by being handed the answer" tautology. The mechanism that could bite even for a
+CAPABLE agent is distractor density at scale, not lower capability. So T18 holds the agent at
+gemma2:9b and changes the toolbox SCALE + CONFUSABILITY, not the model.
 
-Arm A (vague/empty schema) must therefore cause genuine call FAILURES; Arm B (oracle schema) supplies
-the non-guessable info.
+## New headroom mechanism (why this might finally clear the gate)
 
-## Anti-tautology guard
-
-Do NOT phrase the task so it states the enum value / format directly (that tests copying, not schema
-use). The agent must get the constraint from the SCHEMA, not the prompt. Tasks describe intent; the
-schema carries the machine-level requirement.
+- Run 1/Ty: floored on un-guessable constraints. T17: saturated on tiny confusable clusters.
+- T18 headroom source = DISTRACTOR DENSITY: 60-80 tools in families of 6-8 confusable near-neighbors.
+  Within a family, names are individually plausible for overlapping intents; only the description
+  discriminates. At this scale, name-skimming should degrade — that is the testable hypothesis.
 
 ---
 
 ## Scope
 
-**IN:** a call-correctness fixture (Arm A vague schema; Arm B oracle schema with correct
-enums/formats/units/required); a powered, stability-screened task set; the oracle A/B on
-`call_correctness` via the T15 harness.
+**IN:** a large confusable-catalog fixture (60-80 tools, ~8-10 families of near-neighbors); Arm A
+vague/empty descriptions; Arm B oracle discriminating descriptions; powered, stability-screened task
+set; oracle A/B on selection_accuracy via the T15 harness.
 
-**OUT:** the fixer / generated schemas (downstream Q2, only if oracle is positive); `selection_accuracy`
-(answered — insensitive); rubric/scorer changes; other dimensions.
+**OUT:** call construction (selection only — one arg or none; the variable is WHICH tool, not how
+it's called); the fixer (downstream, only if positive); weaker-agent swap (down-ranked, see above);
+scorer changes.
 
 ## Fixture design
 
-- 6-10 tools, each with at least one call-critical constraint from the categories above. The CORRECT
-  selection must be easy (don't reintroduce the selection problem) — single obvious tool per task —
-  so the only variable measured is whether the CALL is well-formed.
-- Arm A: vague/empty parameter schemas (type only, or missing constraints) — realistic sloppy server.
-- Arm B: ORACLE schema — correct enum members, format/unit descriptions, required flags. Committed up front.
-- Gold call per task: the exact correct arguments (tool + arg values). call_correctness is scored
-  deterministically against this. Document, per tool, WHICH constraint is non-guessable and why.
+- 8-10 FAMILIES, each 6-8 tools that are genuine near-neighbors: similar names + overlapping apparent
+  purpose (e.g. a "fetch" family: get_record / fetch_record / read_entry / load_item / retrieve_row /
+  pull_document — surface-synonymous), where the correct choice for a task depends on a distinction
+  carried only by the description (scope, source, side effect, format).
+- Catalog size 60-80 tools total. All families present in every prompt (the agent sees the full
+  catalog — that is the scale condition).
+- Arm A: vague/empty descriptions -> within a family, the agent must pick among 6-8 look-alikes from
+  names alone. Arm B: ORACLE descriptions that discriminate within-family. Commit both.
+- One gold tool per task; tasks distributed across families. Document, per family, WHY the names are
+  confusable and WHAT distinction the description carries.
+- ANTI-TAUTOLOGY: task states user intent; it must NOT name the target tool or quote its description.
 
-## Rigor (carry forward T17's lessons)
+## Rigor (carry forward all lessons, incl. the new parse_failed instrument)
 
-- Headroom: target Arm A call_correctness ~40-70% (real room; not saturated). CONFIRM before
-  interpreting — this is the gate that killed T17; expect it to be the hard part here too.
-- STABILITY pre-screen: run Arm A twice; DROP tasks whose success flips by >1 trial; report count.
-  If too many drop -> fixture-quality failure, report, don't proceed.
-- Power: >= 30 surviving tasks. Analysis CLUSTERED BY TASK (sign test / Wilcoxon on task-level
-  deltas), NOT trial-level McNemar.
-- Manipulation check: Arm A vs Arm B schemas differ in the served listing (assert).
-- Agent = gemma2:9b, != judge (llama3.1:8b) != generator (qwen3:8b). call_correctness deterministic.
-- No post-hoc tuning of fixture, gold calls, or oracle after seeing results.
+- Headroom: Arm A selection_accuracy ~40-70% on CONTESTED tasks. CONFIRM before interpreting;
+  outside the band -> ABORT (do not rebuild blindly; report).
+- parse_failed rate reported FIRST (selection is one token, but report it anyway as a harness check).
+- Stability pre-screen: Arm A twice, drop tasks flipping >1 trial, report count.
+- Power: >= 30 contested surviving tasks. Task-clustered analysis (sign/Wilcoxon on task-level
+  deltas), effective N = contested tasks. NOT trial-level McNemar.
+- Manipulation check: Arm A vs Arm B catalogs differ in the served listing (assert).
+- Agent = gemma2:9b, != judge != generator. selection_accuracy deterministic.
+- No post-hoc tuning after seeing results.
 
 ---
 
 ## Acceptance criteria
 
-1. **CI (deterministic, seed 42, no network):** fixture loads; each task has exactly one gold call;
-   stability-screen drop logic works on a synthetic flaky case; manipulation check holds (Arm A vs B
-   schemas differ); an inferability unit test asserts at least one constraint is absent from both the
-   param name and the task text. No real model in committed tests.
-2. **Real-agent oracle A/B (manual, in PR description — the deliverable):**
-   - Pre-checks reported FIRST: Arm A ~40-70% call_correctness and stable (post-screen), N>=30
-     surviving, manipulation pass. If headroom is wrong or too many drop -> STOP and report
-     (fixture-quality), do not interpret.
-   - Task-clustered table: Arm A, Arm B(oracle), per-task delta, sign/Wilcoxon result.
-   - Honest verdict on the pre-registered branch:
-     - POSITIVE (oracle > A): schema info reduces malformed calls — description_quality/
-       schema_completeness have real behavioral headroom on CALLS. -> Tx-val / a fixer-realization
-       experiment should run on THIS fixture.
-     - NULL (oracle ~ A): gemma builds correct calls without the schema even when info is
-       non-guessable -> the dimensions are behaviorally inert on calls too; combined with the
-       selection finding, a foundational result about the score's construct validity.
+1. **CI (deterministic, seed 42, no network):** catalog loads (60-80 tools, families well-formed);
+   each task has exactly one gold tool; stability-screen logic; manipulation check (Arm A vs B
+   catalogs differ); anti-tautology test (target tool name + its description tokens absent from task
+   text). No real model in committed tests.
+2. **Real-agent oracle A/B (manual, in PR description):**
+   - parse_failed rate + pre-checks reported FIRST: contested Arm A in 40-70% and stable, N>=30,
+     manipulation pass. Outside band -> STOP, report ABORT.
+   - Task-clustered table: Arm A, Arm B(oracle), per-task delta, sign/Wilcoxon, effective N.
+   - Honest three-way verdict:
+     - POSITIVE (oracle > A): at scale, discriminating descriptions improve confusable-tool
+       selection -> the first located behavioral effect for a description-facing dimension; the
+       discoverability 15% has real teeth in the regime it was designed for.
+     - NULL (oracle ~ A): even buried among dense look-alikes, gemma picks from names; descriptions
+       don't move it -> with T17 + Ty, a strong cross-dimensional construct-validity finding.
+     - ABORT (Arm A outside 40-70%): scale didn't create the expected headroom (saturated = even at
+       scale names suffice; floored = catalog too hard to navigate at all). Report which.
 3. scorer.py / judge / rubrics / calibration / generator untouched; verify.sh green; coverage >= 60%.
 
 ## Housekeeping
 
-- Promote Ty into TASKS.md TODO with this spec referenced (makes it the one eligible item if the
-  scheduled task fires — but it's draft-forcing, so it would force DRAFT, not auto-anything).
-- STATUS.md: record the measured Ty result (positive or null) precisely; claim nothing beyond it.
+- TASKS.md: T18 (TODO -> IN-REVIEW). STATUS.md: record the measured result. If POSITIVE, this is the
+  regime where description_quality/discoverability matter — note it as the validated use-case. If
+  NULL/ABORT, record the cross-dimensional finding across selection (T17), calls (Ty), discoverability
+  (T18).
