@@ -207,6 +207,21 @@ async def run(agent_model: str, trials: int, stability_trials: int) -> None:
         stab_results_1 = await run_tasks(tasks, client_a, agent_stab1, trials=stability_trials)
         stab_results_2 = await run_tasks(tasks, client_a, agent_stab2, trials=stability_trials)
 
+        # ── PARSE-FAILED DIAGNOSTIC — reported before headroom ──────────────
+        total_stab = len(tasks) * stability_trials
+        pf_s1 = sum(1 for r in stab_results_1 if r.parse_failed)
+        pf_s2 = sum(1 for r in stab_results_2 if r.parse_failed)
+        pf_stab_total = pf_s1 + pf_s2
+        pf_stab_rate = pf_stab_total / (total_stab * 2) * 100
+        print("\n[PARSE-FAILED DIAGNOSTIC] (clean harness — #39 landed)")
+        print(f"  Stab run 1 : {pf_s1:>3}/{total_stab} failed  ({pf_s1/total_stab*100:.1f}%)")
+        print(f"  Stab run 2 : {pf_s2:>3}/{total_stab} failed  ({pf_s2/total_stab*100:.1f}%)")
+        print(
+            f"  Combined   : {pf_stab_total:>3}/{total_stab*2} failed  ({pf_stab_rate:.1f}%)"
+            "  [old harness silently coerced each to {} and scored INCORRECT]"
+        )
+        # ────────────────────────────────────────────────────────────────────
+
         successes_1: list[int] = []
         successes_2: list[int] = []
         for i, task in enumerate(tasks):
@@ -294,6 +309,15 @@ async def run(agent_model: str, trials: int, stability_trials: int) -> None:
             results_b = await run_tasks(surviving_tasks, client_b, agent_b, trials=trials)
         finally:
             await cleanup_connection(ctx_b)
+
+        # ── PARSE-FAILED DIAGNOSTIC — main A/B ──────────────────────────────
+        total_main = len(surviving_tasks) * trials
+        pf_a = sum(1 for r in results_a if r.parse_failed)
+        pf_b = sum(1 for r in results_b if r.parse_failed)
+        print("\n[PARSE-FAILED DIAGNOSTIC — Main A/B]")
+        print(f"  Arm A : {pf_a:>3}/{total_main} failed  ({pf_a/total_main*100:.1f}%)")
+        print(f"  Arm B : {pf_b:>3}/{total_main} failed  ({pf_b/total_main*100:.1f}%)")
+        # ────────────────────────────────────────────────────────────────────
 
         # Task-level accuracies
         task_accs_a = task_level_accuracy(results_a, surviving_tasks, trials, task_constraints)
