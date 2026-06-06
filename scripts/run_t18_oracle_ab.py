@@ -256,7 +256,7 @@ async def run(agent_model: str, trials: int, stability_trials: int) -> None:
         # PRINT TASK-CLUSTERED TABLE
         print("\n" + "=" * 100)
         print("T18 TASK-CLUSTERED RESULT TABLE")
-        print(f"{'Family':<16} {'Task description (truncated)':<52} {'A%':>5} {'B%':>5} {'Δ%':>6}")
+        print(f"{'Family':<16} {'Task description (truncated)':<52} {'A%':>5} {'B%':>5} {'dlt%':>6}")
         print("-" * 100)
         for i, task in enumerate(surviving_tasks):
             family = FAMILY_MAP[task.tool_name]
