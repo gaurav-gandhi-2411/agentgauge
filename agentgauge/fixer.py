@@ -11,6 +11,7 @@ from typing import Any
 
 from mcp.types import Tool
 
+from agentgauge._json import extract_json_object
 from agentgauge.providers import Message, Provider
 from agentgauge.scorer import score_schema_completeness
 
@@ -275,22 +276,16 @@ async def _generate_schema_props(
         properties=json.dumps(properties),
     )
     resp = await generator.chat([Message(role="user", content=prompt)], seed=42)
-    # Strip markdown fences if present
-    cleaned = re.sub(r"^```(?:json)?\s*\n?", "", resp.strip(), flags=re.IGNORECASE)
-    cleaned = re.sub(r"\n?```\s*$", "", cleaned.strip())
-    try:
-        result = json.loads(cleaned.strip())
-        if isinstance(result, dict):
-            if "properties" in result:
-                props = result.get("properties", {})
-                required = result.get("required", [])
-                if isinstance(props, dict) and isinstance(required, list):
-                    return props, [str(r) for r in required if isinstance(r, str)]
-            # Fallback: old flat format, no required
-            return result, []
+    result, failed = extract_json_object(resp)
+    if failed:
         return {}, []
-    except (json.JSONDecodeError, ValueError):
-        return {}, []
+    if "properties" in result:
+        props = result.get("properties", {})
+        required = result.get("required", [])
+        if isinstance(props, dict) and isinstance(required, list):
+            return props, [str(r) for r in required if isinstance(r, str)]
+    # Fallback: old flat format, no required
+    return result, []
 
 
 def _patch_source_description(source: str, tool_name: str, new_desc: str) -> str:

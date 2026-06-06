@@ -243,6 +243,39 @@ async def test_run_tasks_invalid_json_args_uses_empty_dict() -> None:
 
     results = await run_tasks(tasks, client, provider)
     assert results[0].constructed_args == {}
+    assert results[0].parse_failed is True
+
+
+async def test_run_tasks_fenced_json_parsed_correctly() -> None:
+    client = _make_mock_client("echo")
+    fenced = '```json\n{"message": "hello"}\n```'
+    provider = MockProvider(responses=["echo", fenced])
+    tasks = [Task(tool_name="echo", description="Call echo", sample_args={})]
+
+    results = await run_tasks(tasks, client, provider)
+    assert results[0].constructed_args == {"message": "hello"}
+    assert results[0].parse_failed is False
+
+
+async def test_run_tasks_json_with_preamble_parsed_correctly() -> None:
+    client = _make_mock_client("echo")
+    preamble = 'Sure, here are the args: {"message": "world"}'
+    provider = MockProvider(responses=["echo", preamble])
+    tasks = [Task(tool_name="echo", description="Call echo", sample_args={})]
+
+    results = await run_tasks(tasks, client, provider)
+    assert results[0].constructed_args == {"message": "world"}
+    assert results[0].parse_failed is False
+
+
+async def test_run_tasks_bare_json_not_flagged() -> None:
+    client = _make_mock_client("echo")
+    provider = MockProvider(responses=["echo", '{"message": "bare"}'])
+    tasks = [Task(tool_name="echo", description="Call echo", sample_args={})]
+
+    results = await run_tasks(tasks, client, provider)
+    assert results[0].constructed_args == {"message": "bare"}
+    assert results[0].parse_failed is False
 
 
 async def test_run_tasks_tool_call_failure() -> None:
