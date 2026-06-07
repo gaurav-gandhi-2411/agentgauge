@@ -1,8 +1,5 @@
 from __future__ import annotations
 
-import asyncio
-
-import pytest
 from mcp.types import Tool
 
 from agentgauge.fixer import (
@@ -146,8 +143,10 @@ def test_scoped_prompt_contains_scope_declaration() -> None:
 
 def test_scoped_prompt_contains_neighbor_surface_note() -> None:
     """The scoped prompt states neighbors are shown without bodies."""
-    assert "bodies not shown" in _DESC_GENERATOR_SCOPED_SOURCE_PROMPT or \
-           "no bodies" in _DESC_GENERATOR_SCOPED_SOURCE_PROMPT
+    assert (
+        "bodies not shown" in _DESC_GENERATOR_SCOPED_SOURCE_PROMPT
+        or "no bodies" in _DESC_GENERATOR_SCOPED_SOURCE_PROMPT
+    )
 
 
 async def test_generate_description_scoped_uses_scoped_prompt() -> None:
@@ -162,7 +161,9 @@ async def test_generate_description_scoped_uses_scoped_prompt() -> None:
             return "Searches the store for entries matching query."
 
     tool = Tool(name="find_entries", description="", inputSchema={"type": "object"})
-    scoped_src = 'async def _handle_find_entries(query: str) -> str:\n    """Doc."""\n    return "x"'
+    scoped_src = (
+        'async def _handle_find_entries(query: str) -> str:\n    """Doc."""\n    return "x"'
+    )
     ns_text = 'async def _handle_lookup_data(query: str) -> str:\n    """Doc."""'
 
     await _generate_description(
