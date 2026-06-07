@@ -8,31 +8,7 @@ Autonomous runs: pick the single top TODO, implement it, move to IN-REVIEW.
 
 ## TODO
 
-### Q2b — Catalog-aware fixer (cross-tool context injection)
-
-**Motivation:** Q2a showed the current per-tool generator recovers 12.5% of the T18 oracle gain
-(F-vs-A p=0.50, not significant). All 14 misses were (i): cross-tool distinctions that cannot be
-encoded from `{name, current, schema}` alone. Two tools received confidently wrong descriptions
-(store_item cache→"persistent"; forward_record POST→"retrieval") — net-negative on confusable
-catalogs. The fix is to inject sibling context into the generator prompt so it can encode the
-within-family distinguishing dimension.
-
-**Scope:** Modify `_generate_description` (or add a new catalog-aware variant) to accept the
-full tool catalog alongside the target tool. The generator prompt should show the target tool's
-siblings (names + current descriptions) so it can name the distinguishing dimension explicitly.
-Do NOT change the fixer's accept/reject gate, scoring rubric, or any other dimension. This is a
-generation-step change only. Instrument with a `catalog_aware=True` flag so the old per-tool path
-remains available for comparison.
-
-**Acceptance criteria:**
-- Generator prompt injects sibling context: for each target tool, the prompt includes at minimum
-  the names of all other tools in the catalog (ideally names + current descriptions).
-- Recovery fraction (F−A)/(O−A) ≥ 0.70 (HIGH gate) on the T18 60-tool catalog, same 18 contested
-  tasks, same metric (parse-success `selection_accuracy`, gemma2:9b agent, 5 trials).
-- F-vs-A sign test p < 0.05.
-- Liability regression check: `store_item` and `forward_record` descriptions must not reverse
-  the correct storage/operation direction (cache and HTTP-push respectively).
-- CI passes: MockProvider, no live LLM in tests, `verify.sh` green.
+*(empty)*
 
 ---
 
@@ -44,7 +20,41 @@ remains available for comparison.
 
 ## IN-REVIEW
 
-*(empty)*
+### Q2b — Catalog-aware fixer (cross-tool context injection)
+
+**Branch:** `claude/q2b-catalog-aware` | **CI:** verify.sh green (339 tests, 90% coverage)
+
+**Motivation:** Q2a showed the current per-tool generator recovers 12.5% of the T18 oracle gain
+(F-vs-A p=0.50, not significant). All 14 misses were (i): cross-tool distinctions that cannot be
+encoded from `{name, current, schema}` alone. Two tools received confidently wrong descriptions
+(store_item cache→"persistent"; forward_record POST→"retrieval") — net-negative on confusable
+catalogs. The fix is to inject sibling context into the generator prompt so it can encode the
+within-family distinguishing dimension.
+
+**What was implemented:**
+- `_select_neighbors(target, catalog, k=6)` in `fixer.py`: Jaccard token-overlap similarity on
+  lowercased name tokens (splits on underscores/camelCase). Deterministic; does NOT read family
+  labels — works on `Tool.name` only, as an unlabeled 200-tool catalog would present it.
+- `_DESC_GENERATOR_CATALOG_AWARE_PROMPT`: catalog-aware prompt showing target + K neighbors
+  (names, schemas, current descs) with explicit NO-FABRICATION guard: "If NOT meaningfully
+  different from a neighbor on the available evidence, say what it does plainly and DO NOT invent
+  a distinction."
+- `_generate_description(tool, generator, *, neighbors=None)`: when `neighbors` is non-empty,
+  uses catalog-aware prompt; otherwise falls back to original per-tool prompt.
+- `run_fixer(..., catalog_aware=False, neighbor_k=6)`: when `catalog_aware=True`, computes
+  neighbors from `tools` list before generating.
+- `scripts/generate_arm_f_descriptions_q2b.py`: Phase 1 script (catalog-aware generation).
+- `examples/t18_q2b_server.py`: Arm F Q2b MCP server fixture.
+- `scripts/run_q2b_three_arm.py`: Phase 2 three-arm experiment script (reuses Q2a harness).
+- 11 new CI tests: neighbor selection determinism, no-family-label assertion, token similarity
+  ranking, prompt content verification (no-fabrication guard present, neighbors in prompt),
+  MockProvider real-diff and identical-neighbor cases, run_fixer catalog_aware integration.
+
+**Pending real-agent run (Phase 1 + Phase 2):**
+1. `python scripts/generate_arm_f_descriptions_q2b.py` (qwen3:8b, GPU-exclusive)
+2. `ollama stop` → verify `ollama ps` empty
+3. `python scripts/run_q2b_three_arm.py` (gemma2:9b watchdog)
+4. Report Sections A–E + no-fabrication control + verdict.
 
 ---
 

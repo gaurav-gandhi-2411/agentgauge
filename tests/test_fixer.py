@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import inspect
 from pathlib import Path
 from typing import Any
 
@@ -19,12 +20,13 @@ from agentgauge.fixer import (
     _patch_source_description,
     _patch_source_required,
     _patch_source_schema_props,
+    _select_neighbors,
     assert_generator_ne_judge,
     deep_merge,
     is_low_grounding,
     run_fixer,
 )
-from agentgauge.providers import MockProvider
+from agentgauge.providers import Message, MockProvider
 
 # ── T9: Validation mode constants ─────────────────────────────────────────────
 
@@ -1238,8 +1240,6 @@ async def test_mixed_opaque_and_grounded_tools(tmp_path: Path) -> None:
 
 def test_select_neighbors_deterministic() -> None:
     """Same catalog → identical neighbor order on repeated calls."""
-    from agentgauge.fixer import _select_neighbors
-
     catalog = [
         Tool(name="get_record", description="", inputSchema={}),
         Tool(name="fetch_record", description="", inputSchema={}),
@@ -1257,8 +1257,6 @@ def test_select_neighbors_deterministic() -> None:
 
 def test_select_neighbors_excludes_target() -> None:
     """Neighbors never include the target tool itself."""
-    from agentgauge.fixer import _select_neighbors
-
     catalog = [
         Tool(name="get_record", description="", inputSchema={}),
         Tool(name="fetch_record", description="", inputSchema={}),
@@ -1271,9 +1269,6 @@ def test_select_neighbors_excludes_target() -> None:
 
 def test_select_neighbors_does_not_use_family_labels() -> None:
     """_select_neighbors takes only list[Tool] — no family dict in signature."""
-    import inspect
-    from agentgauge.fixer import _select_neighbors
-
     sig = inspect.signature(_select_neighbors)
     params = list(sig.parameters.keys())
     assert "family" not in params
@@ -1283,8 +1278,6 @@ def test_select_neighbors_does_not_use_family_labels() -> None:
 
 def test_select_neighbors_token_similarity_ranks_shared_token_first() -> None:
     """fetch_record shares 'record' with get_record → ranks above unrelated tools."""
-    from agentgauge.fixer import _select_neighbors
-
     catalog = [
         Tool(name="fetch_record", description="", inputSchema={}),
         Tool(name="search_items", description="", inputSchema={}),
@@ -1297,8 +1290,6 @@ def test_select_neighbors_token_similarity_ranks_shared_token_first() -> None:
 
 def test_select_neighbors_respects_k() -> None:
     """Returns at most k neighbors."""
-    from agentgauge.fixer import _select_neighbors
-
     catalog = [Tool(name=f"tool_{i}", description="", inputSchema={}) for i in range(20)]
     target = Tool(name="tool_0", description="", inputSchema={})
     neighbors = _select_neighbors(target, catalog, k=5)
@@ -1310,9 +1301,6 @@ def test_select_neighbors_respects_k() -> None:
 
 async def test_catalog_aware_prompt_contains_no_fabrication_guard() -> None:
     """Catalog-aware prompt includes the no-fabrication instruction."""
-    from agentgauge.fixer import _generate_description
-    from agentgauge.providers import Message
-
     captured: list[str] = []
 
     class CapturingProvider:
@@ -1334,9 +1322,6 @@ async def test_catalog_aware_prompt_contains_no_fabrication_guard() -> None:
 
 async def test_catalog_aware_prompt_contains_neighbor_names() -> None:
     """Catalog-aware prompt contains all neighbor names and descriptions."""
-    from agentgauge.fixer import _generate_description
-    from agentgauge.providers import Message
-
     captured: list[str] = []
 
     class CapturingProvider:
@@ -1361,9 +1346,6 @@ async def test_catalog_aware_prompt_contains_neighbor_names() -> None:
 
 async def test_generate_description_no_neighbors_omits_catalog_content() -> None:
     """When neighbors=None, prompt does not contain catalog-aware content."""
-    from agentgauge.fixer import _generate_description
-    from agentgauge.providers import Message
-
     captured: list[str] = []
 
     class CapturingProvider:
@@ -1383,23 +1365,27 @@ async def test_generate_description_no_neighbors_omits_catalog_content() -> None
 
 async def test_generate_description_catalog_aware_real_difference_neighbor() -> None:
     """MockProvider: real-schema-difference neighbor → distinguishing response returned."""
-    from agentgauge.fixer import _generate_description
-
-    _SCHEMA_CACHE = {"type": "object", "properties": {"key": {"type": "string"}, "ttl": {"type": "integer"}}}
-    _SCHEMA_DB = {"type": "object", "properties": {"key": {"type": "string"}, "value": {"type": "object"}}}
+    _SCHEMA_CACHE = {
+        "type": "object",
+        "properties": {"key": {"type": "string"}, "ttl": {"type": "integer"}},
+    }
+    _SCHEMA_DB = {
+        "type": "object",
+        "properties": {"key": {"type": "string"}, "value": {"type": "object"}},
+    }
 
     target = Tool(name="store_item", description="", inputSchema=_SCHEMA_CACHE)
     neighbors = [Tool(name="save_record", description="", inputSchema=_SCHEMA_DB)]
 
-    provider = MockProvider(responses=["Store an item in cache with TTL; unlike save_record which persists to DB."])
+    provider = MockProvider(
+        responses=["Store an item in cache with TTL; unlike save_record which persists to DB."]
+    )
     result = await _generate_description(target, provider, neighbors=neighbors)
     assert "Store an item in cache with TTL" in result
 
 
 async def test_generate_description_catalog_aware_identical_neighbor_plain() -> None:
     """MockProvider: identical-schema neighbor → plain non-fabricated response returned."""
-    from agentgauge.fixer import _generate_description
-
     _SCHEMA = {"type": "object", "properties": {"query": {"type": "string"}}, "required": ["query"]}
     target = Tool(name="find_entries", description="", inputSchema=_SCHEMA)
     neighbors = [Tool(name="lookup_data", description="", inputSchema=_SCHEMA)]
@@ -1411,9 +1397,6 @@ async def test_generate_description_catalog_aware_identical_neighbor_plain() -> 
 
 async def test_run_fixer_catalog_aware_prompt_references_neighbors(tmp_path: Path) -> None:
     """run_fixer with catalog_aware=True sends catalog-aware prompt referencing neighbors."""
-    from agentgauge.fixer import run_fixer
-    from agentgauge.providers import Message
-
     _SCHEMA = {"type": "object", "properties": {"query": {"type": "string"}}, "required": ["query"]}
     captured_prompts: list[str] = []
 

@@ -250,7 +250,18 @@ models — always record the model alongside any stored score.
   catalog-aware generation: the generator must see sibling tools when writing each description
   so it can explicitly encode the within-family distinguishing dimension. This is Q2b.
 
-- Test suite: 328 tests, 90.32% coverage, all LLM calls mocked — CI runs with no network and no credentials.
+- **Q2b (IN-REVIEW, branch `claude/q2b-catalog-aware`):** Catalog-aware description generation —
+  `_select_neighbors` (Jaccard token-overlap, K=6, no family labels) + catalog-aware prompt with
+  explicit NO-FABRICATION guard. `run_fixer(..., catalog_aware=True)` passes K neighbors into
+  generation; original per-tool path available via `catalog_aware=False`. Phase 1 script
+  (`generate_arm_f_descriptions_q2b.py`), Q2b server fixture, and three-arm script
+  (`run_q2b_three_arm.py`) written. CI: 339 tests, 90% coverage, verify.sh green.
+  Real-agent A/B (Phase 1 + Phase 2) pending. Recovery fraction and no-fabrication control
+  outcome to be recorded here after the run. Do NOT claim T18 value delivered until:
+  RECOVERS (recovery fraction ≥ threshold, F-vs-A significant) AND FAITHFUL (no fabricated
+  distinctions on the genuinely-ambiguous control pair find_entries/lookup_data, book_slot/plan_event).
+
+- Test suite: 339 tests, 90% coverage, all LLM calls mocked — CI runs with no network and no credentials.
 
 ## What is NOT built yet
 
