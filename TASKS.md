@@ -20,7 +20,11 @@ Autonomous runs: pick the single top TODO, implement it, move to IN-REVIEW.
 
 ## IN-REVIEW
 
-*(empty)*
+### Q5 — Distinction guard (Guard B: target-grounded phrasing; docstrings safe)
+
+CI: guard prompt forbids comparative neighbor-claims, includes target-grounded example,
+neighbor surfaces with docstrings present, comparative-claim detector tested.
+Real-agent A/B (Phase 2): pending manual run.
 
 ---
 
