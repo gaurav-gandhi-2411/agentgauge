@@ -283,7 +283,26 @@ models — always record the model alongside any stored score.
   interface. This bounds what AgentGauge's description fixer can achieve from the interface alone; the
   next meaningful step is source-level context injection, not prompt refinement.
 
-- Test suite: 339 tests, 90% coverage, all LLM calls mocked — CI runs with no network and no credentials.
+- **Q3 (IN-REVIEW, branch `claude/q3-source-aware`):** Source-aware description generation.
+  New 12-tool fixture (4 families: store_family, delete_family, control_search, control_sched) with
+  real working implementations distinguishable from source (TTL store, raise-on-dup, audit log append,
+  archived/retired/hidden flags, del statement). Two source conditions:
+  - **F-DOC** — generator fed source + honest docstrings; tests whether stated-but-not-in-interface
+    facts can be extracted.
+  - **F-BODY** — generator fed source body only (docstrings stripped); tests whether behavior can be
+    inferred from code patterns alone.
+  Independence rule enforced: CI asserts each contested tool's distinguishing token is present in BOTH
+  DOC and BODY source. Control tools (find_entries/lookup_data, book_slot/plan_event) have truly
+  equivalent implementations — no-fabrication guard must classify these FAITHFUL in both conditions.
+
+  **CI: 365 tests, 90% coverage, verify.sh green.** Generator extended with `source=` parameter and
+  `_DESC_GENERATOR_SOURCE_AWARE_PROMPT` (no-fabrication guard verbatim from Q2b). Phase 1 script
+  (generate_q3_descriptions.py) and Phase 2 four-arm run script (run_q3_four_arm.py) ready.
+
+  **Real-agent A/B results: PENDING** (phase-separated GPU run required; Phase 1 → ollama stop →
+  Phase 2). F-DOC and F-BODY recovery will be reported separately. Verdict matrix cell TBD.
+
+- Test suite: 365 tests, 90% coverage, all LLM calls mocked — CI runs with no network and no credentials.
 
 ## What is NOT built yet
 

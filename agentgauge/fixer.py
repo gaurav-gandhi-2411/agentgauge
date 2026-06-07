@@ -210,6 +210,24 @@ _DESC_GENERATOR_CATALOG_AWARE_PROMPT = (
     "Write ONLY the new description text. No quotes, no preamble, no markdown."
 )
 
+_DESC_GENERATOR_SOURCE_AWARE_PROMPT = (
+    "You are improving an MCP tool's description to help AI agents use it correctly.\n"
+    "Write a clear, concise description (1-2 sentences) that:\n"
+    "- States what this tool does and names any key parameters\n"
+    "- If this tool differs meaningfully from confusable neighbors, state that difference "
+    "USING THE SOURCE CODE as evidence\n\n"
+    "CRITICAL — NO FABRICATION: Only state a difference that is directly supported by "
+    "the source code shown below. If the source does not support a distinction from "
+    "similar tools, say what it does plainly and DO NOT invent a difference.\n\n"
+    "Target tool:\n"
+    "  Name: {name}\n"
+    "  Current description: {current}\n"
+    "  Input schema: {schema}\n\n"
+    "Source code (read this to understand what the tool actually does):\n"
+    "```python\n{source}\n```\n\n"
+    "Write ONLY the new description text. No quotes, no preamble, no markdown."
+)
+
 _SCHEMA_GENERATOR_PROMPT = (
     "You are improving MCP tool parameter metadata for AI agent usability.\n"
     "For the tool below, generate improved parameter metadata AND identify required parameters.\n\n"
@@ -296,13 +314,25 @@ async def _generate_description(
     generator: Provider,
     *,
     neighbors: list[Tool] | None = None,
+    source: str | None = None,
 ) -> str:
     """Generate an improved description for `tool` using the generator model.
 
-    When `neighbors` is provided (non-empty list), uses the catalog-aware prompt with
-    an explicit no-fabrication guard. Falls back to the per-tool prompt when None.
+    Priority (highest to lowest):
+    - source (non-empty): uses _DESC_GENERATOR_SOURCE_AWARE_PROMPT with no-fabrication guard
+    - neighbors (non-empty list): uses _DESC_GENERATOR_CATALOG_AWARE_PROMPT with no-fabrication guard
+    - otherwise: uses _DESC_GENERATOR_PROMPT (per-tool, name+schema only)
+
+    source and neighbors are mutually exclusive by convention — pass at most one.
     """
-    if neighbors:
+    if source:
+        prompt = _DESC_GENERATOR_SOURCE_AWARE_PROMPT.format(
+            name=tool.name,
+            current=tool.description or "(none)",
+            schema=tool.inputSchema,
+            source=source,
+        )
+    elif neighbors:
         neighbor_lines = [
             f"  - {n.name}  schema: {n.inputSchema}  desc: {n.description or '(none)'}"
             for n in neighbors
