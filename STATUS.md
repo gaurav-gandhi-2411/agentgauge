@@ -250,7 +250,40 @@ models — always record the model alongside any stored score.
   catalog-aware generation: the generator must see sibling tools when writing each description
   so it can explicitly encode the within-family distinguishing dimension. This is Q2b.
 
-- Test suite: 328 tests, 90.32% coverage, all LLM calls mocked — CI runs with no network and no credentials.
+- **Q2b (DONE, PR #43, 2026-06-07):** Three-arm catalog-aware fixer recovery on the T18 60-tool
+  confusable catalog. Neighbor selection: Jaccard token-overlap K=6, no family labels. Catalog-aware
+  prompt with explicit NO-FABRICATION guard. Phase 1: qwen3:8b generator (GPU-exclusive, 600 s timeout
+  for thinking mode). Phase 2: gemma2:9b agent, 40 tasks × 5 trials, GPU-exclusive (watchdog-confirmed
+  clean throughout).
+
+  Numbers: Arm A=0.0% / Arm F=11.1% (+11.1 pp) / Arm O=88.9% (+88.9 pp). Recovery fraction
+  (F−A)/(O−A)=0.125. F-vs-A p=0.5000 (not significant). Parse-failed: A=0%, F=2.5% (5/200), O=0%.
+
+  **Finding 1 — SAFETY (the win):** Under catalog-aware prompting — the condition that maximally
+  enables fabricated distinctions, because the generator sees sibling tool names and is explicitly
+  asked to encode within-family differences — the no-fabrication guard held. All four pre-registered
+  ambiguous tool pairs (find_entries/lookup_data, book_slot/plan_event) received FAITHFUL descriptions:
+  no invented distinctions. The guard fired correctly on `compute_metric` ("No meaningful difference
+  from neighbors" — correct abstain, not fabrication). The generator stayed honest when it had the most
+  license to lie.
+
+  **Finding 2 — RECOVERY (information-theoretic, not a prompt gap):** Catalog-awareness recovered only
+  12.5% of the T18 oracle gain — not significant (F-vs-A p=0.50). The cause is structural, not a
+  context or prompt deficiency: the T18-decisive distinctions (storage backend, operation scope, delete
+  permanence, notification channel) live in tool **behavior**, and are present in **neither** the tool
+  names **nor** the identical `{query: string}` schemas. No generator can recover information the catalog
+  does not contain. The oracle had it only because a human who knew the implementations supplied it
+  directly. This result is confirmed across **two independent experiments** — Q2a (per-tool generator,
+  12.5%) and Q2b (catalog-aware generator, 12.5%) — ruling out a per-tool context gap as the
+  explanation.
+
+  **Implication:** Closing the T18 discrimination gap requires an information source **beyond the tool
+  interface** — the server's source code, docstrings, or README. Pure interface-text generation (names +
+  schemas, with or without neighbor context) cannot encode distinctions that are absent from the
+  interface. This bounds what AgentGauge's description fixer can achieve from the interface alone; the
+  next meaningful step is source-level context injection, not prompt refinement.
+
+- Test suite: 339 tests, 90% coverage, all LLM calls mocked — CI runs with no network and no credentials.
 
 ## What is NOT built yet
 

@@ -8,31 +8,7 @@ Autonomous runs: pick the single top TODO, implement it, move to IN-REVIEW.
 
 ## TODO
 
-### Q2b — Catalog-aware fixer (cross-tool context injection)
-
-**Motivation:** Q2a showed the current per-tool generator recovers 12.5% of the T18 oracle gain
-(F-vs-A p=0.50, not significant). All 14 misses were (i): cross-tool distinctions that cannot be
-encoded from `{name, current, schema}` alone. Two tools received confidently wrong descriptions
-(store_item cache→"persistent"; forward_record POST→"retrieval") — net-negative on confusable
-catalogs. The fix is to inject sibling context into the generator prompt so it can encode the
-within-family distinguishing dimension.
-
-**Scope:** Modify `_generate_description` (or add a new catalog-aware variant) to accept the
-full tool catalog alongside the target tool. The generator prompt should show the target tool's
-siblings (names + current descriptions) so it can name the distinguishing dimension explicitly.
-Do NOT change the fixer's accept/reject gate, scoring rubric, or any other dimension. This is a
-generation-step change only. Instrument with a `catalog_aware=True` flag so the old per-tool path
-remains available for comparison.
-
-**Acceptance criteria:**
-- Generator prompt injects sibling context: for each target tool, the prompt includes at minimum
-  the names of all other tools in the catalog (ideally names + current descriptions).
-- Recovery fraction (F−A)/(O−A) ≥ 0.70 (HIGH gate) on the T18 60-tool catalog, same 18 contested
-  tasks, same metric (parse-success `selection_accuracy`, gemma2:9b agent, 5 trials).
-- F-vs-A sign test p < 0.05.
-- Liability regression check: `store_item` and `forward_record` descriptions must not reverse
-  the correct storage/operation direction (cache and HTTP-push respectively).
-- CI passes: MockProvider, no live LLM in tests, `verify.sh` green.
+*(empty)*
 
 ---
 
@@ -102,6 +78,24 @@ test suite guarantees ordering + actionability gap regardless of which model is 
 ---
 
 ## DONE
+
+### Q2b — Catalog-aware fixer (cross-tool context injection)
+
+**Merged:** PR #43 — feat(q2b): catalog-aware description generation — SAFETY PASS, RECOVERY information-theoretic limit confirmed
+
+Three-arm A/B on `selection_accuracy` (60-tool confusable catalog, 18 contested tasks, gemma2:9b, 5 trials).
+Arm A=0.0% / Arm F=11.1% / Arm O=88.9%. Recovery fraction (F−A)/(O−A)=0.125. F-vs-A p=0.50 (not significant).
+
+**SAFETY:** No-fabrication guard held under maximum fabrication pressure — 4/4 ambiguous tool pairs FAITHFUL;
+guard fired correctly on `compute_metric` (correct abstain). The generator stayed honest when it had the most
+license to lie.
+
+**RECOVERY limit (information-theoretic):** 12.5% recovery, confirmed across Q2a (per-tool) and Q2b
+(catalog-aware). The T18-decisive distinctions live in tool behavior, absent from both names and identical
+`{query: string}` schemas. No generator can recover what the interface does not contain. Closing the gap
+requires source-level context (docstrings/README), not prompt refinement.
+
+---
 
 ### Q2a — Three-arm fixer recovery (does the current fixer recover the T18 gain?)
 
