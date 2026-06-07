@@ -256,23 +256,32 @@ models — always record the model alongside any stored score.
   for thinking mode). Phase 2: gemma2:9b agent, 40 tasks × 5 trials, GPU-exclusive (watchdog-confirmed
   clean throughout).
 
-  **Result: LOW RECOVERY. Recovery fraction (F−A)/(O−A) = 0.125 (12.5%).**
-  - Arm A: 0.0% | Arm F: 11.1% (+11.1 pp) | Arm O: 88.9% (+88.9 pp)
-  - F-vs-A sign test: p = 0.5000 — **not significant**. Neighbor context adds no reliable discrimination.
-  - F-vs-O sign test: p = 0.0001 — F significantly below O; 14 tasks F=0%, O=100%.
-  - Parse-failed: A=0%, F=2.5% (5/200), O=0%.
+  Numbers: Arm A=0.0% / Arm F=11.1% (+11.1 pp) / Arm O=88.9% (+88.9 pp). Recovery fraction
+  (F−A)/(O−A)=0.125. F-vs-A p=0.5000 (not significant). Parse-failed: A=0%, F=2.5% (5/200), O=0%.
 
-  **No-fabrication control: PASS.** All four pre-registered ambiguous tools (find_entries/lookup_data,
-  book_slot/plan_event) received FAITHFUL descriptions — no invented distinctions. Guard fired correctly
-  on `compute_metric` (model wrote "No meaningful difference from neighbors" rather than fabricating).
+  **Finding 1 — SAFETY (the win):** Under catalog-aware prompting — the condition that maximally
+  enables fabricated distinctions, because the generator sees sibling tool names and is explicitly
+  asked to encode within-family differences — the no-fabrication guard held. All four pre-registered
+  ambiguous tool pairs (find_entries/lookup_data, book_slot/plan_event) received FAITHFUL descriptions:
+  no invented distinctions. The guard fired correctly on `compute_metric` ("No meaningful difference
+  from neighbors" — correct abstain, not fabrication). The generator stayed honest when it had the most
+  license to lie.
 
-  **Root cause:** The T18-decisive distinctions (storage backend, operation scope, delete permanence,
-  notification channel) are not lexically derivable from names or schemas. Jaccard-neighbor clustering
-  correctly groups within-family tools but all share identical `{query: string}` schemas — the generator
-  faces the same information deficit as the agent. The no-fabrication guard is correct but produces
-  "faithful + vague" rather than "discriminating" output when evidence is absent. Catalog-aware
-  name-token context is necessary but not sufficient; the within-family semantic layer requires
-  pre-existing docstring/type signal or human-authored per-family anchors.
+  **Finding 2 — RECOVERY (information-theoretic, not a prompt gap):** Catalog-awareness recovered only
+  12.5% of the T18 oracle gain — not significant (F-vs-A p=0.50). The cause is structural, not a
+  context or prompt deficiency: the T18-decisive distinctions (storage backend, operation scope, delete
+  permanence, notification channel) live in tool **behavior**, and are present in **neither** the tool
+  names **nor** the identical `{query: string}` schemas. No generator can recover information the catalog
+  does not contain. The oracle had it only because a human who knew the implementations supplied it
+  directly. This result is confirmed across **two independent experiments** — Q2a (per-tool generator,
+  12.5%) and Q2b (catalog-aware generator, 12.5%) — ruling out a per-tool context gap as the
+  explanation.
+
+  **Implication:** Closing the T18 discrimination gap requires an information source **beyond the tool
+  interface** — the server's source code, docstrings, or README. Pure interface-text generation (names +
+  schemas, with or without neighbor context) cannot encode distinctions that are absent from the
+  interface. This bounds what AgentGauge's description fixer can achieve from the interface alone; the
+  next meaningful step is source-level context injection, not prompt refinement.
 
 - Test suite: 339 tests, 90% coverage, all LLM calls mocked — CI runs with no network and no credentials.
 

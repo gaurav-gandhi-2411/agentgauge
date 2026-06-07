@@ -81,15 +81,19 @@ test suite guarantees ordering + actionability gap regardless of which model is 
 
 ### Q2b — Catalog-aware fixer (cross-tool context injection)
 
-**Merged:** PR #43 — feat(q2b): catalog-aware neighbor selection + description generation — LOW recovery (12.5%), no-fabrication PASS
+**Merged:** PR #43 — feat(q2b): catalog-aware description generation — SAFETY PASS, RECOVERY information-theoretic limit confirmed
 
 Three-arm A/B on `selection_accuracy` (60-tool confusable catalog, 18 contested tasks, gemma2:9b, 5 trials).
 Arm A=0.0% / Arm F=11.1% / Arm O=88.9%. Recovery fraction (F−A)/(O−A)=0.125. F-vs-A p=0.50 (not significant).
-No-fabrication control: PASS — all four pre-registered ambiguous tools FAITHFUL; guard fired correctly on
-`compute_metric` (model refused to fabricate). Root cause: T18-decisive distinctions (storage backend, operation
-scope, delete permanence, notification channel) are not lexically derivable from names or identical schemas.
-Neighbor context necessary but not sufficient; within-family semantic layer requires docstring/type signal or
-human-authored per-family anchors.
+
+**SAFETY:** No-fabrication guard held under maximum fabrication pressure — 4/4 ambiguous tool pairs FAITHFUL;
+guard fired correctly on `compute_metric` (correct abstain). The generator stayed honest when it had the most
+license to lie.
+
+**RECOVERY limit (information-theoretic):** 12.5% recovery, confirmed across Q2a (per-tool) and Q2b
+(catalog-aware). The T18-decisive distinctions live in tool behavior, absent from both names and identical
+`{query: string}` schemas. No generator can recover what the interface does not contain. Closing the gap
+requires source-level context (docstrings/README), not prompt refinement.
 
 ---
 
