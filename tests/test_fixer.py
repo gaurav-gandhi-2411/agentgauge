@@ -1231,3 +1231,229 @@ async def test_mixed_opaque_and_grounded_tools(tmp_path: Path) -> None:
     assert not any("transform_scale" in s for s in report.abstained)
     # Generator called for transform_scale only (idx=1)
     assert generator._idx == 1
+
+
+# ── Q2b: Neighbor selection ────────────────────────────────────────────────────
+
+
+def test_select_neighbors_deterministic() -> None:
+    """Same catalog → identical neighbor order on repeated calls."""
+    from agentgauge.fixer import _select_neighbors
+
+    catalog = [
+        Tool(name="get_record", description="", inputSchema={}),
+        Tool(name="fetch_record", description="", inputSchema={}),
+        Tool(name="read_entry", description="", inputSchema={}),
+        Tool(name="save_record", description="", inputSchema={}),
+        Tool(name="store_item", description="", inputSchema={}),
+        Tool(name="delete_record", description="", inputSchema={}),
+        Tool(name="update_record", description="", inputSchema={}),
+    ]
+    target = Tool(name="get_record", description="", inputSchema={})
+    neighbors1 = _select_neighbors(target, catalog, k=4)
+    neighbors2 = _select_neighbors(target, catalog, k=4)
+    assert [n.name for n in neighbors1] == [n.name for n in neighbors2]
+
+
+def test_select_neighbors_excludes_target() -> None:
+    """Neighbors never include the target tool itself."""
+    from agentgauge.fixer import _select_neighbors
+
+    catalog = [
+        Tool(name="get_record", description="", inputSchema={}),
+        Tool(name="fetch_record", description="", inputSchema={}),
+        Tool(name="save_record", description="", inputSchema={}),
+    ]
+    target = Tool(name="get_record", description="", inputSchema={})
+    neighbors = _select_neighbors(target, catalog, k=5)
+    assert all(n.name != "get_record" for n in neighbors)
+
+
+def test_select_neighbors_does_not_use_family_labels() -> None:
+    """_select_neighbors takes only list[Tool] — no family dict in signature."""
+    import inspect
+    from agentgauge.fixer import _select_neighbors
+
+    sig = inspect.signature(_select_neighbors)
+    params = list(sig.parameters.keys())
+    assert "family" not in params
+    assert "families" not in params
+    assert "family_map" not in params
+
+
+def test_select_neighbors_token_similarity_ranks_shared_token_first() -> None:
+    """fetch_record shares 'record' with get_record → ranks above unrelated tools."""
+    from agentgauge.fixer import _select_neighbors
+
+    catalog = [
+        Tool(name="fetch_record", description="", inputSchema={}),
+        Tool(name="search_items", description="", inputSchema={}),
+        Tool(name="notify_user", description="", inputSchema={}),
+    ]
+    target = Tool(name="get_record", description="", inputSchema={})
+    neighbors = _select_neighbors(target, catalog, k=3)
+    assert neighbors[0].name == "fetch_record"
+
+
+def test_select_neighbors_respects_k() -> None:
+    """Returns at most k neighbors."""
+    from agentgauge.fixer import _select_neighbors
+
+    catalog = [Tool(name=f"tool_{i}", description="", inputSchema={}) for i in range(20)]
+    target = Tool(name="tool_0", description="", inputSchema={})
+    neighbors = _select_neighbors(target, catalog, k=5)
+    assert len(neighbors) <= 5
+
+
+# ── Q2b: Catalog-aware prompt content ─────────────────────────────────────────
+
+
+async def test_catalog_aware_prompt_contains_no_fabrication_guard() -> None:
+    """Catalog-aware prompt includes the no-fabrication instruction."""
+    from agentgauge.fixer import _generate_description
+    from agentgauge.providers import Message
+
+    captured: list[str] = []
+
+    class CapturingProvider:
+        model_name = "mock"
+
+        async def chat(self, messages: list[Message], *, seed: int = 42) -> str:
+            captured.extend(m.content for m in messages)
+            return "Plain description."
+
+    target = Tool(name="store_item", description="", inputSchema={"type": "object"})
+    neighbor = Tool(name="save_record", description="", inputSchema={"type": "object"})
+    await _generate_description(target, CapturingProvider(), neighbors=[neighbor])
+
+    assert captured, "No prompt captured"
+    prompt = captured[0]
+    assert "NO FABRICATION" in prompt or "DO NOT invent" in prompt
+    assert "save_record" in prompt
+
+
+async def test_catalog_aware_prompt_contains_neighbor_names() -> None:
+    """Catalog-aware prompt contains all neighbor names and descriptions."""
+    from agentgauge.fixer import _generate_description
+    from agentgauge.providers import Message
+
+    captured: list[str] = []
+
+    class CapturingProvider:
+        model_name = "mock"
+
+        async def chat(self, messages: list[Message], *, seed: int = 42) -> str:
+            captured.extend(m.content for m in messages)
+            return "A distinguishing description."
+
+    target = Tool(name="get_record", description="", inputSchema={})
+    neighbors = [
+        Tool(name="fetch_record", description="Fetch via HTTP", inputSchema={}),
+        Tool(name="read_entry", description="Read from file", inputSchema={}),
+    ]
+    await _generate_description(target, CapturingProvider(), neighbors=neighbors)
+
+    prompt = captured[0]
+    assert "fetch_record" in prompt
+    assert "read_entry" in prompt
+    assert "Fetch via HTTP" in prompt
+
+
+async def test_generate_description_no_neighbors_omits_catalog_content() -> None:
+    """When neighbors=None, prompt does not contain catalog-aware content."""
+    from agentgauge.fixer import _generate_description
+    from agentgauge.providers import Message
+
+    captured: list[str] = []
+
+    class CapturingProvider:
+        model_name = "mock"
+
+        async def chat(self, messages: list[Message], *, seed: int = 42) -> str:
+            captured.extend(m.content for m in messages)
+            return "Simple description."
+
+    target = Tool(name="mystery", description="old", inputSchema={})
+    await _generate_description(target, CapturingProvider(), neighbors=None)
+
+    prompt = captured[0]
+    assert "Confusable neighbors" not in prompt
+    assert "NO FABRICATION" not in prompt
+
+
+async def test_generate_description_catalog_aware_real_difference_neighbor() -> None:
+    """MockProvider: real-schema-difference neighbor → distinguishing response returned."""
+    from agentgauge.fixer import _generate_description
+
+    _SCHEMA_CACHE = {"type": "object", "properties": {"key": {"type": "string"}, "ttl": {"type": "integer"}}}
+    _SCHEMA_DB = {"type": "object", "properties": {"key": {"type": "string"}, "value": {"type": "object"}}}
+
+    target = Tool(name="store_item", description="", inputSchema=_SCHEMA_CACHE)
+    neighbors = [Tool(name="save_record", description="", inputSchema=_SCHEMA_DB)]
+
+    provider = MockProvider(responses=["Store an item in cache with TTL; unlike save_record which persists to DB."])
+    result = await _generate_description(target, provider, neighbors=neighbors)
+    assert "Store an item in cache with TTL" in result
+
+
+async def test_generate_description_catalog_aware_identical_neighbor_plain() -> None:
+    """MockProvider: identical-schema neighbor → plain non-fabricated response returned."""
+    from agentgauge.fixer import _generate_description
+
+    _SCHEMA = {"type": "object", "properties": {"query": {"type": "string"}}, "required": ["query"]}
+    target = Tool(name="find_entries", description="", inputSchema=_SCHEMA)
+    neighbors = [Tool(name="lookup_data", description="", inputSchema=_SCHEMA)]
+
+    provider = MockProvider(responses=["Retrieve entries matching the given query string."])
+    result = await _generate_description(target, provider, neighbors=neighbors)
+    assert result == "Retrieve entries matching the given query string."
+
+
+async def test_run_fixer_catalog_aware_prompt_references_neighbors(tmp_path: Path) -> None:
+    """run_fixer with catalog_aware=True sends catalog-aware prompt referencing neighbors."""
+    from agentgauge.fixer import run_fixer
+    from agentgauge.providers import Message
+
+    _SCHEMA = {"type": "object", "properties": {"query": {"type": "string"}}, "required": ["query"]}
+    captured_prompts: list[str] = []
+
+    class CapturingProvider:
+        model_name = "mock"
+        _idx: int = 0
+        _responses = ["1"] * 5 + ["Distinguishing description."] + ["9"] * 5
+
+        async def chat(self, messages: list[Message], *, seed: int = 42) -> str:
+            captured_prompts.extend(m.content for m in messages)
+            resp = self._responses[self._idx % len(self._responses)]
+            self._idx += 1
+            return resp
+
+    target = Tool(name="store_item", description="old", inputSchema=_SCHEMA)
+    neighbor = Tool(name="save_record", description="old2", inputSchema=_SCHEMA)
+
+    source = (
+        'types.Tool(\n    name="store_item",\n    description="old",\n    inputSchema={},\n)\n'
+        'types.Tool(\n    name="save_record",\n    description="old2",\n    inputSchema={},\n)'
+    )
+    src_file = tmp_path / "server.py"
+    src_file.write_text(source)
+
+    prov = CapturingProvider()
+    await run_fixer(
+        [target, neighbor],
+        prov,
+        prov,
+        src_file,
+        ["description_quality"],
+        trials=5,
+        min_delta=10.0,
+        catalog_aware=True,
+    )
+
+    gen_prompt = next(
+        (p for p in captured_prompts if "Confusable neighbors" in p),
+        None,
+    )
+    assert gen_prompt is not None, "Expected catalog-aware prompt with 'Confusable neighbors'"
+    assert "save_record" in gen_prompt
+    assert "NO FABRICATION" in gen_prompt or "DO NOT invent" in gen_prompt

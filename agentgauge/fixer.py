@@ -192,6 +192,24 @@ _DESC_GENERATOR_PROMPT = (
     "Write ONLY the new description text. No quotes, no preamble, no markdown."
 )
 
+_DESC_GENERATOR_CATALOG_AWARE_PROMPT = (
+    "You are improving an MCP tool's description to help AI agents use it correctly.\n"
+    "Write a clear, concise description (1-2 sentences) that:\n"
+    "- States what this tool does and names any key parameters\n"
+    "- If this tool differs meaningfully from the neighbors listed below, state that difference\n\n"
+    "CRITICAL — NO FABRICATION: If this tool is NOT meaningfully different from a neighbor "
+    "based on the names, schemas, and descriptions shown here, say what it does plainly and "
+    "DO NOT invent a distinction. Only state a difference directly supported by the "
+    "names, schemas, or descriptions shown.\n\n"
+    "Target tool:\n"
+    "  Name: {name}\n"
+    "  Current description: {current}\n"
+    "  Input schema: {schema}\n\n"
+    "Confusable neighbors from the same server catalog:\n"
+    "{neighbors}\n\n"
+    "Write ONLY the new description text. No quotes, no preamble, no markdown."
+)
+
 _SCHEMA_GENERATOR_PROMPT = (
     "You are improving MCP tool parameter metadata for AI agent usability.\n"
     "For the tool below, generate improved parameter metadata AND identify required parameters.\n\n"
@@ -209,6 +227,31 @@ _SCHEMA_GENERATOR_PROMPT = (
     '"required": ["x", "y"]}}\n\n'
     "Reply with ONLY the JSON object, no markdown fences, no other text."
 )
+
+_NEIGHBOR_K: int = 6  # neighbors per tool; keeps prompt bounded at scale
+
+
+def _select_neighbors(
+    target: Tool,
+    catalog: list[Tool],
+    k: int = _NEIGHBOR_K,
+) -> list[Tool]:
+    """Select up to K lexically similar neighbors by name token Jaccard similarity.
+
+    Uses only Tool.name — never any external family/label dict. Works on any
+    unlabeled catalog. Ties broken alphabetically for determinism.
+    """
+    target_tokens = set(_tokenize_identifier(target.name))
+    scored: list[tuple[float, str, Tool]] = []
+    for tool in catalog:
+        if tool.name == target.name:
+            continue
+        other_tokens = set(_tokenize_identifier(tool.name))
+        union = target_tokens | other_tokens
+        score = len(target_tokens & other_tokens) / len(union) if union else 0.0
+        scored.append((-score, tool.name, tool))  # negate for descending sort
+    scored.sort(key=lambda x: (x[0], x[1]))
+    return [tool for _, _, tool in scored[:k]]
 
 
 def assert_generator_ne_judge(generator_model: str, judge_model: str) -> None:
@@ -248,13 +291,34 @@ async def _judge_desc_trials(tool: Tool, provider: Provider, trials: int) -> lis
     return scores
 
 
-async def _generate_description(tool: Tool, generator: Provider) -> str:
-    """Generate an improved description for `tool` using the generator model."""
-    prompt = _DESC_GENERATOR_PROMPT.format(
-        name=tool.name,
-        current=tool.description or "(none)",
-        schema=tool.inputSchema,
-    )
+async def _generate_description(
+    tool: Tool,
+    generator: Provider,
+    *,
+    neighbors: list[Tool] | None = None,
+) -> str:
+    """Generate an improved description for `tool` using the generator model.
+
+    When `neighbors` is provided (non-empty list), uses the catalog-aware prompt with
+    an explicit no-fabrication guard. Falls back to the per-tool prompt when None.
+    """
+    if neighbors:
+        neighbor_lines = [
+            f"  - {n.name}  schema: {n.inputSchema}  desc: {n.description or '(none)'}"
+            for n in neighbors
+        ]
+        prompt = _DESC_GENERATOR_CATALOG_AWARE_PROMPT.format(
+            name=tool.name,
+            current=tool.description or "(none)",
+            schema=tool.inputSchema,
+            neighbors="\n".join(neighbor_lines),
+        )
+    else:
+        prompt = _DESC_GENERATOR_PROMPT.format(
+            name=tool.name,
+            current=tool.description or "(none)",
+            schema=tool.inputSchema,
+        )
     resp = await generator.chat([Message(role="user", content=prompt)], seed=42)
     return resp.strip()
 
@@ -460,6 +524,8 @@ async def run_fixer(
     trials: int = DEFAULT_TRIALS,
     min_delta: float = DEFAULT_MIN_DELTA,
     skip_above_band: float = DEFAULT_SKIP_ABOVE_BAND,
+    catalog_aware: bool = False,
+    neighbor_k: int = _NEIGHBOR_K,
 ) -> FixReport:
     """Run the auto-fix loop for the given tools and scoring dimensions.
 
@@ -513,7 +579,8 @@ async def run_fixer(
             # ── Generate candidate ────────────────────────────────────────────
             merged_required: list[str] = []
             if dim == "description_quality":
-                new_desc = await _generate_description(tool, generator)
+                nbrs = _select_neighbors(tool, tools, k=neighbor_k) if catalog_aware else None
+                new_desc = await _generate_description(tool, generator, neighbors=nbrs)
                 candidate_tool = Tool(
                     name=tool.name,
                     description=new_desc,
