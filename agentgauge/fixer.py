@@ -228,6 +228,28 @@ _DESC_GENERATOR_SOURCE_AWARE_PROMPT = (
     "Write ONLY the new description text. No quotes, no preamble, no markdown."
 )
 
+_DESC_GENERATOR_SCOPED_SOURCE_PROMPT = (
+    "You are improving an MCP tool's description to help AI agents use it correctly.\n"
+    "Write a clear, concise description (1-2 sentences) that:\n"
+    "- States what this tool does and names any key parameters\n"
+    "- If this tool differs meaningfully from the confusable neighbors listed below, state that "
+    "difference USING THE SOURCE CODE as evidence\n\n"
+    "CRITICAL — NO FABRICATION: Only state a difference that is directly supported by the source "
+    "code shown below. The source shown is ONLY this tool's own implementation — it does NOT "
+    "contain other tools' code. Neighbors are shown as signature and docstring only (no bodies). "
+    "If the source does not clearly support a distinction, say what it does plainly and DO NOT "
+    "invent a difference.\n\n"
+    "Target tool:\n"
+    "  Name: {name}\n"
+    "  Current description: {current}\n"
+    "  Input schema: {schema}\n\n"
+    "This tool's own source code (ONLY this tool's function — no other tools shown):\n"
+    "```python\n{scoped_source}\n```\n\n"
+    "Confusable neighbors (signature + docstring only — bodies not shown):\n"
+    "{neighbor_surfaces}\n\n"
+    "Write ONLY the new description text. No quotes, no preamble, no markdown."
+)
+
 _SCHEMA_GENERATOR_PROMPT = (
     "You are improving MCP tool parameter metadata for AI agent usability.\n"
     "For the tool below, generate improved parameter metadata AND identify required parameters.\n\n"
@@ -270,6 +292,79 @@ def _select_neighbors(
         scored.append((-score, tool.name, tool))  # negate for descending sort
     scored.sort(key=lambda x: (x[0], x[1]))
     return [tool for _, _, tool in scored[:k]]
+
+
+def _extract_scoped_function(
+    source: str,
+    tool_name: str,
+    *,
+    handler_prefix: str = "_handle_",
+) -> str:
+    """Return ONLY the function def + body for the target tool.
+
+    Searches for `(async )?def {handler_prefix}{tool_name}(` and extracts
+    that function through its last body line (stops at the next top-level
+    def/async def or end of file). Returns empty string if not found.
+    """
+    pattern = re.compile(
+        rf"^(async\s+)?def\s+{re.escape(handler_prefix)}{re.escape(tool_name)}\s*\(",
+        re.MULTILINE,
+    )
+    m = pattern.search(source)
+    if not m:
+        return ""
+    start = m.start()
+    # Find the end: next top-level def/async def (same indent level = 0)
+    end_pattern = re.compile(r"^(async\s+)?def\s+", re.MULTILINE)
+    next_m = end_pattern.search(source, m.end())
+    end = next_m.start() if next_m else len(source)
+    return source[start:end].rstrip()
+
+
+def _extract_function_surface(
+    source: str,
+    tool_name: str,
+    *,
+    handler_prefix: str = "_handle_",
+) -> str:
+    """Return only the def line + docstring for the target tool (body stripped).
+
+    Extracts the full function via _extract_scoped_function, then keeps only:
+    - the `def`/`async def` line
+    - the first triple-quoted docstring if present immediately after the def
+    Strips all body lines after the docstring (or after the def if no docstring).
+    Returns empty string if the function is not found.
+    """
+    func_text = _extract_scoped_function(source, tool_name, handler_prefix=handler_prefix)
+    if not func_text:
+        return ""
+    lines = func_text.splitlines()
+    result: list[str] = []
+    # Always include def line (and any continuation lines for multi-line signatures)
+    i = 0
+    while i < len(lines):
+        result.append(lines[i])
+        # Check if we've finished the def signature (ends with ':')
+        stripped = lines[i].rstrip()
+        if stripped.endswith(":"):
+            i += 1
+            break
+        i += 1
+    # Now check for a docstring: skip blank lines, then look for triple-quote
+    while i < len(lines) and not lines[i].strip():
+        i += 1
+    if i < len(lines) and ('"""' in lines[i] or "'''" in lines[i]):
+        quote = '"""' if '"""' in lines[i] else "'''"
+        result.append(lines[i])
+        # Multi-line docstring: keep until closing triple-quote
+        if lines[i].count(quote) < 2:  # opening quote not also closed on same line
+            i += 1
+            while i < len(lines):
+                result.append(lines[i])
+                if quote in lines[i]:
+                    break
+                i += 1
+    return "\n".join(result)
 
 
 def assert_generator_ne_judge(generator_model: str, judge_model: str) -> None:
@@ -315,17 +410,30 @@ async def _generate_description(
     *,
     neighbors: list[Tool] | None = None,
     source: str | None = None,
+    scoped_source: str | None = None,
+    neighbor_surfaces_text: str | None = None,
 ) -> str:
     """Generate an improved description for `tool` using the generator model.
 
     Priority (highest to lowest):
+    - scoped_source (non-empty): uses _DESC_GENERATOR_SCOPED_SOURCE_PROMPT; composes with
+      neighbor_surfaces_text (breaks source-XOR-neighbors for this path only).
     - source (non-empty): uses _DESC_GENERATOR_SOURCE_AWARE_PROMPT with no-fabrication guard
     - neighbors (non-empty list): uses _DESC_GENERATOR_CATALOG_AWARE_PROMPT with no-fabrication guard
     - otherwise: uses _DESC_GENERATOR_PROMPT (per-tool, name+schema only)
 
     source and neighbors are mutually exclusive by convention — pass at most one.
+    scoped_source can be combined with neighbor_surfaces_text.
     """
-    if source:
+    if scoped_source:
+        prompt = _DESC_GENERATOR_SCOPED_SOURCE_PROMPT.format(
+            name=tool.name,
+            current=tool.description or "(none)",
+            schema=tool.inputSchema,
+            scoped_source=scoped_source,
+            neighbor_surfaces=neighbor_surfaces_text or "(none)",
+        )
+    elif source:
         prompt = _DESC_GENERATOR_SOURCE_AWARE_PROMPT.format(
             name=tool.name,
             current=tool.description or "(none)",

@@ -20,7 +20,17 @@ Autonomous runs: pick the single top TODO, implement it, move to IN-REVIEW.
 
 ## IN-REVIEW
 
-*(empty)*
+### Q4 — Scoped-source description generation (does scoping fix the F-BODY misattribution?)
+
+**Branch:** `claude/q4-scoped-source`
+
+Source-aware generation with per-tool scoping: the generator sees ONLY the target
+tool's function (not the whole file), plus neighbor surfaces (signature + docstring,
+bodies stripped). Mechanical guarantee: neighbor bodies cannot appear in the prompt,
+making cross-tool misattribution impossible by construction.
+
+**CI status:** verify.sh green; MockProvider tests; no real model in committed tests.
+**Real-agent A/B:** PENDING (Phase 2 requires GPU-exclusive run).
 
 ---
 
