@@ -202,9 +202,11 @@ async def run(agent_model: str, trials: int) -> None:
         print(f"  Arm O complete. GPU watchdog: clean (no foreign models)")
 
     finally:
-        await cleanup_connection(ctx_a)
-        await cleanup_connection(ctx_f)
-        await cleanup_connection(ctx_o)
+        for _ctx in [ctx_a, ctx_f, ctx_o]:
+            try:
+                await cleanup_connection(_ctx)
+            except BaseException:
+                pass
 
     # ── Section A: GPU + parse_failed diagnostics ──────────────────────────────
     pf_a = parse_failed_count(results_a, valid_tool_names)
