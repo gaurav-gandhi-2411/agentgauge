@@ -296,6 +296,7 @@ _SCHEMA_GENERATOR_PROMPT = (
     "Reply with ONLY the JSON object, no markdown fences, no other text."
 )
 
+
 def _contains_comparative_neighbor_claim(desc: str, neighbor_names: list[str]) -> bool:
     """Return True if desc makes a comparative claim naming a specific neighbor.
 
@@ -313,7 +314,7 @@ def _contains_comparative_neighbor_claim(desc: str, neighbor_names: list[str]) -
         re.IGNORECASE,
     )
     for m in comparative_re.finditer(desc):
-        after = desc[m.end():]
+        after = desc[m.end() :]
         for name in neighbor_names:
             if re.match(re.escape(name), after, re.IGNORECASE):
                 return True

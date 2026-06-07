@@ -19,17 +19,26 @@ def test_guard_b_prompt_contains_no_fabrication_instruction() -> None:
 
 def test_guard_b_prompt_forbids_comparative_claims() -> None:
     """Guard B prompt must explicitly forbid comparative neighbor claims."""
-    assert "must NOT" in _DESC_GENERATOR_GUARD_B_PROMPT or "FORBIDDEN" in _DESC_GENERATOR_GUARD_B_PROMPT
+    assert (
+        "must NOT" in _DESC_GENERATOR_GUARD_B_PROMPT
+        or "FORBIDDEN" in _DESC_GENERATOR_GUARD_B_PROMPT
+    )
 
 
 def test_guard_b_prompt_includes_good_example() -> None:
     """Guard B prompt must contain a target-grounded GOOD example."""
-    assert "GOOD" in _DESC_GENERATOR_GUARD_B_PROMPT or "target-grounded" in _DESC_GENERATOR_GUARD_B_PROMPT
+    assert (
+        "GOOD" in _DESC_GENERATOR_GUARD_B_PROMPT
+        or "target-grounded" in _DESC_GENERATOR_GUARD_B_PROMPT
+    )
 
 
 def test_guard_b_prompt_includes_forbidden_example() -> None:
     """Guard B prompt must contain a FORBIDDEN comparative example."""
-    assert "FORBIDDEN" in _DESC_GENERATOR_GUARD_B_PROMPT or "Unlike lookup_data" in _DESC_GENERATOR_GUARD_B_PROMPT
+    assert (
+        "FORBIDDEN" in _DESC_GENERATOR_GUARD_B_PROMPT
+        or "Unlike lookup_data" in _DESC_GENERATOR_GUARD_B_PROMPT
+    )
 
 
 def test_guard_b_prompt_neighbor_surfaces_include_docstrings() -> None:
@@ -98,10 +107,10 @@ async def test_generate_description_guard_b_uses_guard_b_prompt() -> None:
 
     tool = Tool(name="find_entries", description="", inputSchema={"type": "object"})
     scoped_src = (
-        'async def _handle_find_entries(query: str) -> str:\n'
+        "async def _handle_find_entries(query: str) -> str:\n"
         '    """Return all entries whose key contains the query string."""\n'
-        '    matches = [v for k, v in _store.items() if query in k]\n'
-        '    return str(len(matches))'
+        "    matches = [v for k, v in _store.items() if query in k]\n"
+        "    return str(len(matches))"
     )
 
     await _generate_description(
