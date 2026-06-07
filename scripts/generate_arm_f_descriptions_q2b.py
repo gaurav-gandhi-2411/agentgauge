@@ -30,7 +30,8 @@ _DEFAULT_OUT = Path(__file__).parent.parent / "evals" / "fixtures" / "t18_arm_f_
 
 
 async def generate(model: str, out_path: Path, k: int) -> None:
-    generator = OllamaProvider(model)
+    # 600s timeout: catalog-aware prompt + qwen3 thinking mode can exceed the 180s default
+    generator = OllamaProvider(model, timeout=600.0)
     all_tool_names = [name for names in FAMILIES.values() for name in names]
 
     # Build full catalog as Tool objects (no family labels used)
