@@ -118,8 +118,8 @@ async def generate(model: str) -> None:
     _OUT_DOC.parent.mkdir(parents=True, exist_ok=True)
     _OUT_DOC.write_text(json.dumps(doc_descriptions, indent=2, ensure_ascii=False), encoding="utf-8")
     _OUT_BODY.write_text(json.dumps(body_descriptions, indent=2, ensure_ascii=False), encoding="utf-8")
-    print(f"\nSaved F-DOC → {_OUT_DOC}")
-    print(f"Saved F-BODY → {_OUT_BODY}")
+    print(f"\nSaved F-DOC: {_OUT_DOC}")
+    print(f"Saved F-BODY: {_OUT_BODY}")
 
     # Phase 1 summary: flag if F-DOC or F-BODY description for a control tool looks fabricated
     print("\n[NO-FABRICATION PRE-SCREEN] Check generated descriptions for control tools:")

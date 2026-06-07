@@ -17,7 +17,7 @@ Usage:
 
 Prerequisites:
   - Phase 1 complete: evals/fixtures/q3_arm_f_doc_descriptions.json exists
-  - ollama stop, then ollama ps → empty before running
+  - ollama stop, then ollama ps (must be empty) before running
   - Watchdog kills run if any non-gemma2 model loads during Phase 2
 """
 
@@ -30,6 +30,7 @@ import subprocess
 import sys
 from pathlib import Path
 
+sys.stdout.reconfigure(encoding="utf-8")
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from agentgauge.ab_harness import assert_agent_ne_judge_ne_generator
@@ -391,7 +392,7 @@ async def run(agent_model: str, trials: int) -> None:
         "\n    Both recover (>30%): source-inference works even undocumented — strongest claim"
         "\n    DOC only: generator needs documented source; can't infer from bare code"
         "\n    Neither: even source can't be turned into discriminating descriptions by this generator"
-        "\n    Any FABRICATED on control → unsafe regardless of recovery"
+        "\n    Any FABRICATED on control -> unsafe regardless of recovery"
     )
 
 
