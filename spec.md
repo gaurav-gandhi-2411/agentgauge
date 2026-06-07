@@ -1,94 +1,100 @@
-# spec.md — Q2a: does the CURRENT fixer recover the T18 discrimination gain?
+# spec.md — Q2b: catalog-aware description generation (recover the T18 gain without fabricating)
 
-**Repo:** github.com/gaurav-gandhi-2411/agentgauge · **Base:** `main` @ fa766c9 (T18 merged) ·
-**Branch:** `claude/q2a-fixer-recovery`
-**Routing:** DRAFT PR. Draft-forcing #2 (fixer generates against the catalog) + #3 (real-agent A/B).
-**NOT condition #1** — uses the existing fixer/generator unchanged; no scorer/judge/rubric/
-calibration changes.
+**Repo:** github.com/gaurav-gandhi-2411/agentgauge · **Base:** `main` @ 8e26dd7 ·
+**Branch:** `claude/q2b-catalog-aware`
+**Routing:** DRAFT PR. Changes the generator's description path in `fixer.py` (generation behavior)
++ validated by a real-agent A/B. Draft-forcing #2/#3. **NOT condition #1** (no judge/scorer/rubric/
+calibration changes).
 
-**Pre-registration:** this spec is committed at branch start. The metric (recovery fraction on
-parse-success contested tasks) and the analysis are fixed before the run.
+**Pre-registration:** committed at branch start. Recovery metric, the no-fabrication guard, and the
+negative-control tasks are fixed before the run.
 
 ---
 
-## What Q2a tests
+## Why
 
-T18 established that ORACLE discriminating descriptions recover +34.5pp (62.9% -> 97.4%, parse-success
-contested tasks) in the 60-tool confusable catalog. Q2a asks the product question: does AgentGauge's
-OWN fixer, as currently built, produce descriptions good enough to recover that gain? I.e. does our
-tool move the dimension we just validated.
+Q2a proved the per-tool fixer recovers only 12.5% of the T18 oracle gain (F-vs-A not significant),
+because the decisive distinctions are CROSS-TOOL (storage medium, op scope, soft/hard delete,
+channel, directionality) and the generator never saw the siblings — all 14 misses were classification
+(i). Q2b gives the generator its relevant neighbors so it can encode the distinguishing dimension,
+and measures whether that recovers the gain.
 
-## Structural hypothesis (from code, to be measured not assumed)
+## The failure mode to design against (not discover)
 
-`_DESC_GENERATOR_PROMPT` is invoked PER TOOL with only {name, current, schema} of that single tool.
-The generator never sees sibling tools, so it cannot know WHAT distinction to encode. T18's oracle
-power came from cross-tool distinctions (HTTP-vs-DB-vs-cache source, insert-vs-upsert, single-field-
-vs-replace). Prediction: the per-tool fixer recovers LITTLE — UNLESS a given distinction happens to
-live in that tool's own schema (param name/type), which the generator can surface. Q2a measures the
-recovery fraction and DIAGNOSES which distinctions were recoverable per-tool vs only cross-tool.
-
-## No headroom-gate risk
-
-Unlike T17/Ty/T18, the regime is already validated: Arm A ~63%, oracle ~97% on parse-success
-contested tasks. Q2a measures where the FIXER lands on that ruler. There is no abort gate — every
-outcome is interpretable.
+Q2a also showed the generator FABRICATES under low grounding (store_item cache->"persistent";
+forward_record POST->"retrieval"). Prompting it to "distinguish from neighbors" will make it
+fabricate DISTINCTIONS — inventing a difference between two genuinely-interchangeable tools because
+it was asked to differentiate. So Q2b's success criterion is NOT just "F approaches O." It is:
+**recover the gain on tools with REAL distinctions, AND do no harm on tools that are genuinely
+ambiguous.** A recovery number without the fabrication guard is not acceptance.
 
 ---
 
 ## Scope
 
-**IN:** reuse the T18 fixture UNCHANGED (60-tool catalog, families, 40 tasks). Generate descriptions
-with the CURRENT fixer (per-tool prompt, generator qwen3:8b). Three-arm A/B on selection_accuracy.
-Diagnose unrecovered tasks.
+**IN:** catalog-aware description generation — a neighbor-selection step + a catalog-aware prompt
+with an explicit no-fabrication instruction; re-run the Q2a three-arm setup with the new Arm F.
 
-**OUT:** any change to the fixer/generator (that is Q2b, contingent on this result); new fixtures;
-call_correctness; scorer changes.
+**OUT:** schema generation (unchanged); selection-among-few / call_correctness; scorer changes;
+production embedding infra (neighbor-selection kept simple, see below).
 
-## Design — three arms, sequential GPU
+## Design
 
-- **Arm A** = empty descriptions (T18 Arm A, reference floor).
-- **Arm F** = the FIXER's generated descriptions (run current fixer over the catalog; persist output).
-- **Arm O** = T18 oracle descriptions (reference ceiling).
-- Metric: parse-success selection_accuracy on the 16 CONTESTED tasks (where the effect lives).
-  Report **recovery fraction = (F - A) / (O - A)** plus absolute F.
-- Agent = gemma2:9b (!= judge != generator). Generator = qwen3:8b (NOTE: this is the 8B generator,
-  NOT qwen3:30b which was the GPU contaminator — different model).
-- **Phase separation for GPU safety:** (1) generate all Arm F descriptions with qwen3:8b, persist to
-  a file; (2) `ollama stop`; (3) run the 3-arm A/B with gemma2:9b ONLY. The A/B-phase watchdog kills
-  on ANY non-gemma model. This keeps generation and evaluation from contending and keeps the watchdog
-  rule simple. Identify/silence the qwen3:30b reactive requester before launching (prior contamination).
+- **Neighbor selection** (in `run_fixer`, passed into `_generate_description`): for each tool, select
+  up to K (e.g. 5-8) candidate-confusable neighbors FROM THE CATALOG as an arbitrary server presents
+  it — name/token similarity or a lightweight embedding/lexical cluster. **Must NOT read the T18
+  fixture's family labels** (that would cheat; real servers have no such labels). Document the
+  selection rule; it has to be one that would work on an unlabeled 200-tool catalog. Cap K so the
+  prompt stays bounded at scale.
+- **Catalog-aware prompt** (new variant of `_DESC_GENERATOR_PROMPT`): show the target tool AND its K
+  neighbors (names + schemas + current descriptions). Ask for a description that states what THIS
+  tool does and how it differs from the listed neighbors — with an explicit guard:
+  "If this tool is NOT meaningfully different from a neighbor on the available evidence, say what it
+  does plainly and DO NOT invent a distinction. Only state a difference supported by the names/
+  schemas/descriptions shown." Reuse the shared JSON/text extraction helper (no fence bug).
+- **Keep the abstain (is_low_grounding) and do-no-harm behavior from Tx** — catalog-awareness adds
+  context; it does not license fabrication.
 
-## Diagnosis (required, the point of Q2a)
+## Required validation (re-run Q2a's exact three-arm setup, new Arm F)
 
-For each contested task where Arm F < Arm O (fixer failed to recover):
-- Show the fixer's generated description for the gold tool.
-- State whether it encodes the distinguishing feature T18's oracle used.
-- Classify WHY it missed: (i) the distinction is cross-tool only (generator couldn't know it
-  per-tool) -> motivates Q2b catalog-aware generation; or (ii) the distinction WAS in the tool's own
-  schema but the generator didn't surface it -> a prompt/generation-quality gap, not a context gap.
+- Arm A = empty (floor). Arm F = Q2b catalog-aware fixer output. Arm O = T18 oracle (ceiling).
+  Agent gemma2:9b; generator qwen3:8b; phase-separated GPU (generate -> ollama stop -> A/B with
+  gemma-only watchdog). Same fixture, same 18 contested tasks, parse-success, task-clustered.
+- **Recovery:** report (F-A)/(O-A) and sign tests F-vs-A, F-vs-O. Target: F significantly > A
+  (recovery real), ideally F approaching O.
+- **NO-FABRICATION negative control (the guard):** the T18 genuinely-ambiguous tasks (the Q2a/T18
+  double-zeros: find_entries/lookup_data, book_slot/plan_event — tools NOT meaningfully distinct on
+  evidence). For these, inspect the Q2b-generated descriptions: the generator must NOT assert a false
+  distinction. Classify each ambiguous-tool description as FAITHFUL (plain, no invented difference)
+  or FABRICATED (asserts a distinction unsupported by evidence). ANY fabrication on the control set
+  is a FAIL regardless of recovery number.
+- **Per-task diagnosis** (as Q2a): for each contested task, show the Q2b description and whether it
+  now encodes the real distinction.
 
 ---
 
 ## Acceptance criteria
 
-1. **CI (deterministic, seed 42, no network):** the three-arm wiring works with a MockProvider
-   (Arm F sourced from a persisted descriptions file); recovery-fraction computation correct;
-   contested-subset + parse-success filtering correct. No real model in committed tests.
-2. **Real-agent 3-arm (manual, in PR description):**
-   - GPU exclusivity FIRST (gemma-only during A/B; report any eviction). parse_failed per arm.
-   - Table: Arm A / Arm F / Arm O on parse-success contested tasks; recovery fraction; task-clustered
-     sign test F-vs-A and F-vs-O.
-   - Diagnosis breakdown (i vs ii) across unrecovered tasks.
-   - Honest verdict:
-     - HIGH recovery (F ~ O): the current fixer works at scale — the product claim closes
-       (dimension validated AND tool moves it).
-     - LOW recovery (F ~ A): per-tool generation can't encode cross-tool distinctions -> Q2b
-       (catalog-aware generator) is the warranted next increment; the diagnosis says so explicitly.
-     - PARTIAL: report which distinction types recovered (schema-encoded) vs not (cross-tool only).
-3. scorer.py / judge / rubrics / calibration untouched; generator != judge asserted; verify.sh green;
-   coverage >= 60%.
+1. **CI (deterministic, seed 42, no network):** neighbor-selection is deterministic and does not read
+   fixture family labels (assert); catalog-aware prompt assembles target+neighbors; the no-fabrication
+   instruction is present; shared extraction helper used; with a MockProvider, a tool with a real
+   schema-difference neighbor yields a distinguishing description and an identical-neighbor case
+   yields a plain (non-fabricated) one. No real model in committed tests.
+2. **Real-agent three-arm (manual, in PR description):**
+   - GPU exclusivity + parse_failed FIRST.
+   - Recovery table (A/F/O, parse-success contested) + recovery fraction + sign tests.
+   - NO-FABRICATION control result: FAITHFUL/FABRICATED per ambiguous tool. Any FABRICATED -> FAIL.
+   - Verdict:
+     - RECOVERS + FAITHFUL: catalog-awareness delivers the T18 value safely — the product claim
+       closes (dimension validated AND tool moves it without harm).
+     - RECOVERS but FABRICATES on control: unsafe — recovery bought by invented distinctions; needs
+       a stronger grounding guard before it can ship.
+     - LOW recovery: neighbor context insufficient (or selection too weak) — report why.
+3. fixer schema path / scorer / judge / rubrics / calibration untouched; generator != judge asserted;
+   verify.sh green; coverage >= 60%.
 
 ## Housekeeping
 
-- TASKS.md: Q2a (TODO -> IN-REVIEW). STATUS.md: record the recovery fraction + diagnosis. If LOW/
-  PARTIAL, queue Q2b (catalog-aware description generation) with this diagnosis as its motivation.
+- TASKS.md: Q2b (TODO -> IN-REVIEW). STATUS.md: record recovery fraction AND the no-fabrication
+  control outcome — both, not just recovery. Do not claim the fixer "delivers the T18 value" unless
+  it recovered AND stayed faithful on the control.
