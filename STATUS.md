@@ -250,16 +250,29 @@ models — always record the model alongside any stored score.
   catalog-aware generation: the generator must see sibling tools when writing each description
   so it can explicitly encode the within-family distinguishing dimension. This is Q2b.
 
-- **Q2b (IN-REVIEW, branch `claude/q2b-catalog-aware`):** Catalog-aware description generation —
-  `_select_neighbors` (Jaccard token-overlap, K=6, no family labels) + catalog-aware prompt with
-  explicit NO-FABRICATION guard. `run_fixer(..., catalog_aware=True)` passes K neighbors into
-  generation; original per-tool path available via `catalog_aware=False`. Phase 1 script
-  (`generate_arm_f_descriptions_q2b.py`), Q2b server fixture, and three-arm script
-  (`run_q2b_three_arm.py`) written. CI: 339 tests, 90% coverage, verify.sh green.
-  Real-agent A/B (Phase 1 + Phase 2) pending. Recovery fraction and no-fabrication control
-  outcome to be recorded here after the run. Do NOT claim T18 value delivered until:
-  RECOVERS (recovery fraction ≥ threshold, F-vs-A significant) AND FAITHFUL (no fabricated
-  distinctions on the genuinely-ambiguous control pair find_entries/lookup_data, book_slot/plan_event).
+- **Q2b (DONE, PR #43, 2026-06-07):** Three-arm catalog-aware fixer recovery on the T18 60-tool
+  confusable catalog. Neighbor selection: Jaccard token-overlap K=6, no family labels. Catalog-aware
+  prompt with explicit NO-FABRICATION guard. Phase 1: qwen3:8b generator (GPU-exclusive, 600 s timeout
+  for thinking mode). Phase 2: gemma2:9b agent, 40 tasks × 5 trials, GPU-exclusive (watchdog-confirmed
+  clean throughout).
+
+  **Result: LOW RECOVERY. Recovery fraction (F−A)/(O−A) = 0.125 (12.5%).**
+  - Arm A: 0.0% | Arm F: 11.1% (+11.1 pp) | Arm O: 88.9% (+88.9 pp)
+  - F-vs-A sign test: p = 0.5000 — **not significant**. Neighbor context adds no reliable discrimination.
+  - F-vs-O sign test: p = 0.0001 — F significantly below O; 14 tasks F=0%, O=100%.
+  - Parse-failed: A=0%, F=2.5% (5/200), O=0%.
+
+  **No-fabrication control: PASS.** All four pre-registered ambiguous tools (find_entries/lookup_data,
+  book_slot/plan_event) received FAITHFUL descriptions — no invented distinctions. Guard fired correctly
+  on `compute_metric` (model wrote "No meaningful difference from neighbors" rather than fabricating).
+
+  **Root cause:** The T18-decisive distinctions (storage backend, operation scope, delete permanence,
+  notification channel) are not lexically derivable from names or schemas. Jaccard-neighbor clustering
+  correctly groups within-family tools but all share identical `{query: string}` schemas — the generator
+  faces the same information deficit as the agent. The no-fabrication guard is correct but produces
+  "faithful + vague" rather than "discriminating" output when evidence is absent. Catalog-aware
+  name-token context is necessary but not sufficient; the within-family semantic layer requires
+  pre-existing docstring/type signal or human-authored per-family anchors.
 
 - Test suite: 339 tests, 90% coverage, all LLM calls mocked — CI runs with no network and no credentials.
 

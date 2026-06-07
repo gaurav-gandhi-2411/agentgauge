@@ -20,41 +20,7 @@ Autonomous runs: pick the single top TODO, implement it, move to IN-REVIEW.
 
 ## IN-REVIEW
 
-### Q2b — Catalog-aware fixer (cross-tool context injection)
-
-**Branch:** `claude/q2b-catalog-aware` | **CI:** verify.sh green (339 tests, 90% coverage)
-
-**Motivation:** Q2a showed the current per-tool generator recovers 12.5% of the T18 oracle gain
-(F-vs-A p=0.50, not significant). All 14 misses were (i): cross-tool distinctions that cannot be
-encoded from `{name, current, schema}` alone. Two tools received confidently wrong descriptions
-(store_item cache→"persistent"; forward_record POST→"retrieval") — net-negative on confusable
-catalogs. The fix is to inject sibling context into the generator prompt so it can encode the
-within-family distinguishing dimension.
-
-**What was implemented:**
-- `_select_neighbors(target, catalog, k=6)` in `fixer.py`: Jaccard token-overlap similarity on
-  lowercased name tokens (splits on underscores/camelCase). Deterministic; does NOT read family
-  labels — works on `Tool.name` only, as an unlabeled 200-tool catalog would present it.
-- `_DESC_GENERATOR_CATALOG_AWARE_PROMPT`: catalog-aware prompt showing target + K neighbors
-  (names, schemas, current descs) with explicit NO-FABRICATION guard: "If NOT meaningfully
-  different from a neighbor on the available evidence, say what it does plainly and DO NOT invent
-  a distinction."
-- `_generate_description(tool, generator, *, neighbors=None)`: when `neighbors` is non-empty,
-  uses catalog-aware prompt; otherwise falls back to original per-tool prompt.
-- `run_fixer(..., catalog_aware=False, neighbor_k=6)`: when `catalog_aware=True`, computes
-  neighbors from `tools` list before generating.
-- `scripts/generate_arm_f_descriptions_q2b.py`: Phase 1 script (catalog-aware generation).
-- `examples/t18_q2b_server.py`: Arm F Q2b MCP server fixture.
-- `scripts/run_q2b_three_arm.py`: Phase 2 three-arm experiment script (reuses Q2a harness).
-- 11 new CI tests: neighbor selection determinism, no-family-label assertion, token similarity
-  ranking, prompt content verification (no-fabrication guard present, neighbors in prompt),
-  MockProvider real-diff and identical-neighbor cases, run_fixer catalog_aware integration.
-
-**Pending real-agent run (Phase 1 + Phase 2):**
-1. `python scripts/generate_arm_f_descriptions_q2b.py` (qwen3:8b, GPU-exclusive)
-2. `ollama stop` → verify `ollama ps` empty
-3. `python scripts/run_q2b_three_arm.py` (gemma2:9b watchdog)
-4. Report Sections A–E + no-fabrication control + verdict.
+*(empty)*
 
 ---
 
@@ -112,6 +78,20 @@ test suite guarantees ordering + actionability gap regardless of which model is 
 ---
 
 ## DONE
+
+### Q2b — Catalog-aware fixer (cross-tool context injection)
+
+**Merged:** PR #43 — feat(q2b): catalog-aware neighbor selection + description generation — LOW recovery (12.5%), no-fabrication PASS
+
+Three-arm A/B on `selection_accuracy` (60-tool confusable catalog, 18 contested tasks, gemma2:9b, 5 trials).
+Arm A=0.0% / Arm F=11.1% / Arm O=88.9%. Recovery fraction (F−A)/(O−A)=0.125. F-vs-A p=0.50 (not significant).
+No-fabrication control: PASS — all four pre-registered ambiguous tools FAITHFUL; guard fired correctly on
+`compute_metric` (model refused to fabricate). Root cause: T18-decisive distinctions (storage backend, operation
+scope, delete permanence, notification channel) are not lexically derivable from names or identical schemas.
+Neighbor context necessary but not sufficient; within-family semantic layer requires docstring/type signal or
+human-authored per-family anchors.
+
+---
 
 ### Q2a — Three-arm fixer recovery (does the current fixer recover the T18 gain?)
 
