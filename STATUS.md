@@ -416,7 +416,35 @@ models — always record the model alongside any stored score.
   `tests/test_q4_scoped.py` asserting scoped extraction, body-exclusion guarantee, prompt
   composition, and priority ordering.
 
-- Test suite: 383 tests, 90% coverage, all LLM calls mocked — CI runs with no network and no credentials.
+- **Q5 (IN-REVIEW, branch `claude/q5-distinction-guard`):** Distinction guard (Guard B) for the
+  DOC-scoped path — keeps neighbor docstrings but forbids comparative claims about neighbors.
+  Guard B prompt instructs the generator to state distinctions ONLY as positive facts about the
+  TARGET grounded in its own body ("returns a count... writes to a 5-min TTL cache") and explicitly
+  forbids "unlike X, which does Y" comparative claims. Neighbor surfaces (signature + docstring) are
+  still shown to indicate which axes may discriminate, but may not be used to assert a neighbor's
+  behavior. Includes a `_contains_comparative_neighbor_claim()` post-check detector.
+
+  **CI: 397 tests, 90% coverage.** 14 new tests in `tests/test_q5_guarded.py` asserting:
+  - Guard B prompt contains NO FABRICATION instruction, FORBIDDEN example, and target-grounded GOOD
+    example.
+  - Neighbor docstrings remain in prompt (key property — guard must make docstrings safe, not remove them).
+  - Comparative-claim detector correctly flags "unlike lookup_data, which..." and "whereas book_slot..."
+    while passing clean descriptions and unrelated "unlike a database..." phrasing.
+  - MockProvider routing: `guard_b=True` + `scoped_source` routes to Guard B prompt; `guard_b=False`
+    falls back to Q4 scoped prompt.
+
+  **SAFETY and RECOVERY (real-agent A/B): pending manual Phase 2 run.**
+  Phase 1 generator script (`scripts/generate_q5_descriptions.py`) produces DOC-scoped + Guard B
+  descriptions via qwen3:8b; Phase 2 (`scripts/run_q5_four_arm.py`) runs 4 arms:
+  A / Q4-DOC-scoped / Q5-guarded / O with GPU watchdog and reports safety (Section B),
+  recovery (Section C), per-task diagnosis (Section D), and verdict (Section E).
+
+  **Deployment question Q4 left open:** whether DOC-scoped (with docstrings) can be made safe by
+  a structural guard rather than stripping docstrings. Q5 is the experiment that answers this.
+  Do NOT claim "docstrings safe with guard" until Phase 2 confirms BOTH no-fabrication AND
+  non-regressing recovery vs Q4-DOC.
+
+- Test suite: 397 tests, 90% coverage, all LLM calls mocked — CI runs with no network and no credentials.
 
 ## What is NOT built yet
 
