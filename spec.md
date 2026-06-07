@@ -1,101 +1,94 @@
-# spec.md — T18: discoverability at scale (DISTINGUISH among confusable tools)
+# spec.md — Q2a: does the CURRENT fixer recover the T18 discrimination gain?
 
-**Repo:** github.com/gaurav-gandhi-2411/agentgauge · **Base:** `main` (after #39 merge) ·
-**Branch:** `claude/t18-discoverability-scale`
-**Routing:** DRAFT PR. Draft-forcing #2/#3. NOT condition #1.
+**Repo:** github.com/gaurav-gandhi-2411/agentgauge · **Base:** `main` @ fa766c9 (T18 merged) ·
+**Branch:** `claude/q2a-fixer-recovery`
+**Routing:** DRAFT PR. Draft-forcing #2 (fixer generates against the catalog) + #3 (real-agent A/B).
+**NOT condition #1** — uses the existing fixer/generator unchanged; no scorer/judge/rubric/
+calibration changes.
 
-**This spec, committed at branch start, IS the pre-registration.** Fixture, gold mapping, oracle
-descriptions, headroom target, analysis plan fixed before the run, not edited after.
+**Pre-registration:** this spec is committed at branch start. The metric (recovery fraction on
+parse-success contested tasks) and the analysis are fixed before the run.
 
 ---
 
-## What this tests
+## What Q2a tests
 
-The `discoverability` dimension (15%) scores DISTINGUISH: how well an agent tells confusable,
-similarly-named tools apart and picks the right one (per scorer.py:_judge_discoverability). Its
-behavioral analog is selection_accuracy UNDER CONFUSABILITY. T17 tested this at tiny scale (2-3-tool
-clusters) and saturated — gemma resolves a 3-tool toolbox from names. T18 tests the regime the
-dimension is actually about: **many tools, organized into dense families of near-neighbors**, where
-the target is buried among look-alikes and a DISCRIMINATING description is what separates it.
+T18 established that ORACLE discriminating descriptions recover +34.5pp (62.9% -> 97.4%, parse-success
+contested tasks) in the 60-tool confusable catalog. Q2a asks the product question: does AgentGauge's
+OWN fixer, as currently built, produce descriptions good enough to recover that gain? I.e. does our
+tool move the dimension we just validated.
 
-## Why scale, not a weaker agent (strategic note, pre-registered)
+## Structural hypothesis (from code, to be measured not assumed)
 
-The product's real agents are frontier (more capable than gemma2:9b); a null on gemma predicts a
-stronger null on frontier. A weaker agent (gemma2:2b) tests AWAY from product reality and re-imports
-the "model helped by being handed the answer" tautology. The mechanism that could bite even for a
-CAPABLE agent is distractor density at scale, not lower capability. So T18 holds the agent at
-gemma2:9b and changes the toolbox SCALE + CONFUSABILITY, not the model.
+`_DESC_GENERATOR_PROMPT` is invoked PER TOOL with only {name, current, schema} of that single tool.
+The generator never sees sibling tools, so it cannot know WHAT distinction to encode. T18's oracle
+power came from cross-tool distinctions (HTTP-vs-DB-vs-cache source, insert-vs-upsert, single-field-
+vs-replace). Prediction: the per-tool fixer recovers LITTLE — UNLESS a given distinction happens to
+live in that tool's own schema (param name/type), which the generator can surface. Q2a measures the
+recovery fraction and DIAGNOSES which distinctions were recoverable per-tool vs only cross-tool.
 
-## New headroom mechanism (why this might finally clear the gate)
+## No headroom-gate risk
 
-- Run 1/Ty: floored on un-guessable constraints. T17: saturated on tiny confusable clusters.
-- T18 headroom source = DISTRACTOR DENSITY: 60-80 tools in families of 6-8 confusable near-neighbors.
-  Within a family, names are individually plausible for overlapping intents; only the description
-  discriminates. At this scale, name-skimming should degrade — that is the testable hypothesis.
+Unlike T17/Ty/T18, the regime is already validated: Arm A ~63%, oracle ~97% on parse-success
+contested tasks. Q2a measures where the FIXER lands on that ruler. There is no abort gate — every
+outcome is interpretable.
 
 ---
 
 ## Scope
 
-**IN:** a large confusable-catalog fixture (60-80 tools, ~8-10 families of near-neighbors); Arm A
-vague/empty descriptions; Arm B oracle discriminating descriptions; powered, stability-screened task
-set; oracle A/B on selection_accuracy via the T15 harness.
+**IN:** reuse the T18 fixture UNCHANGED (60-tool catalog, families, 40 tasks). Generate descriptions
+with the CURRENT fixer (per-tool prompt, generator qwen3:8b). Three-arm A/B on selection_accuracy.
+Diagnose unrecovered tasks.
 
-**OUT:** call construction (selection only — one arg or none; the variable is WHICH tool, not how
-it's called); the fixer (downstream, only if positive); weaker-agent swap (down-ranked, see above);
-scorer changes.
+**OUT:** any change to the fixer/generator (that is Q2b, contingent on this result); new fixtures;
+call_correctness; scorer changes.
 
-## Fixture design
+## Design — three arms, sequential GPU
 
-- 8-10 FAMILIES, each 6-8 tools that are genuine near-neighbors: similar names + overlapping apparent
-  purpose (e.g. a "fetch" family: get_record / fetch_record / read_entry / load_item / retrieve_row /
-  pull_document — surface-synonymous), where the correct choice for a task depends on a distinction
-  carried only by the description (scope, source, side effect, format).
-- Catalog size 60-80 tools total. All families present in every prompt (the agent sees the full
-  catalog — that is the scale condition).
-- Arm A: vague/empty descriptions -> within a family, the agent must pick among 6-8 look-alikes from
-  names alone. Arm B: ORACLE descriptions that discriminate within-family. Commit both.
-- One gold tool per task; tasks distributed across families. Document, per family, WHY the names are
-  confusable and WHAT distinction the description carries.
-- ANTI-TAUTOLOGY: task states user intent; it must NOT name the target tool or quote its description.
+- **Arm A** = empty descriptions (T18 Arm A, reference floor).
+- **Arm F** = the FIXER's generated descriptions (run current fixer over the catalog; persist output).
+- **Arm O** = T18 oracle descriptions (reference ceiling).
+- Metric: parse-success selection_accuracy on the 16 CONTESTED tasks (where the effect lives).
+  Report **recovery fraction = (F - A) / (O - A)** plus absolute F.
+- Agent = gemma2:9b (!= judge != generator). Generator = qwen3:8b (NOTE: this is the 8B generator,
+  NOT qwen3:30b which was the GPU contaminator — different model).
+- **Phase separation for GPU safety:** (1) generate all Arm F descriptions with qwen3:8b, persist to
+  a file; (2) `ollama stop`; (3) run the 3-arm A/B with gemma2:9b ONLY. The A/B-phase watchdog kills
+  on ANY non-gemma model. This keeps generation and evaluation from contending and keeps the watchdog
+  rule simple. Identify/silence the qwen3:30b reactive requester before launching (prior contamination).
 
-## Rigor (carry forward all lessons, incl. the new parse_failed instrument)
+## Diagnosis (required, the point of Q2a)
 
-- Headroom: Arm A selection_accuracy ~40-70% on CONTESTED tasks. CONFIRM before interpreting;
-  outside the band -> ABORT (do not rebuild blindly; report).
-- parse_failed rate reported FIRST (selection is one token, but report it anyway as a harness check).
-- Stability pre-screen: Arm A twice, drop tasks flipping >1 trial, report count.
-- Power: >= 30 contested surviving tasks. Task-clustered analysis (sign/Wilcoxon on task-level
-  deltas), effective N = contested tasks. NOT trial-level McNemar.
-- Manipulation check: Arm A vs Arm B catalogs differ in the served listing (assert).
-- Agent = gemma2:9b, != judge != generator. selection_accuracy deterministic.
-- No post-hoc tuning after seeing results.
+For each contested task where Arm F < Arm O (fixer failed to recover):
+- Show the fixer's generated description for the gold tool.
+- State whether it encodes the distinguishing feature T18's oracle used.
+- Classify WHY it missed: (i) the distinction is cross-tool only (generator couldn't know it
+  per-tool) -> motivates Q2b catalog-aware generation; or (ii) the distinction WAS in the tool's own
+  schema but the generator didn't surface it -> a prompt/generation-quality gap, not a context gap.
 
 ---
 
 ## Acceptance criteria
 
-1. **CI (deterministic, seed 42, no network):** catalog loads (60-80 tools, families well-formed);
-   each task has exactly one gold tool; stability-screen logic; manipulation check (Arm A vs B
-   catalogs differ); anti-tautology test (target tool name + its description tokens absent from task
-   text). No real model in committed tests.
-2. **Real-agent oracle A/B (manual, in PR description):**
-   - parse_failed rate + pre-checks reported FIRST: contested Arm A in 40-70% and stable, N>=30,
-     manipulation pass. Outside band -> STOP, report ABORT.
-   - Task-clustered table: Arm A, Arm B(oracle), per-task delta, sign/Wilcoxon, effective N.
-   - Honest three-way verdict:
-     - POSITIVE (oracle > A): at scale, discriminating descriptions improve confusable-tool
-       selection -> the first located behavioral effect for a description-facing dimension; the
-       discoverability 15% has real teeth in the regime it was designed for.
-     - NULL (oracle ~ A): even buried among dense look-alikes, gemma picks from names; descriptions
-       don't move it -> with T17 + Ty, a strong cross-dimensional construct-validity finding.
-     - ABORT (Arm A outside 40-70%): scale didn't create the expected headroom (saturated = even at
-       scale names suffice; floored = catalog too hard to navigate at all). Report which.
-3. scorer.py / judge / rubrics / calibration / generator untouched; verify.sh green; coverage >= 60%.
+1. **CI (deterministic, seed 42, no network):** the three-arm wiring works with a MockProvider
+   (Arm F sourced from a persisted descriptions file); recovery-fraction computation correct;
+   contested-subset + parse-success filtering correct. No real model in committed tests.
+2. **Real-agent 3-arm (manual, in PR description):**
+   - GPU exclusivity FIRST (gemma-only during A/B; report any eviction). parse_failed per arm.
+   - Table: Arm A / Arm F / Arm O on parse-success contested tasks; recovery fraction; task-clustered
+     sign test F-vs-A and F-vs-O.
+   - Diagnosis breakdown (i vs ii) across unrecovered tasks.
+   - Honest verdict:
+     - HIGH recovery (F ~ O): the current fixer works at scale — the product claim closes
+       (dimension validated AND tool moves it).
+     - LOW recovery (F ~ A): per-tool generation can't encode cross-tool distinctions -> Q2b
+       (catalog-aware generator) is the warranted next increment; the diagnosis says so explicitly.
+     - PARTIAL: report which distinction types recovered (schema-encoded) vs not (cross-tool only).
+3. scorer.py / judge / rubrics / calibration untouched; generator != judge asserted; verify.sh green;
+   coverage >= 60%.
 
 ## Housekeeping
 
-- TASKS.md: T18 (TODO -> IN-REVIEW). STATUS.md: record the measured result. If POSITIVE, this is the
-  regime where description_quality/discoverability matter — note it as the validated use-case. If
-  NULL/ABORT, record the cross-dimensional finding across selection (T17), calls (Ty), discoverability
-  (T18).
+- TASKS.md: Q2a (TODO -> IN-REVIEW). STATUS.md: record the recovery fraction + diagnosis. If LOW/
+  PARTIAL, queue Q2b (catalog-aware description generation) with this diagnosis as its motivation.

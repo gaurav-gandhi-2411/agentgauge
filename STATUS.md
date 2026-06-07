@@ -216,7 +216,41 @@ models — always record the model alongside any stored score.
   (15%) is validated for the regime it was designed for. `description_quality` (25%) and
   `call_correctness` effects remain unestablished.
 
-- Test suite: 268 tests, 89.61% coverage, all LLM calls mocked — CI runs with no network and no credentials.
+- **Q2a (DONE, PR #42, 2026-06-07):** Three-arm fixer recovery experiment on the T18 60-tool
+  confusable catalog. Arm A (empty) / Arm F (fixer-generated, qwen3:8b per-tool, seed=42) /
+  Arm O (oracle). Metric: parse-success `selection_accuracy` on 18 contested tasks (Arm A = 0%).
+  Agent: gemma2:9b, 5 trials. GPU-exclusive (watchdog-confirmed clean throughout).
+
+  **Result: LOW RECOVERY. Recovery fraction (F−A)/(O−A) = 0.125 (12.5%).**
+  - Arm A: 0.0% | Arm F: 11.1% (+11.1 pp) | Arm O: 88.9% (+88.9 pp)
+  - F-vs-A sign test: p = 0.5000 — **not significant**. Fixer adds no reliable discrimination.
+  - F-vs-O sign test: p = 0.0001 — F is significantly below O (14 tasks F=0%, O=100%).
+  - Parse-failed: 0/200 in all three arms (improvement over T18's 12.5% Arm A rate; within run-to-run variance).
+
+  **Root cause (structural):** The generator receives one tool at a time — `{name, current_desc, schema}`.
+  The T18-decisive distinctions are cross-tool: storage medium (cache vs SQL vs queue), operation
+  scope (single-field vs full-record), permanence (soft vs hard delete), channel (mobile push vs
+  SMS vs UI alert), directionality (HTTP push vs pull). None of these can be encoded without
+  seeing sibling tools. All 14 misses were classified (i): cross-tool distinction only. With
+  identical `{query: string}` schemas across all 60 tools, classification (ii) — per-tool schema
+  gap — was impossible by construction; no per-tool signal existed to surface.
+
+  **Liability finding:** On ≥2 tools the generator produced confidently wrong descriptions:
+  `store_item` (in-memory cache with TTL) was described as "designed for **persistent** storage";
+  `forward_record` (HTTP POST to external webhook) was described as "straightforward **record
+  retrieval**". These mislead worse than empty descriptions — an agent reading them will
+  actively pick the wrong tool. The Tx fabrication failure mode recurs on confusable catalogs.
+  The 2 Arm F "successes" (`read_entry`, `alert_contact`) were name-overlap luck, not
+  discrimination: "read" matched "entries" and "alert contact" matched "contact" in the task
+  text, not genuine within-family disambiguation.
+
+  **Product implication:** The `description_quality` fixer, as currently built (per-tool
+  generation), does not deliver the validated T18 behavioral value and is net-negative on
+  confusable tools due to confident mis-description. Delivering the T18 gain requires
+  catalog-aware generation: the generator must see sibling tools when writing each description
+  so it can explicitly encode the within-family distinguishing dimension. This is Q2b.
+
+- Test suite: 328 tests, 90.32% coverage, all LLM calls mocked — CI runs with no network and no credentials.
 
 ## What is NOT built yet
 
