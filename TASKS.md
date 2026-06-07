@@ -20,24 +20,7 @@ Autonomous runs: pick the single top TODO, implement it, move to IN-REVIEW.
 
 ## IN-REVIEW
 
-### Q3 — Source-aware description generation (DOC vs BODY)
-
-**Branch:** `claude/q3-source-aware` | **PR:** #44 (draft) — real-agent results complete; awaiting merge review.
-
-CI acceptance criteria (all green):
-- New Q3 fixture loads (12 tools, 4 families; DOC + BODY variants present)
-- Independence assertions: each contested tool's token in DOC and BODY source
-- Source-fed generator prompt assembles with no-fabrication guard verbatim
-- MockProvider tests for source-fed path; shared extractor reused
-- verify.sh green, coverage ≥ 60%
-
-Real-agent A/B results (gemma2:9b, 5 trials, GPU-exclusive 2026-06-07):
-- GPU: clean (0/200 parse-failed across all arms)
-- Contested: 7/10 (A=0%); 6 genuine behavioral tasks (1 control contaminated)
-- F-DOC: 83.3% recovery (corrected), p=0.0625 marginal; NO FABRICATION -- PASS
-- F-BODY: 83.3% recovery (corrected), p=0.0625 marginal; FABRICATED (find_entries) -- FAIL
-- No-fabrication verdict: DOC PASS / BODY FAIL (cross-contamination error from neighboring source)
-- Verdict: F-DOC recovers (marginal significance); F-BODY UNSAFE (fabrication)
+*(empty)*
 
 ---
 
@@ -95,6 +78,18 @@ test suite guarantees ordering + actionability gap regardless of which model is 
 ---
 
 ## DONE
+
+### Q3 — Source-aware description generation (DOC vs BODY)
+
+**Merged:** PR #44 — feat(q3): source-aware description generation — F-DOC RECOVERS (83.3%, marginal), F-BODY UNSAFE (cross-tool source misattribution)
+
+Four-arm A/B (6 genuine contested tasks, gemma2:9b, 5 trials, 2026-06-07). F-DOC: 83.3% recovery,
+p=0.0625 marginal, no-fabrication PASS. F-BODY: 83.3% recovery but FABRICATED on find_entries
+(cross-tool source misattribution — cited _db belonging to other tools as a distinction; grounded-sounding,
+harder to catch than prose fabrication). Source-aware fixing is safe and effective WITH docstrings;
+unsafe on undocumented servers. Docstrings are load-bearing for both recovery and safety.
+
+---
 
 ### Q2b — Catalog-aware fixer (cross-tool context injection)
 
