@@ -1,0 +1,14 @@
+{
+  "store_item": "Stores the query in an in-memory TTL cache with a 5-minute expiry, overwriting silently on re-store. Key parameter: query (string). Unlike persist_row (raises on dup), save_record (tracks create/update), and write_entry (appends audit log), store_item uses a TTL cache and silently overwrites.",
+  "persist_row": "persist_row inserts a new row keyed by the query string into the _db dictionary, raising a ValueError if the key already exists. Unlike save_record, it enforces insert-only semantics by rejecting duplicate keys.",
+  "save_record": "save_record saves or updates a record in the _db dictionary using upsert semantics (creates or overwrites without raising), tracking whether the key existed before write. Unlike persist_row, it does not raise an error on duplicate keys.",
+  "write_entry": "Appends a structured entry to the immutable audit log with the query text, timestamp, and sequence number. Key parameter: query. Unlike other store tools, it logs entries permanently without overwriting or raising errors.",
+  "delete_record": "delete_record permanently removes a record from the _records dictionary using del, erasing it without tombstone or recovery. Unlike archive_item, retire_data, and remove_entry, which mark records with flags, it directly deletes the entry.",
+  "archive_item": "archive_item marks a record as archived by setting the \"archived\" flag in _records, keeping it stored but excluded from active queries. Unlike delete_record, it does not permanently remove the record from _records.",
+  "retire_data": "retire_data marks a record as retired, making it read-only and retaining it indefinitely for compliance and audit purposes. Unlike delete_record, archive_item, or remove_entry, it does not delete, hide, or archive the record, instead ensuring perpetual retention via the retired flag.",
+  "remove_entry": "The `remove_entry` tool sets the \"hidden\" flag on a record to exclude it from active query results while retaining it in `_records` for compliance. It differs from `delete_record` (which permanently deletes the record via `del`) by using a flag instead of removal.",
+  "find_entries": "find_entries returns all entries whose key contains the query string. It uses the _search_store dictionary to perform the search.",
+  "lookup_data": "lookup_data returns all entries in the search store whose key contains the query string. It uses the 'query' parameter to filter results, and is functionally equivalent to find_entries.",
+  "book_slot": "Reserve a calendar slot identified by the query string. Uses the query parameter to key the reservation in the _calendar dictionary.",
+  "plan_event": "Reserves a calendar slot by storing the query string as a key in the _calendar dict with value \"reserved\"."
+}

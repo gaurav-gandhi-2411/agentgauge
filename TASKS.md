@@ -79,6 +79,18 @@ test suite guarantees ordering + actionability gap regardless of which model is 
 
 ## DONE
 
+### Q3 — Source-aware description generation (DOC vs BODY)
+
+**Merged:** PR #44 — feat(q3): source-aware description generation — F-DOC RECOVERS (83.3%, marginal), F-BODY UNSAFE (cross-tool source misattribution)
+
+Four-arm A/B (6 genuine contested tasks, gemma2:9b, 5 trials, 2026-06-07). F-DOC: 83.3% recovery,
+p=0.0625 marginal, no-fabrication PASS. F-BODY: 83.3% recovery but FABRICATED on find_entries
+(cross-tool source misattribution — cited _db belonging to other tools as a distinction; grounded-sounding,
+harder to catch than prose fabrication). Source-aware fixing is safe and effective WITH docstrings;
+unsafe on undocumented servers. Docstrings are load-bearing for both recovery and safety.
+
+---
+
 ### Q2b — Catalog-aware fixer (cross-tool context injection)
 
 **Merged:** PR #43 — feat(q2b): catalog-aware description generation — SAFETY PASS, RECOVERY information-theoretic limit confirmed

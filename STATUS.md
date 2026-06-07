@@ -283,7 +283,55 @@ models — always record the model alongside any stored score.
   interface. This bounds what AgentGauge's description fixer can achieve from the interface alone; the
   next meaningful step is source-level context injection, not prompt refinement.
 
-- Test suite: 339 tests, 90% coverage, all LLM calls mocked — CI runs with no network and no credentials.
+- **Q3 (DONE, PR #44, 2026-06-07):** Source-aware description generation — confirmed the missing
+  ingredient from Q2a/Q2b and defined the boundary condition for safe use.
+
+  **Setup:** 12-tool fixture with real working implementations (TTL store, raise-on-dup, audit-log
+  append, archived/retired/hidden flags, del statement). Two source conditions — F-DOC (source +
+  docstrings) and F-BODY (source body only, docstrings stripped). 6 genuine contested tasks
+  (1 control task excluded — see Control note below). gemma2:9b agent, 5 trials/arm, GPU-exclusive.
+
+  **RECOVERY axis — source closes the T18 gap.**
+  F-DOC: 83.3% recovery (5/6 contested tasks correct, sign test n+=5, n-=0, **p=0.0625 marginal**).
+  This confirms Q2a/Q2b's diagnosis: the T18 ceiling was information-theoretic — the distinguishing
+  facts were absent from the interface. Source supplies them. The fixer's effective input is the
+  server's **repo (source + docstrings)**, not the running server's tool list. That is the
+  architectural boundary this experiment establishes.
+
+  F-BODY recovery: numerically 83.3% but invalidated by fabrication — see Safety axis.
+
+  **SAFETY axis — two outcomes, one new failure mode.**
+  F-DOC no-fabrication: **PASS** (4/4 control descriptions FAITHFUL; find_entries/lookup_data and
+  book_slot/plan_event both correctly classified as equivalent). Source-aware generation with
+  docstrings is safe.
+
+  F-BODY no-fabrication: **FAIL**. find_entries generated: "differs from lookup_data by using
+  _search_store **instead of the _db**" — false; both functions use `_search_store`. This is a new
+  failure mode: **cross-tool source misattribution**. The generator correctly read find_entries'
+  implementation but misattributed a backing store (`_db`) seen in *other* tools in the file to the
+  confusable neighbor lookup_data. The fabrication is grounded-sounding (cites a real symbol from the
+  source file) and structurally plausible, making it harder to catch than prose fabrication that
+  invents non-existent concepts. This failure mode is created by source-access itself — the context
+  includes neighboring implementations, and without docstrings to anchor each tool's true behavior,
+  the generator cross-contaminates.
+
+  **BOUNDARY — the product takeaway: documented source is required.**
+  Docstrings are load-bearing for **both** axes:
+  - *Recovery:* BODY-only missed the retire_data "read-only" distinction (in the docstring, absent
+    from the body) and the archive/remove multi-way disambiguation. Body-only fails on semantically
+    equivalent-looking flag operations (`_records[q]["x"] = True`).
+  - *Safety:* BODY-only opened the cross-tool source misattribution failure mode that DOC-only closed.
+  On undocumented servers, source-aware fixing is unsafe as built. The fixer should not be applied to
+  source without docstrings.
+
+  **Control note:** control_search task excluded from recovery statistics. The F-BODY fabrication on
+  find_entries created a self-contradictory description pair that confused the agent (F-BODY=0% on
+  that task — fabrication did not produce accidental solvability). The F-DOC=100% on the same task
+  reflects an asymmetric anchor in the lookup_data F-DOC description ("functionally equivalent to
+  find_entries") rather than a genuine behavioral distinction. No-fabrication is established for
+  **F-DOC only** (F-BODY is disqualified by the fabrication finding).
+
+- Test suite: 365 tests, 90% coverage, all LLM calls mocked — CI runs with no network and no credentials.
 
 ## What is NOT built yet
 
