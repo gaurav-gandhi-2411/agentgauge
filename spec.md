@@ -1,87 +1,102 @@
-# spec.md — Q4: scoped-source generation (does scoping fix the F-BODY misattribution?)
+# spec.md — Q5: the docstring-mismatch / asymmetric-evidence guard (DOC-scoped + guard)
 
-**Repo:** github.com/gaurav-gandhi-2411/agentgauge · **Base:** `main` @ 03e72b1 ·
-**Branch:** `claude/q4-scoped-source`
-**Routing:** DRAFT PR. Changes generator source-assembly in fixer.py + real-agent A/B. Draft-forcing
-#2/#3. **NOT condition #1.** Reuses the Q3 fixture unchanged.
+**Repo:** github.com/gaurav-gandhi-2411/agentgauge · **Base:** `main` @ 17c92b1 ·
+**Branch:** `claude/q5-distinction-guard`
+**Routing:** DRAFT PR. Generator prompt/logic change + real-agent A/B. Draft-forcing #2/#3.
+**NOT condition #1.** Reuses the Q3/Q4 fixture unchanged.
 
-**Pre-registration:** committed at branch start. The scoping rule, the neighbor-surface rule, the
-two-failure-mode separation, and the no-misattribution control are fixed before the run.
+**Pre-registration:** committed at branch start. The guard design, the dual-axis acceptance (safe
+AND recovering), and the control/structural task split are fixed before the run.
 
 ---
 
 ## Why
 
-Q3 showed source-with-docstrings (F-DOC) recovers 83% of the T18 gain and is faithful, but body-only
-(F-BODY) FAILED via cross-tool SOURCE MISATTRIBUTION: `find_entries` cited `_db` (a symbol belonging
-to OTHER tools in the same file) as a distinction. Root cause (from code): the source-aware prompt
-was fed the WHOLE FILE, and `source`/`neighbors` are mutually exclusive, so the generator's only
-"neighbor" signal was other functions' full bodies sitting in the blob — exactly what it misattributed
-from. This is an attention/scoping defect, not an information defect. Q4 tests whether scoping the
-source eliminates the misattribution while keeping the recovery.
+Q4 found that in the scoped regime, providing neighbor DOCSTRINGS opens a fabrication vector:
+the generator has the TARGET's body (verified behavior) but only NEIGHBORS' surfaces (claimed
+behavior), so it contrasts target-body against neighbor-docstring and invents false distinctions
+(find_entries "count vs entries" — both return counts). Q4-BODY-scoped was safe only by REMOVING
+the docstrings — which discards useful signal real servers have. The current prompt already says
+"no fabrication"; exhortation is insufficient. Q5 adds a STRUCTURAL guard so DOC-scoped becomes safe
+WITHOUT discarding docstrings, because real servers are documented and "strip your docstrings" is not
+shippable advice.
 
-## Design — scoped source + neighbor surfaces (the architectural change)
+## Root cause (name it precisely)
 
-- **Scoped source:** `source` passed to the generator = ONLY the target tool's own function (def +
-  body via a scoped extractor), NEVER the whole file.
-- **Neighbor surfaces:** ALSO pass the K confusable neighbors as SIGNATURES + DOCSTRINGS ONLY —
-  bodies STRIPPED. (Requires allowing source + neighbor-surfaces together; the current source-XOR-
-  neighbors convention is broken for this path.) This gives the generator what-to-contrast-against
-  without any foreign implementation to misattribute from.
-- **Mechanical guarantee (CI-enforced):** neighbor BODIES never appear in the assembled prompt.
-  If foreign bodies cannot be in the prompt, cross-tool body-misattribution is impossible by
-  construction.
-- Keep the no-fabrication guard verbatim. Reuse the shared JSON/text extractor.
+ASYMMETRIC EVIDENCE. The generator can verify the TARGET's behavior from its body but only KNOWS the
+NEIGHBORS' CLAIMS from their surfaces. Any comparative statement ("unlike X, which does Y") asserts a
+fact about a neighbor the generator cannot verify. That is the fabrication mechanism.
 
-## Conditions (reuse Q3 fixture; compare to Q3 full-file results)
+## Guard design (Guard B — target-grounded, no comparative claims)
 
-- **Q4-DOC-scoped:** target's own body WITH docstring + neighbor surfaces. (Expected safe + recover;
-  baseline that scoping didn't break the easy case.)
-- **Q4-BODY-scoped:** target's own body, DOCSTRINGS STRIPPED + neighbor surfaces. THE TEST: does
-  scoping remove the F-BODY misattribution that whole-file body-only caused?
-- Compare both to Q3's F-DOC (83%, faithful) and F-BODY (recovered-but-FABRICATED).
+The fix is to forbid unverifiable comparative claims, not to remove evidence:
+- The generator may state distinctions ONLY as POSITIVE facts about the TARGET, grounded in the
+  target's own body ("This tool returns a count of matching entries and writes to a 5-minute TTL
+  cache"). It must NOT make claims about what a neighbor does ("unlike lookup_data, which returns
+  full entries").
+- Neighbor surfaces are provided ONLY to tell the generator WHICH AXES may be discriminating (so it
+  knows to mention the return type / storage / permanence the family varies on) — never as a basis
+  to assert a neighbor's behavior.
+- Prompt change: explicit instruction + 1-2 examples showing target-grounded phrasing (good) vs
+  comparative neighbor-claims (forbidden). Keep the scoped-source structure and the shared extractor.
 
-## Separate the two failure modes (do not blur)
+### Why not the alternatives (record the reasoning)
+- "Symmetric surface-only" (compare target-surface vs neighbor-surface): safe but discards the body,
+  which is the signal that closed the gap in Q3/Q4 — would regress recovery. Rejected.
+- "Detect docstring-vs-body disagreement and suppress": narrower; only catches the find_entries
+  case, not the general asymmetry. Guard B subsumes it.
 
-- **Misattribution** (cross-tool, e.g. find_entries->_db): should VANISH under scoping — it's the
-  primary safety test. Measured on the equivalent-control pairs.
-- **Genuine-absence-from-body** (e.g. retire_data read-only was in the docstring, not the body):
-  scoping CANNOT fix this — a stripped body lacks the fact. Expected to persist in Q4-BODY-scoped.
-- The verdict MUST distinguish "fabricated less" (misattribution gone) from "recovered less" (info
-  not in body). Report misattribution rate and multi-way-distinction recovery SEPARATELY.
+## The risk this must be validated against
+
+Forbidding comparative phrasing could REGRESS RECOVERY: a purely self-describing "returns a count"
+may not help the agent RULE OUT a sibling the way a contrastive description does. So Q5 is a TWO-AXIS
+test — it must be BOTH safe (no fabrication on equivalent controls) AND still recovering (on the
+structural contested tasks). A guard that is safe but drops recovery toward Arm-A is a FAIL, not a
+win.
 
 ---
 
+## Design (arms; reuse Q3/Q4 fixture)
+
+- Arm A = empty (floor). Arm O = oracle (ceiling).
+- Arm Q4-DOC = Q4 DOC-scoped, no guard (reference: recovers ~100% on the 6-task subset, FABRICATES
+  4/4 controls). 
+- Arm Q5 = DOC-scoped + Guard B.
+- Generator gets target scoped body + neighbor surfaces (docstrings INCLUDED — that's the point;
+  the guard must make docstrings safe, not require their removal). qwen3:8b; agent gemma2:9b;
+  phase-separated GPU.
+- Metric: parse-success selection_accuracy on the SAME 6 structural contested tasks as Q4 (NOT
+  control_search — excluded, ambiguous gold). Recovery (Q5-A)/(O-A); sign test n=6.
+
 ## Acceptance criteria
 
-1. **CI (deterministic, seed 42, no network):**
-   - Scoped extractor returns ONLY the target tool's function (assert other tools' bodies/symbols
-     absent from the extracted string).
-   - Neighbor-surface assembly includes neighbor signatures + docstrings and EXCLUDES neighbor
-     bodies — assert no neighbor body line appears in the assembled prompt (the mechanical guarantee).
-   - source + neighbor-surfaces compose in one prompt; no-fabrication guard present; shared extractor
-     used. MockProvider tests for the scoped path. No real model in committed tests.
-2. **Real-agent A/B (manual, in PR description):**
+1. **CI (deterministic, seed 42, no network):** the guard prompt forbids comparative neighbor-claims
+   and instructs target-grounded phrasing (assert the instruction + example present); neighbor
+   surfaces still included (docstrings present in prompt); MockProvider: a target-grounded description
+   passes through, and (if a lightweight post-check is added) a description containing a comparative
+   "unlike <neighbor>" claim is flagged. No real model in committed tests.
+2. **Real-agent A/B (manual, in PR description) — BOTH axes required:**
    - GPU exclusivity + parse_failed FIRST.
-   - Table: A / Q4-DOC-scoped / Q4-BODY-scoped / O (parse-success contested) + recovery for each +
-     sign tests. Show Q3 F-DOC/F-BODY alongside for comparison.
-   - No-MISATTRIBUTION control: for the equivalent pairs (find_entries/lookup_data,
-     book_slot/plan_event), classify FAITHFUL-EQUIVALENT / INCIDENTAL-BUT-TRUE / FABRICATED, BOTH
-     scoped conditions. The Q3 find_entries->_db misattribution MUST NOT recur. Any FABRICATED -> FAIL.
-   - Per-task diagnosis splitting misattribution-misses from absent-from-body-misses.
+   - SAFETY: on the 4 equivalent-control tools, classify Q5 descriptions FAITHFUL-EQUIVALENT /
+     INCIDENTAL-BUT-TRUE / FABRICATED. Q5 target: NO FABRICATED (vs Q4-DOC's 4/4 FABRICATED). This is
+     the guard working.
+   - RECOVERY: table A / Q4-DOC / Q5 / O on the 6 structural contested tasks + recovery + sign test.
+     Q5 target: recovery must remain HIGH (not regress toward Arm-A). Report the exact number.
+   - Per-task: for any structural task Q5 now MISSES that Q4-DOC passed, show the Q5 description —
+     this is the "guard over-suppressed and killed a real distinction" failure, diagnose it.
    - Verdict matrix:
-     - Q4-BODY-scoped FAITHFUL + recovers ~ Q4-DOC: scoping recovers the undocumented-server case
-       SAFELY — body-only is viable with proper scoping.
-     - Q4-BODY-scoped FAITHFUL but recovers < DOC (misses multi-way): misattribution FIXED, but body
-       genuinely lacks some distinctions -> boundary holds at "docstrings needed for the hardest
-       multi-way cases," but the SAFETY defect is solved.
-     - Q4-BODY-scoped still FABRICATES: scoping insufficient; body-only remains unsafe.
-3. fixer schema path / scorer / judge / rubrics / calibration untouched; generator != judge asserted;
-   verify.sh green; coverage >= 60%.
+     - SAFE + RECOVERS (no fabrication AND recovery ~ Q4-DOC): the guard works — DOC-scoped is now
+       safe without stripping docstrings. Best outcome; this is the shippable config.
+     - SAFE + REGRESSES (no fabrication but recovery drops): the guard over-suppressed; target-only
+       phrasing isn't discriminating enough. Boundary: safety costs recovery -> body-only (Q4) stays
+       the safe-and-recovering config and docstrings can't be made safe this way.
+     - STILL FABRICATES: Guard B insufficient; report what it fabricated and from what.
+3. scorer.py / judge / rubrics / calibration / schema-gen path untouched; generator != judge
+   asserted; verify.sh green; coverage >= 60%.
 
 ## Housekeeping
 
-- TASKS.md: Q4 (TODO -> IN-REVIEW). STATUS.md: record Q4-DOC-scoped and Q4-BODY-scoped recovery
-  SEPARATELY + the misattribution-control outcome + which verdict-matrix cell, explicitly contrasted
-  with Q3 (whole-file). State whether scoping solved the safety defect independently of whether it
-  recovered the multi-way distinctions.
+- TASKS.md: Q5 (TODO -> IN-REVIEW). STATUS.md: record SAFETY and RECOVERY for Q5 vs Q4-DOC, the
+  verdict cell, and whether documented source can now be used safely (the deployment question Q4
+  left open). Do not claim "docstrings are safe with the guard" unless Q5 was BOTH no-fabrication
+  AND non-regressing.
