@@ -1,6 +1,6 @@
 # AgentGauge — Project Status
 
-> Current as of 2026-06-07. Update this file when significant milestones land.
+> Current as of 2026-06-08. Update this file when significant milestones land.
 
 ---
 
@@ -331,7 +331,92 @@ models — always record the model alongside any stored score.
   find_entries") rather than a genuine behavioral distinction. No-fabrication is established for
   **F-DOC only** (F-BODY is disqualified by the fabrication finding).
 
-- Test suite: 365 tests, 90% coverage, all LLM calls mocked — CI runs with no network and no credentials.
+- **Q4 (DONE, PR #45, 2026-06-08):** Scoped-source description generation — per-tool function
+  extraction to eliminate Q3's cross-tool source misattribution. Four-arm A/B: A (empty) /
+  Q4-DOC-scoped / Q4-BODY-scoped / O (oracle). 12-tool Q3 fixture reused. qwen3:8b generator
+  (Phase 1, GPU-exclusive). gemma2:9b agent, 5 trials/arm, GPU-exclusive (watchdog-confirmed clean
+  throughout). 383 tests, 90% coverage — verify.sh green.
+
+  **HEADLINE — safety inversion: docstrings are a liability in the scoped regime.**
+
+  Scoping eliminates Q3's cross-tool `_db` misattribution in **both** conditions — neither cites
+  `_db`; the Q3 failure mode is gone by construction. But a new fabrication vector opens when
+  docstrings are present: the generator reads the target's precise scoped body, reads a neighbor's
+  imprecise docstring, and invents a false distinction. Concretely: `find_entries`' body returns
+  `{len(matches)} result(s)` (a count-format string); `lookup_data`'s neighbor surface shows
+  docstring `"Return all entries"`. The generator concludes find_entries returns a count while
+  lookup_data returns the actual entries — false; both return identical count strings. Result:
+  Q4-DOC-scoped FABRICATED on 4/4 control pairs.
+
+  **This reverses Q3's whole-file lesson.** In the whole-file regime, docstrings were safer
+  (they aligned vocabulary with behavior and prevented cross-tool body misattribution). In the
+  scoped regime, the cross-tool body risk is already eliminated; docstrings then become the
+  fabrication source by exposing a docstring-body vocabulary gap.
+
+  | Regime | With docstrings | Without docstrings |
+  |--------|----------------|--------------------|
+  | Whole-file (Q3) | **SAFE** — vocabulary anchors each tool, prevents body misattribution | **UNSAFE** — foreign body symbols contaminate (`_db` misattribution) |
+  | Scoped (Q4) | **UNSAFE** — docstring-body gap is exploitable for fabrication | **SAFE** — no foreign bodies, no misleading neighbor docstrings |
+
+  **Deployment implication (not a test artifact):** The Q4-DOC-scoped failure fires on any real
+  MCP server whose docstring English is less precise than its code. "Return all entries" is a
+  docstring that could describe either function; the body's return format makes one look different
+  in isolation. This is not a fixture quirk — it is the normal condition for real servers whose
+  docstrings summarise intent rather than format. The BODY-scoped path sidesteps this by
+  stripping neighbor docstrings; both the scoped target body and the neighbor def-lines are
+  the only signals in the assembled prompt.
+
+  **No-fabrication results:**
+
+  | Condition | Control pairs | Classification | Result |
+  |-----------|--------------|----------------|--------|
+  | Q4-DOC-scoped | find_entries, lookup_data, book_slot, plan_event | FABRICATED (4/4) | **FAIL** |
+  | Q4-BODY-scoped | find_entries, lookup_data, book_slot, plan_event | INCIDENTAL-BUT-TRUE (4/4) | **PASS** |
+
+  Q4-DOC-scoped failure mechanism: semantic inference against docstring-body gap (not body symbol
+  misattribution). Q4-BODY-scoped pass: neighbor surfaces are bare def lines only; no misleading
+  docstring vocabulary to infer against.
+
+  **Recovery — full on the Arm-A-failure subset (with caveats).**
+
+  Six structural contested tasks: `store_item`, `persist_row`, `write_entry`, `delete_record`,
+  `retire_data`, `remove_entry` (tasks where Arm A parse-success = 0% in both Q3 and Q4 runs).
+  Both Q4-DOC-scoped and Q4-BODY-scoped reached 100% on all 6. sign test: n=6, n+=6, n-=0,
+  **p=0.0313** — significant at α=0.05.
+
+  **Caveats on the recovery number:**
+  - *control_search excluded* — the 7th Arm-A=0% task (`find_entries`, "Retrieve the records where
+    the key contains 'invoice-2024'") is an ambiguous-equivalent pair where `lookup_data` is equally
+    valid. The gold label is `find_entries` (arbitrary pre-registration; either tool is correct). Arm
+    A scored 0/5 because it consistently preferred `lookup_data` by name. Including it would inflate
+    recovery by scoring an arbitrary label; Q3 excluded it for the same reason (Arm A happened to
+    pick `find_entries` ≥1/5 that run). Excluded here for comparability.
+  - *2 structural tasks untested for description effect* — `save_record` and `archive_item` were not
+    contested (Arm A > 0% on both). Whether descriptions help those tasks is unknown.
+  - *No formal stability pre-screen* — contested set is this run's post-hoc A=0% output. The same 6
+    tasks were A=0% in both Q3 and Q4 independent runs; that cross-run consistency is informal
+    evidence of genuine difficulty, not a formal pre-screen.
+
+  **Verdict: Q4-BODY-scoped is the first condition both fully-recovering and safe.**
+
+  | Condition | Recovery (n=6 failure subset) | p | No-fabrication |
+  |-----------|-------------------------------|---|----------------|
+  | Q3 F-DOC | 83.3% | 0.0625 (marginal) | **PASS** |
+  | Q3 F-BODY | 83.3% (invalidated by fabrication) | — | **FAIL** (_db misattribution) |
+  | Q4-DOC-scoped | 100% | 0.0313 | **FAIL** (docstring-body inference) |
+  | **Q4-BODY-scoped** | **100%** | **0.0313** | **PASS** |
+
+  Q4-BODY-scoped beats Q3 F-DOC on both axes (full vs. 83.3% recovery; same safety standard).
+  The scoped+body-stripped path is the recommended configuration for source-aware fixing:
+  target's own function body only, neighbor surfaces as bare def lines.
+
+  **Architectural change:** `fixer.py` — `_extract_scoped_function`, `_extract_function_surface`,
+  `_DESC_GENERATOR_SCOPED_SOURCE_PROMPT`, extended `_generate_description` with `scoped_source`
+  and `neighbor_surfaces_text` params. CI: 383 tests, 90% coverage, 18 new tests in
+  `tests/test_q4_scoped.py` asserting scoped extraction, body-exclusion guarantee, prompt
+  composition, and priority ordering.
+
+- Test suite: 383 tests, 90% coverage, all LLM calls mocked — CI runs with no network and no credentials.
 
 ## What is NOT built yet
 

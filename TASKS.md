@@ -79,6 +79,19 @@ test suite guarantees ordering + actionability gap regardless of which model is 
 
 ## DONE
 
+### Q4 — Scoped-source description generation (safety inversion in the scoped regime)
+
+**Merged:** PR #45 — feat(q4): scoped-source description generation — Q4-BODY-scoped safe+fully-recovering; docstring-vs-body fabrication inversion in scoped regime
+
+Four-arm A/B (6 structural contested tasks, gemma2:9b, 5 trials, 2026-06-08). Both Q4 conditions
+fully recover (100%, p=0.0313 n=6) on the Arm-A-failure subset. Scoping eliminates Q3's _db
+cross-tool body misattribution in both conditions. Key finding: in the scoped regime, docstrings
+INCREASE fabrication risk (Q4-DOC-scoped: FABRICATED 4/4 controls via docstring-body inconsistency);
+BODY-scoped is safe (INCIDENTAL-BUT-TRUE 4/4). This reverses Q3's whole-file lesson where docstrings
+were safer. Q4-BODY-scoped is the first condition that is both fully-recovering and safe.
+
+---
+
 ### Q3 — Source-aware description generation (DOC vs BODY)
 
 **Merged:** PR #44 — feat(q3): source-aware description generation — F-DOC RECOVERS (83.3%, marginal), F-BODY UNSAFE (cross-tool source misattribution)
