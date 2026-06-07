@@ -20,6 +20,21 @@ Autonomous runs: pick the single top TODO, implement it, move to IN-REVIEW.
 
 ## IN-REVIEW
 
+### Q2a — Three-arm fixer recovery (does the current fixer recover the T18 gain?)
+
+Branch: `claude/q2a-fixer-recovery`
+
+Three-arm A/B on selection_accuracy: Arm A (empty) / Arm F (fixer-generated, qwen3:8b) /
+Arm O (oracle). Metric: parse-success selection_accuracy on contested tasks (where T18's
++34.5pp lived). Recovery fraction = (F-A)/(O-A). Structural hypothesis: per-tool generator
+cannot encode cross-tool distinctions → predicts LOW recovery; per-tool schema distinctions
+recoverable → mixed/partial possible. Diagnosis classifies each missed task as (i) cross-tool
+only or (ii) per-tool schema gap.
+
+**Acceptance criteria:** see spec.md.
+
+---
+
 ## FUTURE / DEFERRED
 
 ### Tx-val — Powered upside re-run (grounded-fixture significance)
