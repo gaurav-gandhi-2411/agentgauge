@@ -250,6 +250,34 @@ _DESC_GENERATOR_SCOPED_SOURCE_PROMPT = (
     "Write ONLY the new description text. No quotes, no preamble, no markdown."
 )
 
+_DESC_GENERATOR_GUARD_B_PROMPT = (
+    "You are improving an MCP tool's description to help AI agents use it correctly.\n"
+    "Write a clear, concise description (1-2 sentences) that:\n"
+    "- States what this tool does based on its own source code\n"
+    "- If this tool differs meaningfully from its neighbors, state that difference as a\n"
+    "  POSITIVE FACT ABOUT THIS TOOL ONLY, grounded in this tool's own body\n\n"
+    "CRITICAL — TARGET-GROUNDED PHRASING ONLY:\n"
+    "You may only state distinctions as facts about THIS tool derived from its own source.\n"
+    "You must NOT claim what any neighbor does — neighbor surfaces are shown only to indicate\n"
+    "which axes (return type, storage, permanence, channel, etc.) may be worth mentioning.\n\n"
+    "  GOOD (target-grounded):\n"
+    '    "Returns a count of matching entries and writes results to a 5-minute TTL cache."\n'
+    "  FORBIDDEN (comparative neighbor claim):\n"
+    '    "Unlike lookup_data, which returns full entries, this tool returns a count."\n\n'
+    "CRITICAL — NO FABRICATION: Only state a difference directly supported by this tool's own\n"
+    "source code. If the source does not clearly support a distinction, say what it does plainly\n"
+    "and DO NOT invent a difference.\n\n"
+    "Target tool:\n"
+    "  Name: {name}\n"
+    "  Current description: {current}\n"
+    "  Input schema: {schema}\n\n"
+    "This tool's own source code (ONLY this tool's function — no other tools shown):\n"
+    "```python\n{scoped_source}\n```\n\n"
+    "Confusable neighbors (signature + docstring included — to indicate which axes may discriminate):\n"
+    "{neighbor_surfaces}\n\n"
+    "Write ONLY the new description text. No quotes, no preamble, no markdown."
+)
+
 _SCHEMA_GENERATOR_PROMPT = (
     "You are improving MCP tool parameter metadata for AI agent usability.\n"
     "For the tool below, generate improved parameter metadata AND identify required parameters.\n\n"
@@ -267,6 +295,31 @@ _SCHEMA_GENERATOR_PROMPT = (
     '"required": ["x", "y"]}}\n\n'
     "Reply with ONLY the JSON object, no markdown fences, no other text."
 )
+
+
+def _contains_comparative_neighbor_claim(desc: str, neighbor_names: list[str]) -> bool:
+    """Return True if desc makes a comparative claim naming a specific neighbor.
+
+    Checks for patterns like "unlike <neighbor>", "whereas <neighbor>", "while <neighbor>",
+    or "compared to <neighbor>" (case-insensitive). Returns False when no neighbor names
+    are provided or when comparative connectors appear but do not name a known neighbor.
+
+    Used as a post-generation guard to detect Guard-B constraint violations before
+    a description is committed.
+    """
+    if not neighbor_names:
+        return False
+    comparative_re = re.compile(
+        r"\b(unlike|whereas|while|compared to)\s+",
+        re.IGNORECASE,
+    )
+    for m in comparative_re.finditer(desc):
+        after = desc[m.end() :]
+        for name in neighbor_names:
+            if re.match(re.escape(name), after, re.IGNORECASE):
+                return True
+    return False
+
 
 _NEIGHBOR_K: int = 6  # neighbors per tool; keeps prompt bounded at scale
 
@@ -412,10 +465,13 @@ async def _generate_description(
     source: str | None = None,
     scoped_source: str | None = None,
     neighbor_surfaces_text: str | None = None,
+    guard_b: bool = False,
 ) -> str:
     """Generate an improved description for `tool` using the generator model.
 
     Priority (highest to lowest):
+    - scoped_source (non-empty) + guard_b=True: uses _DESC_GENERATOR_GUARD_B_PROMPT; neighbor
+      docstrings are kept in surfaces, comparative neighbor claims are forbidden.
     - scoped_source (non-empty): uses _DESC_GENERATOR_SCOPED_SOURCE_PROMPT; composes with
       neighbor_surfaces_text (breaks source-XOR-neighbors for this path only).
     - source (non-empty): uses _DESC_GENERATOR_SOURCE_AWARE_PROMPT with no-fabrication guard
@@ -424,8 +480,18 @@ async def _generate_description(
 
     source and neighbors are mutually exclusive by convention — pass at most one.
     scoped_source can be combined with neighbor_surfaces_text.
+    guard_b is only effective when scoped_source is non-empty; if scoped_source is absent,
+    guard_b is ignored and the existing priority chain is followed.
     """
-    if scoped_source:
+    if scoped_source and guard_b:
+        prompt = _DESC_GENERATOR_GUARD_B_PROMPT.format(
+            name=tool.name,
+            current=tool.description or "(none)",
+            schema=tool.inputSchema,
+            scoped_source=scoped_source,
+            neighbor_surfaces=neighbor_surfaces_text or "(none)",
+        )
+    elif scoped_source:
         prompt = _DESC_GENERATOR_SCOPED_SOURCE_PROMPT.format(
             name=tool.name,
             current=tool.description or "(none)",

@@ -416,7 +416,74 @@ models — always record the model alongside any stored score.
   `tests/test_q4_scoped.py` asserting scoped extraction, body-exclusion guarantee, prompt
   composition, and priority ordering.
 
-- Test suite: 383 tests, 90% coverage, all LLM calls mocked — CI runs with no network and no credentials.
+- **Q5 (DONE, PR #46, 2026-06-08):** Distinction guard (Guard B) — target-grounded phrasing,
+  docstrings kept. Four-arm A/B: A (empty) / Q4-DOC-scoped (reference) / Q5-guarded / O (oracle).
+  12-tool Q3 fixture reused. qwen3:8b generator (Phase 1, GPU-exclusive). gemma2:9b agent,
+  5 trials/arm, GPU-exclusive (watchdog-confirmed clean throughout). 397 tests, 90% coverage —
+  verify.sh green.
+
+  **HEADLINE — Guard B closes the Q4 deployment question: documented source is now safe.**
+
+  Guard B prompt instructs the generator to state distinctions ONLY as positive facts about the
+  TARGET grounded in its own body, and explicitly forbids "unlike X, which does Y" comparative
+  claims. Neighbor surfaces (signature + docstring) are still shown — to indicate which axes may
+  discriminate — but may not be cited to assert a neighbor's behavior. The no-fabrication guard
+  plus the target-grounded example pair eliminate the Q4-DOC-scoped failure mode without discarding
+  the docstring signal.
+
+  **No-fabrication results (4 equivalent-control pairs, human classification):**
+
+  | Condition | Control pairs | Classification | Result |
+  |-----------|--------------|----------------|--------|
+  | Q4-DOC-scoped | find_entries, lookup_data, book_slot, plan_event | FABRICATED (4/4) | **FAIL** |
+  | **Q5-guarded** | find_entries, lookup_data, book_slot, plan_event | INCIDENTAL-BUT-TRUE (4/4) | **PASS** |
+
+  Q4-DOC-scoped fabrication mechanism: generator read target's precise body, read neighbor's
+  imprecise docstring, and inferred a false distinction (e.g., "differs from lookup_data by
+  returning a count instead of the actual entries" — both return identical count strings). Q5
+  eliminated all 4 fabrications by removing the asymmetric-evidence inference path.
+
+  **Recovery — full on the 6 structural contested tasks:**
+
+  | Condition | Recovery (n=6 structural) | p | No-fabrication |
+  |-----------|--------------------------|---|----------------|
+  | Q3 F-DOC | 83.3% | 0.0625 (marginal) | PASS |
+  | Q3 F-BODY | 83.3% (invalidated) | — | FAIL |
+  | Q4-DOC-scoped | 100% | 0.0313 | FAIL |
+  | Q4-BODY-scoped | 100% | 0.0313 | PASS |
+  | **Q5-guarded** | **100%** | **0.0313** | **PASS** |
+
+  Q5 = Q4-DOC on recovery AND safe. No structural contested task where Q5 missed that Q4-DOC
+  passed — no over-suppression failure. Guard B is non-regressing.
+
+  **Source-aware generation progression:**
+  - Q3 (whole-file): DOC safe (83.3% recovery, marginal) / BODY unsafe (cross-tool body misattribution)
+  - Q4 (scoped): DOC fabricates via docstring-body gap / BODY safe but discards docstring signal
+  - **Q5 (scoped + Guard B): DOC safe AND 100% recovering — the shippable config**
+
+  **Deployment answer:** Documented source can now be fixed safely. The fixer's source-aware path
+  (`guard_b=True`) is production-viable for real MCP servers with docstrings. No need to strip
+  docstrings.
+
+  **Detector gap (diagnostic, not a safety net):** The `_contains_comparative_neighbor_claim()`
+  regex catches "unlike/whereas/while/compared to \<neighbor\>" but misses "differs from \<neighbor\>
+  by…" — the dominant Q4-DOC fabrication phrasing. It caught only 1/4 Q4-DOC fabrications (book_slot
+  via "while plan_event"). On Q5, detector and human reading agree (0/4). The detector is a tripwire
+  only: safety verdict rests on human classification.
+
+  **Ambiguous-task finding (strongest argument for the guard):** On control_search (genuinely-equivalent
+  pair, arbitrary gold label), Q4-DOC scored 100% by FABRICATING a false asymmetry that accidentally
+  hit the gold label; Q5 scored 0% by correctly refusing to invent a distinction. Implication: on
+  ambiguous tools, fabrication can INFLATE measured recovery — a faithful generator scores LOWER there
+  precisely because it is honest. This is why control_search is excluded from the pre-registered 6,
+  and it is the clearest illustration of why the guard matters.
+
+  **Architectural change:** `fixer.py` — `_DESC_GENERATOR_GUARD_B_PROMPT` constant,
+  `_contains_comparative_neighbor_claim()` detector, `guard_b: bool = False` kwarg on
+  `_generate_description()`. CI: 397 tests, 90% coverage, 14 new tests in `tests/test_q5_guarded.py`
+  asserting prompt content, detector correctness (5 cases), and MockProvider routing.
+
+- Test suite: 397 tests, 90% coverage, all LLM calls mocked — CI runs with no network and no credentials.
 
 ## What is NOT built yet
 

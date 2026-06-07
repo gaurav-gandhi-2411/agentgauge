@@ -1,0 +1,14 @@
+{
+  "store_item": "Stores the query value in an in-memory TTL cache with a 5-minute expiry, overwriting existing entries silently.",
+  "persist_row": "Inserts a new row keyed by query, raising an error if the key already exists. Enforces uniqueness by rejecting duplicate keys with a ValueError.",
+  "save_record": "Saves a record with upsert semantics, creating or overwriting existing entries, and returns whether the record was created or updated.",
+  "write_entry": "Appends a structured entry to an immutable audit log with timestamp and sequence, retaining all entries permanently without modification. Entries are stored for compliance, event trails, and chronological auditing.",
+  "delete_record": "Permanently removes a record from _records with no recovery and returns a confirmation message.",
+  "archive_item": "Marks a record as archived to exclude it from active queries while retaining it in _records for potential restoration by clearing the archived flag.",
+  "retire_data": "Marks a record as retired, making it read-only and permanently retained for compliance and audit purposes. Retired records accumulate indefinitely and cannot be deleted or restored.",
+  "remove_entry": "Sets the hidden flag to suppress an entry from active query results while retaining it in _records for compliance.",
+  "find_entries": "Returns a count of matching entries.",
+  "lookup_data": "Returns the count of entries whose key contains the query string.",
+  "book_slot": "Reserves a slot in the calendar by setting _calendar[query] to \"reserved\" and returns a confirmation message.",
+  "plan_event": "Reserves a calendar slot by setting _calendar[query] to \"reserved\" and returns confirmation."
+}

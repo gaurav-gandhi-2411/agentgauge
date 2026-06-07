@@ -79,6 +79,20 @@ test suite guarantees ordering + actionability gap regardless of which model is 
 
 ## DONE
 
+### Q5 — Distinction guard (Guard B: target-grounded phrasing; docstrings safe)
+
+**Merged:** PR #46 — feat(q5): distinction guard (Guard B) — target-grounded phrasing; DOC-scoped with docstrings now safe
+
+Four-arm A/B (6 structural contested tasks, gemma2:9b, 5 trials, 2026-06-08). Guard B eliminated
+all 4 Q4-DOC-scoped fabrications (0/4 FABRICATED vs 4/4) and held 100% recovery (p=0.0313, n=6,
+non-regressing vs Q4-DOC). Verdict: SAFE+RECOVERS — the shippable config for source-aware fixing
+on documented servers. Documented source can now be used safely with the guard. Closes the Q4
+deployment question. Key finding: on ambiguous-equivalent tools, fabrication can inflate measured
+recovery (Q4-DOC scored 100% on control_search by inventing a false asymmetry; Q5 scored 0% by
+correctly refusing to invent one — an honest generator penalised for honesty on an arbitrary gold label).
+
+---
+
 ### Q4 — Scoped-source description generation (safety inversion in the scoped regime)
 
 **Merged:** PR #45 — feat(q4): scoped-source description generation — Q4-BODY-scoped safe+fully-recovering; docstring-vs-body fabrication inversion in scoped regime
