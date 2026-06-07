@@ -1,102 +1,87 @@
-# spec.md — Q3: source-aware description generation (docstring vs body-only)
+# spec.md — Q4: scoped-source generation (does scoping fix the F-BODY misattribution?)
 
-**Repo:** github.com/gaurav-gandhi-2411/agentgauge · **Base:** `main` @ f01fe94 ·
-**Branch:** `claude/q3-source-aware`
-**Routing:** DRAFT PR. New fixture + generator-input change + real-agent A/B. Draft-forcing #2/#3.
-**NOT condition #1** (no judge/scorer/rubric/calibration changes).
+**Repo:** github.com/gaurav-gandhi-2411/agentgauge · **Base:** `main` @ 03e72b1 ·
+**Branch:** `claude/q4-scoped-source`
+**Routing:** DRAFT PR. Changes generator source-assembly in fixer.py + real-agent A/B. Draft-forcing
+#2/#3. **NOT condition #1.** Reuses the Q3 fixture unchanged.
 
-**Pre-registration:** committed at branch start. Fixture, the independence rule, the two source
-conditions, recovery metric, and the no-fabrication control are fixed before the run.
+**Pre-registration:** committed at branch start. The scoping rule, the neighbor-surface rule, the
+two-failure-mode separation, and the no-misattribution control are fixed before the run.
 
 ---
 
 ## Why
 
-Q2a (per-tool) and Q2b (catalog-aware) both recovered only 12.5% of the T18 oracle gain. Diagnosis,
-confirmed twice: the distinguishing information (cache vs SQL vs queue, soft vs hard delete, channel,
-directionality) is absent from the interface — names + identical {query:string} schemas carry no
-signal. The only place it can live is the tools' SOURCE. Q3 tests whether feeding the generator the
-source recovers the gain — and splits the claim into two capability levels.
+Q3 showed source-with-docstrings (F-DOC) recovers 83% of the T18 gain and is faithful, but body-only
+(F-BODY) FAILED via cross-tool SOURCE MISATTRIBUTION: `find_entries` cited `_db` (a symbol belonging
+to OTHER tools in the same file) as a distinction. Root cause (from code): the source-aware prompt
+was fed the WHOLE FILE, and `source`/`neighbors` are mutually exclusive, so the generator's only
+"neighbor" signal was other functions' full bodies sitting in the blob — exactly what it misattributed
+from. This is an attention/scoping defect, not an information defect. Q4 tests whether scoping the
+source eliminates the misattribution while keeping the recovery.
 
-## The fixture must be built (the T18 tools are echo-stubs)
+## Design — scoped source + neighbor surfaces (the architectural change)
 
-The T18 60-tool catalog has NO real implementations — call_tool echoes {tool, query}. There is no
-source to read. Q3 therefore requires a NEW fixture with REAL, working tool bodies whose behavior
-genuinely differs (a cache uses a TTL store; an HTTP tool issues a request; a soft-delete sets an
-`archived` flag; an INSERT-only tool raises on existing key).
+- **Scoped source:** `source` passed to the generator = ONLY the target tool's own function (def +
+  body via a scoped extractor), NEVER the whole file.
+- **Neighbor surfaces:** ALSO pass the K confusable neighbors as SIGNATURES + DOCSTRINGS ONLY —
+  bodies STRIPPED. (Requires allowing source + neighbor-surfaces together; the current source-XOR-
+  neighbors convention is broken for this path.) This gives the generator what-to-contrast-against
+  without any foreign implementation to misattribute from.
+- **Mechanical guarantee (CI-enforced):** neighbor BODIES never appear in the assembled prompt.
+  If foreign bodies cannot be in the prompt, cross-tool body-misattribution is impossible by
+  construction.
+- Keep the no-fabrication guard verbatim. Reuse the shared JSON/text extractor.
 
-### INDEPENDENCE RULE (the central hazard — non-negotiable)
+## Conditions (reuse Q3 fixture; compare to Q3 full-file results)
 
-The source must encode each distinction INDEPENDENTLY of the oracle description. If bodies/docstrings
-are written FROM the oracle prose, "source-aware generation recovers the oracle" is tautological
-(the source IS the oracle restated). To enforce:
-- Write the implementations FIRST, as a working server would (real library calls / real logic),
-  WITHOUT looking at the T18 oracle text. The oracle description is then DERIVABLE from the behavior
-  but is not its origin.
-- A reviewer (human) must be able to confirm, per tool, that the distinguishing fact is present in
-  the CODE (e.g. `redis.setex(...)`, `requests.post(url)`, `if exists: raise`, `row.archived=True`)
-  and NOT merely paraphrased from the oracle sentence.
-- Keep the gold task-to-tool mapping and the confusable family structure aligned with T18 so results
-  are comparable, but the disambiguator now lives in source, not in a handed-over description.
+- **Q4-DOC-scoped:** target's own body WITH docstring + neighbor surfaces. (Expected safe + recover;
+  baseline that scoping didn't break the easy case.)
+- **Q4-BODY-scoped:** target's own body, DOCSTRINGS STRIPPED + neighbor surfaces. THE TEST: does
+  scoping remove the F-BODY misattribution that whole-file body-only caused?
+- Compare both to Q3's F-DOC (83%, faithful) and F-BODY (recovered-but-FABRICATED).
 
-## Two source conditions (both arms, compared — this comparison IS the finding)
+## Separate the two failure modes (do not blur)
 
-- **Q3-DOC (easy):** tools have real bodies AND honest docstrings stating behavior. Tests whether the
-  generator can EXTRACT a stated-but-not-in-interface fact. = "point the fixer at a documented repo."
-- **Q3-BODY (hard):** SAME tools, docstrings STRIPPED — body only. Tests whether the generator can
-  INFER behavior from code (cache from setex, HTTP from requests.post). = "undocumented real server."
-- Report Q3-DOC and Q3-BODY recovery SEPARATELY. The gap between them is the dependence-on-prose
-  measure. Do NOT collapse them into one number.
-
----
-
-## Design (arms)
-
-- Arm A = empty descriptions (floor, as T18). Arm O = oracle (ceiling, as T18).
-- Arm F-DOC = generator fed {name, schema, source-with-docstring}. Arm F-BODY = generator fed
-  {name, schema, source-body-only}.
-- Generator path: extend description generation to accept an optional `source` string; new prompt
-  variant instructs the generator to describe the tool and how it differs from neighbors USING THE
-  SOURCE, with the SAME no-fabrication guard from Q2b ("only state a difference supported by the
-  evidence; if not supported, say what it does plainly"). Reuse the shared JSON/text extractor.
-- Metric: parse-success selection_accuracy on the contested tasks; recovery = (F-A)/(O-A) for each of
-  F-DOC and F-BODY; sign tests vs A and vs O.
-- Agent gemma2:9b; generator qwen3:8b; phase-separated GPU (generate -> ollama stop -> A/B
-  gemma-only watchdog). Silence the qwen3:30b reactive requester before launch.
-
-## No-fabrication control (carry from Q2b)
-
-The genuinely-ambiguous tools (T18 double-zeros: find_entries/lookup_data, book_slot/plan_event) get
-real implementations that are ACTUALLY equivalent. Q3 generators must NOT invent a distinction for
-them. Classify FAITHFUL/FABRICATED per ambiguous tool, both source conditions. Any FABRICATED -> FAIL.
+- **Misattribution** (cross-tool, e.g. find_entries->_db): should VANISH under scoping — it's the
+  primary safety test. Measured on the equivalent-control pairs.
+- **Genuine-absence-from-body** (e.g. retire_data read-only was in the docstring, not the body):
+  scoping CANNOT fix this — a stripped body lacks the fact. Expected to persist in Q4-BODY-scoped.
+- The verdict MUST distinguish "fabricated less" (misattribution gone) from "recovered less" (info
+  not in body). Report misattribution rate and multi-way-distinction recovery SEPARATELY.
 
 ---
 
 ## Acceptance criteria
 
-1. **CI (deterministic, seed 42, no network):** new fixture loads (real bodies; docstring + stripped
-   variants both present); independence assertions (each contested tool's distinguishing token is in
-   the code, gold mapping intact); generator prompt assembles source context; no-fabrication
-   instruction present; shared extractor used; MockProvider tests for the source-fed path. No real
-   model in committed tests.
+1. **CI (deterministic, seed 42, no network):**
+   - Scoped extractor returns ONLY the target tool's function (assert other tools' bodies/symbols
+     absent from the extracted string).
+   - Neighbor-surface assembly includes neighbor signatures + docstrings and EXCLUDES neighbor
+     bodies — assert no neighbor body line appears in the assembled prompt (the mechanical guarantee).
+   - source + neighbor-surfaces compose in one prompt; no-fabrication guard present; shared extractor
+     used. MockProvider tests for the scoped path. No real model in committed tests.
 2. **Real-agent A/B (manual, in PR description):**
    - GPU exclusivity + parse_failed FIRST.
-   - Table: Arm A / F-DOC / F-BODY / Arm O (parse-success contested) + recovery fraction for F-DOC
-     and F-BODY separately + sign tests.
-   - No-fabrication control: FAITHFUL/FABRICATED per ambiguous tool, each condition. Any FABRICATED -> FAIL.
-   - Per-task diagnosis: for each contested task, did F-DOC / F-BODY encode the real distinction?
+   - Table: A / Q4-DOC-scoped / Q4-BODY-scoped / O (parse-success contested) + recovery for each +
+     sign tests. Show Q3 F-DOC/F-BODY alongside for comparison.
+   - No-MISATTRIBUTION control: for the equivalent pairs (find_entries/lookup_data,
+     book_slot/plan_event), classify FAITHFUL-EQUIVALENT / INCIDENTAL-BUT-TRUE / FABRICATED, BOTH
+     scoped conditions. The Q3 find_entries->_db misattribution MUST NOT recur. Any FABRICATED -> FAIL.
+   - Per-task diagnosis splitting misattribution-misses from absent-from-body-misses.
    - Verdict matrix:
-     - F-DOC recovers, F-BODY recovers: source-inference works even undocumented — strongest claim.
-     - F-DOC recovers, F-BODY does not: the fixer needs DOCUMENTED source; on undocumented servers it
-       can't infer from code. Bounds the feature precisely.
-     - Neither recovers: even source can't be turned into discriminating descriptions by this
-       generator — the limit is the generator, not the information source.
-     - Any FABRICATED on control -> unsafe regardless of recovery.
-3. scorer.py / judge / rubrics / calibration untouched; generator != judge asserted; verify.sh green;
-   coverage >= 60%.
+     - Q4-BODY-scoped FAITHFUL + recovers ~ Q4-DOC: scoping recovers the undocumented-server case
+       SAFELY — body-only is viable with proper scoping.
+     - Q4-BODY-scoped FAITHFUL but recovers < DOC (misses multi-way): misattribution FIXED, but body
+       genuinely lacks some distinctions -> boundary holds at "docstrings needed for the hardest
+       multi-way cases," but the SAFETY defect is solved.
+     - Q4-BODY-scoped still FABRICATES: scoping insufficient; body-only remains unsafe.
+3. fixer schema path / scorer / judge / rubrics / calibration untouched; generator != judge asserted;
+   verify.sh green; coverage >= 60%.
 
 ## Housekeeping
 
-- TASKS.md: Q3 (TODO -> IN-REVIEW). STATUS.md: record F-DOC and F-BODY recovery SEPARATELY + the
-  no-fabrication control. State the verdict-matrix cell reached. Do not claim "source-aware fixing
-  works" without specifying which source condition.
+- TASKS.md: Q4 (TODO -> IN-REVIEW). STATUS.md: record Q4-DOC-scoped and Q4-BODY-scoped recovery
+  SEPARATELY + the misattribution-control outcome + which verdict-matrix cell, explicitly contrasted
+  with Q3 (whole-file). State whether scoping solved the safety defect independently of whether it
+  recovered the multi-way distinctions.

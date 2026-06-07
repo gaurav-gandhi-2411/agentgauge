@@ -331,7 +331,39 @@ models — always record the model alongside any stored score.
   find_entries") rather than a genuine behavioral distinction. No-fabrication is established for
   **F-DOC only** (F-BODY is disqualified by the fabrication finding).
 
-- Test suite: 365 tests, 90% coverage, all LLM calls mocked — CI runs with no network and no credentials.
+- **Q4 (IN-REVIEW, branch `claude/q4-scoped-source`):** Scoped-source description generation —
+  testing whether per-tool function scoping eliminates the F-BODY cross-tool source misattribution
+  found in Q3.
+
+  **Architectural change:** two new helper functions in `fixer.py`:
+  - `_extract_scoped_function(source, tool_name)` — returns ONLY the target tool's function (def +
+    body), never the whole file. Stops at the next top-level `def`/`async def`.
+  - `_extract_function_surface(source, tool_name)` — returns def line + docstring only, bodies
+    stripped. The **mechanical guarantee**: neighbor bodies cannot appear in the assembled prompt,
+    making cross-tool body-misattribution impossible by construction (CI-asserted).
+  - `_DESC_GENERATOR_SCOPED_SOURCE_PROMPT` — new prompt stating explicitly "the source shown is
+    ONLY this tool's own implementation"; can compose scoped_source + neighbor_surfaces_text in
+    one prompt (breaks the source-XOR-neighbors convention for this path only).
+  - `_generate_description` extended with `scoped_source` and `neighbor_surfaces_text` params.
+
+  **Conditions (reusing Q3 fixture):**
+  - Q4-DOC-scoped: target's own function WITH docstring + K neighbor surfaces
+  - Q4-BODY-scoped: target's own function DOCSTRINGS STRIPPED + K neighbor surfaces (THE TEST)
+
+  **CI:** 383 tests, 90% coverage, all LLM calls mocked — verify.sh green. New test file
+  `tests/test_q4_scoped.py` (18 tests) asserts scoped extractor correctness, body-exclusion
+  guarantee, prompt composition, and priority ordering.
+
+  **Real-agent A/B:** PENDING. Phase 1 (qwen3:8b generator, Phase-separated GPU) + Phase 2
+  (gemma2:9b agent, four-arm A/Q4-DOC-scoped/Q4-BODY-scoped/O, watchdog-confirmed) not yet run.
+  Results will be reported in the PR description sections A–E per spec.md pre-registration.
+
+  **The safety question:** does scoping eliminate the Q3 F-BODY fabrication (find_entries->_db,
+  cited a symbol from other tools in the whole file)? If BODY-scoped is FAITHFUL, scoping solved
+  the safety defect even if multi-way distinctions are missed (absent from body). If still
+  FABRICATED, body-only remains unsafe regardless of scoping.
+
+- Test suite: 383 tests, 90% coverage, all LLM calls mocked — CI runs with no network and no credentials.
 
 ## What is NOT built yet
 
