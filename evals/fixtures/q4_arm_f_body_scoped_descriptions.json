@@ -1,1 +1,14 @@
-{}
+{
+  "store_item": "Stores a query in a time-to-live (TTL) cache with a 5-minute expiration, using the query as both key and value. Unlike confusable tools, it explicitly sets an expiration timestamp in the storage.",
+  "persist_row": "Inserts a new row into _db using the provided query string, raising an error if the row already exists. Unlike other tools, it explicitly checks for existing entries before insertion.",
+  "save_record": "Saves or updates a record in _db using the query parameter. Unlike other tools, it directly stores the query string into _db without additional processing.",
+  "write_entry": "Appends a query to the _audit_log with timestamp and sequence number, returning confirmation. Unlike confusable tools that delete, archive, or lookup data, this tool exclusively logs entries to the audit trail.",
+  "delete_record": "The delete_record tool permanently removes a record from the _records dictionary using the provided query string as the key. It differs from confusable neighbors by directly deleting the entry via `del _records[query]`, whereas others like save_record or archive_item likely modify or store data without permanent deletion.",
+  "archive_item": "The `archive_item` tool marks a record as archived by setting `archived=True` in `_records` without removing it, using the `query` parameter to identify the record. Unlike `delete_record`, it does not delete the entry from `_records`.",
+  "retire_data": "Marks a record as retired by setting the 'retired' flag to True without deleting the data, using the 'query' parameter to identify the record. Unlike delete_record, it does not remove the record from storage.",
+  "remove_entry": "Hides an entry by marking it as hidden (hidden=True) without deleting data; differs from delete_record by retaining records for compliance.",
+  "find_entries": "The `find_entries` tool searches for entries in `_search_store` where the query string matches any key, returning the count of matching results. It differs from confusable neighbors by explicitly filtering keys in `_search_store` and reporting match counts via its source code.",
+  "lookup_data": "The lookup_data tool searches for entries in _search_store matching the query string and returns the count of results. It differs from neighbors by directly interacting with _search_store rather than abstract data operations.",
+  "book_slot": "Reserves a calendar slot using the 'query' parameter by setting it to \"reserved\" in the _calendar. Unlike confusable tools, it directly modifies the _calendar dictionary to mark a slot as reserved.",
+  "plan_event": "The `plan_event` tool reserves a slot in the `_calendar` by setting `_calendar[query] = \"reserved\"`, returning a confirmation message. It differs from confusable neighbors by directly modifying the `_calendar` dictionary, whereas others handle data deletion, lookup, or persistence without calendar interaction."
+}
