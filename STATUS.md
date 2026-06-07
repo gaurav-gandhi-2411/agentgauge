@@ -283,7 +283,7 @@ models — always record the model alongside any stored score.
   interface. This bounds what AgentGauge's description fixer can achieve from the interface alone; the
   next meaningful step is source-level context injection, not prompt refinement.
 
-- **Q3 (IN-REVIEW, branch `claude/q3-source-aware`):** Source-aware description generation.
+- **Q3 (IN-REVIEW, branch `claude/q3-source-aware`, PR #44):** Source-aware description generation.
   New 12-tool fixture (4 families: store_family, delete_family, control_search, control_sched) with
   real working implementations distinguishable from source (TTL store, raise-on-dup, audit log append,
   archived/retired/hidden flags, del statement). Two source conditions:
@@ -295,12 +295,32 @@ models — always record the model alongside any stored score.
   DOC and BODY source. Control tools (find_entries/lookup_data, book_slot/plan_event) have truly
   equivalent implementations — no-fabrication guard must classify these FAITHFUL in both conditions.
 
-  **CI: 365 tests, 90% coverage, verify.sh green.** Generator extended with `source=` parameter and
-  `_DESC_GENERATOR_SOURCE_AWARE_PROMPT` (no-fabrication guard verbatim from Q2b). Phase 1 script
-  (generate_q3_descriptions.py) and Phase 2 four-arm run script (run_q3_four_arm.py) ready.
+  **CI: 365 tests, 90% coverage, verify.sh green.**
 
-  **Real-agent A/B results: PENDING** (phase-separated GPU run required; Phase 1 → ollama stop →
-  Phase 2). F-DOC and F-BODY recovery will be reported separately. Verdict matrix cell TBD.
+  **Real-agent A/B results (gemma2:9b, 5 trials/arm, GPU-exclusive 2026-06-07):**
+  - Parse-failed: 0/50 across all four arms.
+  - Contested (A=0%): 7/10 tasks total; 6 genuine behavioral tasks after removing 1 contaminated
+    control task (control_search F-DOC=100% driven by asymmetric anchor in description, not behavioral
+    distinguishability; F-BODY=0% separately due to fabrication-induced contradiction).
+  - F-DOC: **83.3% recovery** (5/6 contested), sign test n+=5, n-=0, **p=0.0625 marginal**. No fabrication.
+  - F-BODY: **83.3% recovery** (5/6 contested), sign test n+=5, n-=0, **p=0.0625 marginal**. **FABRICATED**
+    on find_entries: "differs from lookup_data by using _search_store instead of the _db" — false; both use
+    _search_store. Cross-contamination error: generator saw _db used by persist_row/save_record elsewhere
+    in the source file and misattributed it to lookup_data.
+  - No-fabrication: F-DOC PASS (4/4) / F-BODY FAIL (3/4).
+
+  **Verdict: F-DOC recovers (marginal significance); F-BODY numerically equivalent but UNSAFE (fabrication).**
+
+  The **docstring is the critical carrier**: the retire_data "read-only" property and the archive/remove
+  distinction both required docstring wording absent in BODY. The BODY generator can infer store-family
+  distinctions (4/4 store-family BODY-recoverable) but fails on multi-way flag semantics where
+  implementation bodies are structurally identical (`_records[q]["x"] = True`). The BODY fabrication is a
+  new failure mode: generator correctly reads the target tool but hallucinates a distinction for a confusable
+  neighbor by misattributing a backing store from elsewhere in the source context.
+
+  **Implication:** Docstrings are load-bearing for the source-context gain. Supplying bare source without
+  documentation is not safe — it both misses the hardest distinctions and opens a fabrication failure mode
+  that the DOC condition closes.
 
 - Test suite: 365 tests, 90% coverage, all LLM calls mocked — CI runs with no network and no credentials.
 

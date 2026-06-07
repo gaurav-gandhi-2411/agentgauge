@@ -22,7 +22,7 @@ Autonomous runs: pick the single top TODO, implement it, move to IN-REVIEW.
 
 ### Q3 — Source-aware description generation (DOC vs BODY)
 
-**Branch:** `claude/q3-source-aware` — awaiting real-agent A/B run results before merge.
+**Branch:** `claude/q3-source-aware` | **PR:** #44 (draft) — real-agent results complete; awaiting merge review.
 
 CI acceptance criteria (all green):
 - New Q3 fixture loads (12 tools, 4 families; DOC + BODY variants present)
@@ -31,12 +31,13 @@ CI acceptance criteria (all green):
 - MockProvider tests for source-fed path; shared extractor reused
 - verify.sh green, coverage ≥ 60%
 
-Real-agent A/B results needed (in PR description, not committed):
-- GPU exclusivity + parse_failed per arm
-- Table: A / F-DOC / F-BODY / O (parse-success contested) + recovery separately + sign tests
-- No-fabrication control: FAITHFUL/FABRICATED per control tool, each condition
-- Per-task diagnosis: did F-DOC / F-BODY encode the real distinction?
-- Verdict matrix cell: both/DOC-only/neither/any-fabricated
+Real-agent A/B results (gemma2:9b, 5 trials, GPU-exclusive 2026-06-07):
+- GPU: clean (0/200 parse-failed across all arms)
+- Contested: 7/10 (A=0%); 6 genuine behavioral tasks (1 control contaminated)
+- F-DOC: 83.3% recovery (corrected), p=0.0625 marginal; NO FABRICATION -- PASS
+- F-BODY: 83.3% recovery (corrected), p=0.0625 marginal; FABRICATED (find_entries) -- FAIL
+- No-fabrication verdict: DOC PASS / BODY FAIL (cross-contamination error from neighboring source)
+- Verdict: F-DOC recovers (marginal significance); F-BODY UNSAFE (fabrication)
 
 ---
 
