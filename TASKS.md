@@ -79,6 +79,19 @@ test suite guarantees ordering + actionability gap regardless of which model is 
 
 ## DONE
 
+### Q6 — Do-no-harm on already-passing tasks (is Guard-B safe to run BLANKET?)
+
+**Merged:** PR #47 — feat(q6): do-no-harm fixture + CI + run scripts — extended catalog with collision-prone pairs
+
+Four-arm A/B inverted gate (11 already-passing tasks + 6 structural contested, gemma2:9b, 5 trials,
+2026-06-08). Zero regressions on 11 already-passing tasks including all 3 collision-prone pairs
+(list_active_users/sessions, close_ticket/request, reset_pin/password). Contested recovery 6/6 (p=0.0312).
+Verdict: SAFE TO RUN BLANKET on documented servers where honest descriptions remain distinct.
+Key mechanism: harm-via-collapse was untested (qwen3:8b retained distinguishing tokens for every pair);
+not an unconditional safe claim.
+
+---
+
 ### Q5 — Distinction guard (Guard B: target-grounded phrasing; docstrings safe)
 
 **Merged:** PR #46 — feat(q5): distinction guard (Guard B) — target-grounded phrasing; DOC-scoped with docstrings now safe

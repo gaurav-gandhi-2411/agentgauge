@@ -1,102 +1,100 @@
-# spec.md — Q5: the docstring-mismatch / asymmetric-evidence guard (DOC-scoped + guard)
+# spec.md — Q6: do-no-harm on already-passing tasks (is Guard-B safe to run BLANKET?)
 
-**Repo:** github.com/gaurav-gandhi-2411/agentgauge · **Base:** `main` @ 17c92b1 ·
-**Branch:** `claude/q5-distinction-guard`
-**Routing:** DRAFT PR. Generator prompt/logic change + real-agent A/B. Draft-forcing #2/#3.
-**NOT condition #1.** Reuses the Q3/Q4 fixture unchanged.
+**Repo:** github.com/gaurav-gandhi-2411/agentgauge · **Base:** `main` @ 40857c7 ·
+**Branch:** `claude/q6-do-no-harm`
+**Routing:** DRAFT PR. Fixture extension + run existing Guard-B generator + real-agent A/B.
+Draft-forcing #2/#3. **NOT condition #1** (no judge/scorer/rubric/calibration/generator-logic
+changes — Guard B is reused as-is from Q5).
 
-**Pre-registration:** committed at branch start. The guard design, the dual-axis acceptance (safe
-AND recovering), and the control/structural task split are fixed before the run.
+**Pre-registration:** committed at branch start. The extended fixture, the harm threshold, the
+headroom INVERSION, and the regression metric are fixed before the run.
 
 ---
 
 ## Why
 
-Q4 found that in the scoped regime, providing neighbor DOCSTRINGS opens a fabrication vector:
-the generator has the TARGET's body (verified behavior) but only NEIGHBORS' surfaces (claimed
-behavior), so it contrasts target-body against neighbor-docstring and invents false distinctions
-(find_entries "count vs entries" — both return counts). Q4-BODY-scoped was safe only by REMOVING
-the docstrings — which discards useful signal real servers have. The current prompt already says
-"no fabrication"; exhortation is insufficient. Q5 adds a STRUCTURAL guard so DOC-scoped becomes safe
-WITHOUT discarding docstrings, because real servers are documented and "strip your docstrings" is not
-shippable advice.
+Every recovery result (T18, Q3-Q5) was measured on the ARM-A-FAILURE SUBSET — tasks selected
+because empty descriptions fail them. We have NEVER measured whether the fixer DEGRADES a task the
+agent already passes. Until that's ruled out, "run the safe Guard-B fixer across a whole server" is
+unjustified — it could help the confusable tools and silently harm the already-fine ones. Q6 is the
+do-no-harm test that gates blanket deployment.
 
-## Root cause (name it precisely)
+## The headroom INVERSION (this gate is the opposite of all prior ones)
 
-ASYMMETRIC EVIDENCE. The generator can verify the TARGET's behavior from its body but only KNOWS the
-NEIGHBORS' CLAIMS from their surfaces. Any comparative statement ("unlike X, which does Y") asserts a
-fact about a neighbor the generator cannot verify. That is the fabrication mechanism.
+For T18/Q3/Q4/Q5: "Arm A near 100% = abort, no headroom." For Q6: **Arm A at/near 100% on a task is
+the PRECONDITION** — you can only measure HARM where there was nothing to gain. The metric is a
+REGRESSION check, not a recovery check: count tasks that go PASS (empty) -> FAIL (Guard-B). Any such
+flip is a do-harm regression.
 
-## Guard design (Guard B — target-grounded, no comparative claims)
+## The harm mechanism to design FOR (not just against)
 
-The fix is to forbid unverifiable comparative claims, not to remove evidence:
-- The generator may state distinctions ONLY as POSITIVE facts about the TARGET, grounded in the
-  target's own body ("This tool returns a count of matching entries and writes to a 5-minute TTL
-  cache"). It must NOT make claims about what a neighbor does ("unlike lookup_data, which returns
-  full entries").
-- Neighbor surfaces are provided ONLY to tell the generator WHICH AXES may be discriminating (so it
-  knows to mention the return type / storage / permanence the family varies on) — never as a basis
-  to assert a neighbor's behavior.
-- Prompt change: explicit instruction + 1-2 examples showing target-grounded phrasing (good) vs
-  comparative neighbor-claims (forbidden). Keep the scoped-source structure and the shared extractor.
-
-### Why not the alternatives (record the reasoning)
-- "Symmetric surface-only" (compare target-surface vs neighbor-surface): safe but discards the body,
-  which is the signal that closed the gap in Q3/Q4 — would regress recovery. Rejected.
-- "Detect docstring-vs-body disagreement and suppress": narrower; only catches the find_entries
-  case, not the general asymmetry. Guard B subsumes it.
-
-## The risk this must be validated against
-
-Forbidding comparative phrasing could REGRESS RECOVERY: a purely self-describing "returns a count"
-may not help the agent RULE OUT a sibling the way a contrastive description does. So Q5 is a TWO-AXIS
-test — it must be BOTH safe (no fabrication on equivalent controls) AND still recovering (on the
-structural contested tasks). A guard that is safe but drops recovery toward Arm-A is a FAIL, not a
-win.
+Guard B forbids comparative claims -> target-only positive descriptions. Risk: two tools the agent
+currently distinguishes BY NAME get target-only descriptions MORE similar than their names were,
+creating NEW confusability. The already-passing set MUST include collision-prone pairs — tools with
+DISTINCT names but OVERLAPPING target-only descriptions (e.g. list_users / list_accounts, both
+"returns a list of records") — or Q6 cannot detect the failure it exists to find.
 
 ---
 
-## Design (arms; reuse Q3/Q4 fixture)
+## Scope
 
-- Arm A = empty (floor). Arm O = oracle (ceiling).
-- Arm Q4-DOC = Q4 DOC-scoped, no guard (reference: recovers ~100% on the 6-task subset, FABRICATES
-  4/4 controls). 
-- Arm Q5 = DOC-scoped + Guard B.
-- Generator gets target scoped body + neighbor surfaces (docstrings INCLUDED — that's the point;
-  the guard must make docstrings safe, not require their removal). qwen3:8b; agent gemma2:9b;
-  phase-separated GPU.
-- Metric: parse-success selection_accuracy on the SAME 6 structural contested tasks as Q4 (NOT
-  control_search — excluded, ambiguous gold). Recovery (Q5-A)/(O-A); sign test n=6.
+**IN:** extend the Q3/Q5 source-bearing fixture with already-passing (name-resolvable) tools that have
+REAL implementations; run the Q5 Guard-B fixer across the FULL extended catalog; measure regressions
+on the already-passing subset + confirm contested recovery preserved + net aggregate effect.
+
+**OUT:** any change to Guard B / generator logic (reused as-is); new dimensions; scorer changes; the
+T18 echo-stub catalog (no source).
+
+## Fixture extension
+
+- Add >= 8 already-passing tools with real, distinct implementations and DISTINCT names such that
+  empty-description Arm A selects them correctly (name-resolvable; NOT confusable families).
+- Of these, deliberately include >= 3 COLLISION-PRONE pairs: distinct names, but whose honest
+  target-only (Guard-B-style) descriptions risk overlapping (same verb + same generic object).
+  Document each pair and why its names disambiguate but its target-only descriptions might not.
+- Keep the existing 6 structural contested tasks + the Q5 Guard-B descriptions for them, so contested
+  recovery can be re-confirmed on the extended catalog.
+- Independence/realism rules from Q3 apply: real bodies, written without gaming the descriptions.
+
+## Rigor
+
+- STABILITY: the already-passing tasks must pass empty-Arm-A STABLY (run twice, drop any that flip
+  >1 trial). A task that only "passes" by luck can't anchor a regression claim. Report dropped count.
+- Headroom precondition: confirm already-passing Arm A is at/near 100% before measuring harm.
+- Task-clustered; agent gemma2:9b (!= judge != generator); generator qwen3:8b; phase-separated GPU,
+  silence qwen3:30b first.
+- No post-hoc fixture tuning after seeing results.
+
+---
 
 ## Acceptance criteria
 
-1. **CI (deterministic, seed 42, no network):** the guard prompt forbids comparative neighbor-claims
-   and instructs target-grounded phrasing (assert the instruction + example present); neighbor
-   surfaces still included (docstrings present in prompt); MockProvider: a target-grounded description
-   passes through, and (if a lightweight post-check is added) a description containing a comparative
-   "unlike <neighbor>" claim is flagged. No real model in committed tests.
-2. **Real-agent A/B (manual, in PR description) — BOTH axes required:**
+1. **CI (deterministic, seed 42, no network):** extended fixture loads; already-passing tools have
+   real bodies + distinct names; collision-prone pairs documented + asserted (distinct names,
+   flagged for target-only overlap risk); gold mapping intact; Guard-B generation path unchanged from
+   Q5. No real model in committed tests.
+2. **Real-agent A/B (manual, in PR description):**
    - GPU exclusivity + parse_failed FIRST.
-   - SAFETY: on the 4 equivalent-control tools, classify Q5 descriptions FAITHFUL-EQUIVALENT /
-     INCIDENTAL-BUT-TRUE / FABRICATED. Q5 target: NO FABRICATED (vs Q4-DOC's 4/4 FABRICATED). This is
-     the guard working.
-   - RECOVERY: table A / Q4-DOC / Q5 / O on the 6 structural contested tasks + recovery + sign test.
-     Q5 target: recovery must remain HIGH (not regress toward Arm-A). Report the exact number.
-   - Per-task: for any structural task Q5 now MISSES that Q4-DOC passed, show the Q5 description —
-     this is the "guard over-suppressed and killed a real distinction" failure, diagnose it.
-   - Verdict matrix:
-     - SAFE + RECOVERS (no fabrication AND recovery ~ Q4-DOC): the guard works — DOC-scoped is now
-       safe without stripping docstrings. Best outcome; this is the shippable config.
-     - SAFE + REGRESSES (no fabrication but recovery drops): the guard over-suppressed; target-only
-       phrasing isn't discriminating enough. Boundary: safety costs recovery -> body-only (Q4) stays
-       the safe-and-recovering config and docstrings can't be made safe this way.
-     - STILL FABRICATES: Guard B insufficient; report what it fabricated and from what.
-3. scorer.py / judge / rubrics / calibration / schema-gen path untouched; generator != judge
-   asserted; verify.sh green; coverage >= 60%.
+   - HEADROOM PRECONDITION: already-passing subset empty-Arm-A at/near 100% (post stability-screen,
+     dropped count reported). If they're NOT already passing, the harm test is void on those — report.
+   - REGRESSION (the headline): empty vs Guard-B on the already-passing subset. Count PASS->FAIL
+     flips. ZERO regressions = do-no-harm holds. Show EACH regression with the Guard-B description
+     and the collision it caused (which sibling the agent flipped to).
+   - CONTESTED CHECK: confirm Guard-B still recovers the 6 structural contested tasks on the extended
+     catalog (the Q5 result didn't break under more tools).
+   - NET EFFECT: aggregate empty vs Guard-B across ALL tasks (contested + already-passing). Net
+     positive only if recovery gains aren't cancelled by regressions.
+   - Verdict:
+     - ZERO regressions + recovery preserved: Guard-B is SAFE TO RUN BLANKET — the full deployment
+       claim closes.
+     - REGRESSIONS on collision-prone pairs: Guard-B can introduce confusability via target-only
+       phrasing; blanket use needs a collision check (the regressions localize what Q7 would fix).
+     - Recovery broke on extended catalog: scale interaction; report.
+3. scorer.py / judge / rubrics / calibration / Guard-B generator logic untouched; verify.sh green;
+   coverage >= 60%.
 
 ## Housekeeping
 
-- TASKS.md: Q5 (TODO -> IN-REVIEW). STATUS.md: record SAFETY and RECOVERY for Q5 vs Q4-DOC, the
-  verdict cell, and whether documented source can now be used safely (the deployment question Q4
-  left open). Do not claim "docstrings are safe with the guard" unless Q5 was BOTH no-fabrication
-  AND non-regressing.
+- TASKS.md: Q6 (TODO -> IN-REVIEW). STATUS.md: record regression count on already-passing tasks +
+  net aggregate effect + the blanket-safety verdict. Do NOT claim "safe to run blanket" unless ZERO
+  (or quantified-and-acceptable) regressions AND contested recovery preserved.
