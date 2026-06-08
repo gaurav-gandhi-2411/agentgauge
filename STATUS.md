@@ -4,6 +4,24 @@
 
 ---
 
+## Q6 — Do-no-harm (IN-REVIEW, branch `claude/q6-do-no-harm`)
+
+**CI:** 432 tests, 90% coverage, verify.sh green.
+
+**Extended fixture:** 23-tool catalog (12 Q3 + 11 new already-passing tools).
+  - 5 non-collision already-passing: compress_file, hash_value, parse_date, count_words, generate_token
+  - 3 collision-prone pairs (6 tools): list_active_users/list_active_sessions,
+    close_ticket/close_request, reset_pin/reset_password
+  - Each pair documented: why names disambiguate, why target-only descriptions might collapse.
+
+**Real-agent A/B (Phase 2 — PENDING):**
+- Regressions on already-passing tasks: PENDING
+- Contested recovery (6 structural): PENDING
+- Net aggregate delta: PENDING
+- Blanket-safety verdict: PENDING (ZERO regressions + contested recovery = SAFE TO RUN BLANKET)
+
+---
+
 ## What AgentGauge is
 
 AgentGauge is a CLI that scores how well an AI agent can use an MCP server. It connects to a server
