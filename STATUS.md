@@ -4,21 +4,11 @@
 
 ---
 
-## Q6 — Do-no-harm (IN-REVIEW, branch `claude/q6-do-no-harm`)
+## Q6 — Do-no-harm (DONE, PR #47 merged)
 
-**CI:** 432 tests, 90% coverage, verify.sh green.
-
-**Extended fixture:** 23-tool catalog (12 Q3 + 11 new already-passing tools).
-  - 5 non-collision already-passing: compress_file, hash_value, parse_date, count_words, generate_token
-  - 3 collision-prone pairs (6 tools): list_active_users/list_active_sessions,
-    close_ticket/close_request, reset_pin/reset_password
-  - Each pair documented: why names disambiguate, why target-only descriptions might collapse.
-
-**Real-agent A/B (Phase 2 — PENDING):**
-- Regressions on already-passing tasks: PENDING
-- Contested recovery (6 structural): PENDING
-- Net aggregate delta: PENDING
-- Blanket-safety verdict: PENDING (ZERO regressions + contested recovery = SAFE TO RUN BLANKET)
+**Verdict: SAFE TO RUN BLANKET on documented servers** (zero regressions on 11 already-passing
+tasks including all 3 collision-prone pairs; contested recovery 6/6 preserved; harm mechanism
+did not trigger). See full entry in **What is DONE** below.
 
 ---
 
@@ -501,7 +491,79 @@ models — always record the model alongside any stored score.
   `_generate_description()`. CI: 397 tests, 90% coverage, 14 new tests in `tests/test_q5_guarded.py`
   asserting prompt content, detector correctness (5 cases), and MockProvider routing.
 
-- Test suite: 397 tests, 90% coverage, all LLM calls mocked — CI runs with no network and no credentials.
+- **Q6 (DONE, PR #47, 2026-06-08):** Do-no-harm on already-passing tasks — is Guard-B safe to run
+  blanket across a full documented MCP server?
+
+  **Setup:** Extended fixture to 23 tools (12 Q3 + 11 new already-passing): 5 non-collision tools
+  (compress_file, hash_value, parse_date, count_words, generate_token) and 3 collision-prone pairs
+  (list_active_users/list_active_sessions, close_ticket/close_request, reset_pin/reset_password).
+  Each pair documented with why names disambiguate and why target-only descriptions might collapse.
+  qwen3:8b generator, seed=42 hardcoded (Phase 1, GPU-exclusive). gemma2:9b agent, 5 trials,
+  two Arm A stability runs + one Guard-B run, GPU-exclusive (watchdog-confirmed clean throughout).
+  432 tests, 90% coverage — verify.sh green.
+
+  **Inverted gate:** For Q6, Arm A at/near 100% on already-passing tasks is the PRECONDITION (not
+  the abort). The metric is PASS→FAIL regression count, not recovery fraction.
+
+  **Section B — Headroom precondition:** 11/11 already-passing tasks stable across both Arm A runs
+  (run1=run2=100% on all 11). 0 tasks dropped by stability screen. Precondition: MET.
+
+  **Section C — Regression (zero):**
+
+  | Tool | Family | A% | Guard-B% | Status |
+  |------|--------|----|----------|--------|
+  | compress_file | non-collision | 100% | 100% | OK |
+  | hash_value | non-collision | 100% | 100% | OK |
+  | parse_date | non-collision | 100% | 100% | OK |
+  | count_words | non-collision | 100% | 100% | OK |
+  | generate_token | non-collision | 100% | 100% | OK |
+  | list_active_users [C1] | collision_c1 | 100% | 100% | OK |
+  | list_active_sessions [C1] | collision_c1 | 100% | 100% | OK |
+  | close_ticket [C2] | collision_c2 | 100% | 100% | OK |
+  | close_request [C2] | collision_c2 | 100% | 100% | OK |
+  | reset_pin [C3] | collision_c3 | 100% | 100% | OK |
+  | reset_password [C3] | collision_c3 | 100% | 100% | OK |
+
+  **REGRESSIONS: 0.** Do-no-harm holds on all 11 already-passing tasks including all 3 collision-prone pairs.
+
+  **Section D — Contested check:** 6/6 structural contested tasks recovered (Arm A=0% → Guard-B=100%).
+  Sign test: n+=6, n-=0, p=0.0312.
+
+  **Section E — Net effect:** Arm A=63.2% → Guard-B=100.0%, delta +36.8%. Headline sign test
+  on contested tasks only (control_search excluded — find_entries/lookup_data are equivalent tools,
+  gold label is arbitrary, same exclusion as Q3–Q5): n+=6, n-=0, p=0.0312.
+
+  **MECHANISM (bounds the claim):** No regression occurred because qwen3:8b's honest Guard-B
+  descriptions RETAINED a distinguishing token for every collision pair:
+  - C1 (list_active_users/list_active_sessions): `_user_store` vs `_session_store`, "users" vs
+    "sessions" (description common-prefix 28 chars, below collapse threshold).
+  - C2 (close_ticket/close_request): "support ticket"/`_ticket_store` vs "service request"/
+    `_request_store` (common-prefix 9 chars — clearly distinct).
+  - C3 (reset_pin/reset_password): "PIN"/"0000"/`_pin_store` vs "password"/"changeme"/
+    `_password_store` (common-prefix 12 chars — clearly distinct).
+
+  Total description-collapse to identical phrasing did NOT trigger. Therefore **harm-via-collapse
+  is UNTESTED on this run, not ruled out.** The safe-to-blanket claim holds for documented servers
+  where honest descriptions remain semantically distinct. It is consistent with — but does not
+  prove — safety under total description collapse (a condition requiring Q7 to test).
+
+  **Verdict: SAFE TO RUN BLANKET on documented servers (no observed regression; harm mechanism
+  did not trigger).** Guard-B can be applied to any tool in a documented MCP server where honest
+  descriptions stay semantically distinct. Not an unconditional safety claim — servers where Guard-B
+  collapses to identical phrasing for sibling tools are outside the tested scope.
+
+  **Source-aware generation progression (complete):**
+
+  | Condition | Recovery (n=6) | p | No-fabrication | Blanket-safe |
+  |-----------|---------------|---|----------------|-------------|
+  | Q3 F-DOC | 83.3% | 0.0625 | PASS | — |
+  | Q3 F-BODY | 83.3% (invalidated) | — | FAIL | — |
+  | Q4-DOC-scoped | 100% | 0.0313 | FAIL | — |
+  | Q4-BODY-scoped | 100% | 0.0313 | PASS | — |
+  | Q5-guarded | 100% | 0.0313 | PASS | untested |
+  | **Q6-guarded (23 tools)** | **100%** | **0.0312** | **PASS** | **YES (documented servers)** |
+
+- Test suite: 432 tests, 90% coverage, all LLM calls mocked — CI runs with no network and no credentials.
 
 ## What is NOT built yet
 

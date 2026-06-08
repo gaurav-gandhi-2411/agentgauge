@@ -20,29 +20,7 @@ Autonomous runs: pick the single top TODO, implement it, move to IN-REVIEW.
 
 ## IN-REVIEW
 
-### Q6 — Do-no-harm on already-passing tasks (is Guard-B safe to run BLANKET?)
-
-**Branch:** `claude/q6-do-no-harm`
-
-**CI status:** verify.sh green (432 tests, 90% coverage). Extended fixture loads; 23-tool
-catalog (12 Q3 + 11 new); 3 collision-prone pairs documented + asserted; guard-B path
-unchanged from Q5; gold mapping intact.
-
-**Pending (real-agent A/B — Phase-separated GPU):**
-- Phase 1: generate Guard-B descriptions for full 23-tool catalog with qwen3:8b (seed=42)
-  → persist to `evals/fixtures/q6_arm_f_doc_guarded_descriptions.json`
-- Phase 2: ollama stop; A/B (Arm A empty vs Guard-B) with gemma2:9b; watchdog kills on
-  non-gemma; stability pre-screen (two Arm A runs, drop tasks flipping >1 trial)
-- Report A–F per spec.md: GPU+parse_failed / headroom precondition / regression count /
-  contested check / net aggregate / verdict
-
-**Acceptance criteria:**
-1. CI: extended fixture loads; already-passing tools real bodies + distinct names;
-   collision-prone pairs documented + asserted; gold mapping intact; Guard-B path unchanged.
-   → DONE
-2. Real-agent A/B: headroom confirmed; regression count reported; contested recovery checked;
-   net aggregate and verdict recorded. → PENDING
-3. scorer.py / judge / rubrics / calibration / Guard-B untouched. → DONE
+*(empty)*
 
 ---
 
@@ -100,6 +78,19 @@ test suite guarantees ordering + actionability gap regardless of which model is 
 ---
 
 ## DONE
+
+### Q6 — Do-no-harm on already-passing tasks (is Guard-B safe to run BLANKET?)
+
+**Merged:** PR #47 — feat(q6): do-no-harm fixture + CI + run scripts — extended catalog with collision-prone pairs
+
+Four-arm A/B inverted gate (11 already-passing tasks + 6 structural contested, gemma2:9b, 5 trials,
+2026-06-08). Zero regressions on 11 already-passing tasks including all 3 collision-prone pairs
+(list_active_users/sessions, close_ticket/request, reset_pin/password). Contested recovery 6/6 (p=0.0312).
+Verdict: SAFE TO RUN BLANKET on documented servers where honest descriptions remain distinct.
+Key mechanism: harm-via-collapse was untested (qwen3:8b retained distinguishing tokens for every pair);
+not an unconditional safe claim.
+
+---
 
 ### Q5 — Distinction guard (Guard B: target-grounded phrasing; docstrings safe)
 
