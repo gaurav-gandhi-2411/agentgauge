@@ -9,25 +9,38 @@
 **Goal:** External validity — do the AgentGauge scores and Guard-B fixer predict and fix real
 confusion on a real production MCP server (github/github-mcp-server)?
 
-**Two-part framing:**
+**MEASURED RESULTS (2026-06-10, judge llama3.1:8b, agent gemma2:9b, 5 trials):**
 
-*Part 1 — Score validity:* does the discoverability scorer flag the same tool families
-GitHub's own engineers consolidated to reduce confusion? If yes: independent confirmation
-the score predicts real problems. If no: a documented score-validity gap.
+*Part 1 — Score validity:*
+- Heuristic: 85.0/100; detected `get_pull_request_diff` ↔ `get_pull_request_files` name collision
+- Judge (llama3.1:8b, 3 trials): full catalog DISTINGUISH = 60.0/100 (σ²=0.00); per-family all 70.0/100
+- Blend: 75.0/100
+- **Overlap with GitHub hand-fixed families: 0/2** (pr_read_variants scored 70/100, search_variants
+  scored 70/100 — both above the 60-pt flagging threshold)
+- **VERDICT: SCORE-VALIDITY GAP** — the discoverability scorer does NOT flag the same families
+  GitHub's own engineers consolidated. The judge scores every family at 70/100 regardless of
+  whether it was historically confusing. Not an indictment of scoring on synthetic servers —
+  the real-world naming patterns (shared `get_pull_request_` prefix, terse descriptions) apparently
+  do not trigger the judge's DISTINGUISH discriminator.
 
-*Part 2 — Fix value:* does Guard-B recover wrong-DESTRUCTIVE-tool selections on real GitHub
-docstrings? The painkiller metric is wrong-DESTRUCTIVE-tool selection rate — choosing
-`merge_pull_request` when the user wanted to read a PR, or `create_or_update_file` when
-the user wanted to read a file. These have real customer cost.
+*Part 2 — Fix value:*
+- GPU: exclusive throughout; 0/105 parse-failed in all three arms
+- **Arm A accuracy (real GitHub docstrings): 100.0%, 0/21 contested tasks**
+- **VERDICT: NO HEADROOM / BUYER-BOUNDED** — Arm A (real GitHub docstrings) correctly selected
+  the right tool for all 21 tasks. Guard-B has nothing to recover.
+  PAINKILLER metric implied: 0% wrong-DESTRUCTIVE-tool rate for Arm A (mathematical necessity).
+- Phase 1 note: 3/21 Guard-B descriptions degraded to stub language (generator read stub body
+  instead of docstring: `get_pull_request_files`, `list_commits`, `list_repositories`) — a
+  real Guard-B limitation, but irrelevant since Arm A had no misses to recover.
 
-**Key design difference vs Q3–Q6:** Arm A is NOT empty. Arm A = the actual GitHub docstrings
-as shipped today. If Arm A already gets everything right, Guard-B has nothing to recover —
-that is a valid "buyer-bounding" finding (GitHub's current docs suffice; no fixer needed).
+**Joint interpretation:** Both findings are consistent. GitHub's real terse docstrings are
+sufficient for gemma2:9b — the agent is not confused even by the highly confusable families
+(5 PR read tools with identical schemas, terse "Get the X of a pull request" descriptions).
+Guard-B adds value on POORLY-DOCUMENTED servers (Q3–Q6 finding stands). The discoverability
+scorer's DISTINGUISH metric may not capture the name-collision confusability that humans find
+problematic on prefix-sharing tool families.
 
 **CI:** verify.sh PASSED. 53 new deterministic tests, no live API, no network calls.
-
-**Pending:** manual Part 1 and Part 2 runs (GPU, Ollama llama3.1:8b + gemma2:9b).
-See `scripts/rw1_part1_discoverability.py` and `scripts/rw1_phase2_ab.py`.
 
 ---
 
