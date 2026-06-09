@@ -27,6 +27,10 @@ import asyncio
 import sys
 from pathlib import Path
 
+# Force UTF-8 stdout on Windows (cp1252 default can't encode box/arrow chars)
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
+
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from mcp.types import Tool
@@ -66,7 +70,7 @@ async def run(judge_model: str, trials: int) -> None:
     for a, b in collision_pairs:
         fam_a = FAMILY_MAP.get(a, "?")
         fam_b = FAMILY_MAP.get(b, "?")
-        print(f"    [{fam_a}] {a!r} ↔ {b!r}  [{fam_b}]")
+        print(f"    [{fam_a}] {a!r} <-> {b!r}  [{fam_b}]")
     if not collision_pairs:
         print("    (none — all names have edit-distance similarity < 0.80)")
 
@@ -108,7 +112,7 @@ async def run(judge_model: str, trials: int) -> None:
         if fa == fb:
             family_collision_count[fa] = family_collision_count.get(fa, 0) + 1
         else:
-            print(f"    Cross-family pair: {a!r} ({fa}) ↔ {b!r} ({fb})")
+            print(f"    Cross-family pair: {a!r} ({fa}) <-> {b!r} ({fb})")
 
     for family, count in family_collision_count.items():
         tools_in_fam = FAMILIES[family]
