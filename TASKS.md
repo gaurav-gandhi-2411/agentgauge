@@ -20,7 +20,28 @@ Autonomous runs: pick the single top TODO, implement it, move to IN-REVIEW.
 
 ## IN-REVIEW
 
-*(empty)*
+### RW1 — Real-world experiment: GitHub MCP server (branch `claude/rw1-github-mcp`)
+
+**Goal:** External validity test — does the discoverability scorer flag the same families GitHub's
+own engineers consolidated to reduce confusion? Does Guard-B recover task-selection errors on real
+published GitHub docstrings?
+
+**What was built:**
+- `evals/fixtures/rw1_github_catalog.py`: 21-tool mirror catalog, 5 confusable families, real GitHub
+  schemas/docstrings, oracle descriptions, 4 DESTRUCTIVE_CONFUSABLE_PAIRS, 21 anti-tautological tasks.
+- `examples/rw1_github_mirror.py`: local MCP server (real tool names/schemas, stub bodies, NO live API).
+- `examples/rw1_arm_a.py` / `rw1_arm_guardb.py` / `rw1_arm_oracle.py`: three A/B arm servers.
+- `scripts/rw1_part1_discoverability.py`: score-validity cross-check against GitHub hand-fixed families.
+- `scripts/rw1_phase1_generate.py`: Guard-B generation from mirror docstrings (qwen3:8b, GPU-exclusive).
+- `scripts/rw1_phase2_ab.py`: 3-arm A/B (Arm A = real GitHub docstrings, GuardB, Oracle; gemma2:9b).
+- `tests/test_rw1_github.py`: 53 CI tests, all deterministic, no LLM calls.
+
+**CI status:** verify.sh PASSED (486 tests, 90.86% coverage).
+
+**Acceptance criteria (manual runs pending):**
+- Part 1: scorer flags pr_read_family and/or search_family (GitHub's own hand-fixed families).
+- Part 2: wrong-DESTRUCTIVE-tool rate Arm A vs GuardB; recovery on contested PR/file tasks.
+- HEADROOM finding: if Arm A already covers all tasks → "GitHub docs are buyer-bounding."
 
 ---
 

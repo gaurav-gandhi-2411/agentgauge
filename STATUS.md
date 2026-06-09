@@ -1,6 +1,33 @@
 # AgentGauge — Project Status
 
-> Current as of 2026-06-08. Update this file when significant milestones land.
+> Current as of 2026-06-09. Update this file when significant milestones land.
+
+---
+
+## RW1 — Real-world experiment: GitHub MCP server (IN-REVIEW, branch `claude/rw1-github-mcp`)
+
+**Goal:** External validity — do the AgentGauge scores and Guard-B fixer predict and fix real
+confusion on a real production MCP server (github/github-mcp-server)?
+
+**Two-part framing:**
+
+*Part 1 — Score validity:* does the discoverability scorer flag the same tool families
+GitHub's own engineers consolidated to reduce confusion? If yes: independent confirmation
+the score predicts real problems. If no: a documented score-validity gap.
+
+*Part 2 — Fix value:* does Guard-B recover wrong-DESTRUCTIVE-tool selections on real GitHub
+docstrings? The painkiller metric is wrong-DESTRUCTIVE-tool selection rate — choosing
+`merge_pull_request` when the user wanted to read a PR, or `create_or_update_file` when
+the user wanted to read a file. These have real customer cost.
+
+**Key design difference vs Q3–Q6:** Arm A is NOT empty. Arm A = the actual GitHub docstrings
+as shipped today. If Arm A already gets everything right, Guard-B has nothing to recover —
+that is a valid "buyer-bounding" finding (GitHub's current docs suffice; no fixer needed).
+
+**CI:** verify.sh PASSED. 53 new deterministic tests, no live API, no network calls.
+
+**Pending:** manual Part 1 and Part 2 runs (GPU, Ollama llama3.1:8b + gemma2:9b).
+See `scripts/rw1_part1_discoverability.py` and `scripts/rw1_phase2_ab.py`.
 
 ---
 
