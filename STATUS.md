@@ -1,6 +1,66 @@
 # AgentGauge — Project Status
 
-> Current as of 2026-06-08. Update this file when significant milestones land.
+> Current as of 2026-06-10. Update this file when significant milestones land.
+
+---
+
+## RW1 — Real-world experiment: GitHub MCP server (DONE, PR #48)
+
+**Goal:** External validity — do the AgentGauge scores and Guard-B fixer predict and fix real
+confusion on a real production MCP server (github/github-mcp-server)?
+
+**Setup:** 21-tool mirror of the 162-tool GitHub MCP server (real docstrings from
+`pkg/github/*.go`, real schemas, stub bodies, no live API). 5 confusable families, 21
+anti-tautological tasks, 4 DESTRUCTIVE_CONFUSABLE_PAIRS. Judge: llama3.1:8b. Agent: gemma2:9b.
+5 trials per arm. GPU-exclusive throughout.
+
+**FINDING 1 — SCORE-VALIDITY GAP (most important finding):**
+
+The discoverability scorer does NOT distinguish GitHub's historically-confusing families from
+clean ones on real naming. Per-family DISTINGUISH scores were flat at 70/100 for every family;
+overlap with GitHub's own hand-fixed families: **0/2** (pr_read_variants 70/100,
+search_variants 70/100 — both above the 60-pt flagging threshold, neither flagged).
+
+Heuristic detected the `get_pull_request_diff` ↔ `get_pull_request_files` name collision
+(heuristic 85.0, judge 60.0, blend 75.0), but the judge's DISTINGUISH discriminator did not
+differentiate the families GitHub themselves consolidated to reduce confusion.
+
+**Implication for the product:** the discoverability dimension does NOT yet provide a reliable
+"directory/gateway ranking signal" for real servers with prefix-sharing naming patterns.
+The DISTINGUISH metric must be improved to model prefix-collision confusability before the
+score is meaningful for ranking real MCP servers against each other. This is a
+CONDITION #1 / judge-touching fix — its own gated task, not done here.
+
+**FINDING 2 — BUYER BOUND (confirmed):**
+
+Arm A (real GitHub docstrings) correctly selected the right tool for all 21 tasks:
+**100.0% accuracy, 0/21 contested tasks**. Guard-B has nothing to recover.
+PAINKILLER metric (wrong-DESTRUCTIVE-tool rate): 0% for Arm A — mathematical necessity given
+100% accuracy.
+
+**Implication for the product:** GitHub's real terse docstrings already saturate gemma2:9b.
+The Guard-B fixer's value is in UNDER-documented servers — the long tail of hobby/internal
+MCP servers with minimal or missing docstrings. GitHub-class servers self-serve; they are
+not the buyer. This is consistent with Q3–Q6 where source-aware fixing recovered contested
+tasks on servers without adequate documentation.
+
+**Fixer limitation note:** 3/21 Guard-B descriptions degraded to stub language (generator
+read stub body instead of docstring for `get_pull_request_files`, `list_commits`,
+`list_repositories`). This is a real Guard-B limitation on mirror/stub servers, irrelevant
+to the main finding since Arm A had no misses to recover, but relevant to any deployment on
+servers whose bodies are stubs or thin wrappers.
+
+**Caveats — do not over-generalize:**
+- One server (github/github-mcp-server — among the best-documented MCP servers in the ecosystem).
+- One agent model (gemma2:9b). A smaller or weaker agent might show headroom even on
+  GitHub-class docs.
+- "Score is invalid" is too strong: the score is invalid for the *ranking-signal use-case* on
+  real prefix-sharing naming. Ordering and gap comparisons on synthetic catalogs (where naming
+  is designed to test the dimension) remain valid.
+- "Guard-B has no value" is too strong: the finding is scoped to well-documented servers.
+  The under-documented long tail is the needed follow-up (RW2).
+
+**CI:** verify.sh PASSED. 53 new deterministic tests, no live API, no network calls.
 
 ---
 

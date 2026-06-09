@@ -26,6 +26,49 @@ Autonomous runs: pick the single top TODO, implement it, move to IN-REVIEW.
 
 ## FUTURE / DEFERRED
 
+### RW2 — Real-world experiment: poorly-documented MCP server (the actual buyer segment)
+
+**Goal:** Repeat the RW1 protocol on a real MCP server with minimal or missing docstrings.
+RW1 confirmed GitHub-class servers are not the buyer (100% Arm A, no headroom). The Guard-B
+value hypothesis lives in the under-documented long tail — servers where docstrings are
+absent, terse, or boilerplate. This is the experiment that tests the actual product value
+claim.
+
+**Pre-conditions before starting:**
+- Identify a real public MCP server whose tools have missing/thin docstrings (≥5 tools with
+  no description or a one-word description). Record the server and commit SHA in the spec.
+- Pre-register: expected Arm A baseline 40–70% (if Arm A saturates, repeat RW1's BUYER BOUND
+  finding; if Arm A floors, Guard-B can't recover it either).
+- Must use real docstrings or their absence, not a synthetic mirror.
+
+**Do NOT auto-pick.** Requires its own spec + human sign-off before implementation.
+
+---
+
+### SCORE-FIX — Improve discoverability DISTINGUISH to capture prefix-collision confusability
+
+**Goal:** Fix the SCORE-VALIDITY GAP from RW1. The current DISTINGUISH metric scores every
+family flat at 70/100 on real naming (GitHub's historically-confusing PR-read family got the
+same score as a clean family). The metric must be updated to penalize shared-prefix naming
+patterns, not just description similarity.
+
+**Why this matters:** Until fixed, the discoverability score cannot be used as a meaningful
+"directory/gateway ranking signal" for real MCP servers. The synthetic-catalog ordering
+validity stands, but the real-world ranking use-case is blocked.
+
+**This is a CONDITION #1 / judge-touching fix.** Requires:
+- Updated rubric or heuristic that detects common-prefix tool families (e.g. 3+ tools sharing
+  a `get_pull_request_` prefix) and lowers the DISTINGUISH sub-score accordingly.
+- Re-calibration run against llama3.1:8b on a prefix-collision fixture.
+- CI: ordering guarantee must still hold (good catalog beats bad by ≥40 pts).
+- Validation: re-run RW1 Part 1 cross-check; DISTINGUISH should now flag pr_read_variants
+  and/or search_variants (the 0/2 overlap must improve).
+
+**Do NOT auto-pick.** Requires its own spec + judge re-validation; do NOT inherit RW1 fixtures
+unchanged.
+
+---
+
 ### Tx-val — Powered upside re-run (grounded-fixture significance)
 
 Tx step 2 showed a directional +10pp improvement (Arm B 90% vs Arm A 80%) but is
@@ -78,6 +121,30 @@ test suite guarantees ordering + actionability gap regardless of which model is 
 ---
 
 ## DONE
+
+### RW1 — Real-world experiment: GitHub MCP server
+
+**Merged:** PR #48 — feat(rw1): GitHub MCP external validity + Guard-B value test (DONE)
+
+21-tool mirror of the 162-tool GitHub MCP server (real docstrings from `pkg/github/*.go`,
+real schemas, stub bodies, no live API). 5 confusable families, 21 anti-tautological tasks,
+4 DESTRUCTIVE_CONFUSABLE_PAIRS. Judge: llama3.1:8b. Agent: gemma2:9b. 5 trials.
+486 CI tests, 90.86% coverage — verify.sh green.
+
+**FINDING 1 — SCORE-VALIDITY GAP (most important):** discoverability DISTINGUISH scored every
+family flat at 70/100; overlap with GitHub's own hand-fixed families: 0/2 (pr_read_variants
+and search_variants both above the 60-pt flag threshold, neither flagged). The ranking-signal
+use-case on real prefix-sharing naming is blocked until SCORE-FIX (FUTURE/DEFERRED).
+
+**FINDING 2 — BUYER BOUND:** Arm A (real GitHub docstrings) = 100.0% accuracy, 0/21 contested
+tasks. Guard-B has nothing to recover. The buyer is the under-documented long tail (RW2),
+not GitHub-class servers. 3/21 Guard-B descriptions degraded to stub language (generator read
+stub body) — a real limitation on mirror/stub servers.
+
+**Caveats:** one server (best-documented in the ecosystem), one agent (gemma2:9b). "Score is
+invalid" and "Guard-B has no value" are over-generalizations — see STATUS.md for scoped claims.
+
+---
 
 ### Q6 — Do-no-harm on already-passing tasks (is Guard-B safe to run BLANKET?)
 

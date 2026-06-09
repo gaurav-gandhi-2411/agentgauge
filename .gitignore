@@ -66,3 +66,14 @@ reports/
 scripts/spot_check_discoverability_judge.py
 scripts/validate_t5_docs_manifest.py
 scripts/spot_check_fixer.py
+scripts/pr32_body.txt
+scripts/tx_breakdown_analysis.py
+
+# Run-output scratch files (experiment results, watchdog logs)
+*_result.txt
+*_results.txt
+*_stderr.txt
+*_watchdog.txt
+ollama_conn_monitor.*
+t18_watchdog.ps1
+ty_t18_watchdog.txt
