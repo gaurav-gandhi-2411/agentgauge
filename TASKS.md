@@ -20,28 +20,14 @@ Autonomous runs: pick the single top TODO, implement it, move to IN-REVIEW.
 
 ## IN-REVIEW
 
-*(empty)*
+### RW2 — Real-world experiment: AWS IAM MCP server (the buyer segment)
+
+Pre-registered spec committed. Mirror, arm servers, scripts, and CI tests implemented.
+Run Phase 1 (rw2_phase1_generate.py) and Phase 2 (rw2_phase2_ab.py) after GPU setup.
 
 ---
 
 ## FUTURE / DEFERRED
-
-### RW2 — Real-world experiment: poorly-documented MCP server (the actual buyer segment)
-
-**Goal:** Repeat the RW1 protocol on a real MCP server with minimal or missing docstrings.
-RW1 confirmed GitHub-class servers are not the buyer (100% Arm A, no headroom). The Guard-B
-value hypothesis lives in the under-documented long tail — servers where docstrings are
-absent, terse, or boilerplate. This is the experiment that tests the actual product value
-claim.
-
-**Pre-conditions before starting:**
-- Identify a real public MCP server whose tools have missing/thin docstrings (≥5 tools with
-  no description or a one-word description). Record the server and commit SHA in the spec.
-- Pre-register: expected Arm A baseline 40–70% (if Arm A saturates, repeat RW1's BUYER BOUND
-  finding; if Arm A floors, Guard-B can't recover it either).
-- Must use real docstrings or their absence, not a synthetic mirror.
-
-**Do NOT auto-pick.** Requires its own spec + human sign-off before implementation.
 
 ---
 
