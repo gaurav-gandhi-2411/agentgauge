@@ -1,6 +1,106 @@
 # AgentGauge — Project Status
 
-> Current as of 2026-06-10. Update this file when significant milestones land.
+> Current as of 2026-06-11. Update this file when significant milestones land.
+
+---
+
+## RW2 — Real-world experiment: AWS IAM MCP server (DONE, PR #49)
+
+**Goal:** External validity on a second real server — does Guard-B recover selection accuracy
+on AWS IAM's confusable policy-management families, and does the skip-above-band gate protect
+already-passing tools from do-no-harm regression?
+
+**Setup:** 29-tool mirror of the AWS IAM MCP server (`awslabs/mcp src/iam`, real docstrings,
+stub bodies). 12 CONTESTED tools (Family A: attach/detach user/group — 4 tools; Family C:
+list_* scope variants — 6 tools; Destructive pair: delete_user/role_policy — 2 tools);
+14 THOROUGH tools (name-resolvable or richer docstrings). 3 DESTRUCTIVE_CONFUSABLE_PAIRS.
+Judge: llama3.1:8b. Generator: qwen3:8b. Agent: gemma2:9b. 5 trials per arm.
+
+**FINDING 1 — NO HEADROOM (2nd real server):**
+
+Arm A (real AWS IAM docstrings) correctly selected the right tool for all 29 tasks:
+**100.0% accuracy, including all 12 pre-registered contested tasks (Family A: all 4 correct,
+Family C: all 6 correct, Destructive pair: both correct)**. PAINKILLER metric (wrong-DESTRUCTIVE
+rate): 0% for both arms. Guard-B has nothing to recover.
+
+The agent resolved every contested task from task context alone — AWS IAM's 1-sentence
+docstrings ("Attach a managed policy to an IAM user.") are sufficient for gemma2:9b even on
+the most confusable family (attach/detach × user/group, 4 tools sharing the same parameter set).
+
+**Buyer bound confirmed across two servers (GitHub + AWS IAM, gemma2:9b):** Guard-B's
+expected-value case is servers with thin, name-colliding, context-poor documentation — not
+GitHub-class or AWS IAM-class servers. The buyer segment is the under-documented long tail.
+Do not generalize beyond these two servers and this agent.
+
+**FINDING 2 — SCORE-VALIDITY GAP (2 servers, confirmed):**
+
+The discoverability scorer does NOT flag AWS IAM's contested families. Two separate failures:
+
+*Heuristic wrong pairs:* The Levenshtein collision detector flags 4 pairs
+(`attach_user_policy` ↔ `detach_user_policy`, `put_user_policy` ↔ `get_user_policy`, etc.) —
+these are verb-antonym pairs, not cross-principal-type scope pairs. The 3 contested families
+that cause actual agent confusion are NOT penalized by the heuristic.
+
+*Judge DISTINGUISH:* Structurally cannot name the contested families. Real judge (5 trials,
+llama3.1:8b): DISTINGUISH mean 6.67/10, blended score 68.7. **Mock-vs-real catch:** the
+prior session scan result (70/100) came from `--mock` (MockProvider returns literal string "7"
+→ judge output = 70/100 flat). The real judge gives 68.7. The gap is small but the
+mechanism is important: any scan run with `--mock` produces a flat 70 regardless of catalog
+quality, not a meaningful score.
+
+**Implication (confirmed across GitHub + AWS IAM):** The DISTINGUISH metric requires a
+per-pair confusability redesign before it can be used as a ranking signal for real servers with
+prefix-sharing or principal-type-variant naming. This is a CONDITION #1 / judge-touching fix —
+tracked as SCORE-FIX in FUTURE/DEFERRED.
+
+**FINDING 3 — DO-NO-HARM REGRESSION (corrected + scoped):**
+
+Phase 2 do-no-harm section: **2/14 THOROUGH tools regressed** (`get_user_policy`: 100% → 0%,
+`get_group`: 100% → 0%). Initial post-Phase-2 framing suggested the skip-above-band gate (90.0)
+would protect these tools in the real `agentgauge fix` CLI path. **This claim was verified and
+found to be WRONG:**
+
+- `get_user_policy`: baseline discoverability score = 82.0 → REGENERATE (below 90.0 threshold)
+- `get_group`: baseline discoverability score = 82.0 → REGENERATE (below 90.0 threshold)
+
+Only 4 of the 29 tools score at or above 90.0 (all at exactly 90.0):
+`detach_user_policy`, `delete_user_policy`, `delete_role_policy`, `delete_user`.
+The skip gate does NOT protect `get_user_policy` or `get_group`.
+
+**Path distinction (important scope):** The stub→artifact regression fires ONLY in source-aware
+code paths (Phase-1 harness, Q3/Q4/Q5/Guard-B paths that call `_generate_description` with
+`scoped_source` and `guard_b=True`). The base `agentgauge fix` CLI path (default) uses
+`_DESC_GENERATOR_PROMPT` — name + current description + input schema only, no source
+reading — and CANNOT produce stub→artifact regressions. The regression is real in
+source-aware mode; the base CLI path is unaffected.
+
+**Stub→artifact mechanism:** When `scoped_source` is a stub/dispatcher body (e.g. the rw2
+mirror's `_handle_get_user_policy()` returns a hardcoded JSON `{"user_name": ..., "tool":
+"get_user_policy"}`), the generator describes what it sees — the JSON return value — not the
+tool's semantic purpose. Result: "Returns a JSON string with a stub response containing the
+user name and tool identifier." Technically accurate about the stub body; useless as a
+description of what the real tool does.
+
+**Mirror over-exposes the vulnerability:** All 29 rw2 mirror tools use uniform stubs. The real
+AWS IAM MCP server has working implementations. The stub regression rate on a real deployment
+(partial stubs, mixed real + stub bodies) is **unmeasured** — the regressions here reflect the
+mirror's construction, not a confirmed property of the real server.
+
+**Known gap, not fixed:** Thin-body detection (detecting stubs/dispatchers before generating
+and abstaining or warning) is not implemented. The `is_low_grounding` guard fires on opaque
+tool names, not on opaque tool bodies. A body-complexity heuristic or stub-pattern detector
+is the candidate fix, but requires its own spec and pre-registration.
+
+**Caveats — do not over-generalize:**
+- Mirror artifact: stub→artifact regressions occur on all 29 tools because all 29 are uniform
+  stubs. Real-server regression rate is unknown.
+- Path specificity: only source-aware Guard-B paths are vulnerable; base `agentgauge fix` CLI
+  is not.
+- Two servers (GitHub + AWS IAM), one agent (gemma2:9b). All three findings are pending
+  replication with a different agent or a live-API connection.
+
+**CI:** verify.sh PASSED. 29-tool mirror, arm servers, Phase 1/2 scripts, and new CI tests —
+all deterministic, no live API, no network calls.
 
 ---
 
