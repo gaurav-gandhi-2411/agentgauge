@@ -1,97 +1,112 @@
-# spec.md — RW1: real-world external validity on the GitHub MCP server (value test)
+# spec.md — RW2: real-world value test on the AWS IAM MCP server (the buyer segment)
 
-**Repo:** github.com/gaurav-gandhi-2411/agentgauge · **Base:** `main` @ 32a099c ·
-**Branch:** `claude/rw1-github-mcp`
-**Routing:** DRAFT PR. New real-tool fixture + reuse scan + Guard-B fixer + real-agent A/B.
-Draft-forcing #2/#3. **NOT condition #1** (no scorer/judge/rubric/calibration/generator-logic
-changes — scan and Guard-B reused as-is).
+**Repo:** github.com/gaurav-gandhi-2411/agentgauge · **Base:** `main` @ 4207615 ·
+**Branch:** `claude/rw2-aws-iam`
+**Routing:** DRAFT PR. New real-tool mirror fixture + reuse scan + Q5 Guard-B fixer + real-agent A/B.
+Draft-forcing #2/#3. **NOT condition #1** (scan + Guard-B reused unchanged).
 
-**Pre-registration:** committed at branch start. The mirror-fixture construction, the confusable-
-family identification, the score-validity check, and the wrong-tool / wrong-destructive metrics are
-fixed before the run.
+**Pre-registration:** committed at branch start. Mirror construction, the CONTESTED-SET DEFINITION,
+the skip-the-thorough control, and the destructive-confusion metric are fixed before the run.
 
 ---
 
 ## Why (CEO framing)
 
-Every prior result is on synthetic fixtures + gemma2:9b. RW1 is the first EXTERNAL-VALIDITY +
-VALUE test: does the pipeline (scan -> Guard-B fix from source -> measurable selection improvement)
-work on a REAL, large, confusable, documented server — and does it reduce the failure that actually
-costs customers (wrong DESTRUCTIVE tool selection)? Target: the GitHub MCP server (github/
-github-mcp-server) — 162 tools / 20 toolsets, open-source Go with real docstrings, and a server whose
-own maintainers consolidated tools to fight confusability (validating the problem is real and costly).
+RW1 (GitHub) found no headroom — docs too good, agent saturated, fixer idle. It bounded the buyer to
+UNDER-documented servers. RW2 tests the buyer segment directly: the AWS IAM MCP server (awslabs/mcp,
+src/iam) — real, enterprise, source-available, ~50% thin / ~50% thorough docs, 4 confusable families
+where the thin description is the only disambiguator, 3 destructive pairs, and NO tool-search escape
+hatch (thin descriptions hurt direct selection with no fallback). Picking attach_user_policy vs
+attach_group_policy wrong is a real PERMISSION LEAK — the painkiller, concrete.
 
-## Scope — local mirror, NO live API
+## What RW2 is and is NOT (set expectations)
 
-- Build a LOCAL MIRROR fixture from the GitHub MCP server's PUBLIC SOURCE (pkg/github/*.go: tool
-  names, JSON schemas, and docstrings/comments). Stub bodies — NO live GitHub API, NO auth, NO write
-  operations (avoids cost, auth, and destructive-action risk). The mirror carries the REAL interface
-  + REAL source text the fixer would consume.
-- Reuse: AgentGauge scan/discoverability scorer (unchanged); Q5 Guard-B source-aware fixer
-  (unchanged). Only the fixture + a task set are new.
+- It is: REPLICATION of Q5 Guard-B on REAL thin docstrings + a STAKES test (do destructive-confusable
+  pairs flip the agent, does the fix prevent it) + a DO-NO-HARM test on the already-thorough tools.
+- It is NOT a brand-new mechanism. The thin tools' distinctions live in the source (Q3-DOC regime
+  Guard-B already handles). Frame the result as "the validated fixer delivers on a real
+  under-documented server," not a new capability.
 
-**OUT:** live GitHub API; changes to scorer/fixer logic; the full 162-tool set if intractable —
-scope to the confusable subset that matters (see below).
+## The headroom trap (pin this or RW2 becomes RW1)
 
-## Part 1 — SCORE VALIDITY (does scan flag what GitHub hand-fixed?)
+Thin != contested. The through-line: capable agents resolve from NAMES. delete_user is thin but its
+NAME says delete-a-user — the agent likely picks it correctly with no description. Real headroom
+exists ONLY where NAMES COLLIDE and the thin description fails to break the tie. So:
+- CONTESTED SET = NAME-COLLISION + THIN-DESCRIPTION families ONLY:
+  - Family A: attach_user_policy / attach_group_policy / detach_user_policy / detach_group_policy
+    (names differ only by user/group; identical thin docstrings).
+  - Family C: list_policies / list_user_policies / list_role_policies / list_users / list_groups /
+    list_roles (similar names, fundamentally different operations).
+  - Destructive pairs in B/E: delete_user_policy / delete_role_policy; (and EKS
+    manage_k8s_resource delete — only if EKS is mirrored; IAM-first is fine).
+- Tasks target a specific member requiring the principal/scope distinction. Tasks state INTENT
+  (e.g. "revoke the billing policy from the deploy GROUP"), NOT tool names.
+- Pre-register: if Arm A (real AWS docstrings) is already >=~80% on the contested set, that's a
+  no-headroom finding (names sufficed) — REPORT it, do not manufacture headroom.
 
-- Run the discoverability scorer on the mirrored GitHub toolset. Identify the families the scorer
-  flags as confusable (low discoverability).
-- CROSS-CHECK against ground truth GitHub itself provides: tools GitHub CONSOLIDATED/RENAMED to
-  reduce confusion (e.g. the 6->3 Projects consolidation; read-variant overlaps like
-  get_file_contents / pull_request_read / list_* / search_*). If the scorer flags the families
-  GitHub's own engineers spent effort de-confusing, that's external evidence the SCORE predicts real
-  problems. Report overlap between scorer-flagged and GitHub-hand-fixed families.
+---
 
-## Part 2 — FIX VALUE (does Guard-B reduce wrong-tool selection on real tools?)
+## Design — local mirror, NO live AWS API
 
-- Pick the most confusable real families (e.g. the read/fetch family: get_file_contents,
-  pull_request_read, list_*, search_* variants; the projects family). Build a task set: each task
-  targets one specific tool whose correct selection requires distinguishing it from its real
-  neighbors.
-- Arm A = original GitHub docstrings (as shipped). Arm GuardB = Q5 Guard-B descriptions generated
-  from the real source. (Optional Arm O = hand-written oracle, as a ceiling.)
-- Metric: parse-success selection accuracy on the confusable task set. Recovery / improvement A->GuardB.
-- **PAINKILLER METRIC (the CEO number):** flag any DESTRUCTIVE-confusable pairs in the real toolset
-  (a write/delete tool confusable with a safer neighbor). Report WRONG-DESTRUCTIVE-tool selection
-  rate separately from overall wrong-tool rate. This is the metric that translates to customer pain.
+- Build a LOCAL MIRROR from awslabs/mcp src/iam PUBLIC SOURCE: REAL tool names, schemas, and the
+  VERBATIM docstrings (thin ones thin, thorough ones thorough — do NOT normalize). Stub bodies, NO
+  AWS calls, NO credentials, NO destructive operations.
+- Reuse: AgentGauge scan/discoverability scorer (unchanged); Q5 Guard-B source-aware fixer with the
+  skip-above-band / abstain behavior (unchanged).
 
-## Rigor (carry the whole Q-arc discipline)
+**ARMS:**
+- Arm A = real AWS docstrings as shipped (thin where thin, thorough where thorough).
+- Arm GuardB = Q5 Guard-B descriptions generated from the real source.
+- (Arm O = hand-written oracle, optional ceiling.)
 
-- Headroom: Arm A (original GitHub docstrings) must MISS some confusable tasks (real headroom). If
-  GitHub's real docstrings already disambiguate everything, that itself is a finding (their docs are
-  good; our fix adds little THERE) — report it; don't manufacture headroom.
-- parse_failed reported first; stability pre-screen; task-clustered analysis; anti-tautology (tasks
-  state intent, not tool names); agent gemma2:9b (!= judge != generator); generator qwen3:8b;
-  phase-separated GPU, silence qwen3:30b first.
+## Three measurements (the product demo in one run)
+
+1. **VALUE (thin confusable families):** parse-success selection accuracy A vs GuardB on the
+   contested set. Does the fixer recover where thin docs + colliding names fail?
+2. **DO-NO-HARM (already-thorough tools):** the ~14 thorough tools the agent already selects
+   correctly. Does Guard-B SKIP/preserve them (skip-above-band) and leave selection unregressed?
+   ZERO regressions required. (This is the half-thin/half-thorough split working as the demo.)
+3. **PAINKILLER (destructive confusion):** wrong-DESTRUCTIVE-tool selection rate A vs GuardB,
+   reported separately. The headline CEO number: does fixing thin docs reduce
+   wrong-principal/irreversible-action selection.
+
+## Rigor (whole Q-arc discipline)
+
+- parse_failed first; stability pre-screen on the contested set; task-clustered analysis;
+  anti-tautology (intent not tool names); agent gemma2:9b (!= judge != generator); generator
+  qwen3:8b; phase-separated GPU, silence qwen3:30b first; generate ONCE, seed recorded.
+- Docstring integrity: Arm A docstrings VERBATIM from awslabs/mcp source (assert; this is RW2's
+  independence rule — no normalization, no paraphrase).
 - No post-hoc fixture tuning.
 
 ---
 
 ## Acceptance criteria
 
-1. **CI (deterministic, seed 42, no network):** mirror fixture loads with real GitHub tool
-   names/schemas/docstrings (stub bodies, NO network calls in tests); confusable families documented;
-   destructive-confusable pairs flagged; task gold mapping intact; scan + Guard-B paths unchanged.
+1. **CI (deterministic, seed 42, no network):** mirror loads with VERBATIM AWS IAM names/schemas/
+   docstrings (stub bodies, NO network); contested families + destructive pairs documented/asserted;
+   the thorough-tool control set identified; gold mapping intact; scan + Guard-B paths unchanged.
+   Assert Arm A docstrings match source verbatim.
 2. **Real-agent + scan (manual, in PR description):**
-   - PART 1: scorer-flagged confusable families vs GitHub-hand-fixed families — report overlap +
-     verdict on score validity.
-   - PART 2: GPU exclusivity + parse_failed; headroom (Arm A original-docstring accuracy on the
-     confusable task set); table A / GuardB (/ O) + improvement + sign test; WRONG-DESTRUCTIVE-tool
-     rate A vs GuardB separately.
+   - SCAN: does the discoverability scorer flag the thin confusable families (and NOT the thorough
+     ones)? Report — this is RW2's score-validity check on a server with KNOWN thin/thorough split.
+   - GPU exclusivity + parse_failed; HEADROOM (Arm A accuracy on contested set; if >=~80% report
+     no-headroom).
+   - VALUE table: A / GuardB (/ O) on contested set + improvement + sign test.
+   - DO-NO-HARM: thorough-tool subset A vs GuardB; count regressions (target ZERO); confirm Guard-B
+     skipped/preserved them.
+   - PAINKILLER: wrong-destructive-tool rate A vs GuardB, separately.
    - VERDICT (CEO):
-     - Scan flags real confusables AND Guard-B reduces wrong-tool (esp. destructive) selection on
-       real tools: external validity + value CONFIRMED on a representative large server.
-     - Scan flags but Guard-B doesn't help (GitHub docstrings already good): the fix's value is in
-       UNDOCUMENTED/poorly-documented servers, not well-maintained ones — bounds the buyer.
-     - Scan doesn't flag the hand-fixed families: score-validity gap on real servers — critical,
-       report.
-3. scorer.py / judge / rubrics / calibration / Guard-B generator logic untouched; verify.sh green;
-   coverage >= 60%.
+     - GuardB improves thin confusable selection + reduces destructive confusion + zero harm on
+       thorough tools: the product is VALIDATED on the real buyer segment — sales-demo result.
+     - No headroom (names sufficed even on thin tools): the fixer's value is narrower than the
+       buyer-segment hypothesis assumed — report honestly.
+     - Regressions on thorough tools: skip/abstain behavior insufficient on real docs — localize.
+3. scorer.py / judge / rubrics / calibration / Guard-B logic untouched; verify.sh green; coverage >= 60%.
 
 ## Housekeeping
 
-- TASKS.md: RW1 (TODO -> IN-REVIEW). STATUS.md: record score-validity overlap, fix improvement +
-  wrong-destructive-tool delta on real GitHub tools, and the buyer-bounding verdict (does the fix add
-  value on a WELL-documented real server, or only on poorly-documented ones?). Frame the result in
-  customer-value terms.
+- TASKS.md: RW2 (TODO -> IN-REVIEW). STATUS.md: scan validity on thin/thorough split, value on
+  contested set, destructive-confusion delta, do-no-harm on thorough tools — framed as the
+  buyer-segment value verdict. Do NOT claim "validated on real servers" beyond "on the AWS IAM
+  server"; one real under-documented server is one datapoint.

@@ -26,23 +26,6 @@ Autonomous runs: pick the single top TODO, implement it, move to IN-REVIEW.
 
 ## FUTURE / DEFERRED
 
-### RW2 — Real-world experiment: poorly-documented MCP server (the actual buyer segment)
-
-**Goal:** Repeat the RW1 protocol on a real MCP server with minimal or missing docstrings.
-RW1 confirmed GitHub-class servers are not the buyer (100% Arm A, no headroom). The Guard-B
-value hypothesis lives in the under-documented long tail — servers where docstrings are
-absent, terse, or boilerplate. This is the experiment that tests the actual product value
-claim.
-
-**Pre-conditions before starting:**
-- Identify a real public MCP server whose tools have missing/thin docstrings (≥5 tools with
-  no description or a one-word description). Record the server and commit SHA in the spec.
-- Pre-register: expected Arm A baseline 40–70% (if Arm A saturates, repeat RW1's BUYER BOUND
-  finding; if Arm A floors, Guard-B can't recover it either).
-- Must use real docstrings or their absence, not a synthetic mirror.
-
-**Do NOT auto-pick.** Requires its own spec + human sign-off before implementation.
-
 ---
 
 ### SCORE-FIX — Improve discoverability DISTINGUISH to capture prefix-collision confusability
@@ -121,6 +104,32 @@ test suite guarantees ordering + actionability gap regardless of which model is 
 ---
 
 ## DONE
+
+### RW2 — Real-world experiment: AWS IAM MCP server (the buyer segment)
+
+**Merged:** PR #49 — feat(rw2): AWS IAM real-world experiment — Guard-B on a 2nd production server
+
+29-tool mirror of the AWS IAM MCP server (real docstrings, stub bodies). 12 CONTESTED tools
+(Family A: attach/detach × user/group; Family C: list_* scope variants; Destructive pair:
+delete_user/role_policy). 14 THOROUGH tools. 3 DESTRUCTIVE_CONFUSABLE_PAIRS.
+Judge: llama3.1:8b. Generator: qwen3:8b. Agent: gemma2:9b. 5 trials per arm.
+
+**FINDING 1 — NO HEADROOM:** Arm A (real AWS IAM docstrings) = 100.0% on all 29 tasks including
+all 12 contested. Guard-B has nothing to recover. Buyer bound confirmed (2nd server): Guard-B
+value is in thin+name-colliding+context-poor servers, not GitHub-class or AWS IAM-class servers.
+
+**FINDING 2 — SCORE-VALIDITY GAP (confirmed, 2 servers):** Heuristic flags verb-antonym pairs
+(not the confusable principal-type families). Real judge gives 68.7 blended (NOT mock-70 — mock
+produces flat 70 regardless of catalog quality). Structurally cannot identify contested families.
+Requires per-pair confusability redesign — SCORE-FIX in FUTURE/DEFERRED.
+
+**FINDING 3 — DO-NO-HARM REGRESSION (corrected):** 2/14 thorough tools regressed in source-aware
+Guard-B path. Skip-above-band (90.0) does NOT protect get_user_policy (82.0) or get_group (82.0).
+Stub→artifact mechanism fires when scoped_source is a stub body. Base CLI path (name+schema only)
+is unaffected. Mirror over-exposes (uniform stubs); real-server regression rate unmeasured.
+Thin-body detection is a known gap, not fixed.
+
+---
 
 ### RW1 — Real-world experiment: GitHub MCP server
 

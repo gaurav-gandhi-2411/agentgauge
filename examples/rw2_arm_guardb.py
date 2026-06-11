@@ -1,0 +1,69 @@
+from __future__ import annotations
+
+# RW2 experiment — Arm GuardB (Guard-B descriptions generated from mirror docstrings).
+# Falls back to the original AWS IAM docstrings (Arm A) if the JSON does not exist yet.
+import asyncio
+import json
+
+import mcp.types as types
+from mcp.server import Server
+from mcp.server.lowlevel.server import NotificationOptions
+from mcp.server.models import InitializationOptions
+from mcp.server.stdio import stdio_server
+
+from evals.fixtures.rw2_aws_iam_catalog import AWS_IAM_DOCSTRINGS, TOOL_SCHEMAS
+
+_ARM_PATH = (
+    __import__("pathlib").Path(__file__).parent.parent
+    / "evals"
+    / "fixtures"
+    / "rw2_arm_guardb_descriptions.json"
+)
+
+if _ARM_PATH.exists():
+    _ARM_DESCS: dict[str, str] = json.loads(_ARM_PATH.read_text(encoding="utf-8"))
+else:
+    # Phase 1 not yet run; fall back to original AWS IAM docstrings
+    _ARM_DESCS = dict(AWS_IAM_DOCSTRINGS)
+
+server = Server("rw2-arm-guardb")
+
+
+@server.list_tools()
+async def list_tools() -> list[types.Tool]:
+    return [
+        types.Tool(
+            name=name,
+            description=_ARM_DESCS.get(name, AWS_IAM_DOCSTRINGS[name]),
+            inputSchema=schema,
+        )
+        for name, schema in TOOL_SCHEMAS.items()
+    ]
+
+
+@server.call_tool()
+async def call_tool(
+    name: str, arguments: dict
+) -> list[types.TextContent | types.ImageContent | types.EmbeddedResource]:
+    result = json.dumps({"tool": name, "args": sorted(arguments.keys())})
+    return [types.TextContent(type="text", text=result)]
+
+
+async def main() -> None:
+    async with stdio_server() as (read_stream, write_stream):
+        await server.run(
+            read_stream,
+            write_stream,
+            InitializationOptions(
+                server_name="rw2-arm-guardb",
+                server_version="0.1.0",
+                capabilities=server.get_capabilities(
+                    notification_options=NotificationOptions(),
+                    experimental_capabilities={},
+                ),
+            ),
+        )
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
