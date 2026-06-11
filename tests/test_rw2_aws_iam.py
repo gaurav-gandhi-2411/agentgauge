@@ -146,9 +146,7 @@ def test_rw2_arm_o_longer_than_arm_a() -> None:
     for tool in ALL_TOOLS:
         a_len = len(ARM_A_DESCRIPTIONS[tool])
         o_len = len(ARM_O_DESCRIPTIONS[tool])
-        assert o_len > a_len, (
-            f"Oracle for '{tool}' shorter than Arm A: {o_len} vs {a_len}"
-        )
+        assert o_len > a_len, f"Oracle for '{tool}' shorter than Arm A: {o_len} vs {a_len}"
 
 
 # ── Contested and thorough sets ────────────────────────────────────────────────
@@ -186,9 +184,7 @@ def test_rw2_thorough_set_count() -> None:
 def test_rw2_contested_and_thorough_disjoint() -> None:
     """CONTESTED_TOOLS and THOROUGH_TOOL_CONTROL_SET must not overlap."""
     overlap = CONTESTED_TOOLS & THOROUGH_TOOL_CONTROL_SET
-    assert len(overlap) == 0, (
-        f"CONTESTED_TOOLS and THOROUGH_TOOL_CONTROL_SET overlap: {overlap}"
-    )
+    assert len(overlap) == 0, f"CONTESTED_TOOLS and THOROUGH_TOOL_CONTROL_SET overlap: {overlap}"
 
 
 def test_rw2_all_thorough_tools_in_catalog() -> None:
@@ -234,9 +230,7 @@ def test_rw2_read_tools_not_destructive() -> None:
         "simulate_principal_policy",
     }
     for tool in safe_tools:
-        assert tool not in DESTRUCTIVE_TOOLS, (
-            f"Safe tool '{tool}' incorrectly in DESTRUCTIVE_TOOLS"
-        )
+        assert tool not in DESTRUCTIVE_TOOLS, f"Safe tool '{tool}' incorrectly in DESTRUCTIVE_TOOLS"
 
 
 def test_rw2_destructive_confusable_pairs_count() -> None:
@@ -250,9 +244,7 @@ def test_rw2_destructive_confusable_pairs_structure() -> None:
     for safe, destructive in DESTRUCTIVE_CONFUSABLE_PAIRS:
         assert safe in ALL_TOOLS, f"safe tool '{safe}' not in catalog"
         assert destructive in ALL_TOOLS, f"destructive tool '{destructive}' not in catalog"
-        assert safe not in DESTRUCTIVE_TOOLS, (
-            f"'{safe}' should be safe but is in DESTRUCTIVE_TOOLS"
-        )
+        assert safe not in DESTRUCTIVE_TOOLS, f"'{safe}' should be safe but is in DESTRUCTIVE_TOOLS"
         assert destructive in DESTRUCTIVE_TOOLS, f"'{destructive}' should be destructive"
 
 
@@ -292,9 +284,7 @@ def test_rw2_tasks_antitautological() -> None:
 
 def test_rw2_tasks_have_descriptions() -> None:
     for task in TASKS:
-        assert len(task.description) > 20, (
-            f"Task for '{task.tool_name}' description too short"
-        )
+        assert len(task.description) > 20, f"Task for '{task.tool_name}' description too short"
 
 
 def test_rw2_contested_tasks_specify_principal() -> None:
