@@ -11,6 +11,7 @@ from agentgauge.providers import (
     ApiAgentProvider,
     CostCeilingError,
     Message,
+    OpenAICompatibleProvider,
     Provider,
 )
 
@@ -257,3 +258,141 @@ def test_pricing_positive() -> None:
         assert cost > 0, f"Input cost for {model} is non-positive"
     for model, cost in _OUTPUT_COST_PER_M.items():
         assert cost > 0, f"Output cost for {model} is non-positive"
+
+
+# ── OpenAICompatibleProvider ──────────────────────────────────────────────────
+
+
+def test_openai_compat_rejects_anthropic_key_env(monkeypatch: pytest.MonkeyPatch) -> None:
+    """ANTHROPIC_API_KEY is forbidden for OpenAICompatibleProvider too."""
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-ant-fake")
+    with pytest.raises(ValueError, match="ANTHROPIC_API_KEY"):
+        OpenAICompatibleProvider(
+            model="llama3",
+            base_url="https://openrouter.ai/api/v1",
+            api_key_env="ANTHROPIC_API_KEY",
+        )
+
+
+def test_openai_compat_raises_when_key_missing(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Missing env var raises ValueError."""
+    monkeypatch.delenv("OPENROUTER_API_KEY", raising=False)
+    with pytest.raises(ValueError, match="OPENROUTER_API_KEY"):
+        OpenAICompatibleProvider(
+            model="llama3",
+            base_url="https://openrouter.ai/api/v1",
+            api_key_env="OPENROUTER_API_KEY",
+        )
+
+
+def test_openai_compat_keyless_local_server() -> None:
+    """api_key_env=None is allowed for local keyless servers (e.g. vLLM)."""
+    provider = OpenAICompatibleProvider(
+        model="llama3",
+        base_url="http://localhost:8000/v1",
+        api_key_env=None,
+    )
+    assert provider.model_name == "llama3"
+    assert isinstance(provider, Provider)
+
+
+def test_openai_compat_conforms_to_protocol(monkeypatch: pytest.MonkeyPatch) -> None:
+    """OpenAICompatibleProvider satisfies the Provider runtime-checkable protocol."""
+    monkeypatch.setenv("OPENROUTER_API_KEY", "sk-or-test")
+    provider = OpenAICompatibleProvider(
+        model="meta-llama/llama-3.3-70b-instruct",
+        base_url="https://openrouter.ai/api/v1",
+        api_key_env="OPENROUTER_API_KEY",
+    )
+    assert isinstance(provider, Provider)
+    assert provider.model_name == "meta-llama/llama-3.3-70b-instruct"
+
+
+async def test_openai_compat_cost_ceiling_abort(monkeypatch: pytest.MonkeyPatch) -> None:
+    """CostCeilingError fires at zero ceiling before any network call."""
+    monkeypatch.setenv("OPENROUTER_API_KEY", "sk-or-test")
+    provider = OpenAICompatibleProvider(
+        model="llama3",
+        base_url="https://openrouter.ai/api/v1",
+        api_key_env="OPENROUTER_API_KEY",
+        cost_ceiling_usd=0.0,
+    )
+    with pytest.raises(CostCeilingError):
+        await provider.chat([Message(role="user", content="hello")])
+
+
+@respx.mock
+async def test_openai_compat_successful_call(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Successful call returns content and accumulates token counts."""
+    monkeypatch.setenv("OPENROUTER_API_KEY", "sk-or-test")
+    provider = OpenAICompatibleProvider(
+        model="meta-llama/llama-3.3-70b-instruct",
+        base_url="https://openrouter.ai/api/v1",
+        api_key_env="OPENROUTER_API_KEY",
+        cost_ceiling_usd=100.0,
+    )
+
+    respx.post("https://openrouter.ai/api/v1/chat/completions").mock(
+        return_value=httpx.Response(
+            200,
+            json={
+                "choices": [{"message": {"content": "get_record"}}],
+                "usage": {"prompt_tokens": 80, "completion_tokens": 3},
+            },
+        )
+    )
+
+    result = await provider.chat([Message(role="user", content="which tool?")])
+    assert result == "get_record"
+    assert provider.tokens_in == 80
+    assert provider.tokens_out == 3
+
+
+@respx.mock
+async def test_openai_compat_rate_limit_retry(monkeypatch: pytest.MonkeyPatch) -> None:
+    """429 retries with backoff; success on second attempt."""
+    monkeypatch.setenv("OPENROUTER_API_KEY", "sk-or-test")
+    provider = OpenAICompatibleProvider(
+        model="llama3",
+        base_url="https://openrouter.ai/api/v1",
+        api_key_env="OPENROUTER_API_KEY",
+        cost_ceiling_usd=100.0,
+        max_retries=3,
+    )
+    call_count = 0
+
+    def side_effect(request: httpx.Request) -> httpx.Response:
+        nonlocal call_count
+        call_count += 1
+        if call_count == 1:
+            return httpx.Response(429, json={"error": "rate limit"})
+        return httpx.Response(
+            200,
+            json={
+                "choices": [{"message": {"content": "fetch_record"}}],
+                "usage": {"prompt_tokens": 30, "completion_tokens": 2},
+            },
+        )
+
+    respx.post("https://openrouter.ai/api/v1/chat/completions").mock(side_effect=side_effect)
+
+    import unittest.mock as mock
+
+    with mock.patch("agentgauge.providers.asyncio.sleep", return_value=None):
+        result = await provider.chat([Message(role="user", content="task")])
+
+    assert result == "fetch_record"
+    assert call_count == 2
+
+
+def test_openai_compat_bearer_auth_header(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Provider stores the key from the env var (not ANTHROPIC_API_KEY)."""
+    monkeypatch.setenv("OPENROUTER_API_KEY", "sk-or-explicit")
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-ant-should-NOT-be-used")
+    provider = OpenAICompatibleProvider(
+        model="llama3",
+        base_url="https://openrouter.ai/api/v1",
+        api_key_env="OPENROUTER_API_KEY",
+    )
+    assert provider._api_key == "sk-or-explicit"
+    assert provider._api_key != "sk-ant-should-NOT-be-used"

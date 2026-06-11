@@ -205,3 +205,122 @@ class ApiAgentProvider:
                     continue
                 raise
         raise last_exc or RuntimeError("All retries exhausted with no response.")
+
+
+class OpenAICompatibleProvider:
+    """Calls any OpenAI-compatible chat-completions endpoint.
+
+    Works for OpenRouter, Together AI, Groq, local vLLM/llama.cpp servers, and
+    Ollama's /v1 shim. Key from an explicitly-passed env var (or None for keyless
+    local servers). Tracks token spend; raises CostCeilingError when ceiling is hit.
+
+    GG's standing rule: api_key_env must not be 'ANTHROPIC_API_KEY'.
+    """
+
+    def __init__(
+        self,
+        model: str,
+        base_url: str,
+        api_key_env: str | None = None,
+        *,
+        cost_ceiling_usd: float = float("inf"),
+        timeout: float = 180.0,
+        max_retries: int = 3,
+        extra_headers: dict[str, str] | None = None,
+    ) -> None:
+        if api_key_env == "ANTHROPIC_API_KEY":
+            raise ValueError(
+                "api_key_env='ANTHROPIC_API_KEY' is forbidden — use a non-Anthropic key var "
+                "(e.g. 'OPENROUTER_API_KEY') to avoid double-billing on the Max plan."
+            )
+        api_key: str | None = None
+        if api_key_env:
+            api_key = os.environ.get(api_key_env)
+            if not api_key:
+                raise ValueError(f"API key env var '{api_key_env}' is not set or empty.")
+        self._api_key = api_key
+        self._model = model
+        self._base_url = base_url.rstrip("/")
+        self._cost_ceiling_usd = cost_ceiling_usd
+        self._timeout = timeout
+        self._max_retries = max_retries
+        self._extra_headers = extra_headers or {}
+        self._tokens_in: int = 0
+        self._tokens_out: int = 0
+
+    @property
+    def model_name(self) -> str:
+        return self._model
+
+    @property
+    def tokens_in(self) -> int:
+        return self._tokens_in
+
+    @property
+    def tokens_out(self) -> int:
+        return self._tokens_out
+
+    @property
+    def total_cost_usd(self) -> float:
+        return (
+            self._tokens_in * _FALLBACK_INPUT_COST_PER_M / 1_000_000
+            + self._tokens_out * _FALLBACK_OUTPUT_COST_PER_M / 1_000_000
+        )
+
+    async def chat(
+        self,
+        messages: list[Message],
+        *,
+        seed: int = 42,  # noqa: ARG002 — most endpoints ignore seed
+    ) -> str:
+        if self.total_cost_usd >= self._cost_ceiling_usd:
+            raise CostCeilingError(
+                f"Cost ceiling ${self._cost_ceiling_usd:.4f} reached "
+                f"(spent ${self.total_cost_usd:.6f}). Aborting to protect spend cap."
+            )
+
+        headers: dict[str, str] = {"content-type": "application/json"}
+        if self._api_key:
+            headers["authorization"] = f"Bearer {self._api_key}"
+        headers.update(self._extra_headers)
+
+        payload: dict = {
+            "model": self._model,
+            "max_tokens": 256,
+            "messages": [{"role": m.role, "content": m.content} for m in messages],
+        }
+
+        last_exc: Exception | None = None
+        for attempt in range(self._max_retries):
+            try:
+                async with httpx.AsyncClient(timeout=self._timeout) as client:
+                    resp = await client.post(
+                        f"{self._base_url}/chat/completions",
+                        headers=headers,
+                        json=payload,
+                    )
+                    if resp.status_code == 429:
+                        await asyncio.sleep(2**attempt)
+                        last_exc = httpx.HTTPStatusError(
+                            f"Rate limit on attempt {attempt + 1}",
+                            request=resp.request,
+                            response=resp,
+                        )
+                        continue
+                    resp.raise_for_status()
+                    data = resp.json()
+                    usage = data.get("usage", {})
+                    self._tokens_in += usage.get("prompt_tokens", 0)
+                    self._tokens_out += usage.get("completion_tokens", 0)
+                    if self.total_cost_usd > self._cost_ceiling_usd:
+                        raise CostCeilingError(
+                            f"Cost ceiling ${self._cost_ceiling_usd:.4f} exceeded after call "
+                            f"(total ${self.total_cost_usd:.6f})."
+                        )
+                    return data["choices"][0]["message"]["content"]
+            except httpx.HTTPStatusError as exc:
+                if exc.response.status_code == 429:
+                    last_exc = exc
+                    continue
+                raise
+        raise last_exc or RuntimeError("All retries exhausted with no response.")
