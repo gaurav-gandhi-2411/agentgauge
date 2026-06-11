@@ -20,7 +20,31 @@ Autonomous runs: pick the single top TODO, implement it, move to IN-REVIEW.
 
 ## IN-REVIEW
 
-*(empty)*
+### FRONTIER-T18 — Does the T18 description effect survive a frontier agent?
+
+**Branch:** `claude/frontier-t18`  **PR:** draft
+
+**Goal:** Re-run the T18 oracle A/B (60-tool confusable catalog, Arm A = empty descriptions,
+Arm B = oracle descriptions) with a Claude/GPT-class frontier agent instead of gemma2:9b.
+The single result decides whether the description-fixer's value is DURABLE (effect survives
+capable agents) or weak-agent-only (market shrinks with each model release).
+
+**Acceptance criteria:**
+
+1. **CI (deterministic, no network):**
+   - `ApiAgentProvider` interface-conforms via mock (NO real API call in CI)
+   - Cost-ceiling abort logic unit-tested
+   - Abstain/hedge classification unit-tested (hedge → ABSTAINED-OR-HEDGED, not WRONG)
+   - Key read from passed env var, never hardcoded `ANTHROPIC_API_KEY` (asserted)
+   - verify.sh green; coverage ≥ 60%
+
+2. **Frontier run (manual, separately-billed key required):**
+   - STEP 1: Arm A headroom gate → report SELECTED-CORRECT rate + spend; stop if ≥ 85%
+   - STEP 2 (only if headroom): 3-trial A/B matrix; 3-outcome breakdown; sign test; spend ≤ ceiling
+   - Verdict: SURVIVES / COLLAPSES / NO-HEADROOM (pre-registered, immutable)
+
+**Status:** BUILD + CI complete. Awaiting GG confirmation of separately-billed key + spend cap
+before running STEP 1.
 
 ---
 

@@ -1,6 +1,27 @@
 # AgentGauge — Project Status
 
-> Current as of 2026-06-11. Update this file when significant milestones land.
+> Current as of 2026-06-12. Update this file when significant milestones land.
+
+---
+
+## FRONTIER-T18 — Does the T18 effect survive a frontier agent? (IN-REVIEW, draft PR)
+
+**Goal:** Re-run T18 oracle A/B (60-tool confusable catalog) with a frontier API agent
+(Claude/GPT-class). Decides whether the description-fixer's value is DURABLE or weak-agent-only.
+
+**Setup:** `ApiAgentProvider` (Anthropic Messages API; key from `FRONTIER_API_KEY` env var;
+cost-ceiling abort). 3-outcome classifier: SELECTED-CORRECT / SELECTED-WRONG / ABSTAINED-OR-HEDGED.
+Pre-registered headroom gate (85%), trial count (3), and verdict rule. Reuses T18 fixture + oracle
+descriptions unchanged.
+
+**Headroom gate result:** *Awaiting run — FRONTIER_API_KEY not yet confirmed by GG.*
+
+**Full A/B result:** *Awaiting run — will run only if headroom gate passes.*
+
+**Verdict:** *Pending.*
+
+**Scope note:** One frontier model = one datapoint. Do not over-generalize beyond the T18 fixture
+and the tested model.
 
 ---
 
