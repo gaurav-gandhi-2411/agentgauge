@@ -1,6 +1,28 @@
 # AgentGauge — Project Status
 
-> Current as of 2026-06-11. Update this file when significant milestones land.
+> Current as of 2026-06-12. Update this file when significant milestones land.
+
+---
+
+## UX1 — Presentation-only UX pass (IN-REVIEW, branch `claude/ux1-onecommand`)
+
+**Scope:** CLI/UX changes only — engine (scoring/judge/generator/rubric/calibration) unchanged.
+
+Three changes over the existing scan/fix engine:
+
+1. **Non-destructive by default:** `fix --apply` now ALWAYS writes `<file>.bak` before rewriting the
+   target file. If `.bak` exists, increments to `.bak.1`, `.bak.2`, etc. Backup path printed to console.
+   Eliminates the footgun where `fix --apply` silently clobbered the server file.
+
+2. **Inline before/after in fix preview:** Each accepted fix now shows the old and new text inline in
+   the console (red/- for old, green/+ for new; +/- markers on non-TTY). `--out-diff` remains optional.
+   Kills the "Get-Content fix.patch" step from the prior runbook.
+
+3. **`agentgauge try <server>`:** New read-only verb — scan + fix-preview in one command. Never writes
+   any files. Ends with a one-line apply hint. Makes the first-touch experience a single command.
+
+**CI:** 550 tests pass, 93.73% coverage, verify.sh green. 16 new tests in `tests/test_ux1.py`.
+No scoring/judge/rubric/calibration changes; existing tests all pass unchanged.
 
 ---
 

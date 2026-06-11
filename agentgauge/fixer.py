@@ -157,7 +157,9 @@ class FixCandidate:
     accepted: bool
     rejection_reason: str = ""
     new_description: str = ""
+    old_description: str = ""
     new_schema_props: dict[str, Any] = field(default_factory=dict)
+    old_schema_props: dict[str, Any] = field(default_factory=dict)
     new_required: list[str] = field(default_factory=list)
 
 
@@ -870,7 +872,9 @@ async def run_fixer(
                 accepted=accepted,
                 rejection_reason=rejection_reason,
                 new_description=new_desc,
+                old_description=tool.description or "",
                 new_schema_props=new_props,
+                old_schema_props=existing_props if dim == "schema_completeness" else {},
                 new_required=merged_required,
             )
 

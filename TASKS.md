@@ -20,7 +20,22 @@ Autonomous runs: pick the single top TODO, implement it, move to IN-REVIEW.
 
 ## IN-REVIEW
 
-*(empty)*
+### UX1 — Non-destructive defaults + inline diff + `agentgauge try` verb
+
+**Branch:** `claude/ux1-onecommand` · **PR:** draft
+
+**Three changes (CLI/UX only — no scoring/engine changes):**
+
+1. `fix --apply` ALWAYS writes `<file>.bak` before rewriting in place. If `.bak` exists, increments to `.bak.1`, `.bak.2`, etc. Prints backup path to console.
+2. Fix preview renders inline before/after for each accepted change: tool name, dimension, delta, red/- old text, green/+ new text. Color degrades to +/- markers on non-TTY.
+3. New `agentgauge try <server>` verb: scan + fix-preview (read-only, no --apply) + apply hint.
+
+**Acceptance criteria:**
+- CI: `try --mock` exits 0, prints score + inline before/after, writes nothing.
+- CI: `fix --mock --apply` creates `.bak`; second run creates `.bak.1` without stomping `.bak`.
+- CI: `fix --mock` (no apply) writes nothing.
+- CI: inline before/after renders; no-TTY path uses +/- markers.
+- All 550 existing tests pass; verify.sh green; coverage ≥ 60%.
 
 ---
 
