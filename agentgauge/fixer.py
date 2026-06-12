@@ -563,7 +563,14 @@ def _patch_source_description(source: str, tool_name: str, new_desc: str) -> str
 
     Finds the tool block by locating name="<tool_name>", then replaces the next
     description= line encountered. Returns source unchanged if no match is found.
+
+    The replacement uses repr(new_desc) so that any characters in the generated
+    description (double-quotes, backslashes, newlines, etc.) are properly escaped
+    as a Python string literal. Without this, a description containing a double-
+    quote would produce a SyntaxError in the patched file.
     """
+    # Pre-compute the safe replacement outside the lambda to avoid closure issues
+    _safe_literal = repr(new_desc)
     lines = source.splitlines(keepends=True)
     result_lines: list[str] = []
     found_tool = False
@@ -574,9 +581,11 @@ def _patch_source_description(source: str, tool_name: str, new_desc: str) -> str
             found_tool = True
             result_lines.append(line)
         elif found_tool and not replaced and "description=" in line:
+            # Lambda prevents re.sub from interpreting backslashes in the
+            # replacement string (e.g. \\n in repr output → literal \n, not newline).
             patched = re.sub(
                 r'description="[^"]*"',
-                f'description="{new_desc}"',
+                lambda _m, lit=_safe_literal: f"description={lit}",
                 line,
                 count=1,
             )
@@ -643,9 +652,11 @@ def _patch_source_schema_props(source: str, tool_name: str, new_props: dict[str,
     for prop_name, prop_meta in new_props.items():
         escaped_name = re.escape(prop_name)
         replacement_value = json.dumps(prop_meta)
+        # Lambda prevents re.sub from treating backslashes in replacement_value
+        # as escape sequences (json.dumps can emit \\n, \\t, etc.).
         block = re.sub(
             rf'"{escaped_name}":\s*\{{}}',
-            f'"{prop_name}": {replacement_value}',
+            lambda _m, k=prop_name, v=replacement_value: f'"{k}": {v}',
             block,
         )
 
