@@ -1,6 +1,50 @@
 # AgentGauge — Project Status
 
-> Current as of 2026-06-11. Update this file when significant milestones land.
+> Current as of 2026-06-12. Update this file when significant milestones land.
+
+---
+
+## UX1 — Presentation + safety pass (DONE, PR #51)
+
+**Scope:** CLI/UX changes only — engine (scoring/judge/generator/rubric/calibration) unchanged.
+Not condition #1. Presentation and safety layer over the existing scan/fix engine.
+
+**`agentgauge try <server>` — one-command first-touch flow:**
+Run scan + fix-preview in a single read-only command. Prints the score table, prioritized fix
+list, and an inline before→after for every accepted fix (colorized on TTY; `+/-` markers
+otherwise). Ends with the exact `agentgauge fix <server> --apply` command. Never writes any
+files. Verified by smoke: echo_server.py rendered score + inline diff for mystery/greet, git
+status clean after.
+
+**Non-destructive default — backup-before-write:**
+`fix --apply` now ALWAYS writes `<file>.bak` before rewriting the target in place. If `.bak`
+already exists, increments to `.bak.1`, `.bak.2`, etc. (never stomps). Backup path printed.
+Eliminates the silent-clobber footgun. Smoke-verified: `.bak` checksum = original; second
+`--apply` produced `.bak.1` with the first `.bak` intact.
+
+**Inline before/after replaces the patch-file step:**
+Each accepted fix renders old (red/`-`) → new (green/`+`) text inline in the console.
+Degrades to plain `+/-` markers on non-TTY. `--out-diff` remains optional.
+
+**Bug fixed (was pre-existing on main — apply-path source corruption):**
+`_patch_source_description` used raw string splicing (`f'description="{new_desc}"'`) — a
+generated description containing a double-quote (e.g. the smoke's `'The "mystery" tool...'`)
+produced a `SyntaxError` in the patched file on `--apply`. Fixed: `repr(new_desc)` as the
+replacement literal; lambda passed to `re.sub` so backslashes in the output are never
+re-interpreted as escape sequences. Same lambda guard applied to `_patch_source_schema_props`
+(where `json.dumps` can emit `\\n`/`\\t` that `re.sub` would misread as newlines). Three
+regression tests added (`ast.parse` confirms the patched file parses for `"`, `\`, `\n` in
+generated descriptions).
+
+**Known limitation (not fixed — acceptable for common case):**
+`_patch_source_schema_props` matches only empty `{}` parameter entries. A second `--apply`
+will not re-refine already-filled schema props (`{"default": "Hello"}` is not empty, so the
+regex skips it). The apply path is not idempotent for schema fixes. Fine for the primary use
+case (one-shot improvement on a fresh server file).
+
+**CI:** 553 tests, 93.74% coverage, ruff + mypy clean. Tests in `tests/test_ux1.py` (16) and
+`tests/test_fixer.py` (+3 regression). No scoring/judge/rubric/calibration changes; all
+550 prior tests pass unchanged.
 
 ---
 

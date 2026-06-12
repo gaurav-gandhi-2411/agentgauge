@@ -105,6 +105,19 @@ test suite guarantees ordering + actionability gap regardless of which model is 
 
 ## DONE
 
+### UX1 — Presentation + safety pass (tracegauge-style first-touch flow)
+
+**Merged:** PR #51 — feat(ux1): non-destructive backup + inline before/after + agentgauge try verb
+
+`agentgauge try <server>`: one-command read-only scan + fix-preview + apply hint. Non-destructive
+`--apply`: backup written to `<file>.bak` (increments to `.bak.N`) before rewrite. Inline
+before/after in fix preview (colorized; `+/-` markers on non-TTY). Bug fixed: apply-path source
+patching now uses `repr()`/lambda-replace to escape generated descriptions — quotes/backslashes/
+newlines no longer corrupt the target file. 3 regression tests (`ast.parse`). 553 tests,
+93.74% coverage. Engine unchanged.
+
+---
+
 ### RW2 — Real-world experiment: AWS IAM MCP server (the buyer segment)
 
 **Merged:** PR #49 — feat(rw2): AWS IAM real-world experiment — Guard-B on a 2nd production server

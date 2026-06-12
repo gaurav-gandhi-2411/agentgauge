@@ -132,7 +132,8 @@ async def test_sigma_gate_used_for_judge_based(tmp_path: Path) -> None:
 def test_patch_source_description_replaces_correctly() -> None:
     source = 'types.Tool(\n    name="mystery",\n    description="",\n    inputSchema={},\n)'
     result = _patch_source_description(source, "mystery", "Improved description.")
-    assert 'description="Improved description."' in result
+    # repr("Improved description.") uses single quotes — check text present, not quote style
+    assert "Improved description." in result
     assert 'description=""' not in result
 
 
@@ -149,8 +150,59 @@ def test_patch_source_description_leaves_other_tools_intact() -> None:
     )
     result = _patch_source_description(source, "mystery", "Fixed.")
     assert 'name="echo"' in result
-    assert 'description="Echo it"' in result
-    assert 'description="Fixed."' in result
+    assert "Echo it" in result
+    assert "Fixed." in result
+
+
+# ── Regression: description with special chars must produce parseable source ──
+
+
+def test_patch_source_description_double_quote_produces_parseable_source() -> None:
+    """Generated descriptions containing double-quotes must not corrupt the file.
+
+    The old code used f'description="{new_desc}"' which produced a SyntaxError
+    when new_desc contained a double-quote. The fix uses repr(new_desc).
+    """
+    import ast
+
+    source = 'types.Tool(\n    name="mystery",\n    description="",\n    inputSchema={},\n)'
+    desc_with_quotes = 'Use "quotes" like this'
+    result = _patch_source_description(source, "mystery", desc_with_quotes)
+
+    # Must parse as valid Python — the old bug would fail here
+    tree = ast.parse(result)
+    assert tree is not None
+
+    # The description text must survive the round-trip
+    assert desc_with_quotes in result
+
+
+def test_patch_source_description_backslash_and_quote_round_trips() -> None:
+    """Both backslash and double-quote in the same description must round-trip."""
+    import ast
+
+    source = 'types.Tool(\n    name="mystery",\n    description="",\n    inputSchema={},\n)'
+    desc = r'path\to\file and "quoted" word'
+    result = _patch_source_description(source, "mystery", desc)
+
+    # Must be valid Python
+    ast.parse(result)
+
+    # Text must be present (repr preserves the value)
+    assert "quoted" in result
+    assert "path" in result
+
+
+def test_patch_source_description_newline_in_desc_produces_parseable_source() -> None:
+    """A newline character in the description must not produce a broken string literal."""
+    import ast
+
+    source = 'types.Tool(\n    name="mystery",\n    description="",\n    inputSchema={},\n)'
+    desc = "line one\nline two"
+    result = _patch_source_description(source, "mystery", desc)
+
+    # Must parse as valid Python
+    ast.parse(result)
 
 
 # ── T9: Source patcher — schema props ─────────────────────────────────────────
