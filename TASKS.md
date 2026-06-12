@@ -20,22 +20,7 @@ Autonomous runs: pick the single top TODO, implement it, move to IN-REVIEW.
 
 ## IN-REVIEW
 
-### UX1 — Non-destructive defaults + inline diff + `agentgauge try` verb
-
-**Branch:** `claude/ux1-onecommand` · **PR:** draft
-
-**Three changes (CLI/UX only — no scoring/engine changes):**
-
-1. `fix --apply` ALWAYS writes `<file>.bak` before rewriting in place. If `.bak` exists, increments to `.bak.1`, `.bak.2`, etc. Prints backup path to console.
-2. Fix preview renders inline before/after for each accepted change: tool name, dimension, delta, red/- old text, green/+ new text. Color degrades to +/- markers on non-TTY.
-3. New `agentgauge try <server>` verb: scan + fix-preview (read-only, no --apply) + apply hint.
-
-**Acceptance criteria:**
-- CI: `try --mock` exits 0, prints score + inline before/after, writes nothing.
-- CI: `fix --mock --apply` creates `.bak`; second run creates `.bak.1` without stomping `.bak`.
-- CI: `fix --mock` (no apply) writes nothing.
-- CI: inline before/after renders; no-TTY path uses +/- markers.
-- All 550 existing tests pass; verify.sh green; coverage ≥ 60%.
+*(empty)*
 
 ---
 
@@ -119,6 +104,19 @@ test suite guarantees ordering + actionability gap regardless of which model is 
 ---
 
 ## DONE
+
+### UX1 — Presentation + safety pass (tracegauge-style first-touch flow)
+
+**Merged:** PR #51 — feat(ux1): non-destructive backup + inline before/after + agentgauge try verb
+
+`agentgauge try <server>`: one-command read-only scan + fix-preview + apply hint. Non-destructive
+`--apply`: backup written to `<file>.bak` (increments to `.bak.N`) before rewrite. Inline
+before/after in fix preview (colorized; `+/-` markers on non-TTY). Bug fixed: apply-path source
+patching now uses `repr()`/lambda-replace to escape generated descriptions — quotes/backslashes/
+newlines no longer corrupt the target file. 3 regression tests (`ast.parse`). 553 tests,
+93.74% coverage. Engine unchanged.
+
+---
 
 ### RW2 — Real-world experiment: AWS IAM MCP server (the buyer segment)
 
