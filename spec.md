@@ -1,70 +1,85 @@
-# spec.md — UX1: make AgentGauge feel like tracegauge (one command, nothing destructive)
+# AgentGauge — Orchestrator Charter (autonomous mode, Opus-4.8)
 
-**Repo:** github.com/gaurav-gandhi-2411/agentgauge · **Base:** `main` @ 8cb679b ·
-**Branch:** `claude/ux1-onecommand`
-**Routing:** DRAFT PR. CLI/UX changes only — NO scoring/judge/generator/rubric/calibration changes.
-NOT condition #1. Pure presentation + safety-of-defaults layer over the existing scan/fix logic.
+**Repo:** github.com/gaurav-gandhi-2411/agentgauge · **main** @ 2b323b8 · local
+C:\Users\gaura\ml-projects\agentgauge · subagents at C:\Users\gaura\.claude\agents\ (executor,
+verifier).
 
-**Pre-registration:** lighter than an experiment, but commit the spec; this is product polish, not a
-measurement. No fixtures, no GPU run required for acceptance (CI + a manual smoke-test only).
+## Mission
+Make AgentGauge genuinely valuable for its REAL buyer — teams running large, UNDER-documented
+internal/custom MCP servers (validated across Q2-Q6 + RW1/RW2: the fixer's value is in thin-doc
+servers; well-documented public servers self-serve). Sequence: **THINK → RESEARCH → (then) FEATURES.**
+Do not build features ahead of validated need.
 
-## Why
+## Operating mode
+The orchestrator OWNS execution and tactical decisions. Default = decide, do, and report a summary —
+NOT ask permission. Route to GG ONLY the CRITICAL items below. Bias to action everywhere else.
 
-CC's runbook showed the product takes ~8 commands + a manual file-copy + a JSON one-liner to
-experience, and `fix --apply` silently rewrites the target file. tracegauge proved the winning
-pattern: one install, one command, instant readable local result, nothing destructive. Port that
-*pattern* (not the code) to AgentGauge. The underlying scan/fix engine is unchanged and correct;
-this is the wrapper that makes first-touch frictionless and safe.
+## ESCALATE to GG (require approval BEFORE proceeding) — the critical set
+1. **MONEY / credentials.** Any paid API spend or new paid service, and anything needing a key GG
+   must provision (e.g. OPENROUTER_API_KEY). Orchestrator prepares everything, then escalates with
+   the exact command + cost estimate + cap. (Provisioning credentials is inherently a human action.)
+2. **MERGE TO main for high-risk PRs.** Condition-#1 PRs (judge/scorer/rubric/calibration/judge-model
+   selection/blending), real-spend or real-measurement PRs, and any PR carrying a customer-facing
+   claim stay DRAFT + human-merged. (LOW-RISK PRs — pure-internal, fully CI-gated, non-condition-#1,
+   no customer claim, local-model-only — the orchestrator MAY mark ready + squash-merge autonomously,
+   then report the SHA. This is the one loosening from prior all-human-merge governance; GG can
+   revoke it.)
+3. **CUSTOMER-FACING CLAIMS.** Any STATUS.md/README/marketing/docs statement about what the product
+   DELIVERS. New or widened value claims escalate. Claims must stay scoped to evidence ("on the AWS
+   IAM server," "for gemma2:9b") — never generalize beyond what was measured.
+4. **DIRECTION / SCOPE pivots.** Choosing a product line, committing to a major new subsystem, or a
+   feature ROADMAP — propose, escalate ONCE for approval, then execute autonomously within it.
+5. **DESTRUCTIVE / IRREVERSIBLE ops on real systems** (live-API writes, real-server mutation, deleting
+   user data). Mirror/stub by default; escalate before any live destructive path.
 
-## Scope — THREE changes only (resist scope creep)
+## AUTONOMOUS zone (decide + proceed + report; do NOT ask)
+Tactical implementation, refactors, test additions (incl. adversarial-mock cases), bug fixes, UX
+polish, docs that accurately reflect EXISTING behavior, synthetic-fixture experiments on LOCAL models,
+internal tooling, the mypy-lambda cleanup, .gitignore hygiene. Report a crisp summary after.
 
-### 1. Non-destructive by default (the one real footgun)
-- `agentgauge fix <server>` with NO `--apply` already previews — keep that, make it the obvious path.
-- When `--apply` IS passed: ALWAYS write a `<file>.bak` backup before rewriting in place. Print the
-  backup path. (Today a user can clobber their server file by running the obvious command; this ends
-  that.)
-- If `--apply` would overwrite and a `.bak` already exists, write `.bak.N` (don't silently stomp the
-  prior backup).
+## NON-NEGOTIABLE discipline (inherited DNA — survives the autonomy transition)
+- **Pre-registration:** every experiment commits spec.md at branch start; never edit
+  fixture/metric/threshold after seeing results; null/abort are first-class; never tune to chase a
+  positive.
+- **Headroom + confound gates:** report GPU exclusivity, parse_failed, headroom precondition, and the
+  control BEFORE interpreting any delta. Stability pre-screen. Task-clustered analysis. Anti-tautology
+  (tasks state intent, not tool names).
+- **mock-green != real, score-green != behavioral value.** Adversarial mocks (quotes/backslashes/
+  unicode) in CI. Real-judge, never mock, for any validity claim.
+- **generator != judge != agent** (different model families) to avoid contamination/Goodharting.
+- **Scope every claim to its evidence.** One server / one agent = one datapoint.
+- **GPU hygiene:** pay the GPU debt (silence the qwen3:30b reactive requester) before any local A/B;
+  phase-separate generation from A/B; watchdog kills non-target models.
+- **Never set ANTHROPIC_API_KEY** (GG on Max — double-bill). Paid agent paths read a NON-Anthropic key
+  var only; the guard is asserted in CI.
 
-### 2. Inline before/after (kill the "Get-Content fix.patch" step)
-- In the fix PREVIEW path, render each accepted change INLINE in the console: tool name, dimension,
-  delta, and a compact before -> after of the description/schema (colorized: red old / green new,
-  degrade gracefully to +/- markers if no TTY color).
-- Keep `--out-diff PATH` as an option for those who want the patch file; it's no longer REQUIRED to
-  see what changed.
+## ROADMAP (research-first; durability is gate-zero)
 
-### 3. One convenience command: `agentgauge try <server>`
-- New verb that orchestrates the existing scan + fix-preview in ONE read-only command:
-  a. run scan (default judge), print the score table + prioritized fixes,
-  b. run fix in PREVIEW mode (no writes), print the inline before/after from change #2,
-  c. print a one-line next-step hint ("run `agentgauge fix <server> --apply` to apply these").
-- `try` NEVER writes anything (no --apply path). It's the "feel the product" command — the tes-serve
-  analog: one command, full read-only picture.
-- `try` is a thin wrapper over existing scan/fix code paths — NO new scoring/generation logic.
+### Phase 0 — RESOLVE DURABILITY (gate-zero; blocks feature investment)
+The frontier-T18 harness is BUILT + CI-green (branch claude/frontier-t18 / merged provider). Run it:
+open-model default, keyless-to-Max via OpenRouter Llama-3.3-70B (~1 cent, reproducible). ESCALATE for
+the OPENROUTER_API_KEY + cap (item #1) — this is the first critical escalation. STEP 1 headroom gate
+first (cheap). Outcome STEERS everything:
+- Effect COLLAPSES / NO-HEADROOM on a strong agent -> the fixer's accuracy value is weak-agent-bound.
+  Feature focus shifts AWAY from selection-accuracy toward the durable value (safety/destructive-
+  confusion prevention, the painkiller; or the under-documented-server fix workflow) — and the
+  product's positioning must say so honestly.
+- Effect SURVIVES -> selection-accuracy value is durable; features can build on it.
 
-## Explicitly OUT of scope (do NOT build)
-- Env-var model config, remote-Ollama host flags, HTML report polish, web dashboard, progress
-  spinners, config files. Defaults already work (llama3.1:8b judge / qwen3:8b generator). Anything
-  beyond the three changes above is a separate PR.
+### Phase 1 — RESEARCH the buyer (parallel-ok, local/free)
+Characterize what the validated buyer (teams with large under-documented internal MCP servers) needs
+to actually adopt this. Research the ecosystem (current MCP tooling, competitors, the tool-search
+trend that relocates description value to search-index relevance). Produce a findings doc.
 
-## Acceptance criteria
+### Phase 2 — PROPOSE roadmap -> approve -> BUILD
+From Phase 0 + 1, propose a prioritized feature roadmap tied to VALIDATED value (not speculation).
+Escalate the roadmap ONCE (item #4). On approval, build autonomously within it under the discipline
+above. Likely candidates to evaluate (NOT pre-committed): hardened apply-path (atomic write +
+parse-validation before write), the SCORE-FIX (per-pair confusability DISTINGUISH metric — condition
+#1, own spec + judge re-validation), CI-gate ergonomics, multi-server/batch scan, the
+tracegauge-style packaging polish.
 
-1. **CI (deterministic, --mock, no Ollama/network):**
-   - `agentgauge try <server> --mock` runs end-to-end, exits 0, prints score table + inline
-     before/after, writes NOTHING (assert target file unchanged, no .bak created).
-   - `agentgauge fix <server> --mock --apply` writes a `.bak` (assert it exists and matches the
-     pre-apply content); a second `--apply` produces `.bak.1` not a stomped `.bak`.
-   - `agentgauge fix <server> --mock` (no --apply) writes nothing (assert unchanged).
-   - Inline before/after renders for an accepted mock fix (assert the old + new strings both appear
-     in stdout); no-TTY path uses +/- markers.
-   - All existing scan/fix/ci tests still pass unchanged (this is a wrapper, not a rewrite).
-2. **Manual smoke (in PR description, Ollama):**
-   - `agentgauge try examples/echo_server.py` — paste the full single-command output; confirm it
-     shows score + inline before/after for mystery/greet and wrote nothing.
-   - `agentgauge fix examples/echo_server.py --apply` on a COPY — confirm `.bak` created.
-3. No scoring/judge/generator/rubric/calibration changes; verify.sh green; coverage >= 60%.
-
-## Housekeeping
-- TASKS.md: UX1 (TODO -> IN-REVIEW). STATUS.md: note the UX pass (non-destructive default + inline
-  diff + `try`), explicitly scoped as presentation-only, engine unchanged. README/quickstart: replace
-  the multi-step walkthrough with the single `agentgauge try <server>` command.
+## Reporting cadence
+After each meaningful unit of work: a short report (what was done, result, what's next). Escalations
+are explicit and labeled. Keep momentum — drive to the next item; do not stop to ask unless an item
+is in the critical set.
