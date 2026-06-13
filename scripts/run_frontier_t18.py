@@ -232,6 +232,7 @@ async def run(
     api_key_env: str | None,
     trials: int,
     cost_ceiling_usd: float,
+    step1_only: bool = False,
 ) -> None:
     try:
         provider = _make_provider(provider_type, model, base_url, api_key_env, cost_ceiling_usd)
@@ -289,6 +290,13 @@ async def run(
         return
 
     print(f"\n  -> HEADROOM CONFIRMED (Arm A = {step1_correct_rate * 100:.1f}% < {_HEADROOM_GATE * 100:.0f}%)")
+
+    if step1_only:
+        print("\n[STEP-1-ONLY] Headroom exists, but --step1-only set: STOPPING before STEP 2.")
+        print("  STEP 2 (full A/B matrix) requires a separate go-ahead.")
+        print(f"  Step-1 spend: {_spend_str(provider)}")
+        return
+
     print("  Proceeding to STEP 2 (full A/B matrix).")
 
     # ── STEP 2: Full A vs B matrix ────────────────────────────────────────────
@@ -421,6 +429,11 @@ def main() -> None:
         default=_DEFAULT_COST_CEILING_USD,
         help=f"Hard spend cap in USD for hosted providers (default: ${_DEFAULT_COST_CEILING_USD:.2f})",
     )
+    parser.add_argument(
+        "--step1-only",
+        action="store_true",
+        help="Run only STEP 1 (headroom gate) and stop before STEP 2, even if headroom exists.",
+    )
     args = parser.parse_args()
     asyncio.run(
         run(
@@ -430,6 +443,7 @@ def main() -> None:
             args.api_key_env,
             args.trials,
             args.cost_ceiling,
+            args.step1_only,
         )
     )
 
