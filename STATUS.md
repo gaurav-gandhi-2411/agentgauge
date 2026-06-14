@@ -14,14 +14,52 @@ cost-ceiling abort). 3-outcome classifier: SELECTED-CORRECT / SELECTED-WRONG / A
 Pre-registered headroom gate (85%), trial count (3), and verdict rule. Reuses T18 fixture + oracle
 descriptions unchanged.
 
-**Headroom gate result:** *Awaiting run — FRONTIER_API_KEY not yet confirmed by GG.*
+**Agent host note:** Agent = **Llama-3.3-70B (open model), NOT Claude/GPT** — a *stronger* open agent
+than gemma2:9b, not a true frontier (Claude/GPT-class) model. No ANTHROPIC_API_KEY used anywhere.
+STEP 1 (headroom gate) ran on Groq (`llama-3.3-70b-versatile`). STEP 2 (full A/B) ran on **OpenRouter**
+(`meta-llama/llama-3.3-70b-instruct`) after GG regenerated the key + loaded balance (2026-06-14): Groq
+free tier proved non-viable for the 240-call run (request-burst throttle — 429s with the token bucket
+full and request quota unspent; diagnosed, not a code bug). STEP 2 is single-host (all 240 on
+OpenRouter) for host-consistent A-vs-B.
 
-**Full A/B result:** *Awaiting run — will run only if headroom gate passes.*
+**Headroom gate result (STEP 1, factual — 2026-06-13):** Arm A (empty descriptions), 1 trial × 40
+contested tasks, Groq/llama-3.3-70b-versatile. SELECTED-CORRECT **26/40 = 65.0%**; SELECTED-WRONG 14/40;
+ABSTAINED-OR-HEDGED 0/40. Spend **$0.09** (29,387 in / 123 out tok; conservative fallback pricing).
+65.0% < 85% gate → **HEADROOM CONFIRMED** — not the ceiling/collapse trap; the oracle A/B matrix is a
+meaningful test. (Single-trial draw, no variance estimate; STEP 2 uses 3 trials.) *Neutral data point;
+durability verdict deferred to STEP 2 + recoverability/variance check.*
 
-**Verdict:** *Pending.*
+**Full A/B result (STEP 2, factual — 2026-06-14, OpenRouter/llama-3.3-70b-instruct, 3 trials × 40 tasks × 2
+arms; includes the `plan_event` gold-label fix + targeted re-run):**
+- Arm A (empty): SELECTED-CORRECT **71/120 = 59.2%**; WRONG 40.8%; ABSTAINED 0.0%.
+- Arm B (oracle): SELECTED-CORRECT **120/120 = 100.0%**; WRONG 0.0%; ABSTAINED 0.0%.
+- Effect **B−A = +40.8pp**.
+- Task-clustered sign test: n+=19 (B>A), n−=0, ties=21, **p<0.0001**. On the stable set (excl. 5 Arm-A
+  flippers, all of which were B>A recoveries): n+=14, n−=0 → still p<0.001.
+- Per-trial stability: Arm A 5 flippers (`read_entry`, `load_item`, `send_report`, `notify_user`,
+  `send_notification`); Arm B 0 flippers (oracle fully stable). 0 abstentions either arm.
+- Recoverability of the 19 Arm-A miss tasks: **19/19 recovered** by oracle. Within-family misses 14,
+  cross-family 4, mixed 1 — all recovered. The oracle disambiguates BOTH within- and cross-family
+  confusions; there is **no oracle-resistant floor** in this fixture after the `plan_event` fix. This
+  refutes the a-priori "cross-family miss = Ty-style unfixable noise" hypothesis for this fixture.
+- `plan_event` fix: original task wording ("Reserve the … slot") described `book_slot`'s niche, leaving
+  gold=plan_event unresolvable even with the oracle (a mislabel, not a model failure). Reworded to
+  plan_event's actual distinction; gold unchanged; documented in fixture. After fix: A=0/3 (picks
+  `insert_document`) → B=3/3. Pre-registration intact (documented fixture bug fix, not an experiment re-run).
+- Spend: $0.89 (conservative $3/$15-per-M fallback estimate; real OpenRouter cost ≈10× less). Under $2 cap.
+  (Includes ~6 double-counted tokens from the surgical plan_event re-run — negligible.)
 
-**Scope note:** One frontier model = one datapoint. Do not over-generalize beyond the T18 fixture
-and the tested model.
+**Verdict (finding — external/commercial framing pending GG ratification):** Effect **SURVIVES at full
+strength** on a substantially stronger agent (Llama-3.3-70B): oracle descriptions move confusable-catalog
+selection by **+40.8pp, p<0.0001** (stable-set p<0.001), Arm B perfect at 100%. The effect does **not
+collapse** at a much higher capability tier than the original gemma2:9b result. **Numbers discipline:** the
+gemma +34.5pp figure is a DIFFERENT experiment (different harness/classifier/host) — NOT apples-to-apples;
+do NOT claim the effect "grew with capability." The defensible claim is *survives / does not collapse*.
+**Caveat:** Llama-3.3-70B is a strong *open* model, NOT a true Claude/GPT frontier — this does not yet
+close the frontier question; a Claude/GPT-class run remains the stronger, still-unrun test.
+
+**Scope note:** One model = one datapoint. Do not over-generalize beyond the T18 fixture and Llama-3.3-70B.
+A true Claude/GPT-class frontier run remains the stronger (unrun) test.
 
 ---
 

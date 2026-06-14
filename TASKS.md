@@ -43,8 +43,14 @@ capable agents) or weak-agent-only (market shrinks with each model release).
    - STEP 2 (only if headroom): 3-trial A/B matrix; 3-outcome breakdown; sign test; spend ≤ ceiling
    - Verdict: SURVIVES / COLLAPSES / NO-HEADROOM (pre-registered, immutable)
 
-**Status:** BUILD + CI complete. Awaiting GG confirmation of separately-billed key + spend cap
-before running STEP 1.
+**Status:** IN-REVIEW. BUILD + CI complete. STEP 1 (Groq) → HEADROOM CONFIRMED (Arm A 65%, 1 trial).
+STEP 2 (OpenRouter/llama-3.3-70b-instruct, 3 trials, single host, 2026-06-14; incl. plan_event gold-label
+fix + re-run) → **effect SURVIVES at full strength**: Arm A 59.2% → Arm B 100.0%, **B−A = +40.8pp**, sign
+test p<0.0001 (n+=19, n−=0; stable-set p<0.001). All 19 Arm-A misses oracle-recovered; no unfixable floor.
+Numbers discipline: do NOT claim the effect "grew" vs gemma's +34.5pp (cross-experiment, not
+apples-to-apples) — the claim is *survives / does not collapse*. Agent = Llama-3.3-70B (stronger open
+model, NOT a true Claude/GPT frontier — that run is still the stronger unrun test). See STATUS.md for full
+Q1–Q4 + caveats. Verdict's external/commercial framing pending GG ratification.
 
 ---
 
