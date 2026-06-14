@@ -1,6 +1,100 @@
 # AgentGauge — Project Status
 
-> Current as of 2026-06-12. Update this file when significant milestones land.
+> Current as of 2026-06-15. Update this file when significant milestones land.
+
+---
+
+## P2-A — Synthetic internal-proxy experiment (gemma2:9b complete; 70B pending)
+
+**Branch:** `claude/p2a-internal-proxy`. **Status:** gemma2:9b arm complete. 70B confirmatory arm
+parked (Groq daily quota; run `python scripts/p2a_frontier_gate.py --trials 1 --mode ab` when it
+resets — not blocking).
+
+**Setup:** 48-tool synthetic internal-proxy catalog. 7 verb-collision families. 31 contested tools
+(identical schemas, name-only disambiguation within family). 17 thorough tools (controls). Three arms:
+A (thin descriptions — "Get the order."), Guard-B (qwen3:8b generated from mirror handler docstrings,
+target-grounded only), Oracle (hand-crafted from mirror handler docstrings, encodes behavioral axis per
+family). Agent: gemma2:9b, 3 trials. Gate: contested-set accuracy < 85% required for headroom.
+Gate bug fixed (06122dd: was gating on overall 85.4%, would have false-aborted; contested = 77.4%,
+correctly passes).
+
+**Per-family results:**
+
+| Family | n | A% | GB% | O% | GB-A | O-A | Flag |
+|---|---|---|---|---|---|---|---|
+| order_read_family | 4 | 0.0% | 100.0% | 100.0% | +100pp | +100pp | RECOVERED |
+| invoice_write_family | 5 | 100.0% | 100.0% | 100.0% | +0pp | +0pp | — |
+| ticket_lifecycle_family | 4 | 100.0% | 100.0% | 100.0% | +0pp | +0pp | — |
+| account_query_family | 5 | 100.0% | 80.0% | 80.0% | −20pp | −20pp | HARM |
+| notification_family | 5 | 60.0% | 100.0% | 80.0% | +40pp | +20pp | — |
+| order_status_family | 4 | 75.0% | 100.0% | 100.0% | +25pp | +25pp | — |
+| invoice_schedule_family | 4 | 100.0% | 100.0% | 100.0% | +0pp | +0pp | — |
+
+Aggregate: A=77.4%, Guard-B=96.8%, Oracle=93.5%. Sign tests: GuardB vs A p=0.07, Oracle vs A p=0.125
+(N=31; neither significant at α=0.05). Thorough-set do-no-harm: 0/17 regressions (PASS).
+
+**Finding 1 — order_read [RECOVERED, both Guard-B and Oracle]:**
+`order_read` is the one family with complete thin-description failure (A=0/4). Both Guard-B (+100pp)
+and Oracle (+100pp) fully recover it. Return-shape disambiguation (summary vs full-record vs cached vs
+computed) is description-fixable. **Fixer has a real, consistent job here.** Scope: read-shape
+confusion is not a destructive outcome — the agent picks the wrong data shape, not the wrong action
+class.
+
+**Finding 2 — high-stakes families [CONFIRMED CONTROLS, 0pp delta all arms]:**
+`ticket_lifecycle` (delete/purge/archive/expire — permanence axis) and `invoice_write`
+(update/upsert/patch/replace/amend — mutation-scope axis): A=100%, Guard-B=100%, Oracle=100% across all
+arms. Gemma resolves these from task context alone — task descriptions contain signals like "this cannot
+be undone" and "leave all other fields exactly as they are." Good descriptions provide no incremental
+accuracy on the dangerous confusions. **The destructive-confusion (painkiller) framing is not supported
+by this proxy.** Context resolves danger; descriptions add no safety lift.
+
+**Finding 3 — account_query [HARM, both Guard-B and Oracle]:**
+`account_query` was 5/5 correct under thin descriptions — the SQL-like WHERE-clause syntax in the task
+("Get all accounts where status='TRIAL' AND created_at > '2026-01-01'") maps heuristically to
+`query_accounts` by name. Under oracle descriptions ("Executes a parameterized SQL-like WHERE clause"),
+detailed phrasing creates disambiguation noise among the five account tools; gemma makes one wrong call
+per arm. The harm reproduces at the same −20pp magnitude under both Guard-B and Oracle — not noise.
+**More precise descriptions can regress families where thin descriptions already work via name-task
+heuristic alignment.** This argues against blanket fixing and for targeted per-family application.
+
+**Stats note:** Do not report "96.8% / 120% recovery" as headlines. The 96.8% vs 93.5% aggregate gap
+and the >100% recovery fraction are artefacts of the account_query HARM dragging Oracle below Guard-B
+(notification_family also shows Guard-B > Oracle on one task). The N=31 contested tasks produce a
+sign test p=0.07 — directional, underpowered, not significant. Effect size is real at the per-family
+level for order_read; aggregate numbers obscure more than they reveal.
+
+**Scope caveat:** Synthetic proxy, gemma2:9b, one trial-set (3 trials per arm per task). 70B
+(Llama-3.3-70B via Groq) gate arm confirmed headroom exists at 70B (77.4% contested). 70B A-vs-Oracle
+per-family pending — will confirm whether the per-family pattern (order_read recovered, account_query
+harmed, high-stakes at ceiling) is regime-shaped (consistent across model tiers) or specific to
+gemma2:9b. Not blocking the interpretation below.
+
+---
+
+**ESCALATION TO GG — F2 direction decision (do not execute unilaterally):**
+
+The P2-A frequency-probe result is bearish on the direct-selection thesis as the primary value
+proposition. The finding that "agents already resolve the dangerous confusions from task context"
+is actually good news for a different thesis: **retrieval-readiness**. A retrieval index (BM25 or
+embedding-based tool lookup) ranks tools on description text alone — with no task context, no tool
+name, no agent prior. This is the regime where thin descriptions most clearly fail and where
+Guard-B's behavioral axis encoding directly adds signal. The "task context saves you" finding that
+sinks the direct-selection painkiller explicitly does NOT apply to a retrieval index.
+
+**Proposed pivot (for GG decision):** Make retrieval-readiness the primary thesis — Guard-B
+descriptions improve tool-retrieval ranking over thin descriptions in embedding/BM25 search. The
+direct-selection behavioral effect (real but narrow + low-stakes) becomes supporting evidence, not
+the lead.
+
+**Cheap test design:** (1) Take the 31 contested tools and their thin vs Guard-B descriptions. (2) For
+each contested task description, compute BM25 rank and/or cosine similarity rank of the gold tool
+against all 48 tools — once under thin descriptions, once under Guard-B descriptions. (3) Report
+MRR (mean reciprocal rank) and Rank@1 for thin vs Guard-B. No LLM agent needed; no GPU; runs in
+under 1 minute deterministically. The test is cheap, falsifiable, and directly addresses the
+retrieval use-case. A positive result (Guard-B raises MRR/Rank@1) provides an honest, orthogonal
+value signal from the same P2-A fixture without additional experimental work.
+
+Bringing as a direction decision — not executing until GG confirms the pivot.
 
 ---
 
