@@ -166,7 +166,8 @@ async def run(agent_model: str, trials: int, step1_only: bool = False) -> None:
         return
     print("  Arm A done. GPU watchdog: clean")
 
-    # Headroom gate: evaluate Arm A accuracy (overall all tasks; see spec for contested-set intent)
+    # Headroom gate: gate is on CONTESTED set per pre-registered spec.
+    # Thorough tools are controls — their higher accuracy must NOT dilute the headroom signal.
     overall_a_acc = parse_success_accuracy(
         results_a, TASKS, trials, _VALID_TOOL_NAMES, list(range(len(TASKS)))
     )
@@ -181,30 +182,57 @@ async def run(agent_model: str, trials: int, step1_only: bool = False) -> None:
     print("STEP 1 — HEADROOM GATE")
     print("=" * 80)
     print(
-        f"  Arm A overall accuracy (all {len(TASKS)} tasks):   {overall_a_acc * 100:.1f}%"
+        f"  Arm A overall accuracy (all {len(TASKS)} tasks):         "
+        f"{overall_a_acc * 100:.1f}%  (informational only)"
     )
     print(
-        f"  Arm A contested accuracy ({len(_contested_task_indices())} tasks): {contested_a_acc * 100:.1f}%"
+        f"  Arm A contested accuracy ({len(_contested_task_indices())} tasks, GATE): "
+        f"{contested_a_acc * 100:.1f}%"
     )
     print(
-        f"  Arm A thorough accuracy  ({len(_thorough_task_indices())} tasks): {thorough_a_acc * 100:.1f}%"
+        f"  Arm A thorough accuracy  ({len(_thorough_task_indices())} tasks, control): "
+        f"{thorough_a_acc * 100:.1f}%"
     )
-    print(f"  Headroom gate threshold: {_HEADROOM_GATE * 100:.0f}% (applied to overall accuracy)")
+    print(
+        f"  Headroom gate threshold: {_HEADROOM_GATE * 100:.0f}%"
+        "  (contested set only — thorough tools are controls, must not dilute)"
+    )
 
-    if overall_a_acc >= _HEADROOM_GATE:
+    if contested_a_acc >= _HEADROOM_GATE:
         print(
-            f"\n  NO HEADROOM: Arm A (thin internal descriptions) achieves "
-            f"{overall_a_acc * 100:.1f}% >= {_HEADROOM_GATE * 100:.0f}%.\n"
+            f"\n  NO HEADROOM on contested set: Arm A achieves "
+            f"{contested_a_acc * 100:.1f}% >= {_HEADROOM_GATE * 100:.0f}%.\n"
             "  Guard-B has little to recover — thin descriptions already sufficient\n"
             "  for this agent on this task set. The P2-A effect may not exist\n"
             "  at this accuracy level. Investigate task difficulty or agent model."
         )
         return
 
+    recoverable_pp = (1 - contested_a_acc) * 100
     print(
-        f"\n  -> HEADROOM CONFIRMED (Arm A = {overall_a_acc * 100:.1f}% < "
-        f"{_HEADROOM_GATE * 100:.0f}%)"
+        f"\n  HEADROOM EXISTS on contested set: {contested_a_acc * 100:.1f}% < "
+        f"{_HEADROOM_GATE * 100:.0f}%  (~{recoverable_pp:.0f}pp recoverable)\n"
+        f"  NOTE: modest headroom — agent already resolves {contested_a_acc * 100:.0f}% "
+        "of contested tasks from thin descriptions alone.\n"
+        "  Thin-but-present docs + task context get most of the way; Guard-B targets the gap."
     )
+
+    # Per-family breakdown — capture WHERE headroom lives before proceeding to Step 2.
+    print("\n  Per-family contested accuracy (Arm A):")
+    print(f"  {'Family':<28} {'Contested':>10} {'Accuracy':>10}")
+    print("  " + "-" * 52)
+    for _fam_name, _fam_tools in FAMILIES.items():
+        _fam_contested = [
+            i for i, task in enumerate(TASKS)
+            if task.tool_name in _fam_tools and task.tool_name in CONTESTED_TOOLS
+        ]
+        if not _fam_contested:
+            continue
+        _fam_acc = parse_success_accuracy(
+            results_a, TASKS, trials, _VALID_TOOL_NAMES, _fam_contested
+        )
+        print(f"  {_fam_name:<28} {len(_fam_contested):>10} {_fam_acc * 100:>9.1f}%")
+    print("  " + "=" * 52)
 
     if step1_only:
         print("\n[STEP-1-ONLY] Headroom exists, but --step1-only set: STOPPING before STEP 2.")
