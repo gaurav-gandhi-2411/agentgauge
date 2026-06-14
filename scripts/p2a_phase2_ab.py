@@ -103,15 +103,17 @@ async def run(agent_model: str, trials: int, step1_only: bool = False) -> None:
     assert_agent_ne_judge_ne_generator(agent_model)
     agent_family = agent_model.split(":")[0].lower()
 
-    # Pre-check: Guard-B descriptions must exist (Phase 1 must be complete)
-    if not _GUARDB_PATH.exists():
-        print(f"ERROR: {_GUARDB_PATH.name} not found.")
-        print("Run Phase 1 first: python scripts/p2a_phase1_generate.py")
-        sys.exit(1)
-    guardb_descs = json.loads(_GUARDB_PATH.read_text(encoding="utf-8"))
-    if not guardb_descs:
-        print(f"ERROR: {_GUARDB_PATH.name} is empty. Phase 1 did not complete successfully.")
-        sys.exit(1)
+    # Pre-check: Guard-B descriptions must exist (Phase 1 must be complete) — skip for headroom gate
+    guardb_descs: dict[str, str] = {}
+    if not step1_only:
+        if not _GUARDB_PATH.exists():
+            print(f"ERROR: {_GUARDB_PATH.name} not found.")
+            print("Run Phase 1 first: python scripts/p2a_phase1_generate.py")
+            sys.exit(1)
+        guardb_descs = json.loads(_GUARDB_PATH.read_text(encoding="utf-8"))
+        if not guardb_descs:
+            print(f"ERROR: {_GUARDB_PATH.name} is empty. Phase 1 did not complete successfully.")
+            sys.exit(1)
 
     n_tools = len(_VALID_TOOL_NAMES)
     n_contested_pre = len(_contested_task_indices())
@@ -122,8 +124,9 @@ async def run(agent_model: str, trials: int, step1_only: bool = False) -> None:
     print(
         f"Agent: {agent_model}  |  Trials: {trials}  |  Tasks: {len(TASKS)}  |  Tools: {n_tools}"
     )
+    guardb_label = f"{len(guardb_descs)}/{n_tools} tools" if guardb_descs else "not loaded (step1-only)"
     print(
-        f"Guard-B descriptions: {len(guardb_descs)}/{n_tools} tools  |  "
+        f"Guard-B descriptions: {guardb_label}  |  "
         f"Contested tasks: {n_contested_pre}  |  Thorough tasks: {n_thorough_pre}"
     )
     print("=" * 80)
@@ -163,19 +166,30 @@ async def run(agent_model: str, trials: int, step1_only: bool = False) -> None:
         return
     print("  Arm A done. GPU watchdog: clean")
 
-    # Headroom gate: evaluate overall Arm A accuracy
+    # Headroom gate: evaluate Arm A accuracy (overall all tasks; see spec for contested-set intent)
     overall_a_acc = parse_success_accuracy(
         results_a, TASKS, trials, _VALID_TOOL_NAMES, list(range(len(TASKS)))
+    )
+    contested_a_acc = parse_success_accuracy(
+        results_a, TASKS, trials, _VALID_TOOL_NAMES, _contested_task_indices()
+    )
+    thorough_a_acc = parse_success_accuracy(
+        results_a, TASKS, trials, _VALID_TOOL_NAMES, _thorough_task_indices()
     )
 
     print("\n" + "=" * 80)
     print("STEP 1 — HEADROOM GATE")
     print("=" * 80)
     print(
-        f"  Arm A overall accuracy (all {len(TASKS)} tasks, parse-success): "
-        f"{overall_a_acc * 100:.1f}%"
+        f"  Arm A overall accuracy (all {len(TASKS)} tasks):   {overall_a_acc * 100:.1f}%"
     )
-    print(f"  Headroom gate threshold: {_HEADROOM_GATE * 100:.0f}%")
+    print(
+        f"  Arm A contested accuracy ({len(_contested_task_indices())} tasks): {contested_a_acc * 100:.1f}%"
+    )
+    print(
+        f"  Arm A thorough accuracy  ({len(_thorough_task_indices())} tasks): {thorough_a_acc * 100:.1f}%"
+    )
+    print(f"  Headroom gate threshold: {_HEADROOM_GATE * 100:.0f}% (applied to overall accuracy)")
 
     if overall_a_acc >= _HEADROOM_GATE:
         print(
