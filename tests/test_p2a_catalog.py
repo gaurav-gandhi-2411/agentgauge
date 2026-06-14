@@ -87,12 +87,8 @@ def test_p2a_arm_a_covers_all_tools() -> None:
 def test_p2a_arm_a_single_sentence() -> None:
     """Each Arm A value must be one sentence: no newlines, ends with a period."""
     for tool, desc in ARM_A_DESCRIPTIONS.items():
-        assert "\n" not in desc, (
-            f"ARM_A_DESCRIPTIONS['{tool}'] contains a newline: {desc!r}"
-        )
-        assert desc.endswith("."), (
-            f"ARM_A_DESCRIPTIONS['{tool}'] does not end with '.': {desc!r}"
-        )
+        assert "\n" not in desc, f"ARM_A_DESCRIPTIONS['{tool}'] contains a newline: {desc!r}"
+        assert desc.endswith("."), f"ARM_A_DESCRIPTIONS['{tool}'] does not end with '.': {desc!r}"
 
 
 def test_p2a_arm_a_at_most_7_words() -> None:
@@ -155,9 +151,7 @@ def test_p2a_mirror_docstring_signals_present() -> None:
     for tool, signal in MIRROR_DOCSTRING_SIGNALS.items():
         handler_marker = f"def _handle_{tool}("
         idx = source.find(handler_marker)
-        assert idx >= 0, (
-            f"Handler _handle_{tool}() not found in mirror server {_MIRROR_PATH.name}"
-        )
+        assert idx >= 0, f"Handler _handle_{tool}() not found in mirror server {_MIRROR_PATH.name}"
         raw_snippet = source[idx : idx + 500]
         # Collapse all runs of whitespace (including newline + indent) to a single space
         # so signals survive docstring line-wrapping.
