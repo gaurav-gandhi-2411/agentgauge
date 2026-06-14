@@ -400,11 +400,15 @@ async def run(agent_model: str, trials: int, step1_only: bool = False) -> None:
     print(f"  Sign test Oracle vs A: n+={n_plus_o} n-={n_minus_o}  p={p_o:.4f}")
 
     # ── Section D: PER-FAMILY accuracy breakdown ───────────────────────────────
+    # KEY READ: high-stakes families at 100% Arm A are CONTROLS, not treatment targets.
+    # The Oracle column shows the ceiling. GuardB Δ shows how much of that ceiling is recovered.
+    # Decision rests on per-family, not aggregate: order_read is the only family with clear
+    # concentrated headroom (gemma 0% Arm A). All other families at 100% refute painkiller framing.
     print("\n" + "=" * 80)
     print("SECTION D — PER-FAMILY accuracy breakdown on contested tasks")
     print("=" * 80)
-    print(f"{'Family':<26} {'Contested':>10} {'A%':>8} {'GB%':>8} {'Δ':>6}")
-    print("-" * 65)
+    print(f"{'Family':<26} {'n':>5} {'A%':>7} {'GB%':>7} {'O%':>7} {'GB-A':>7} {'O-A':>7}")
+    print("-" * 73)
     for family_name, family_tools in FAMILIES.items():
         contested_in_family = [
             i for i, task in enumerate(TASKS)
@@ -418,12 +422,25 @@ async def run(agent_model: str, trials: int, step1_only: bool = False) -> None:
         fam_g = parse_success_accuracy(
             results_g, TASKS, trials, _VALID_TOOL_NAMES, contested_in_family
         )
-        delta = (fam_g - fam_a) * 100
-        print(
-            f"{family_name:<26} {len(contested_in_family):>10} "
-            f"{fam_a * 100:>7.1f}% {fam_g * 100:>7.1f}% {delta:>+5.1f}pp"
+        fam_o = parse_success_accuracy(
+            results_o, TASKS, trials, _VALID_TOOL_NAMES, contested_in_family
         )
-    print("=" * 65)
+        delta_g = (fam_g - fam_a) * 100
+        delta_o = (fam_o - fam_a) * 100
+        # Flag if high-stakes Oracle does harm, or if order_read Oracle fails to recover.
+        note = ""
+        if fam_a >= 0.999 and fam_o < fam_a - 0.01:
+            note = " [HARM]"
+        elif fam_a < 0.01 and fam_o < 0.50:
+            note = " [NOT-RECOVERED]"
+        elif fam_a < 0.01 and fam_o >= 0.50:
+            note = " [RECOVERED]"
+        print(
+            f"{family_name:<26} {len(contested_in_family):>5} "
+            f"{fam_a * 100:>6.1f}% {fam_g * 100:>6.1f}% {fam_o * 100:>6.1f}% "
+            f"{delta_g:>+6.1f}pp {delta_o:>+6.1f}pp{note}"
+        )
+    print("=" * 73)
 
     # ── Section E: DO-NO-HARM (thorough-tool control set) ─────────────────────
     thorough_indices = _thorough_task_indices()
