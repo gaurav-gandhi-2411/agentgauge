@@ -1,20 +1,21 @@
 #!/usr/bin/env python3
-"""P2-A Arm A headroom gate on Llama-3.3-70B via Groq.
+"""P2-A headroom gate + A-vs-Oracle comparison on Llama-3.3-70B via Groq.
 
-Runs the 31 pre-registered CONTESTED tasks against Arm A (thin descriptions)
-on Groq/Llama-3.3-70b-versatile. Reports per-family accuracy and aggregate
-contested headroom — the same gate used in p2a_phase2_ab.py but for a 70B
-frontier model that cannot run locally.
+Two modes:
+  gate (default): Arm A only, 31 contested tasks × N trials. Reports per-family
+                  accuracy and whether the headroom gate (85%) passes.
+  ab:             Arm A + Oracle, 31 × N trials each. Reports per-family A% and O%
+                  (the ceiling gap) and per-family delta. Use after gate passes.
 
 Usage:
-    GROQ_API_KEY=<key> python scripts/p2a_frontier_gate.py [--trials 1]
+    GROQ_API_KEY=<key> python scripts/p2a_frontier_gate.py [--trials 1] [--mode gate|ab]
 
-Token budget (31 tasks × 1 trial, ~200 tok/call):
-    ~6 200 tokens total — well within Groq free tier (12k tokens/min).
-    ETA: ~1–2 minutes at fixed pacing. Cost: $0 on free tier.
+Token budget:
+    gate, 1 trial:  31 tasks  × ~200 tok = ~6 200 tok  (~1 min, $0 free tier)
+    ab,   3 trials: 186 calls × ~200 tok = ~37 200 tok (~3 min, $0 free tier)
 
-If Groq throttles (429), the paced caller backs off using retry-after headers.
-Do NOT increase --trials until the gate clears: 31 × 3 trials = ~18k tokens.
+Groq free tier: 12k tokens/min (binding). Script holds output under 9k tok/min.
+If 429s occur, the caller backs off using retry-after headers (no thrash).
 """
 
 from __future__ import annotations
@@ -32,6 +33,7 @@ import httpx
 
 from evals.fixtures.p2a_internal_proxy_catalog import (
     ARM_A_DESCRIPTIONS,
+    ARM_O_DESCRIPTIONS,
     CONTESTED_TOOLS,
     FAMILIES,
     FAMILY_MAP,
@@ -51,12 +53,12 @@ _CONTESTED_TASK_INDICES: list[int] = [
 ]
 
 
-# ── Tool listing (matches _build_tool_listing format from runner.py) ──────────
+# ── Tool listings (matches _build_tool_listing format from runner.py) ─────────
 
-def _build_arm_a_listing() -> str:
-    """Build text listing: 'name — desc | param:type, ...' from P2A catalog."""
+def _build_listing(descriptions: dict[str, str]) -> str:
+    """Build text listing: 'name — desc | param:type, ...' from a descriptions dict."""
     lines = []
-    for tool_name, desc in ARM_A_DESCRIPTIONS.items():
+    for tool_name, desc in descriptions.items():
         schema = TOOL_SCHEMAS.get(tool_name, {})
         props = schema.get("properties", {})
         param_parts = []
@@ -136,27 +138,28 @@ class PacedGroq:
 
 # ── Main ───────────────────────────────────────────────────────────────────────
 
-async def run(trials: int) -> None:
-    key = os.environ.get("GROQ_API_KEY")
-    if not key:
-        raise SystemExit("GROQ_API_KEY not set. Export it and retry.")
+def _run_arm(
+    contested_tasks: list[tuple[int, object]],
+    listing: str,
+    caller: PacedGroq,
+    trials: int,
+    label: str,
+) -> list[tuple[int, object, str, str]]:
+    """Blocking (awaitable) runner for one arm. Returns list of (task_idx, task, outcome, raw)."""
+    # Note: this is a sync helper; the caller awaits inside the async context via run_arm().
+    raise NotImplementedError("use run_arm() coroutine instead")
 
-    listing = _build_arm_a_listing()
-    caller = PacedGroq(key)
 
-    contested_tasks = [(i, TASKS[i]) for i in _CONTESTED_TASK_INDICES]
-    n_contested = len(contested_tasks)
-    total_calls = n_contested * trials
-    est_tokens = total_calls * 200
-
-    print("=" * 80)
-    print("P2-A Arm A Frontier Gate — Llama-3.3-70B via Groq")
-    print(f"Model: {_MODEL}")
-    print(f"Contested tasks: {n_contested}  |  Trials: {trials}  |  Total calls: {total_calls}")
-    print(f"Est. tokens: ~{est_tokens:,}  |  Gate threshold: {_HEADROOM_GATE * 100:.0f}%")
-    print("=" * 80)
-
-    records: list[tuple[int, object, str, str]] = []  # (task_idx, task, outcome, raw)
+async def _run_arm_async(
+    contested_tasks: list[tuple[int, object]],
+    listing: str,
+    caller: PacedGroq,
+    trials: int,
+    label: str,
+) -> list[tuple[int, object, str, str]]:
+    records: list[tuple[int, object, str, str]] = []
+    total = len(contested_tasks) * trials
+    done = 0
     for task_idx, task in contested_tasks:
         for _ in range(trials):
             content = (
@@ -167,80 +170,164 @@ async def run(trials: int) -> None:
             raw = await caller.chat_text(content)
             outcome = _classify(raw, task.tool_name)
             records.append((task_idx, task, outcome, raw))
-            status = "✓" if outcome == "CORRECT" else ("~" if outcome == "ABSTAIN" else "✗")
+            done += 1
+            status = "OK" if outcome == "CORRECT" else ("??" if outcome == "ABSTAIN" else "XX")
             print(
-                f"  {status} [{task.tool_name:<28}] -> {raw.strip()[:40]!r:<42} {outcome}",
+                f"  [{label}] {status} [{task.tool_name:<28}] "
+                f"-> {raw.strip()[:36]!r:<38} {outcome}  ({done}/{total})",
                 flush=True,
             )
+    return records
 
-    # ── Aggregate stats ────────────────────────────────────────────────────────
+
+def _agg(records: list[tuple[int, object, str, str]]) -> tuple[int, int, float]:
+    """Returns (n_correct, n_parse_success, accuracy)."""
+    n_ps = sum(1 for _, _, o, _ in records if o != "ABSTAIN")
     n_correct = sum(1 for _, _, o, _ in records if o == "CORRECT")
-    n_abstain = sum(1 for _, _, o, _ in records if o == "ABSTAIN")
-    n_ps = len(records) - n_abstain  # parse-success (CORRECT or WRONG)
-    agg_acc = n_correct / n_ps if n_ps > 0 else 0.0
+    return n_correct, n_ps, n_correct / n_ps if n_ps > 0 else 0.0
+
+
+def _family_acc(
+    records: list[tuple[int, object, str, str]], family_tools: list[str]
+) -> tuple[int, int, float]:
+    fam = [
+        (o, raw) for _, task, o, raw in records
+        if task.tool_name in family_tools and task.tool_name in CONTESTED_TOOLS
+    ]
+    fam_ps = [(o, raw) for o, raw in fam if o != "ABSTAIN"]
+    n_correct = sum(1 for o, _ in fam_ps if o == "CORRECT")
+    n_total = len(fam_ps)
+    return n_correct, n_total, n_correct / n_total if n_total > 0 else 0.0
+
+
+async def run(trials: int, mode: str) -> None:
+    key = os.environ.get("GROQ_API_KEY")
+    if not key:
+        raise SystemExit("GROQ_API_KEY not set. Export it and retry.")
+
+    listing_a = _build_listing(ARM_A_DESCRIPTIONS)
+    listing_o = _build_listing(ARM_O_DESCRIPTIONS)
+    caller = PacedGroq(key)
+
+    contested_tasks = [(i, TASKS[i]) for i in _CONTESTED_TASK_INDICES]
+    n_contested = len(contested_tasks)
+    arms = 2 if mode == "ab" else 1
+    est_tokens = n_contested * trials * arms * 200
+
+    print("=" * 80)
+    print(f"P2-A Frontier {'A-vs-Oracle' if mode == 'ab' else 'Arm A Gate'} — Llama-3.3-70B / Groq")
+    print(f"Model: {_MODEL}  |  Mode: {mode}  |  Trials: {trials}")
+    print(f"Contested tasks: {n_contested}  |  Total calls: {n_contested * trials * arms}")
+    print(f"Est. tokens: ~{est_tokens:,}  |  Gate threshold: {_HEADROOM_GATE * 100:.0f}%")
+    print("=" * 80)
+
+    # ── Arm A ─────────────────────────────────────────────────────────────────
+    print("\n[ARM A] Thin descriptions...")
+    records_a = await _run_arm_async(contested_tasks, listing_a, caller, trials, "A")
+
+    n_correct_a, n_ps_a, agg_a = _agg(records_a)
+    n_abstain_a = sum(1 for _, _, o, _ in records_a if o == "ABSTAIN")
 
     print("\n" + "=" * 80)
-    print("RESULTS — Arm A contested accuracy (Llama-3.3-70B / Groq)")
+    print("RESULTS — Arm A (thin descriptions)")
     print("=" * 80)
     print(
-        f"\n  Aggregate contested accuracy (parse-success): "
-        f"{agg_acc * 100:.1f}%  ({n_correct}/{n_ps})"
+        f"\n  Aggregate contested accuracy: {agg_a * 100:.1f}%  "
+        f"({n_correct_a}/{n_ps_a} parse-success)  |  ABSTAIN: {n_abstain_a}"
     )
-    print(f"  ABSTAIN count: {n_abstain}/{len(records)}")
-    print()
-    print(f"  Headroom gate ({_HEADROOM_GATE * 100:.0f}%): ", end="")
-    if agg_acc >= _HEADROOM_GATE:
+    print(f"\n  Headroom gate ({_HEADROOM_GATE * 100:.0f}%): ", end="")
+    if agg_a >= _HEADROOM_GATE:
         print(
-            f"NO HEADROOM — {agg_acc * 100:.1f}% >= {_HEADROOM_GATE * 100:.0f}%\n"
+            f"NO HEADROOM — {agg_a * 100:.1f}% >= {_HEADROOM_GATE * 100:.0f}%\n"
             "  70B resolves contested tasks from thin descriptions alone.\n"
-            "  Guard-B has little to recover for this model. Effect is weak-agent-bound."
+            "  Guard-B has little to recover. Effect is weak-agent-bound at this model tier."
         )
+        if mode != "ab":
+            print(f"\n  Groq calls made: {caller.calls}")
+            return
     else:
-        recoverable = (1 - agg_acc) * 100
+        recoverable = (1 - agg_a) * 100
         print(
             f"HEADROOM EXISTS — ~{recoverable:.0f}pp recoverable "
-            f"({agg_acc * 100:.1f}% < {_HEADROOM_GATE * 100:.0f}%)\n"
-            f"  NOTE: modest headroom — model already resolves {agg_acc * 100:.0f}% "
+            f"({agg_a * 100:.1f}% < {_HEADROOM_GATE * 100:.0f}%)\n"
+            f"  NOTE: modest headroom — model already resolves {agg_a * 100:.0f}% "
             "of contested tasks from thin descriptions alone.\n"
-            "  Guard-B targets the remaining gap; proceed to full A/B."
+            "  Thin-but-present docs + task context get most of the way; Guard-B targets the gap."
         )
 
-    # ── Per-family breakdown ───────────────────────────────────────────────────
-    print("\n  Per-family contested accuracy (Arm A, Llama-3.3-70B):")
-    print(f"  {'Family':<28} {'Contested':>10} {'Correct':>8} {'Accuracy':>10}")
-    print("  " + "-" * 62)
-
+    # ── Per-family Arm A breakdown ─────────────────────────────────────────────
+    print("\n  Per-family Arm A (thin descriptions):")
+    print(f"  {'Family':<28} {'n':>6} {'Correct':>8} {'A%':>8}")
+    print("  " + "-" * 56)
     for family_name, family_tools in FAMILIES.items():
-        fam_records = [
-            (o, raw) for _, task, o, raw in records
-            if task.tool_name in family_tools and task.tool_name in CONTESTED_TOOLS
-        ]
-        if not fam_records:
+        nc, nt, facc = _family_acc(records_a, family_tools)
+        if nt == 0:
             continue
-        fam_ps = [(o, raw) for o, raw in fam_records if o != "ABSTAIN"]
-        fam_correct = sum(1 for o, _ in fam_ps if o == "CORRECT")
-        fam_total = len(fam_ps)
-        fam_acc = fam_correct / fam_total if fam_total > 0 else 0.0
-        print(
-            f"  {family_name:<28} {fam_total:>10} {fam_correct:>8} {fam_acc * 100:>9.1f}%"
-        )
+        print(f"  {family_name:<28} {nt:>6} {nc:>8} {facc * 100:>7.1f}%")
+    print("  " + "=" * 56)
 
-    print("  " + "=" * 62)
+    if mode != "ab":
+        print(f"\n  Groq calls made: {caller.calls}")
+        return
+
+    # ── Arm O (Oracle) ─────────────────────────────────────────────────────────
+    print("\n[ARM O] Oracle descriptions...")
+    records_o = await _run_arm_async(contested_tasks, listing_o, caller, trials, "O")
+
+    n_correct_o, n_ps_o, agg_o = _agg(records_o)
+    n_abstain_o = sum(1 for _, _, o, _ in records_o if o == "ABSTAIN")
+
+    print("\n" + "=" * 80)
+    print("RESULTS — A vs Oracle comparison (Llama-3.3-70B, contested tasks)")
+    print("=" * 80)
+    print(
+        f"\n  Arm A (thin):    {agg_a * 100:.1f}%  ({n_correct_a}/{n_ps_a})"
+    )
+    print(
+        f"  Arm O (oracle):  {agg_o * 100:.1f}%  ({n_correct_o}/{n_ps_o})"
+    )
+    gap = (agg_o - agg_a) * 100
+    print(f"  Oracle gap (O-A): {gap:+.1f}pp  (ceiling on Guard-B recovery)")
+    if abs(1.0 - agg_a) > 1e-9:
+        recovery_ceiling = (agg_o - agg_a) / (1.0 - agg_a)
+        print(f"  Recovery ceiling: {recovery_ceiling * 100:.1f}%  ((O-A)/(1-A))")
+
+    # ── Per-family A vs O ──────────────────────────────────────────────────────
+    print("\n  Per-family A vs Oracle (Llama-3.3-70B, contested tasks):")
+    print(f"  {'Family':<28} {'n':>6} {'A%':>8} {'O%':>8} {'O-A':>8}")
+    print("  " + "-" * 66)
+    for family_name, family_tools in FAMILIES.items():
+        nc_a, nt_a, facc_a = _family_acc(records_a, family_tools)
+        nc_o, nt_o, facc_o = _family_acc(records_o, family_tools)
+        if nt_a == 0:
+            continue
+        delta = (facc_o - facc_a) * 100
+        print(
+            f"  {family_name:<28} {nt_a:>6} {facc_a * 100:>7.1f}% "
+            f"{facc_o * 100:>7.1f}% {delta:>+7.1f}pp"
+        )
+    print("  " + "=" * 66)
     print(f"\n  Groq calls made: {caller.calls}")
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="P2-A Arm A headroom gate on Llama-3.3-70B via Groq"
+        description="P2-A headroom gate + A-vs-Oracle comparison on Llama-3.3-70B via Groq"
     )
     parser.add_argument(
         "--trials",
         type=int,
         default=1,
-        help="Trials per contested task (default 1 for gate; use 3 for full measurement).",
+        help="Trials per contested task per arm (default 1 for gate; use 3 for full measurement).",
+    )
+    parser.add_argument(
+        "--mode",
+        choices=["gate", "ab"],
+        default="gate",
+        help="gate: Arm A only (headroom check). ab: Arm A + Oracle (recovery ceiling).",
     )
     args = parser.parse_args()
-    asyncio.run(run(args.trials))
+    asyncio.run(run(args.trials, args.mode))
 
 
 if __name__ == "__main__":
