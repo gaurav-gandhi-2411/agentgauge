@@ -126,8 +126,11 @@ class PacedGroq:
                     if ra
                     else _parse_duration(resp.headers.get("x-ratelimit-reset-tokens"))
                 )
-                print(f"  [429] backing off {min(20.0, max(1.0, wait)):.1f}s", flush=True)
-                await asyncio.sleep(min(20.0, max(1.0, wait)) + 0.5)
+                # Cap at 75s so we wait out the full 60s TPM window (not 20s, which
+                # retries before the window resets and chains 429s).
+                clamped = min(75.0, max(2.0, wait))
+                print(f"  [429] backing off {clamped:.1f}s", flush=True)
+                await asyncio.sleep(clamped + 0.5)
                 continue
             resp.raise_for_status()
             data = resp.json()
