@@ -81,20 +81,49 @@ name, no agent prior. This is the regime where thin descriptions most clearly fa
 Guard-B's behavioral axis encoding directly adds signal. The "task context saves you" finding that
 sinks the direct-selection painkiller explicitly does NOT apply to a retrieval index.
 
-**Proposed pivot (for GG decision):** Make retrieval-readiness the primary thesis — Guard-B
-descriptions improve tool-retrieval ranking over thin descriptions in embedding/BM25 search. The
-direct-selection behavioral effect (real but narrow + low-stakes) becomes supporting evidence, not
-the lead.
+**F2 retrieval test RUN — result: NOT SUPPORTED (BM25 + TFIDF, underspecified queries):**
 
-**Cheap test design:** (1) Take the 31 contested tools and their thin vs Guard-B descriptions. (2) For
-each contested task description, compute BM25 rank and/or cosine similarity rank of the gold tool
-against all 48 tools — once under thin descriptions, once under Guard-B descriptions. (3) Report
-MRR (mean reciprocal rank) and Rank@1 for thin vs Guard-B. No LLM agent needed; no GPU; runs in
-under 1 minute deterministically. The test is cheap, falsifiable, and directly addresses the
-retrieval use-case. A positive result (Guard-B raises MRR/Rank@1) provides an honest, orthogonal
-value signal from the same P2-A fixture without additional experimental work.
+Pre-registered spec committed before scoring: `evals/fixtures/p2a_f2_retrieval_spec.json`.
+Script: `scripts/p2a_f2_retrieval.py` (BM25 + TFIDF cosine-sim, description-only indexing, 93
+queries across 31 contested tools × 3 queries each).
 
-Bringing as a direction decision — not executing until GG confirms the pivot.
+Aggregate MRR (all 31 contested tools, 93 queries):
+
+| Arm | BM25 MRR | TFIDF MRR |
+|---|---|---|
+| thin | **0.304** | **0.317** |
+| guardb | 0.225 | 0.204 |
+| oracle | 0.234 | 0.228 |
+
+Thin descriptions outperform Guard-B on underspecified queries across both lexical retrievers
+and across 5 of 7 families. **F2 (retrieval-readiness) is NOT supported for BM25/TFIDF.**
+
+**Mechanism (explains the direction):** Thin descriptions are compact verb-noun patterns ("Delete a
+ticket.", "Notify the customer.", "Get the order.") that keyword-match natural-language queries
+("remove a ticket", "notify a customer", "get an order") directly. Guard-B descriptions are richer
+prose ("Permanently removes the ticket from all stores. IRREVERSIBLE...") that reduces keyword overlap
+with underspecified queries. Lexical retrieval rewards term overlap; thin descriptions have more of it.
+
+**Per-family notable findings:**
+- order_read: thin=0.229, Guard-B=0.183 BM25 (NEUTRAL) / 0.116 TFIDF (HARM). Guard-B does NOT
+  improve retrieval on the family it fully recovered in selection — opposite of F2 prediction.
+- ticket_lifecycle + notification: largest Guard-B harms (−0.192 and −0.258 BM25). Thin descriptions
+  for these families align tightly with the query vocabulary.
+- account_query: thin=0.453, Guard-B=0.425 (NEUTRAL, −0.029). The selection harm (−20pp) does NOT
+  propagate to retrieval here — descriptions are neutral, not harmful, on this family for retrieval.
+  This is a small supporting signal for F2 (no inherited harm) but swamped by the overall result.
+- order_status + invoice_schedule: only families where Guard-B improves over thin (+0.016/+0.051).
+  Thin descriptions ("Confirm an order.", "Schedule an invoice.") are less keyword-aligned with
+  queries like "advance an order" / "create an invoice" than Guard-B prose.
+
+**Remaining open question:** Semantic embedding retrieval (nomic-embed-text, text-embedding-3) may
+give a different result — embeddings capture intent similarity rather than keyword overlap, and
+Guard-B's richer content may be more semantically aligned with underspecified queries even without
+term overlap. `scripts/p2a_f2_retrieval.py --ollama-url <url>` runs the embedding arm when
+nomic-embed-text is available. Not run yet (model not pulled). This is the remaining check before
+the F2 thesis is fully closed.
+
+Bringing to GG as a closed finding on lexical retrieval with the embedding arm still open.
 
 ---
 
