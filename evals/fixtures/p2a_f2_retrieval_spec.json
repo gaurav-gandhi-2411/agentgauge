@@ -15,6 +15,11 @@
     "f2_inherits_selection_harm": "Guard-B descriptions harm retrieval on account_query (same family that was harmed in direct selection at -20pp). This means the description-induced disambiguation noise that caused selection regression also degrades retrieval ranking on that family. F2 does not provide an orthogonal path for account_query.",
     "f2_partial": "Guard-B improves retrieval on order_read (and possibly other families) but also harms account_query retrieval, mirroring the selection result. Value is real but inherits the same constraint as direct-selection: apply targeted per-family, not blanket."
   },
+  "embedding_pre_committed_interpretation": {
+    "committed_after": "BM25+TFIDF result (thin wins lexical, 2026-06-15). Committed before embedding scores are computed.",
+    "f2_survives_embedding": "Guard-B beats thin on embedding MRR for order_read (the family with selection headroom) AND is neutral-or-better on account_query. Verdict: F2 survives BUT only for semantic-retrieval deployments. Report as narrow, diminished thesis — note it competes with existing description-expansion methods (Tool-DE) that solve the same problem. Escalate to GG, do not self-promote.",
+    "f2_closed": "Guard-B neutral-or-loses on embedding retrieval too (order_read not improved). Verdict: F2 is CLOSED across all retriever types tested (BM25, TFIDF, embedding). Descriptions do not improve tool retrieval on this proxy regardless of retriever. Do NOT propose another retriever. Bring consolidated picture to GG."
+  },
   "queries_per_tool": {
     "_note": "Queries must NOT encode the within-family distinguishing axis. Axis terms forbidden per family: order_read=(summary, full record, cached, calculated, line items, timestamps); invoice_write=(partial, full replacement, JSON Patch, RFC 6902, supersede, overwrite all); ticket_lifecycle=(permanently, irreversible, recover, soft delete, archive store, status flag, visible); account_query=(full-text, SQL, WHERE clause, external reference, primary key, structured filter); notification=(email, push, SMS, in-app, preferred channel); order_status=(payment, warehouse, inventory, confirmation email, operations team); invoice_schedule=(async, background worker, staged, approval, DRAFT state, future datetime).",
     "get_order":        ["get an order", "read order data", "order lookup"],
