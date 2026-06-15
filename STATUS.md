@@ -116,14 +116,66 @@ with underspecified queries. Lexical retrieval rewards term overlap; thin descri
   Thin descriptions ("Confirm an order.", "Schedule an invoice.") are less keyword-aligned with
   queries like "advance an order" / "create an invoice" than Guard-B prose.
 
-**Remaining open question:** Semantic embedding retrieval (nomic-embed-text, text-embedding-3) may
-give a different result — embeddings capture intent similarity rather than keyword overlap, and
-Guard-B's richer content may be more semantically aligned with underspecified queries even without
-term overlap. `scripts/p2a_f2_retrieval.py --ollama-url <url>` runs the embedding arm when
-nomic-embed-text is available. Not run yet (model not pulled). This is the remaining check before
-the F2 thesis is fully closed.
+**Embedding arm RUN — nomic-embed-text, same 93 queries:**
 
-Bringing to GG as a closed finding on lexical retrieval with the embedding arm still open.
+| Arm | embed MRR | embed R@1 | embed MeanRk |
+|---|---|---|---|
+| thin | **0.510** | **0.269** | 3.0 |
+| guardb | 0.286 | 0.129 | 6.3 |
+| oracle | 0.362 | 0.161 | 5.2 |
+
+Guard-B harms **all 7 families** in embedding retrieval (−0.037 to −0.389 vs thin). No family
+improves. Oracle harms 5 of 7. Pre-committed interpretation `f2_closed` applies:
+
+**F2 is CLOSED across all three retriever types (BM25, TFIDF, embedding).**
+
+The result is stronger in embedding than lexical: thin outperforms Guard-B by 0.224 MRR in semantic
+search vs 0.079 in BM25. **Mechanism:** thin descriptions ("Get the order.", "Notify the customer.")
+match queries at the intent level; Guard-B descriptions ("Returns order summary fields including
+status, total, item count...") match at the implementation level. Underspecified queries operate at
+the intent level — precision-optimized descriptions are a semantic mismatch regardless of retriever
+type. This is a genuine, non-obvious finding: a description system designed to discriminate
+within-family variants hurts retrieval when queries are coarse and intent-level.
+
+The account_query BM25-neutral (−0.029) also does NOT hold in embedding (−0.148 HARM). No partial
+F2 signal survives the full three-retriever picture.
+
+Pre-committed interpretation applied: `f2_closed`. No further retriever testing. See consolidated
+picture below.
+
+---
+
+**CONSOLIDATED P2-A + F2 PICTURE FOR GG (direction escalation):**
+
+Three experiments, one proxy (synthetic internal-proxy, gemma2:9b, 31 contested tools):
+
+**1. Direct selection (P2-A Phase 2A):**
+- Fixer value is REAL but NARROW + LOW-STAKES: order_read 0%→100% (Guard-B and Oracle both).
+  Return-shape disambiguation is description-fixable.
+- High-stakes families (ticket_lifecycle permanence, invoice_write mutation-scope): 100% all arms.
+  Task context resolves danger. Painkiller framing NOT supported.
+- account_query HARM (−20pp, both Guard-B and Oracle): descriptions regress a family that thin
+  descriptions already handled via name-task heuristic alignment.
+- Stats: p=0.07 (underpowered, N=31). Directional, not confirmed.
+
+**2. F2 retrieval — lexical (BM25 + TFIDF):**
+- Thin descriptions outperform Guard-B on underspecified queries across both retrievers (5/7 families
+  harmed). Mechanism: thin verb-noun patterns keyword-match short generic queries directly.
+- NOT SUPPORTED.
+
+**3. F2 retrieval — semantic (nomic-embed-text embedding):**
+- Thin descriptions outperform Guard-B on ALL 7 families. Margin larger than lexical.
+  Guard-B descriptions optimized for within-family discrimination are a semantic mismatch against
+  intent-level queries.
+- NOT SUPPORTED. F2 CLOSED.
+
+**What the data says (factual, no positioning):** On this synthetic proxy, Guard-B descriptions
+improve direct tool selection on one low-stakes family (order_read) and degrade it on one family
+(account_query). They do not improve tool retrieval under any retriever type tested. The property
+that makes Guard-B descriptions good at direct-selection discrimination (encoding the behavioral axis
+precisely) is the same property that makes them poor retrieval targets for coarse intent queries.
+
+Bringing to GG as a consolidated direction escalation. No new thesis proposed unilaterally.
 
 ---
 
