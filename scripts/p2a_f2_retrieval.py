@@ -126,21 +126,40 @@ def _cosine(a: list[float], b: list[float]) -> float:
     return dot / (na * nb) if na and nb else 0.0
 
 
-def embed_rank(
-    query: str,
-    doc_texts: list[str],
-    ollama_url: str,
-) -> list[tuple[int, float]] | None:
-    q_vec = _embed_text(query, ollama_url)
-    if q_vec is None:
-        return None
-    scored = []
-    for i, doc in enumerate(doc_texts):
-        d_vec = _embed_text(doc, ollama_url)
-        if d_vec is None:
+@dataclass
+class EmbedIndex:
+    """Pre-computed document embeddings for one arm. Queries are cached by text
+    across all lookups (same query string is reused across arms and families)."""
+
+    doc_vecs: list[list[float]]  # one per corpus doc, pre-computed
+    _query_cache: dict[str, list[float]] = field(
+        default_factory=dict, init=False, repr=False
+    )
+    ollama_url: str = ""
+
+    def rank(self, query: str) -> list[tuple[int, float]] | None:
+        if query not in self._query_cache:
+            q_vec = _embed_text(query, self.ollama_url)
+            if q_vec is None:
+                return None
+            self._query_cache[query] = q_vec
+        q = self._query_cache[query]
+        scored = [(i, _cosine(q, d)) for i, d in enumerate(self.doc_vecs)]
+        return sorted(scored, key=lambda x: x[1], reverse=True)
+
+
+def build_embed_index(
+    docs: list[str], ollama_url: str, label: str = ""
+) -> EmbedIndex | None:
+    """Embed all 48 corpus docs once; return None on first failure."""
+    vecs: list[list[float]] = []
+    for i, doc in enumerate(docs):
+        v = _embed_text(doc, ollama_url)
+        if v is None:
+            print(f"  [embed] failed on doc {i} ({label}) — disabling embedding", flush=True)
             return None
-        scored.append((i, _cosine(q_vec, d_vec)))
-    return sorted(scored, key=lambda x: x[1], reverse=True)
+        vecs.append(v)
+    return EmbedIndex(doc_vecs=vecs, ollama_url=ollama_url)
 
 
 # ── TF-IDF cosine (pure Python, no extra deps) ────────────────────────────────
@@ -234,10 +253,10 @@ class FamilyResult:
 def run_family(
     family_name: str,
     family_tools: list[str],
-    tool_names: list[str],    # all 48 tools in corpus order
+    tool_names: list[str],           # all 48 tools in corpus order
     descs_by_arm: dict[str, dict[str, str]],
     queries_by_tool: dict[str, list[str]],
-    ollama_url: str | None,
+    embed_indexes: dict[str, EmbedIndex | None],  # pre-built per arm; None = skip
 ) -> list[FamilyResult]:
     contested_in_family = [t for t in family_tools if t in CONTESTED_TOOLS]
     corpus_queries: list[tuple[str, str]] = []  # (tool_name, query)
@@ -254,6 +273,7 @@ def run_family(
         docs = [arm_descs[t] for t in tool_names]
         bm25 = BM25Index(docs=docs)
         tfidf = TFIDFIndex(docs=docs)
+        embed_idx = embed_indexes.get(arm)
 
         rr_bm25: list[float] = []
         rk_bm25: list[float] = []
@@ -280,11 +300,9 @@ def run_family(
             rk_tfidf.append(gold_rank(ranked_t, gold_idx))
             at1_tfidf.append(1.0 if ranked_t[0][0] == gold_idx else 0.0)
 
-            if ollama_url:
-                ranked_e = embed_rank(query, docs, ollama_url)
-                if ranked_e is None:
-                    ollama_url = None  # disable after first failure
-                else:
+            if embed_idx is not None:
+                ranked_e = embed_idx.rank(query)
+                if ranked_e is not None:
                     rr_emb.append(reciprocal_rank(ranked_e, gold_idx))
                     rk_emb.append(gold_rank(ranked_e, gold_idx))
                     at1_emb.append(1.0 if ranked_e[0][0] == gold_idx else 0.0)
@@ -346,15 +364,30 @@ def main() -> None:
           f"Retrievers: BM25 + TFIDF{' + embed' if ollama_url else ''}")
     print("=" * 100)
 
+    # Pre-build embedding indexes (48 docs x 3 arms = 144 calls total).
+    # Queries are cached inside EmbedIndex on first use (93 unique query strings).
+    embed_indexes: dict[str, EmbedIndex | None] = {}
+    if ollama_url:
+        for arm, arm_descs in descs_by_arm.items():
+            docs = [arm_descs[t] for t in tool_names]
+            print(f"  [embed] indexing arm={arm} ({len(docs)} docs)...", flush=True)
+            idx = build_embed_index(docs, ollama_url, label=arm)
+            embed_indexes[arm] = idx
+            if idx is None:
+                ollama_url = None
+                print("  [embed] disabled after index failure", flush=True)
+                break
+
     all_by_family: dict[str, list[FamilyResult]] = {}
     for fam, tools in FAMILIES.items():
         fam_results = run_family(
-            fam, tools, tool_names, descs_by_arm, queries_by_tool, ollama_url
+            fam, tools, tool_names, descs_by_arm, queries_by_tool, embed_indexes
         )
         all_by_family[fam] = fam_results
 
     # ── Per-family table ───────────────────────────────────────────────────────
-    retrievers_to_show = ["BM25", "TFIDF"] + (["embed"] if ollama_url else [])
+    has_embed = any(v is not None for v in embed_indexes.values())
+    retrievers_to_show = ["BM25", "TFIDF"] + (["embed"] if has_embed else [])
     for retriever in retrievers_to_show:
         print(f"\n-- {retriever} retrieval (description-only, underspecified queries) " + "-" * 40)
         print(f"  {'Family':<30} {'Arm':<9} {'MRR':>7} {'R@1':>7} {'MeanRk':>8}  Interpretation")
