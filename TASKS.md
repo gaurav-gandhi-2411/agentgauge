@@ -8,7 +8,105 @@ Autonomous runs: pick the single top TODO, implement it, move to IN-REVIEW.
 
 ## TODO
 
-*(empty)*
+### EXP-3 — Pairwise confusability localizer (CONDITION #1 → DRAFT + escalate)
+
+**Paper role:** Positive methodological contribution on top of the score-validity-gap negative.
+**Sequence:** After EXP-4 merged; before EXP-1 (validates the regime classifier used in EXP-1).
+
+**Method:** For each tool pair within a family, ask the frozen judge (llama3.1:8b, seed=42):
+"Could a task intended for tool A plausibly select tool B (and vice versa) given their
+descriptions?" → a confusability MATRIX per catalog → localized output "tools X,Y confusable
+for task-type Z." Baseline = the single-score DISTINGUISH judge (flags ~nothing on real servers).
+
+**Validation:** Does the pairwise localizer flag the families where EXP-1's behavioral regime test
+finds the agent actually confused tools? Measure precision/recall of the localizer against the
+behavioral ground truth (Arm A miss-rate per family). Compare against the single-score baseline.
+
+**Acceptance criteria:**
+- Pairwise confusability matrix implemented for a catalog; output is per-pair scores, not a
+  single catalog number.
+- Tested on the T18 catalog AND at least one RW server (GitHub or AWS IAM).
+- Localizer precision/recall table vs behavioral ground truth (use T18 Arm A per-task misses
+  as ground truth for the 10-family catalog).
+- DISTINGUISH single-score baseline shown as comparison.
+- Pre-registration committed before any run.
+- Judge re-validated on a held-out set (condition #1 — DRAFT PR + GG escalation before running).
+
+**Do NOT auto-pick.** This is Condition #1 (judge-touching). Requires own spec committed to
+branch before any run. Open as DRAFT PR; escalate to GG for judge re-validation review.
+
+---
+
+### EXP-1 — Server-population prevalence (ESCALATE SAMPLING FRAME TO GG FIRST)
+
+**Paper role:** Headline empirical contribution — what fraction of real MCP servers are in the regime?
+**Sequence:** After EXP-3 (uses the pairwise localizer as part of the in-regime classifier).
+**BLOCKER:** Sampling frame must be ratified by GG before any scoring begins.
+
+**Operationalize "in-regime" BEHAVIORALLY (two-condition test, pre-registered):**
+1. Arm A = server's real shipped descriptions fails ≥ 1 contested task (agent selects wrong)
+2. Arm B = oracle description recovers it
+Both conditions must hold. "Thin descriptions" is an input property — only behavior-that-fix-
+repairs counts.
+
+**Sampling frame (to be pre-registered and ratified by GG):**
+- Source 1: Official MCP registry (top-N by stars/downloads) as of a fixed date
+- Source 2: Glama/PulseMCP directory (supplementary, deduplicated)
+- Fixed date: ratified at branch start (fixed in pre-registration commit)
+- Filter: source-available, locally runnable (stubs OK, live API keys NOT required)
+- Target: 20–50 servers
+- SCORE EVERY ONE; drop none post-hoc; log any exclusions + pre-stated reason
+- Pre-stated exclusion reasons: (a) no source, (b) un-runnable after mirroring, (c) duplicate
+
+**Method:** Local mirrors (verbatim docstrings, stub bodies). Identify confusable families
+(name/embedding clusters). Anti-tautological contested tasks. Run frozen protocol per family.
+
+**Report:** Fraction of servers (and families) in-regime; distribution; per-server table.
+**Pre-registered honest caveat:** public servers skew documented → this is a lower bound on
+the under-documented internal segment.
+
+**Acceptance criteria:**
+- Sampling frame committed to branch before any mirror is built or scored.
+- GG ratification of the frame received (escalation required — see above).
+- Every sampled server scored; exclusion log committed.
+- Per-server and aggregate in-regime fraction reported.
+- Frozen protocol used for all runs (llama3.1:8b judge, seed=42, gemma2:9b agent).
+
+**Do NOT auto-pick.** GG must ratify the sampling frame first. See escalation section in
+the PR for this task.
+
+---
+
+### EXP-2 — Capability-ladder curve (needs model set provisioned)
+
+**Paper role:** How does the description effect size vary with agent capability?
+**Sequence:** After EXP-1 (uses the same T18 fixture; ladder is the only variable).
+**BLOCKER:** Model set must be provisioned before running. Open-weight ladder is the core;
+frontier API (Claude/GPT) only if GG provisions a non-Anthropic key.
+
+**Design (apples-to-apples — critical):**
+- SAME model family at increasing sizes (e.g., Qwen-2.5: 7B / 32B / 72B, OR Llama: 8B / 70B)
+- Do NOT mix families — that reintroduces the gemma/Llama non-comparability
+- IDENTICAL fixture (T18), tasks, prompt template, frozen classifier, trials, seeds
+- Agent is the ONLY variable
+
+**Parse control (mandatory):**
+- Report parse_failed per model per arm (absolute)
+- Confirm effect on parse-success-only per model
+- A "no effect" result must be ruled out as a parsing artifact
+
+**Report:** Effect size (B−A, with CI) as a function of capability (the CURVE). Either shape
+is a finding: shrinks-with-capability or persists. Explicitly flag T18/gemma +34.5pp and
+FRONTIER-T18/Llama +40.8pp as NOT part of this controlled ladder (different harness).
+
+**Acceptance criteria:**
+- ≥ 3 sizes from the SAME family tested.
+- Parse control table per model.
+- Effect curve reported (not just individual points).
+- Pre-registration committed to branch before any run.
+- If a frontier API key is needed: GG provides it (never set ANTHROPIC_API_KEY).
+
+**Do NOT auto-pick.** Requires model provisioning decision from GG.
 
 ---
 
@@ -20,7 +118,26 @@ Autonomous runs: pick the single top TODO, implement it, move to IN-REVIEW.
 
 ## IN-REVIEW
 
-*(empty)*
+### EXP-4 — Regime map + frozen evaluation protocol (this PR)
+
+**PR:** claude/frozen-protocol-exp4 (DRAFT — awaiting GG review)
+**Scope:** Consolidation only — no new runs.
+
+**Deliverables:**
+- `docs/research/frozen_protocol.md` — locked protocol definition (ONE classifier, ONE judge/seed,
+  ONE generator family, effect measurement, sign test, required reporting, reproducibility).
+- `agentgauge/frozen_protocol.py` — codified constants + `EffectResult` dataclass +
+  `validate_effect_result()`.
+- `docs/research/exp4_regime_map.md` — WHERE-helps / WHERE-doesn't regime map synthesizing all
+  banked experiments (T18, FRONTIER-T18, Q2a/b, Q3–Q6, RW1, RW2, P2-A, F2).
+- `tests/test_frozen_protocol.py` — protocol invariant tests (8 tests).
+
+**Acceptance criteria:**
+- All 8 tests pass; verify.sh green.
+- Regime map covers all banked findings with correct N/p/effect values.
+- JUDGE_MODEL, JUDGE_SEED, GENERATOR_MODEL constants match CLAUDE.md calibration.
+- `validate_effect_result` catches the 5 pre-registered invariant violations.
+- PARSE_FAILED not in CLASSIFIER_OUTCOMES (structural independence asserted in tests).
 
 ---
 
