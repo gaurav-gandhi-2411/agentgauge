@@ -1,0 +1,114 @@
+{
+  "experiment_id": "EXP-1",
+  "protocol_version": "1.0",
+  "date_committed": "2026-06-22",
+  "frozen_protocol_ref": "agentgauge/frozen_protocol.py",
+  "title": "Server-population prevalence: what fraction of real MCP servers are in the description-quality regime?",
+
+  "_note": "This pre-registration fixes the METHODOLOGY. The specific 30-server list (exp1_server_frame.json) is a second pre-registration committed after GG ratifies the list and before any scoring begins.",
+
+  "regime_classifier": {
+    "definition": "A confusable family on a server is IN-REGIME iff, on the frozen protocol with a fixed agent: (a) Arm A = the server's real shipped descriptions FAILS >=1 contested task (SELECTED-WRONG or ABSTAINED-OR-HEDGED on >=1 task across trials), AND (b) Arm B = oracle description RECOVERS it (SELECTED-CORRECT on previously-failed tasks). BEHAVIORAL only — 'thin descriptions' is an INPUT property and NOT the regime definition.",
+    "contested_task_definition": "Anti-tautological: task text describes user intent without naming the tool or quoting its description keywords. Tasks must be resolvable from at least one tool's purpose; the correct tool must NOT be identifiable from the task phrasing alone.",
+    "headroom_gate": "Arm A contested-set accuracy < 0.85 required to proceed to Arm B. If >= 0.85, abort = OUT-OF-REGIME (no headroom). Reported as abort, not skip.",
+    "arm_a": "Server's verbatim shipped descriptions, asserted identical to source via docstring_hash.",
+    "arm_b": "Oracle: human-authored per family, targeting the within-family distinguishing dimension. NOT generated; NOT tool-named."
+  },
+
+  "sampling_frame": {
+    "sources": [
+      "modelcontextprotocol.io official registry",
+      "mcp.so",
+      "Glama (glama.ai/mcp/servers)",
+      "PulseMCP (pulsemcp.com)",
+      "GitHub topic:mcp-server search"
+    ],
+    "fixed_date": "2026-06-22",
+    "target_count": 30,
+    "freshly_sampled_count": 28,
+    "validation_anchor_count": 2,
+
+    "strategy": "STRATIFIED by popularity/maturity proxy (GitHub stars as primary signal). Three strata of ~10 each: high / mid / low. Star bands are determined EMPIRICALLY from the discovery run and fixed before any specific server is selected. The per-stratum distribution is reported as a FINDING (the documentation-quality gradient is the mechanistic signal), not just a sampling detail.",
+
+    "strata": {
+      "high":  {"target_count": 10, "description": "high-star / mature servers; bands fixed from discovery"},
+      "mid":   {"target_count": 10, "description": "mid-tier servers; bands fixed from discovery"},
+      "low":   {"target_count": 10, "description": "low-star / newer servers; bands fixed from discovery"}
+    },
+    "strata_bands_note": "Exact star cutoffs are committed in exp1_server_frame.json after the discovery run. Bands are fixed from the empirical distribution before individual servers are selected — not tuned post-hoc to include/exclude specific servers.",
+
+    "filters": {
+      "source_available": "Public repository (GitHub or equivalent). Closed-source excluded.",
+      "locally_runnable": "Runnable without live API keys. Stub bodies are acceptable; the mirror does not call live APIs.",
+      "deduplicated": "One entry per unique server project. Forks of the same server count as one.",
+      "languages": "ALL languages included (Python, TypeScript, Go, others). Language is NOT an exclusion criterion."
+    },
+
+    "valid_exclusion_reasons": [
+      "no_source: No public source repository found.",
+      "unrunnable: Import or dependency failure prevents stub server from starting after mirroring.",
+      "duplicate: Exact duplicate (fork or copy) of an already-included server."
+    ],
+
+    "exclusion_log_path": "evals/fixtures/exp1_exclusion_log.json",
+    "score_every_one": true,
+    "drop_post_hoc": false,
+    "report_format": "28 freshly sampled + 2 validation anchors (reported separately)"
+  },
+
+  "validation_anchors": {
+    "purpose": "Confirm the behavioral regime classifier reproduces the known OUT-OF-REGIME result for previously characterized servers. Disclosed in paper. NOT silently included in the prevalence denominator — reported as 'N freshly sampled + 2 validation anchors' separately.",
+    "servers": [
+      {
+        "id": "github-mcp",
+        "repo": "github/github-mcp-server",
+        "known_result": "OUT-OF-REGIME",
+        "prior_experiment": "RW1",
+        "expectation": "Classifier must reproduce OUT-OF-REGIME. If it does not, investigate before proceeding."
+      },
+      {
+        "id": "aws-iam-mcp",
+        "repo": "awslabs/mcp (src/iam-mcp-server)",
+        "known_result": "OUT-OF-REGIME",
+        "prior_experiment": "RW2",
+        "expectation": "Classifier must reproduce OUT-OF-REGIME. If it does not, investigate before proceeding."
+      }
+    ]
+  },
+
+  "per_server_procedure": [
+    "STEP 1 — MIRROR: Extract verbatim docstrings from source. Build a Python MCP stub server: tool names/schemas/docstrings identical to source; bodies return {stub: true, tool_name: name}. Assert docstring_hash matches source hash for every tool (independence rule: no paraphrase, no cleanup).",
+    "STEP 2 — FAMILY IDENTIFICATION: Identify confusable tool families using (a) prefix clustering (>=2 tools sharing >=3-char common prefix), (b) embedding similarity (nomic-embed-text cosine >= 0.85 between description pairs), (c) manual domain review. Families must have >= 2 tools. Families are pre-registered before contested tasks are written.",
+    "STEP 3 — CONTESTED TASKS: Write >= 3 anti-tautological contested tasks per family. LLM-assisted generation with mandatory human review. Each task: describes user intent only; does not name a tool; does not quote tool-description keywords. Tasks committed before Arm A is run.",
+    "STEP 4 — ARM A (HEADROOM GATE): Run Arm A (real docstrings) on contested tasks per family, frozen protocol (llama3.1:8b, seed=42, gemma2:9b, 5 trials). Report parse_failed per family. If contested-set accuracy >= 0.85: abort = OUT-OF-REGIME (no headroom). Do NOT run Arm B.",
+    "STEP 5 — ORACLE (for families with headroom): Human-author oracle descriptions targeting the within-family distinguishing dimension. Oracle written by a human who has read the server source. Committed before Arm B is run.",
+    "STEP 6 — ARM B: Run Arm B (oracle descriptions) on same contested tasks. Classify: IN-REGIME iff Arm A fails >=1 contested task AND Arm B recovers it (SELECTED-CORRECT on previously-failed tasks)."
+  ],
+
+  "frozen_protocol": {
+    "judge_model": "llama3.1:8b",
+    "judge_seed": 42,
+    "generator_model": "qwen3:8b",
+    "agent_model": "gemma2:9b",
+    "trials_per_arm": 5,
+    "headroom_ceiling": 0.85,
+    "classifier_outcomes": ["SELECTED-CORRECT", "SELECTED-WRONG", "ABSTAINED-OR-HEDGED"],
+    "parse_failed": "PARSE-FAILED (reported separately, never aggregated)"
+  },
+
+  "reproducibility": {
+    "server_frame": "evals/fixtures/exp1_server_frame.json (committed with source hashes before scoring)",
+    "fixture_hashes": "SHA-256[:12] of each mirror fixture file, committed in the server frame",
+    "model_versions": "committed per run (Ollama manifest digest or API model slug)",
+    "seeds": {"python_random": 42, "numpy": 42}
+  },
+
+  "reporting": {
+    "per_stratum_prevalence": true,
+    "per_stratum_gradient": "the documentation-quality gradient across strata is a FINDING, not a sampling detail",
+    "pooled_prevalence": "denominator = 28 freshly sampled (validation anchors reported separately)",
+    "per_server_table": true,
+    "exclusion_log": true,
+    "honest_caveat": "Public servers skew documented. This prevalence is a LOWER BOUND on the under-documented internal segment (internal/custom servers), which is unsampleable from public data. Do not generalize beyond 'public, source-available MCP servers as of 2026-06-22'."
+  }
+}
