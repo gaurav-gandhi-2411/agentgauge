@@ -53,7 +53,7 @@ def fetch_mcp_servers(max_results: int = 200) -> list[dict]:
     ]
     print(f"[fetch] Running: {' '.join(cmd[:3])} search/repositories?... --jq ...")
     result = subprocess.run(
-        cmd, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=60
+        cmd, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=120
     )
     if result.returncode != 0:
         print(f"[ERROR] gh api failed (exit {result.returncode}):", file=sys.stderr)
@@ -205,7 +205,7 @@ def print_summary(repos: list[dict], candidates: list[dict], bands: dict[str, fl
 
 def main() -> None:
     print("[exp1_discover_servers] Fetching MCP servers from GitHub...")
-    raw = fetch_mcp_servers(max_results=200)
+    raw = fetch_mcp_servers(max_results=500)
     print(f"[fetch] Got {len(raw)} raw results")
 
     deduped = deduplicate(raw)
@@ -214,14 +214,14 @@ def main() -> None:
     annotated, bands = assign_strata(deduped)
     candidates = select_candidates(annotated)
 
-    # Backup pool (top 25/stratum, anchors excluded) so replacement candidates can be
+    # Backup pool (top 40/stratum, anchors excluded) so replacement candidates can be
     # swapped in during vetting without a second, non-reproducible discovery run.
     backup_pool: dict[str, list[dict]] = {"high": [], "mid": [], "low": []}
     for r in annotated:
         if r["name"] in ANCHOR_REPOS:
             continue
         stratum = r.get("stratum", "low")
-        if stratum in backup_pool and len(backup_pool[stratum]) < 25:
+        if stratum in backup_pool and len(backup_pool[stratum]) < 70:
             backup_pool[stratum].append(
                 {
                     "server_id": r["name"].replace("/", "-"),
