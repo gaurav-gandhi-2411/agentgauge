@@ -1,0 +1,89 @@
+{
+  "experiment_id": "EXP-1",
+  "frame_status": "PROVISIONAL — AWAITING EXPLICIT GG CONFIRMATION",
+  "frame_status_note": "GG was asked (AskUserQuestion) to confirm 2 open decisions below and did not respond within the session window. This frame applies the RECOMMENDED default for each, clearly flagged. Do NOT treat this file as ratified. Do NOT begin mirroring or scoring against it until GG explicitly confirms or overrides these two decisions.",
+  "pre_registration_ref": "evals/fixtures/exp1_pre_registration.json",
+  "pre_registration_sha256": "f682dc9c1740f7e2804616e93e46d4349540eb4e704ccd201e28bb8f711e2261",
+  "candidate_list_ref": "evals/fixtures/exp1_candidate_list.json",
+  "candidate_list_sha256": "956d3ebbb5becab2ab3c85376fe9e93bed587a8cdc450352f6500d394111a151",
+  "discovery_date": "2026-07-02",
+  "discovery_source": "GitHub topic:mcp-server, 500 repos fetched, stratified by empirical star percentile (p33/p67)",
+  "discovery_note": "Pre-reg named 5 sources (official registry, mcp.so, Glama, PulseMCP, GitHub topic search); only GitHub topic search was used for this frame. mcp.so returned HTTP 403 (blocked), PulseMCP's API requires an emailed key request (human step, not completed this session), Glama's pagination is a non-trivial Remix turbo-stream endpoint (not a plain query param) and was not decoded. This is a real deviation from the pre-registered multi-source plan — flagged for GG, not silently resolved.",
+
+  "open_decisions_applied_by_default": [
+    {
+      "id": "fresh_count_28_vs_30",
+      "issue": "Pre-reg's per-stratum targets sum to 30 (10+10+10) but freshly_sampled_count field says 28 -- an internal inconsistency in the ratified pre-reg.",
+      "default_applied": "Kept all 30 vetted servers (10/10/10 per stratum) = 30 fresh + 2 anchors = 32 total.",
+      "alternative_not_applied": "Trim to 28 fresh (drop 2, likely BrowserMCP/mcp for thin in-repo docs + one borderline pick) = 30 total.",
+      "requires_gg_confirmation": true
+    },
+    {
+      "id": "doc_quality_skew",
+      "issue": "GG asked to verify low/mid strata include genuinely thin-doc servers, not just less-popular-but-polished ones. Vetting found only 1/30 servers (BrowserMCP/mcp) rated 'thin' in-repo docs -- the discovery+vetting method itself selects for documentation quality (a server must have a clear README to be identifiable as focused with a real tool catalog).",
+      "default_applied": "Accepted as-is; treat the doc-quality skew as a reportable finding (GitHub-discoverable MCP servers skew documented regardless of stratum), consistent with the pre-reg's own lower-bound caveat.",
+      "alternative_not_applied": "Run another vetting pass specifically hunting for thin-doc outliers to swap into low/mid.",
+      "requires_gg_confirmation": true
+    }
+  ],
+
+  "vetting_method_note": "Each candidate was screened by an independent research pass against two criteria GG specified: (a) is_focused_mcp_server -- primary purpose is exposing a FIXED MCP tool catalog, not a general platform/framework/aggregator/gateway/SDK-for-building-servers with MCP as an incidental feature; (b) approx_tool_count >= 5, so a confusable family (2+ similarly-named/purposed tools) can plausibly exist. ~55 candidates were screened across the 500-repo discovery pool; 30 passed. A previously-unanticipated failure mode was found and excluded throughout: aggregators/gateways/proxies that dynamically route to OTHER MCP servers rather than exposing their own fixed catalog (e.g. metatool-ai/metamcp, tadata-org/fastapi_mcp) -- these have no stable docstring surface to mirror.",
+
+  "strata": {
+    "high": {
+      "star_band": ">= 961 (empirical p67 of 500-repo fetch)",
+      "servers": [
+        {"server_id": "ChromeDevTools-chrome-devtools-mcp", "source_repo": "ChromeDevTools/chrome-devtools-mcp", "stars": 44873, "language": "TypeScript", "approx_tool_count": 47, "doc_quality": "moderate"},
+        {"server_id": "oraios-serena", "source_repo": "oraios/serena", "stars": 25979, "language": "Python", "approx_tool_count": 22, "doc_quality": "polished"},
+        {"server_id": "DeusData-codebase-memory-mcp", "source_repo": "DeusData/codebase-memory-mcp", "stars": 23810, "language": "C", "approx_tool_count": 14, "doc_quality": "polished"},
+        {"server_id": "czlonkowski-n8n-mcp", "source_repo": "czlonkowski/n8n-mcp", "stars": 22074, "language": "TypeScript", "approx_tool_count": 20, "doc_quality": "polished"},
+        {"server_id": "xpzouying-xiaohongshu-mcp", "source_repo": "xpzouying/xiaohongshu-mcp", "stars": 14469, "language": "Go", "approx_tool_count": 13, "doc_quality": "polished"},
+        {"server_id": "mrexodia-ida-pro-mcp", "source_repo": "mrexodia/ida-pro-mcp", "stars": 9818, "language": "Python", "approx_tool_count": 40, "doc_quality": "polished"},
+        {"server_id": "firecrawl-firecrawl-mcp-server", "source_repo": "firecrawl/firecrawl-mcp-server", "stars": 6778, "language": "JavaScript", "approx_tool_count": 13, "doc_quality": "polished"},
+        {"server_id": "BrowserMCP-mcp", "source_repo": "BrowserMCP/mcp", "stars": 6755, "language": "TypeScript", "approx_tool_count": 13, "doc_quality": "thin"},
+        {"server_id": "getsentry-XcodeBuildMCP", "source_repo": "getsentry/XcodeBuildMCP", "stars": 6019, "language": "TypeScript", "approx_tool_count": 82, "doc_quality": "polished"},
+        {"server_id": "antvis-mcp-server-chart", "source_repo": "antvis/mcp-server-chart", "stars": 4199, "language": "TypeScript", "approx_tool_count": 26, "doc_quality": "polished"}
+      ]
+    },
+    "mid": {
+      "star_band": ">= 376 and < 961",
+      "note": "Star values below use the ORIGINAL 200-repo discovery run's mid-stratum band (>=1295, <3089) -- these servers were vetted before the fetch was widened to 500 and remained the strongest mid-stratum candidates.",
+      "servers": [
+        {"server_id": "yvgude-lean-ctx", "source_repo": "yvgude/lean-ctx", "stars": 3048, "language": "Rust", "approx_tool_count": 78, "doc_quality": "polished", "caveat": "platform-framed -- entire product surface is the MCP tool catalog, but positioned as a 'context intelligence platform'"},
+        {"server_id": "blazickjp-arxiv-mcp-server", "source_repo": "blazickjp/arxiv-mcp-server", "stars": 2919, "language": "Python", "approx_tool_count": 7, "doc_quality": "polished"},
+        {"server_id": "taylorwilsdon-google_workspace_mcp", "source_repo": "taylorwilsdon/google_workspace_mcp", "stars": 2778, "language": "Python", "approx_tool_count": 100, "doc_quality": "polished"},
+        {"server_id": "bethington-ghidra-mcp", "source_repo": "bethington/ghidra-mcp", "stars": 2658, "language": "Java", "approx_tool_count": 225, "doc_quality": "moderate"},
+        {"server_id": "stickerdaniel-linkedin-mcp-server", "source_repo": "stickerdaniel/linkedin-mcp-server", "stars": 2610, "language": "Python", "approx_tool_count": 15, "doc_quality": "polished"},
+        {"server_id": "vitali87-code-graph-rag", "source_repo": "vitali87/code-graph-rag", "stars": 2281, "language": "Python", "approx_tool_count": 10, "doc_quality": "polished"},
+        {"server_id": "brightdata-brightdata-mcp", "source_repo": "brightdata/brightdata-mcp", "stars": 2483, "language": "JavaScript", "approx_tool_count": 15, "doc_quality": "polished"},
+        {"server_id": "zinja-coder-jadx-ai-mcp", "source_repo": "zinja-coder/jadx-ai-mcp", "stars": 2400, "language": "Java", "approx_tool_count": 25, "doc_quality": "polished", "caveat": "part of a broader 'Zin MCP Suite' -- confirm this repo is self-contained before mirroring"},
+        {"server_id": "cjo4m06-mcp-shrimp-task-manager", "source_repo": "cjo4m06/mcp-shrimp-task-manager", "stars": 2123, "language": "JavaScript", "approx_tool_count": 16, "doc_quality": "moderate"},
+        {"server_id": "chrisryugj-korean-law-mcp", "source_repo": "chrisryugj/korean-law-mcp", "stars": 2096, "language": "TypeScript", "approx_tool_count": 9, "doc_quality": "polished", "caveat": "discover_tools/execute_tool look like an internal meta-tool pattern -- verify it's not a proxy before mirroring"}
+      ]
+    },
+    "low": {
+      "star_band": "< 376 (2 servers below use the original 200-repo run's low band, <1295)",
+      "servers": [
+        {"server_id": "lucasastorian-llmwiki", "source_repo": "lucasastorian/llmwiki", "stars": 1252, "language": "Python", "approx_tool_count": 10, "doc_quality": "polished"},
+        {"server_id": "Dataojitori-nocturne_memory", "source_repo": "Dataojitori/nocturne_memory", "stars": 1249, "language": "Python", "approx_tool_count": 7, "doc_quality": "moderate"},
+        {"server_id": "datalayer-jupyter-mcp-server", "source_repo": "datalayer/jupyter-mcp-server", "stars": 1192, "language": "Python", "approx_tool_count": 18, "doc_quality": "moderate"},
+        {"server_id": "AminForou-mcp-gsc", "source_repo": "AminForou/mcp-gsc", "stars": 1098, "language": "Python", "approx_tool_count": 20, "doc_quality": "polished"},
+        {"server_id": "matlab-matlab-mcp-server", "source_repo": "matlab/matlab-mcp-server", "stars": 1087, "language": "Go", "approx_tool_count": 5, "doc_quality": "polished"},
+        {"server_id": "LycheeMem-LycheeMem", "source_repo": "LycheeMem/LycheeMem", "stars": 1074, "language": "Python", "approx_tool_count": 5, "doc_quality": "polished"},
+        {"server_id": "mongodb-js-mongodb-mcp-server", "source_repo": "mongodb-js/mongodb-mcp-server", "stars": 1073, "language": "TypeScript", "approx_tool_count": 60, "doc_quality": "polished"},
+        {"server_id": "irinabuht12-oss-google-meta-ads-ga4-mcp", "source_repo": "irinabuht12-oss/google-meta-ads-ga4-mcp", "stars": 1034, "language": "unknown", "approx_tool_count": 250, "doc_quality": "polished"},
+        {"server_id": "bvisible-mcp-ssh-manager", "source_repo": "bvisible/mcp-ssh-manager", "stars": 337, "language": "JavaScript", "approx_tool_count": 37, "doc_quality": "polished"},
+        {"server_id": "stefanoamorelli-sec-edgar-mcp", "source_repo": "stefanoamorelli/sec-edgar-mcp", "stars": 328, "language": "Python", "approx_tool_count": 18, "doc_quality": "polished"}
+      ]
+    }
+  },
+
+  "validation_anchors": [
+    {"server_id": "github-mcp", "source_repo": "github/github-mcp-server", "known_result": "OUT-OF-REGIME", "prior_experiment": "RW1"},
+    {"server_id": "aws-iam-mcp", "source_repo": "awslabs/mcp", "known_result": "OUT-OF-REGIME", "prior_experiment": "RW2"}
+  ],
+
+  "exclusion_log_summary": "~25 candidates excluded across two discovery rounds: general platforms/frameworks with MCP as an incidental GitHub topic tag (e.g. n8n-io/n8n, google-gemini/gemini-cli, ruvnet/ruflo -- dominate the high-star tail of raw topic:mcp-server search), aggregators/gateways/proxies routing to other MCP servers (metatool-ai/metamcp, tadata-org/fastapi_mcp, sparfenyuk/mcp-proxy), and servers below the 5-tool floor (bytebase/dbhub, punitarani/fli, ref-tools/ref-tools-mcp). Full exclusion_log per pre-reg format not yet generated -- pending frame ratification.",
+
+  "next_step": "Awaiting GG confirmation on the two open_decisions_applied_by_default entries above. Once confirmed, generate evals/fixtures/exp1_exclusion_log.json (full pre-reg-format exclusion log) and begin STEP 1 (mirroring) per the pre-registered per_server_procedure. No scoring has begun."
+}
