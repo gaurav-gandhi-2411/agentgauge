@@ -1,0 +1,72 @@
+{
+  "experiment_id": "EXP-1",
+  "purpose": "Pre-reg-required exclusion log (exclusion_log_path in exp1_pre_registration.json). Logs servers dropped from the doc-density-stratified frame post-vetting, with the pre-stated reason. score_every_one=true / drop_post_hoc=false from the pre-reg is honored at the VETTING stage (all 30 structurally-valid candidates were passed to the mechanical extraction script, none pre-filtered); this log covers exclusions discovered AT the mechanical-scoring stage.",
+  "new_exclusion_reason_added": {
+    "id": "extraction_failed",
+    "definition": "Mechanical tool-definition extraction (agentgauge/exp1_tool_def_extractor.py) returned zero tools for a server known, from the manual structural-validity vetting pass (approx_tool_count field, exp1_server_frame.json v1), to have >=5 tools. This is a MISSING-DATA outcome from an extraction-method gap (unsupported source pattern), NOT evidence the server is genuinely near-empty on documentation. Scoring these as composite_score=0.0 and tiering them 'near_empty' would inject false signal into the doc-density stratification -- excluded instead.",
+    "not_in_original_pre_registration": true,
+    "note": "The original pre-reg's valid_exclusion_reasons (no_source / unrunnable / duplicate) did not anticipate a mechanical-extraction-method gap distinct from 'unrunnable'. This is a genuine amendment, flagged here and in exp1_pre_registration.json's amendments log, not silently absorbed into 'unrunnable' (the stub server was never built -- extraction failed before that step)."
+  },
+  "excluded": [
+    {
+      "server_id": "DeusData-codebase-memory-mcp",
+      "source_repo": "DeusData/codebase-memory-mcp",
+      "language": "C",
+      "reason": "extraction_failed",
+      "detail": "0 tools extracted via regex_best_effort; vetting recorded approx_tool_count=14, doc_quality=polished. No C-language tool-registration pattern is implemented in the extractor (regex patterns cover MCP TS SDK, mark3labs/mcp-go, and generic JS/JSON object literals only)."
+    },
+    {
+      "server_id": "xpzouying-xiaohongshu-mcp",
+      "source_repo": "xpzouying/xiaohongshu-mcp",
+      "language": "Go",
+      "reason": "extraction_failed",
+      "detail": "0 tools extracted via regex_best_effort; vetting recorded approx_tool_count=13, doc_quality=polished. Go pattern in the extractor targets mark3labs/mcp-go's mcp.NewTool(...)/mcp.WithDescription(...) idiom specifically (confirmed working on matlab-mcp-server and github-mcp-server, both Go); this repo evidently uses a different Go MCP SDK or registration style not covered."
+    },
+    {
+      "server_id": "BrowserMCP-mcp",
+      "source_repo": "BrowserMCP/mcp",
+      "language": "TypeScript",
+      "reason": "extraction_failed",
+      "detail": "0 tools extracted via regex_best_effort; vetting recorded approx_tool_count=13. Manually flagged doc_quality=thin during vetting -- genuinely low description density is plausible here, but 0/13 is inconsistent with 'thin' (thin implies short descriptions exist, not zero extractable schema) and no verbatim inspection was done to confirm vs. an extraction miss. Excluded as extraction_failed rather than assumed near_empty -- would need a source read to resolve, out of scope for this pass."
+    },
+    {
+      "server_id": "getsentry-XcodeBuildMCP",
+      "source_repo": "getsentry/XcodeBuildMCP",
+      "language": "TypeScript",
+      "reason": "extraction_failed",
+      "detail": "0 tools extracted; vetting recorded approx_tool_count=82. CONFIRMED via direct inspection (git ls-tree): tools are declared as YAML manifest files under manifests/tools/*.yaml, not in TS source at all -- a genuinely different, repo-specific tool-declaration architecture. Not a generalizable extractor gap; explicitly out of scope (would require a bespoke YAML-manifest parser for this one repo's convention)."
+    },
+    {
+      "server_id": "bethington-ghidra-mcp",
+      "source_repo": "bethington/ghidra-mcp",
+      "language": "Java",
+      "reason": "extraction_failed",
+      "detail": "0 tools extracted; vetting recorded approx_tool_count=225, doc_quality=moderate. No Java tool-registration pattern is implemented in the extractor at all (Java MCP servers likely use annotation-based registration, e.g. Spring AI-style @Tool, not covered by any existing regex)."
+    },
+    {
+      "server_id": "zinja-coder-jadx-ai-mcp",
+      "source_repo": "zinja-coder/jadx-ai-mcp",
+      "language": "Java",
+      "reason": "extraction_failed",
+      "detail": "0 tools extracted; vetting recorded approx_tool_count=25, doc_quality=polished. Same Java coverage gap as bethington-ghidra-mcp."
+    },
+    {
+      "server_id": "irinabuht12-oss-google-meta-ads-ga4-mcp",
+      "source_repo": "irinabuht12-oss/google-meta-ads-ga4-mcp",
+      "language": "unknown",
+      "reason": "extraction_failed",
+      "detail": "0 tools extracted; vetting recorded approx_tool_count=250, doc_quality=polished. Language was never determined during discovery (recorded 'unknown'); extractor fell through to the generic non-Python regex path, which did not match this repo's convention."
+    }
+  ],
+  "not_excluded_diagnostic_fixes_applied": [
+    "sec-edgar-mcp (Python): initially 0 tools -- AST decorator extraction found nothing because this repo registers tools imperatively (mcp.add_tool(fn) over a plain function list, no decorator). Fixed by extending agentgauge/exp1_tool_def_extractor.py to also resolve this idiom; recovered 21 tools, composite=80.1.",
+    "LycheeMem (Python): initially 0 tools -- tools are declared as a module-level TOOLS_SCHEMA = [{'name':..., 'description':...}] dict literal, not decorators. Fixed by falling back to the existing JSON-literal regex (already used for non-Python sources) when Python AST finds nothing; recovered 4 tools, composite=100.0.",
+    "aws-iam-mcp anchor (Python, awslabs/mcp monorepo): initially 0 tools -- the anchor loader hardcoded language='unknown' for both validation anchors regardless of actual language, and scored the ENTIRE monorepo rather than the pre-registered src/iam-mcp-server subpath. Fixed: anchors now carry explicit language + source_subpath fields; recovered 29 tools, composite=100.0."
+  ],
+  "summary": {
+    "fresh_candidates_total": 30,
+    "fresh_excluded_extraction_failed": 7,
+    "fresh_scoreable": 23,
+    "shortfall_vs_pre_registered_freshly_sampled_count": "28 - 23 = 5 short; escalated to GG as an open decision (see exp1_pre_registration.json amendments), not silently resolved."
+  }
+}

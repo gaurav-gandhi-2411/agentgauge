@@ -7,6 +7,34 @@
 
   "_note": "This pre-registration fixes the METHODOLOGY. The specific 30-server list (exp1_server_frame.json) is a second pre-registration committed after GG ratifies the list and before any scoring begins.",
 
+  "amendments": [
+    {
+      "date": "2026-07-02",
+      "id": "single_source_discovery",
+      "amends": "sampling_frame.sources",
+      "change": "Only 'GitHub topic:mcp-server search' was used, not all 5 pre-registered sources.",
+      "reason": "mcp.so returned HTTP 403 (blocked). PulseMCP's API requires an emailed key request (human step, not completed). Glama's pagination is a non-trivial Remix turbo-stream endpoint, not a plain query param, and was not decoded. The official MCP registry WAS evaluated as a second source (scripts/exp1_discover_registry.py, commit e2f24e0): 767 unique candidates fetched, but a sample screening pass found only ~11% passed the same structural-validity bar used for the GitHub pool (dead repos, remote-proxy-only servers, sub-5-tool servers, marketplace aggregators) -- high cost, low yield, dropped rather than diluting the frame with a much noisier source.",
+      "disclosure": "Report this as a single-source limitation in the paper, not silently as if all 5 sources had contributed."
+    },
+    {
+      "date": "2026-07-02",
+      "id": "doc_density_stratification_not_star",
+      "amends": "sampling_frame.strategy",
+      "change": "Stratification axis changed from GitHub stars (popularity/maturity proxy) to MECHANICAL doc-density (agentgauge/exp1_doc_density.py composite_score, computed from real extracted tool definitions), in empirical terciles via assign_tiers().",
+      "reason": "GG's correction: star-stratification held documentation quality roughly constant across strata (popularity correlates with polish) -- the star-stratified frame (05db7ca) came back 29/30 servers rated moderate-or-polished doc quality, meaning the sample did not actually vary on the axis the paper's thesis is about (documented vs under-documented). Doc-density is now the explicit stratification variable; star-band membership is retained per-server as star_stratum_v1 for reference/comparison only, not used for sampling.",
+      "disclosure": "The regime classifier itself remains BEHAVIORAL per the original pre-reg (unchanged) -- only the INPUT sampling axis changed. See exp1_server_frame.json (v2) for the resulting strata and an honest caveat that even under this stricter measure, the tier boundaries are relative to this sample, not absolute (documented in the frame's open_decisions_applied_by_default)."
+    },
+    {
+      "date": "2026-07-02",
+      "id": "freshly_sampled_count_shortfall",
+      "amends": "sampling_frame.freshly_sampled_count / reporting.pooled_prevalence denominator",
+      "change": "Actual N is 23 fresh (scored) + 2 anchors, not the pre-registered 28 + 2, pending a GG decision.",
+      "reason": "Mechanical extraction failed for 7 of the 30 structurally-vetted candidates (confirmed extraction-method gaps -- Java annotation-based registration, one YAML-manifest architecture, and other unmodeled patterns -- NOT genuinely empty catalogs; all 7 have >=13 tools per manual vetting). Full detail in evals/fixtures/exp1_exclusion_log.json. Backfilling to 28 requires a fresh manual vetting pass on the already-fetched but unvetted backup pool -- judgment work, deferred pending GG ratification rather than done unilaterally under time pressure (the exact failure mode this whole rebuild is correcting for).",
+      "disclosure": "OPEN -- escalated to GG alongside exp1_server_frame.json v2. Do not treat N=23 as final until ratified.",
+      "status": "AWAITING_GG_RATIFICATION"
+    }
+  ],
+
   "regime_classifier": {
     "definition": "A confusable family on a server is IN-REGIME iff, on the frozen protocol with a fixed agent: (a) Arm A = the server's real shipped descriptions FAILS >=1 contested task (SELECTED-WRONG or ABSTAINED-OR-HEDGED on >=1 task across trials), AND (b) Arm B = oracle description RECOVERS it (SELECTED-CORRECT on previously-failed tasks). BEHAVIORAL only — 'thin descriptions' is an INPUT property and NOT the regime definition.",
     "contested_task_definition": "Anti-tautological: task text describes user intent without naming the tool or quoting its description keywords. Tasks must be resolvable from at least one tool's purpose; the correct tool must NOT be identifiable from the task phrasing alone.",
