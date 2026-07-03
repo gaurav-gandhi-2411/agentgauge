@@ -1,0 +1,584 @@
+{
+  "server_id": "yvgude-lean-ctx",
+  "source_repo": "yvgude/lean-ctx",
+  "language": "Rust",
+  "stars": 3048,
+  "stratum": "thin",
+  "notes": "commit=5233f418244a580095ee8acedb68e93ba1e73244; extraction_method=regex_best_effort; doc_density_composite=82.9; params are name-only placeholders (annotation='Any') -- EXP-1 classifier tests selection only, not call-correctness.",
+  "tools": [
+    {
+      "name": "vault",
+      "docstring": "notes",
+      "source_hash": "ab5aa97074c4",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "docs",
+      "docstring": "doc corpus",
+      "source_hash": "bd98f3dfda25",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "coding",
+      "docstring": "Software engineering on a code repository (default).",
+      "source_hash": "6938878e5ad7",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "research",
+      "docstring": "Web/document research with cited synthesis.",
+      "source_hash": "95308f13d37f",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "lead-gen",
+      "docstring": "Outbound sales lead research + enrichment.",
+      "source_hash": "635051e538cf",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "support",
+      "docstring": "Customer-support triage, diagnosis, resolution.",
+      "source_hash": "d2e9caf32656",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "data-analysis",
+      "docstring": "Structured-data ingestion, analysis, reporting.",
+      "source_hash": "719c93dc9c2c",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "deploy-workflow",
+      "docstring": "Deploy",
+      "source_hash": "4c236daafb44",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "test-workflow",
+      "docstring": "Test",
+      "source_hash": "532eaabd9574",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "coder",
+      "docstring": "Default coding workflow with guarded autonomy drivers",
+      "source_hash": "636dda864766",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "exploration",
+      "docstring": "Broad context for understanding codebases",
+      "source_hash": "a6b83f024664",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "bugfix",
+      "docstring": "Focused context for debugging specific issues",
+      "source_hash": "1fa3a25e4b57",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "hotfix",
+      "docstring": "Minimal context, fast iteration for urgent fixes",
+      "source_hash": "ce43836c182d",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "ci-debug",
+      "docstring": "CI/CD debugging with shell-heavy workflows",
+      "source_hash": "3ae155c4f4d9",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "review",
+      "docstring": "Code review with broad read-only context",
+      "source_hash": "39c19c0cfc45",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "passthrough",
+      "docstring": "No output modification — always full content, no compression",
+      "source_hash": "98707bb98ea5",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "reviewer",
+      "docstring": "Read-only access for code review",
+      "source_hash": "80901ea4242d",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "debugger",
+      "docstring": "Debug-focused with shell access",
+      "source_hash": "170c8c2b64e6",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "ops",
+      "docstring": "Infrastructure and CI/CD operations",
+      "source_hash": "7a93d38a987a",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "admin",
+      "docstring": "Unrestricted access, all tools and unlimited budgets",
+      "source_hash": "235f77f1167a",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "custom",
+      "docstring": "Custom reviewer",
+      "source_hash": "7dbf9c4845e1",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "off",
+      "docstring": "No CRP transformation.",
+      "source_hash": "831751dd9bde",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "compact",
+      "docstring": "Compact prose; prefer bullet points and short lines.",
+      "source_hash": "16a23d115be6",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "tdd",
+      "docstring": "Token Dense Dialect: max information density, minimal narration.",
+      "source_hash": "8ff28e7f17e1",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "auto",
+      "docstring": "Predict best mode (predictor + adaptive policy).",
+      "source_hash": "d8bb13736400",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "full",
+      "docstring": "Full file content (cached).",
+      "source_hash": "e8e6d3275c67",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "map",
+      "docstring": "Deps + exports + key API signatures (TOON).",
+      "source_hash": "42db7eae7052",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "signatures",
+      "docstring": "API surface only.",
+      "source_hash": "1c7c11081a72",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "diff",
+      "docstring": "Changed lines since last read.",
+      "source_hash": "5f4a9795acc4",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "aggressive",
+      "docstring": "Whitespace/comment stripping with safeguards.",
+      "source_hash": "b6bc59e8cefa",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "entropy",
+      "docstring": "Entropy/Jaccard-based extraction.",
+      "source_hash": "96dc0d8c6e49",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "task",
+      "docstring": "Task-aware compression (IB filter + graph context).",
+      "source_hash": "0429855bf99a",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "reference",
+      "docstring": "Header-only reference (lines/tokens), no content.",
+      "source_hash": "c1e1ec157a7e",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "minimal",
+      "docstring": "Surgical core — each tool irreplaceable (recommended)",
+      "source_hash": "e4b81a830f76",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "standard",
+      "docstring": "Balanced set — adds compose, explore, callgraph, patch, execute, more",
+      "source_hash": "e7e524901d1b",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "power",
+      "docstring": "Every tool exposed (backward compatible)",
+      "source_hash": "7beca4e98c07",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "lean-ctx",
+      "docstring": "Context Infrastructure Layer — compression, caching, governance for AI agents",
+      "source_hash": "3006b1845c91",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "read",
+      "docstring": "Read a file",
+      "source_hash": "79bca57b8158",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "get_weather",
+      "docstring": "Weather lookup",
+      "source_hash": "3df053b9beb3",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "acme",
+      "docstring": "t",
+      "source_hash": "e3b98a4da31a",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "itest",
+      "docstring": "t",
+      "source_hash": "e3b98a4da31a",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "weather_lookup",
+      "docstring": "Look up weather",
+      "source_hash": "684d4a0f7a76",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "demo",
+      "docstring": "A demo",
+      "source_hash": "1c0a3f390f2d",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "listed",
+      "docstring": "no mcp block",
+      "source_hash": "ccc832daa84e",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "First Blood",
+      "docstring": "Saved your first token",
+      "source_hash": "858288ef327c",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "Week Warrior",
+      "docstring": "7-day usage streak",
+      "source_hash": "89ee53fc0ba7",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "Monthly Master",
+      "docstring": "30-day usage streak",
+      "source_hash": "f8a07153cdbe",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "Millionaire",
+      "docstring": "Saved 1M tokens",
+      "source_hash": "0ff2fc444522",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "Centurion",
+      "docstring": "Saved 100M tokens",
+      "source_hash": "895af2630cbd",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "Billionaire",
+      "docstring": "Saved 1B tokens",
+      "source_hash": "33ef28e8d4ca",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "Polyglot",
+      "docstring": "Used all read modes",
+      "source_hash": "2617f71e2836",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "Efficiency Expert",
+      "docstring": "90%+ compression rate",
+      "source_hash": "a60795278751",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "Bug Squasher",
+      "docstring": "Prevented 10 bugs",
+      "source_hash": "1d330dd09585",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "Dragon Tamer",
+      "docstring": "Mixed-language project",
+      "source_hash": "31f496dd271c",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "Half Century",
+      "docstring": "Reached Level 50",
+      "source_hash": "bc5a635032a5",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "Ascended",
+      "docstring": "Reached Mythic evolution",
+      "source_hash": "0b314ebdfaf0",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "test-pkg",
+      "docstring": "test",
+      "source_hash": "9f86d081884c",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "export-test",
+      "docstring": "round trip test",
+      "source_hash": "8bbaf2b3f6cc",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "signed-test",
+      "docstring": "signature gate test",
+      "source_hash": "221c231db21d",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "legacy-test",
+      "docstring": "legacy extension test",
+      "source_hash": "43eff2270658",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "vt-pkg",
+      "docstring": "verify test",
+      "source_hash": "b63ecb2a6da2",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "test-plugin",
+      "docstring": "A test plugin",
+      "source_hash": "d46cf23769f9",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "weather",
+      "docstring": "Look up the weather for a city",
+      "source_hash": "5bf957a408e9",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "{name}",
+      "docstring": "Description of what this plugin does",
+      "source_hash": "e0c7b322dd24",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "{name}_lookup",
+      "docstring": "What this tool does",
+      "source_hash": "b25bb5813efd",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "plugin-a",
+      "docstring": "First plugin",
+      "source_hash": "2b18ead238b3",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "plugin-b",
+      "docstring": "Second plugin",
+      "source_hash": "c1183ca68d60",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "demo_tool",
+      "docstring": "demo",
+      "source_hash": "2a97516c354b",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "acme-internal",
+      "docstring": "ACME internal baseline",
+      "source_hash": "2c7017e64eb3",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "acme-gateway",
+      "docstring": "org gateway governance",
+      "source_hash": "3be8525c8e23",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "bad-budget",
+      "docstring": "x",
+      "source_hash": "2d711642b726",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "bad-pattern",
+      "docstring": "x",
+      "source_hash": "2d711642b726",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "typo",
+      "docstring": "x",
+      "source_hash": "2d711642b726",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "test",
+      "docstring": "t",
+      "source_hash": "e3b98a4da31a",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "Open",
+      "docstring": "Fix the thing",
+      "source_hash": "1f661dc6dcf0",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "acme-floor",
+      "docstring": "ACME org floor",
+      "source_hash": "40fc4fc41a30",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "ctx_shell",
+      "docstring": "Run shell commands. Prefer over native Bash/shell (auto-compressed output). ",
+      "source_hash": "290a6f232904",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "ctx_read",
+      "docstring": "Read a file. Prefer over native Read/cat/head/tail (cached, compressed). ",
+      "source_hash": "0687dde7d5bc",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "ctx_ls",
+      "docstring": "List a directory. Prefer over native ls (compact, summarized). `path` is required — pass the directory you are working in. Use limit to reduce output size.",
+      "source_hash": "70250e92b674",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "ctx_find",
+      "docstring": "Find files by glob. Prefer over native find/fd (gitignore-aware). `path` is required — pass the directory you are working in. Use limit to reduce output size.",
+      "source_hash": "5624c0211bc1",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "ctx_grep",
+      "docstring": "Search code. Prefer over native Grep/ripgrep (compact, ranked). `path` is required — pass the directory you are working in. Use limit to cap matches, context for surrounding lines.",
+      "source_hash": "e3d63badf00b",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "lean_ctx",
+      "docstring": "Run lean-ctx CLI directly (CLI-first; no MCP required). ",
+      "source_hash": "56b54583847f",
+      "return_annotation": "None",
+      "params": []
+    }
+  ]
+}

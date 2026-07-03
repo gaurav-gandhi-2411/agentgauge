@@ -1,0 +1,24 @@
+{
+  "server_id": "firecrawl-firecrawl-mcp-server",
+  "source_repo": "firecrawl/firecrawl-mcp-server",
+  "language": "JavaScript",
+  "stars": 6778,
+  "stratum": "well_documented",
+  "notes": "commit=2bab1cc2f960e32a3071ec592c89e0c46731a45f; extraction_method=regex_best_effort; doc_density_composite=100.0; params are name-only placeholders (annotation='Any') -- EXP-1 classifier tests selection only, not call-correctness.",
+  "tools": [
+    {
+      "name": "firecrawl_search_feedback",
+      "docstring": "All results were >12 months old.",
+      "source_hash": "e09d03d1edfa",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "firecrawl_monitor_get",
+      "docstring": "\nGet a single monitor by ID.\n\n**Usage Example:**\n\\`\\`\\`json\n{ \"name\": \"firecrawl_monitor_get\", \"arguments\": { \"id\": \"mon_abc123\" } }\n\\`\\`\\`\n",
+      "source_hash": "46e50f7b825b",
+      "return_annotation": "None",
+      "params": []
+    }
+  ]
+}

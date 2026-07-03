@@ -8,8 +8,10 @@ from agentgauge.exp1_mirror import (
     ServerMirror,
     assert_docstrings_verbatim,
     extract_python_tools,
+    load_mirror,
     mirror_from_dict,
     mirror_to_dict,
+    save_mirror,
     tool_docstring_hash,
 )
 
@@ -202,6 +204,31 @@ def test_mirror_to_dict_is_json_serializable() -> None:
     d = mirror_to_dict(mirror)
     # Must not raise
     json.dumps(d)
+
+
+def test_save_and_load_mirror_round_trip_non_ascii(tmp_path: pathlib.Path) -> None:
+    """Regression: save_mirror must write UTF-8 explicitly. Without it, Windows'
+    default cp1252 encoding raises UnicodeEncodeError on non-ASCII docstrings
+    (observed in real EXP-1 servers with CJK/emoji content)."""
+    mirror = ServerMirror(
+        server_id="test-server",
+        source_repo="example/test-server",
+        language="python",
+        stars=0,
+        stratum="thin",
+        tools=[
+            MirrorTool(
+                name="search",
+                docstring="检索问题，自然语言 -- search with natural language queries.",
+                params=[],
+                source_hash=tool_docstring_hash("检索问题，自然语言"),
+            )
+        ],
+    )
+    path = tmp_path / "test-server.json"
+    save_mirror(mirror, path)
+    restored = load_mirror(path)
+    assert restored.tools[0].docstring == mirror.tools[0].docstring
 
 
 def test_mirror_from_dict_defaults() -> None:

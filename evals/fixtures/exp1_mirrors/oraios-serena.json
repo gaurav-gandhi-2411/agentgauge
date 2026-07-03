@@ -1,0 +1,199 @@
+{
+  "server_id": "oraios-serena",
+  "source_repo": "oraios/serena",
+  "language": "Python",
+  "stars": 25979,
+  "stratum": "near_empty",
+  "notes": "commit=6171c484d6483e063427ad415dd80d168e457087; extraction_method=ast; doc_density_composite=37.3; params are name-only placeholders (annotation='Any') -- EXP-1 classifier tests selection only, not call-correctness.",
+  "tools": [
+    {
+      "name": "start_mcp_server",
+      "docstring": "",
+      "source_hash": "e3b0c44298fc",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "project",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "project_file_arg",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "project_from_cwd",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "context",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "default_modes",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "added_modes",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "language_backend",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "transport",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "host",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "port",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "enable_web_dashboard",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "open_web_dashboard",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "enable_gui_log_window",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "log_level",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "trace_lsp_communication",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "tool_timeout",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "health_check",
+      "docstring": "Perform a comprehensive health check of the project's tools and language server.\n\n:param project: path to the project directory, defaults to the current working directory.",
+      "source_hash": "4b78dc265cd0",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "project",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "list",
+      "docstring": "",
+      "source_hash": "e3b0c44298fc",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "quiet",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "include_optional",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "only_optional",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "description",
+      "docstring": "",
+      "source_hash": "e3b0c44298fc",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "tool_name",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "context",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "get_tool_names",
+      "docstring": "",
+      "source_hash": "e3b0c44298fc",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "get_tool_stats_route",
+      "docstring": "",
+      "source_hash": "e3b0c44298fc",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "clear_tool_stats_route",
+      "docstring": "",
+      "source_hash": "e3b0c44298fc",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "remind",
+      "docstring": "",
+      "source_hash": "e3b0c44298fc",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "client",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "auto_approve",
+      "docstring": "",
+      "source_hash": "e3b0c44298fc",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "client",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    }
+  ]
+}

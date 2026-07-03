@@ -1,0 +1,31 @@
+{
+  "server_id": "bvisible-mcp-ssh-manager",
+  "source_repo": "bvisible/mcp-ssh-manager",
+  "language": "JavaScript",
+  "stars": 337,
+  "stratum": "thin",
+  "notes": "commit=998551eb1602603a2dbe534bb16b0eba5ca0076e; extraction_method=regex_best_effort; doc_density_composite=85.3; params are name-only placeholders (annotation='Any') -- EXP-1 classifier tests selection only, not call-correctness.",
+  "tools": [
+    {
+      "name": "log-error",
+      "docstring": "Run before accepting a changed SSH host key",
+      "source_hash": "d20c6f364def",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "log-key-change",
+      "docstring": "Run after updating an SSH host key",
+      "source_hash": "48ba5fa9925c",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "minimal",
+      "docstring": "Minimal profile",
+      "source_hash": "b22bfaeba58d",
+      "return_annotation": "None",
+      "params": []
+    }
+  ]
+}

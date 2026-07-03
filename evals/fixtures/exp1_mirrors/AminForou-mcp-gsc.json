@@ -1,0 +1,439 @@
+{
+  "server_id": "AminForou-mcp-gsc",
+  "source_repo": "AminForou/mcp-gsc",
+  "language": "Python",
+  "stars": 1098,
+  "stratum": "well_documented",
+  "notes": "commit=daab327277e28f8efcc83d9964fb1466a91a1d68; extraction_method=ast; doc_density_composite=100.0; params are name-only placeholders (annotation='Any') -- EXP-1 classifier tests selection only, not call-correctness.",
+  "tools": [
+    {
+      "name": "get_capabilities",
+      "docstring": "Get a full list of all available tools, current auth status, and how to get started.\nALWAYS call this first when asked what tools are available, what this server can do,\nor how to get started. Returns all tool names grouped by category in a single call —\nfaster than searching individually. Also shows if authentication is needed.",
+      "source_hash": "e8ff0d12c970",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "list_properties",
+      "docstring": "List all Google Search Console (GSC) properties and sites the user has access to.\nUse this to see all verified sites, domain properties, and URL-prefix properties\nin the connected Google Search Console account. Always call this first to get the\nexact site_url needed for other tools.",
+      "source_hash": "421a1209dba1",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "add_site",
+      "docstring": "Add a site to your Search Console properties.\n\nArgs:\n    site_url: The URL of the site to add (must be exact match e.g. https://example.com, or https://www.example.com, or https://subdomain.example.com/path/, for domain properties use format: sc-domain:example.com)",
+      "source_hash": "922811027a43",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "site_url",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "delete_site",
+      "docstring": "Remove a site from your Search Console properties.\n\nArgs:\n    site_url: The URL of the site to remove (must be exact match e.g. https://example.com, or https://www.example.com, or https://subdomain.example.com/path/, for domain properties use format: sc-domain:example.com)",
+      "source_hash": "12b3d128d589",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "site_url",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "get_search_analytics",
+      "docstring": "Get search analytics data for a specific property.\n\nArgs:\n    site_url: Exact GSC property URL from list_properties (e.g. \"https://example.com/\" or\n              \"sc-domain:example.com\"). Domain properties cover all subdomains — use the\n              domain property as site_url and filter by page to analyze a specific subdomain.\n    days: Number of days to look back (default: 28)\n    dimensions: Dimensions to group by (default: query). Options: query, page, device, country, date\n               You can provide multiple dimensions separated by comma (e.g., \"query,page\")\n    row_limit: Number of rows to return (default: 20, max: 500). Use 5-20 for quick overviews,\n               50-200 for deeper analysis, up to 500 for comprehensive reports. For bulk exports\n               beyond 500 rows, use get_advanced_search_analytics which supports pagination.",
+      "source_hash": "95bc5569f6a7",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "site_url",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "days",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "dimensions",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "row_limit",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "get_site_details",
+      "docstring": "Get detailed information about a specific Search Console property.\n\nArgs:\n    site_url: Exact GSC property URL from list_properties (e.g. \"https://example.com/\" or\n              \"sc-domain:example.com\"). Domain properties cover all subdomains — use the\n              domain property as site_url and filter by page to analyze a specific subdomain.",
+      "source_hash": "f831ed17901e",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "site_url",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "get_sitemaps",
+      "docstring": "List all sitemaps for a specific Search Console property.\n\nArgs:\n    site_url: Exact GSC property URL from list_properties (e.g. \"https://example.com/\" or\n              \"sc-domain:example.com\"). Domain properties cover all subdomains — use the\n              domain property as site_url and filter by page to analyze a specific subdomain.",
+      "source_hash": "066361a56c0d",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "site_url",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "inspect_url_enhanced",
+      "docstring": "Enhanced URL inspection to check indexing status and rich results in Google.\n\nArgs:\n    site_url: Exact GSC property URL from list_properties (e.g. \"https://example.com/\" or\n              \"sc-domain:example.com\"). Domain properties cover all subdomains — use the\n              domain property as site_url and filter by page to analyze a specific subdomain.\n    page_url: The specific URL to inspect",
+      "source_hash": "7d49c5906330",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "site_url",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "page_url",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "batch_url_inspection",
+      "docstring": "Inspect multiple URLs in batch (within API limits).\n\nArgs:\n    site_url: Exact GSC property URL from list_properties (e.g. \"https://example.com/\" or\n              \"sc-domain:example.com\"). Domain properties cover all subdomains — use the\n              domain property as site_url and filter by page to analyze a specific subdomain.\n    urls: List of URLs to inspect, one per line",
+      "source_hash": "b59b19baa03e",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "site_url",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "urls",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "check_indexing_issues",
+      "docstring": "Check for specific indexing issues across multiple URLs.\n\nArgs:\n    site_url: Exact GSC property URL from list_properties (e.g. \"https://example.com/\" or\n              \"sc-domain:example.com\"). Domain properties cover all subdomains — use the\n              domain property as site_url and filter by page to analyze a specific subdomain.\n    urls: List of URLs to check, one per line",
+      "source_hash": "e3a8d898af37",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "site_url",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "urls",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "get_performance_overview",
+      "docstring": "Get a performance overview for a specific property.\n\nArgs:\n    site_url: Exact GSC property URL from list_properties (e.g. \"https://example.com/\" or\n              \"sc-domain:example.com\"). Domain properties cover all subdomains — use the\n              domain property as site_url and filter by page to analyze a specific subdomain.\n    days: Number of days to look back (default: 28)",
+      "source_hash": "7870a9542883",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "site_url",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "days",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "get_advanced_search_analytics",
+      "docstring": "Get advanced search analytics data with sorting, filtering, and pagination.\n\nArgs:\n    site_url: Exact GSC property URL from list_properties (e.g. \"https://example.com/\" or\n              \"sc-domain:example.com\"). Domain properties cover all subdomains — use the\n              domain property as site_url and filter by page to analyze a specific subdomain.\n    start_date: Start date in YYYY-MM-DD format (defaults to 28 days ago)\n    end_date: End date in YYYY-MM-DD format (defaults to today)\n    dimensions: Dimensions to group by, comma-separated (e.g., \"query,page,device\")\n    search_type: Type of search results (WEB, IMAGE, VIDEO, NEWS, DISCOVER)\n    row_limit: Maximum number of rows to return (max 25000)\n    start_row: Starting row for pagination\n    sort_by: Metric to sort by (clicks, impressions, ctr, position)\n    sort_direction: Sort direction (ascending or descending)\n    filter_dimension: Single filter dimension (query, page, country, device). Use 'filters' instead for multiple filters.\n    filter_operator: Single filter operator (contains, equals, notContains, notEquals)\n    filter_expression: Single filter expression value\n    filters: JSON array of filter objects for AND logic across multiple dimensions. Overrides\n             filter_dimension/filter_operator/filter_expression when provided. Each object must\n             have 'dimension', 'operator', and 'expression' keys. Valid dimensions: query, page,\n             country, device. Valid operators: contains, equals, notContains, notEquals.\n             Example: [{\"dimension\":\"country\",\"operator\":\"equals\",\"expression\":\"usa\"},\n                       {\"dimension\":\"device\",\"operator\":\"equals\",\"expression\":\"MOBILE\"}]\n    data_state: Data freshness — \"all\" (default, matches GSC dashboard) or \"final\" (confirmed data only, 2-3 day lag)",
+      "source_hash": "8704a276d054",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "site_url",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "start_date",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "end_date",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "dimensions",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "search_type",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "row_limit",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "start_row",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "sort_by",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "sort_direction",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "filter_dimension",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "filter_operator",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "filter_expression",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "filters",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "data_state",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "compare_search_periods",
+      "docstring": "Compare search analytics data between two time periods.\n\nArgs:\n    site_url: Exact GSC property URL from list_properties (e.g. \"https://example.com/\" or\n              \"sc-domain:example.com\"). Domain properties cover all subdomains — use the\n              domain property as site_url and filter by page to analyze a specific subdomain.\n    period1_start: Start date for period 1 (YYYY-MM-DD)\n    period1_end: End date for period 1 (YYYY-MM-DD)\n    period2_start: Start date for period 2 (YYYY-MM-DD)\n    period2_end: End date for period 2 (YYYY-MM-DD)\n    dimensions: Dimensions to group by (default: query)\n    limit: Number of top results to compare (default: 10)",
+      "source_hash": "c6304384f651",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "site_url",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "period1_start",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "period1_end",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "period2_start",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "period2_end",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "dimensions",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "limit",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "get_search_by_page_query",
+      "docstring": "Get search analytics data for a specific page, broken down by query.\n\nArgs:\n    site_url: Exact GSC property URL from list_properties (e.g. \"https://example.com/\" or\n              \"sc-domain:example.com\"). Domain properties cover all subdomains — use the\n              domain property as site_url and filter by page to analyze a specific subdomain.\n    page_url: The specific page URL to analyze\n    days: Number of days to look back (default: 28)\n    row_limit: Number of rows to return (default: 20, max: 500). Use 5-20 for quick overviews,\n               50-200 for deeper analysis, up to 500 for comprehensive reports. For bulk exports\n               beyond 500 rows, use get_advanced_search_analytics which supports pagination.",
+      "source_hash": "56f5555eed33",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "site_url",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "page_url",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "days",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "row_limit",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "list_sitemaps_enhanced",
+      "docstring": "List all sitemaps for a specific Search Console property with detailed information.\n\nArgs:\n    site_url: Exact GSC property URL from list_properties (e.g. \"https://example.com/\" or\n              \"sc-domain:example.com\"). Domain properties cover all subdomains — use the\n              domain property as site_url and filter by page to analyze a specific subdomain.\n    sitemap_index: Optional sitemap index URL to list child sitemaps",
+      "source_hash": "cd71b736e091",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "site_url",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "sitemap_index",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "get_sitemap_details",
+      "docstring": "Get detailed information about a specific sitemap.\n\nArgs:\n    site_url: Exact GSC property URL from list_properties (e.g. \"https://example.com/\" or\n              \"sc-domain:example.com\"). Domain properties cover all subdomains — use the\n              domain property as site_url and filter by page to analyze a specific subdomain.\n    sitemap_url: The full URL of the sitemap to inspect",
+      "source_hash": "917adafa6314",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "site_url",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "sitemap_url",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "submit_sitemap",
+      "docstring": "Submit a new sitemap or resubmit an existing one to Google.\n\nArgs:\n    site_url: Exact GSC property URL from list_properties (e.g. \"https://example.com/\" or\n              \"sc-domain:example.com\"). Domain properties cover all subdomains — use the\n              domain property as site_url and filter by page to analyze a specific subdomain.\n    sitemap_url: The full URL of the sitemap to submit",
+      "source_hash": "33428f133c9c",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "site_url",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "sitemap_url",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "delete_sitemap",
+      "docstring": "Delete (unsubmit) a sitemap from Google Search Console.\n\nArgs:\n    site_url: Exact GSC property URL from list_properties (e.g. \"https://example.com/\" or\n              \"sc-domain:example.com\"). Domain properties cover all subdomains — use the\n              domain property as site_url and filter by page to analyze a specific subdomain.\n    sitemap_url: The full URL of the sitemap to delete",
+      "source_hash": "8caaf87236eb",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "site_url",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "sitemap_url",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "manage_sitemaps",
+      "docstring": "All-in-one tool to manage sitemaps (list, get details, submit, delete).\n\nArgs:\n    site_url: Exact GSC property URL from list_properties (e.g. \"https://example.com/\" or\n              \"sc-domain:example.com\"). Domain properties cover all subdomains — use the\n              domain property as site_url and filter by page to analyze a specific subdomain.\n    action: The action to perform (list, details, submit, delete)\n    sitemap_url: The full URL of the sitemap (required for details, submit, delete)\n    sitemap_index: Optional sitemap index URL for listing child sitemaps (only used with 'list' action)",
+      "source_hash": "c95e086dbd13",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "site_url",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "action",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "sitemap_url",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "sitemap_index",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "get_creator_info",
+      "docstring": "Provides information about Amin Foroutan, the creator of the MCP-GSC tool.",
+      "source_hash": "f1badd82e7b5",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "reauthenticate",
+      "docstring": "Perform a logout and new login sequence.\nDeletes the current OAuth token file and triggers the browser authentication flow.\nUseful when you need to switch to a different Google account.",
+      "source_hash": "30b952c9c8f3",
+      "return_annotation": "None",
+      "params": []
+    }
+  ]
+}

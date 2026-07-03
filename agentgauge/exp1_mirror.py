@@ -163,7 +163,9 @@ def load_mirror(path: pathlib.Path) -> ServerMirror:
 
 def save_mirror(mirror: ServerMirror, path: pathlib.Path) -> None:
     """Save a ServerMirror to a JSON file."""
-    path.write_text(json.dumps(mirror_to_dict(mirror), indent=2, ensure_ascii=False))
+    path.write_text(
+        json.dumps(mirror_to_dict(mirror), indent=2, ensure_ascii=False), encoding="utf-8"
+    )
 
 
 def assert_docstrings_verbatim(mirror: ServerMirror, source_path: pathlib.Path) -> list[str]:

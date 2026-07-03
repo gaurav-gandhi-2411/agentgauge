@@ -1,0 +1,35 @@
+{
+  "server_id": "blazickjp-arxiv-mcp-server",
+  "source_repo": "blazickjp/arxiv-mcp-server",
+  "language": "Python",
+  "stars": 2919,
+  "stratum": "near_empty",
+  "notes": "commit=d58901760d7ede4adb162eaba1725209a933f100; extraction_method=ast; doc_density_composite=71.8; params are name-only placeholders (annotation='Any') -- EXP-1 classifier tests selection only, not call-correctness.",
+  "tools": [
+    {
+      "name": "list_tools",
+      "docstring": "List available arXiv research tools.",
+      "source_hash": "b5dd73bd120e",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "call_tool",
+      "docstring": "Handle tool calls for arXiv research functionality.",
+      "source_hash": "f2ec6316c9bc",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "name",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "arguments",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    }
+  ]
+}

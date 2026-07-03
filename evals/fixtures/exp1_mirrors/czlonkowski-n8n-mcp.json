@@ -1,0 +1,486 @@
+{
+  "server_id": "czlonkowski-n8n-mcp",
+  "source_repo": "czlonkowski/n8n-mcp",
+  "language": "TypeScript",
+  "stars": 22074,
+  "stratum": "well_documented",
+  "notes": "commit=b604bea2116b09bebd250c2ef2302a946d51aad9; extraction_method=regex_best_effort; doc_density_composite=100.0; params are name-only placeholders (annotation='Any') -- EXP-1 classifier tests selection only, not call-correctness.",
+  "tools": [
+    {
+      "name": "n8n-mcp",
+      "docstring": "MCP server providing AI assistants with comprehensive access to n8n node ",
+      "source_hash": "ebf87a7da813",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "${toolName}",
+      "docstring": "TODO: Add description from old file",
+      "source_hash": "9d104d74c83f",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "n8n Documentation MCP Server",
+      "docstring": "Model Context Protocol server providing comprehensive n8n node documentation and workflow management",
+      "source_hash": "715486cb612e",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "{{ $json.name }}",
+      "docstring": "Defines conditions for filtering data with boolean logic",
+      "source_hash": "fa113700a3df",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "n8n_create_workflow",
+      "docstring": "Create workflow. Requires: name, nodes[], connections{}. Created inactive. Returns workflow with ID.",
+      "source_hash": "a4985879a952",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "n8n_get_workflow",
+      "docstring": "Get workflow by ID with different detail levels. n8n has a draft/publish model: the workflow body holds the draft (latest edits); use mode='active' to see the published graph that is actually running. Modes: 'full' (draft + metadata), 'details' (full + execution stats), 'active' (published graph only), 'structure' (nodes/connections topology), 'filtered' (full config of only the nodes named in nodeNames - use to read one heavy node without the whole workflow), 'minimal' (id/name/active/tags).",
+      "source_hash": "c821e377cf35",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "n8n_update_full_workflow",
+      "docstring": "Full workflow update. Requires complete nodes[] and connections{}. For incremental use n8n_update_partial_workflow.",
+      "source_hash": "bccce5bbf7e0",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "n8n_update_partial_workflow",
+      "docstring": "Update workflow incrementally with diff operations. Types: addNode, removeNode, updateNode, patchNodeField, moveNode, enable/disableNode, addConnection, removeConnection, updateSettings, updateName, add/removeTag, activate/deactivateWorkflow, transferWorkflow. patchNodeField requires fieldPath (dot path, e.g. \"parameters.jsCode\") and patches: [{find, replace}]. See tools_documentation(\"n8n_update_partial_workflow\", \"full\") for details.",
+      "source_hash": "5e3efcfdf96a",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "n8n_delete_workflow",
+      "docstring": "Permanently delete a workflow. This action cannot be undone.",
+      "source_hash": "0523924e04b8",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "n8n_list_workflows",
+      "docstring": "List workflows (minimal metadata only). Returns id/name/active/dates/tags. Check hasMore/nextCursor for pagination.",
+      "source_hash": "95c28043542f",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "n8n_validate_workflow",
+      "docstring": "Validate workflow by ID. Checks nodes, connections, expressions. Returns errors/warnings/suggestions.",
+      "source_hash": "cbbfe9b62002",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "n8n_autofix_workflow",
+      "docstring": "Automatically fix common workflow validation errors. Preview fixes or apply them. Fixes expression format, typeVersion, error output config, webhook paths, connection structure issues (numeric keys, invalid types, ID-to-name, duplicates, out-of-bounds indices).",
+      "source_hash": "c1714319d55d",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "n8n_test_workflow",
+      "docstring": "Test/trigger workflow execution. Auto-detects trigger type (webhook/form/chat). Supports: webhook (HTTP), form (fields), chat (message). Note: Only workflows with these trigger types can be executed externally.",
+      "source_hash": "8b65c0597930",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "n8n_executions",
+      "docstring": "Manage workflow executions: get details, list, or delete. Use action='get' with id for execution details, action='list' for listing executions, action='delete' to remove execution record.",
+      "source_hash": "4b1615596ea2",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "n8n_health_check",
+      "docstring": "Check n8n instance health and API connectivity. Use mode='diagnostic' for detailed troubleshooting with env vars and tool status.",
+      "source_hash": "291ed773829b",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "n8n_workflow_versions",
+      "docstring": "Manage workflow version history, rollback, and cleanup. Versions are scoped to your n8n instance. Five modes:\n- list: Show version history for a workflow\n- get: Get details of specific version\n- rollback: Restore workflow to previous version (creates backup first)\n- delete: Delete specific version or all versions for a workflow\n- prune: Manually trigger pruning to keep N most recent versions\nOld backups are also pruned automatically (10 most recent per workflow, plus an age-based retention window).",
+      "source_hash": "ffc2dfa41ad2",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "n8n_deploy_template",
+      "docstring": "Deploy a workflow template from n8n.io directly to your n8n instance. Deploys first, then auto-fixes common issues (expression format, typeVersions). Returns workflow ID, required credentials, and fixes applied.",
+      "source_hash": "1718a9dd2fe2",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "n8n_manage_datatable",
+      "docstring": "Manage n8n data tables and rows. Actions: createTable, listTables, getTable, updateTable, deleteTable, getRows, insertRows, updateRows, upsertRows, deleteRows.",
+      "source_hash": "63bf5ca34fb5",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "n8n_manage_credentials",
+      "docstring": "Manage n8n credentials. Actions: list, get, create, update, delete, getSchema. Use getSchema to discover required fields before creating. For list, page beyond 100 results with cursor (from the previous response's nextCursor). NOTE: list/get need an n8n deployment whose public API permits credential reads — older n8n versions, restricted API keys, or instance settings can reject them, returning NOT_SUPPORTED (create, delete, getSchema — and update where the API version supports it — still work). SECURITY: credential data values are never logged.",
+      "source_hash": "5af12ef0e77a",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "n8n_audit_instance",
+      "docstring": "Security audit of n8n instance. Combines n8n's built-in audit API (credentials, database, nodes, instance, filesystem risks) with deep workflow scanning (hardcoded secrets via 50+ regex patterns, unauthenticated webhooks, error handling gaps, data retention risks). Returns actionable markdown report with remediation steps using n8n_manage_credentials and n8n_update_partial_workflow.",
+      "source_hash": "c22da6c87358",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "tools_documentation",
+      "docstring": "Get documentation for n8n MCP tools. Call without parameters for quick start guide. Use topic parameter to get documentation for specific tools. Use depth='full' for comprehensive documentation.",
+      "source_hash": "58b038133609",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "search_nodes",
+      "docstring": "Search n8n nodes by keyword with optional real-world examples. Pass query as string. Example: query=\"webhook\" or query=\"database\". Returns max 20 results. Use includeExamples=true to get top 2 template configs per node.",
+      "source_hash": "32a824aa7306",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "get_node",
+      "docstring": "Get node info with progressive detail levels and multiple modes. Detail: minimal (~200 tokens), standard (~1-2K, default), full (~3-8K). Modes: info (default), docs (markdown documentation), search_properties (find properties), versions/compare/breaking/migrations (version info). Use format='docs' for readable documentation, mode='search_properties' with propertyQuery for finding specific fields.",
+      "source_hash": "44a0d31c5a9c",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "validate_node",
+      "docstring": "Validate n8n node configuration. Use mode='full' for comprehensive validation with errors/warnings/suggestions, mode='minimal' for quick required fields check. Example: nodeType=\"nodes-base.slack\", config={resource:\"channel\",operation:\"create\"}",
+      "source_hash": "a07afc36be39",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "get_template",
+      "docstring": "Get template by ID. Use mode to control response size: nodes_only (minimal), structure (nodes+connections), full (complete workflow).",
+      "source_hash": "789ef194f4fb",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "search_templates",
+      "docstring": "Search templates with multiple modes. Use searchMode='keyword' for text search, 'by_nodes' to find templates using specific nodes, 'by_task' for curated task-based templates, 'by_metadata' for filtering by complexity/setup time/services, 'patterns' for lightweight workflow pattern summaries mined from 2700+ templates.",
+      "source_hash": "ffbe1a399d3f",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "validate_workflow",
+      "docstring": "Full workflow validation: structure, connections, expressions, AI tools. Returns errors/warnings/fixes. Essential before deploy.",
+      "source_hash": "1765e5fad9e2",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "mcpApi",
+      "docstring": "The URL of the MCP server",
+      "source_hash": "b9772cce9cba",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "authToken",
+      "docstring": "Authentication token for the MCP server (if required)",
+      "source_hash": "a8e44dc4d33c",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "HTTP",
+      "docstring": "How to connect to the MCP server",
+      "source_hash": "6dfc2adbe5e2",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "mcp",
+      "docstring": "Interact with Model Context Protocol (MCP) servers",
+      "source_hash": "099d564a4813",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "List Tools",
+      "docstring": "List available MCP tools",
+      "source_hash": "8593f422e0b7",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "Read Resource",
+      "docstring": "Read an MCP resource",
+      "source_hash": "c042b2d4e010",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "List Resources",
+      "docstring": "List available MCP resources",
+      "source_hash": "4ea59a63d9cf",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "Get Prompt",
+      "docstring": "Get an MCP prompt",
+      "source_hash": "13dfd0ba25a1",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "List Prompts",
+      "docstring": "List available MCP prompts",
+      "source_hash": "0d2e33a199c5",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "toolName",
+      "docstring": "Name of the MCP tool to execute",
+      "source_hash": "97133ea12d2a",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "toolArguments",
+      "docstring": "Arguments to pass to the MCP tool",
+      "source_hash": "a546f89d31f6",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "resourceUri",
+      "docstring": "URI of the MCP resource to read",
+      "source_hash": "e99aa35890be",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "promptName",
+      "docstring": "Name of the MCP prompt to retrieve",
+      "source_hash": "1fd5f9ee6e40",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "promptArguments",
+      "docstring": "Arguments to pass to the MCP prompt",
+      "source_hash": "c6c0e268f9ea",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "npm_readme",
+      "docstring": "Raw README markdown from npm registry",
+      "source_hash": "f2ab5a49312f",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "ai_documentation_summary",
+      "docstring": "AI-generated structured summary (JSON)",
+      "source_hash": "0a429f9d97fd",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "ai_summary_generated_at",
+      "docstring": "When the AI summary was generated",
+      "source_hash": "38370a929cae",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "exact-field-match",
+      "docstring": "Field name '${fieldName}' is known to use resource locator in ${nodeType}",
+      "source_hash": "5b8867e558dd",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "field-pattern",
+      "docstring": "Field name '${fieldName}' matches common resource locator patterns",
+      "source_hash": "7415ec999c93",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "value-pattern",
+      "docstring": "Value contains patterns typical of resource identifiers",
+      "source_hash": "db4002060022",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "node-category",
+      "docstring": "Node type '${nodeType}' typically uses resource locators",
+      "source_hash": "325a7f1ecfbf",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "",
+      "docstring": "The API endpoint URL",
+      "source_hash": "173c792d9138",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "X-Request-ID",
+      "docstring": "The API endpoint to call",
+      "source_hash": "3a5f02f0668b",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "toolDescription",
+      "docstring": "Description for the AI to understand what this tool does and when to use it",
+      "source_hash": "84793e350e41",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "template_metadata",
+      "docstring": "Main categories like automation, integration, data processing",
+      "source_hash": "4e387a0886e5",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "Execution ${execution.id}",
+      "docstring": "Workflow: ${execution.workflowData?.name || 'Unknown'}",
+      "source_hash": "28c0160d96e4",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "n8n skill (main)",
+      "docstring": "Primary SKILL.md document for an n8n-mcp skill",
+      "source_hash": "c65eb234a37f",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "n8n skill (supporting file)",
+      "docstring": "A markdown file inside a specific n8n-mcp skill",
+      "source_hash": "1cd6a0577948",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "ai_agents_guide",
+      "docstring": "Comprehensive guide to building AI Agent workflows in n8n. Covers architecture, connections, tools, validation, and best practices for production AI systems.",
+      "source_hash": "5730bc5af4fe",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "owner",
+      "docstring": "Repository owner username",
+      "source_hash": "522ce875f7e8",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "repo",
+      "docstring": "Repository name",
+      "source_hash": "a2b1b3f24a4b",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "title",
+      "docstring": "Issue title",
+      "source_hash": "baebb0f722db",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "body",
+      "docstring": "Issue description",
+      "source_hash": "6fdf4c7fb5a1",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "Calculate Shipping",
+      "docstring": "Calculate shipping cost based on weight (kg) and distance (km)",
+      "source_hash": "fe1ad4a2e818",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "Research Specialist",
+      "docstring": "Expert researcher that searches multiple sources and synthesizes information. Use for detailed research tasks.",
+      "source_hash": "82c4274d6443",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "Filesystem Tool",
+      "docstring": "Access file system to read files, list directories, and search content",
+      "source_hash": "0bad09d3aa0c",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "research_agent",
+      "docstring": "Deep research specialist",
+      "source_hash": "2297de791297",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "data_analyst",
+      "docstring": "Data analysis expert",
+      "source_hash": "3f24d1f6f6ac",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "writer_agent",
+      "docstring": "Content writing specialist",
+      "source_hash": "e5e11c8decd2",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "n8n_diagnostic",
+      "docstring": "Comprehensive diagnostic with environment-aware debugging, version checks, performance metrics, and mode-specific troubleshooting",
+      "source_hash": "0ceeb543c4be",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "n8n_list_available_tools",
+      "docstring": "List all available n8n management tools and their capabilities",
+      "source_hash": "d0d52297e021",
+      "return_annotation": "None",
+      "params": []
+    }
+  ]
+}

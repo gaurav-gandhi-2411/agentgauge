@@ -1,0 +1,38 @@
+{
+  "server_id": "LycheeMem-LycheeMem",
+  "source_repo": "LycheeMem/LycheeMem",
+  "language": "Python",
+  "stars": 1074,
+  "stratum": "well_documented",
+  "notes": "commit=3973b2f9627643615d9f222cde48f4db5d09f64a; extraction_method=regex_fallback_on_python; doc_density_composite=100.0; params are name-only placeholders (annotation='Any') -- EXP-1 classifier tests selection only, not call-correctness.",
+  "tools": [
+    {
+      "name": "lycheemem_health",
+      "docstring": "Check whether the configured LycheeMem server is reachable.",
+      "source_hash": "8d077df5e76f",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "lycheemem_append_turn",
+      "docstring": "Append one conversation turn into LycheeMem's session store.",
+      "source_hash": "79d7dfad9449",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "lycheemem_consolidate",
+      "docstring": "Persist newly appended turns into LycheeMem long-term memory.",
+      "source_hash": "b4f254f5f32b",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "lycheemem",
+      "docstring": "Inspect LycheeMem status, recall, and consolidation from the current Hermes session.",
+      "source_hash": "73490a93e9ff",
+      "return_annotation": "None",
+      "params": []
+    }
+  ]
+}

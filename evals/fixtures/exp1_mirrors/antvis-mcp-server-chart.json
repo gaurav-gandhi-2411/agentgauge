@@ -1,0 +1,220 @@
+{
+  "server_id": "antvis-mcp-server-chart",
+  "source_repo": "antvis/mcp-server-chart",
+  "language": "TypeScript",
+  "stars": 4199,
+  "stratum": "well_documented",
+  "notes": "commit=33178096abfa58f245b456f5bacb18bc37f5cbaf; extraction_method=regex_best_effort; doc_density_composite=100.0; params are name-only placeholders (annotation='Any') -- EXP-1 classifier tests selection only, not call-correctness.",
+  "tools": [
+    {
+      "name": "generate_area_chart",
+      "docstring": "Generate a area chart to show data trends under continuous independent variables and observe the overall data trend, such as, displacement = velocity (average or instantaneous) × time: s = v × t. If the x-axis is time (t) and the y-axis is velocity (v) at each moment, an area chart allows you to observe the trend of velocity over time and infer the distance traveled by the area's size.",
+      "source_hash": "f96bc61c1cd1",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "generate_bar_chart",
+      "docstring": "Generate a horizontal bar chart to show data for numerical comparisons among different categories, such as, comparing categorical data and for horizontal comparisons.",
+      "source_hash": "851c20fedf7a",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "generate_boxplot_chart",
+      "docstring": "Generate a boxplot chart to show data for statistical summaries among different categories, such as, comparing the distribution of data points across categories.",
+      "source_hash": "07995874c0d1",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "generate_column_chart",
+      "docstring": "Generate a column chart, which are best for comparing categorical data, such as, when values are close, column charts are preferable because our eyes are better at judging height than other visual elements like area or angles.",
+      "source_hash": "cb9505024eff",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "generate_district_map",
+      "docstring": "Generates regional distribution maps, which are usually used to show the administrative divisions and coverage of a dataset. It is not suitable for showing the distribution of specific locations, such as urban administrative divisions, GDP distribution maps of provinces and cities across the country, etc. This tool is limited to generating data maps within China.",
+      "source_hash": "15a409da16b9",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "generate_dual_axes_chart",
+      "docstring": "Generate a dual axes chart which is a combination chart that integrates two different chart types, typically combining a bar chart with a line chart to display both the trend and comparison of data, such as, the trend of sales and profit over time.",
+      "source_hash": "ebb7a6509b51",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "generate_fishbone_diagram",
+      "docstring": "Generate a fishbone diagram chart to uses a fish skeleton, like structure to display the causes or effects of a core problem, with the problem as the fish head and the causes/effects as the fish bones. It suits problems that can be split into multiple related factors.",
+      "source_hash": "b4c25d22c4d7",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "generate_flow_diagram",
+      "docstring": "Generate a flow diagram chart to show the steps and decision points of a process or system, such as, scenarios requiring linear process presentation.",
+      "source_hash": "be9973fdcd38",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "generate_funnel_chart",
+      "docstring": "Generate a funnel chart to visualize the progressive reduction of data as it passes through stages, such as, the conversion rates of users from visiting a website to completing a purchase.",
+      "source_hash": "be676a3685d3",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "generate_histogram_chart",
+      "docstring": "Generate a histogram chart to show the frequency of data points within a certain range. It can observe data distribution, such as, normal and skewed distributions, and identify data concentration areas and extreme points.",
+      "source_hash": "912a3265e272",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "generate_line_chart",
+      "docstring": "Generate a line chart to show trends over time, such as, the ratio of Apple computer sales to Apple's profits changed from 2000 to 2016.",
+      "source_hash": "9d6966e9e2e1",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "generate_liquid_chart",
+      "docstring": "Generate a liquid chart to visualize a single value as a percentage, such as, the current occupancy rate of a reservoir or the completion percentage of a project.",
+      "source_hash": "3c347b33afb2",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "generate_mind_map",
+      "docstring": "Generate a mind map chart to organizes and presents information in a hierarchical structure with branches radiating from a central topic, such as, a diagram showing the relationship between a main topic and its subtopics.",
+      "source_hash": "69bf6897ec2b",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "generate_network_graph",
+      "docstring": "Generate a network graph chart to show relationships (edges) between entities (nodes), such as, relationships between people in social networks.",
+      "source_hash": "e9aa42fc72e3",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "CEO",
+      "docstring": "Chief Executive Officer",
+      "source_hash": "60f3b525481f",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "CTO",
+      "docstring": "Chief Technology Officer",
+      "source_hash": "847953c7c1be",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "Dev Manager",
+      "docstring": "Development Manager",
+      "source_hash": "de4bb323d9b1",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "generate_organization_chart",
+      "docstring": "Generate an organization chart to visualize the hierarchical structure of an organization, such as, a diagram showing the relationship between a CEO and their direct reports.",
+      "source_hash": "289dd34ffc73",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "generate_path_map",
+      "docstring": "Generate a route map to display the user's planned route, such as travel guide routes.",
+      "source_hash": "8d4be394b0bd",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "generate_pie_chart",
+      "docstring": "Generate a pie chart to show the proportion of parts, such as, market share and budget allocation.",
+      "source_hash": "2dc22593f3f7",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "generate_pin_map",
+      "docstring": "Generate a point map to display the location and distribution of point data on the map, such as the location distribution of attractions, hospitals, supermarkets, etc.",
+      "source_hash": "1a011a30084f",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "generate_radar_chart",
+      "docstring": "Generate a radar chart to display multidimensional data (four dimensions or more), such as, evaluate Huawei and Apple phones in terms of five dimensions: ease of use, functionality, camera, benchmark scores, and battery life.",
+      "source_hash": "eadcd1d73528",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "generate_sankey_chart",
+      "docstring": "Generate a sankey chart to visualize the flow of data between different stages or categories, such as, the user journey from landing on a page to completing a purchase.",
+      "source_hash": "5f9a8142686a",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "generate_scatter_chart",
+      "docstring": "Generate a scatter chart to show the relationship between two variables, helps discover their relationship or trends, such as, the strength of correlation, data distribution patterns.",
+      "source_hash": "d75c8ea04f63",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "generate_spreadsheet",
+      "docstring": "Generate a spreadsheet or pivot table for displaying tabular data. When 'rows' or 'values' fields are provided, it renders as a pivot table (cross-tabulation); otherwise, it renders as a regular table. Useful for displaying structured data, comparing values across categories, and creating data summaries.",
+      "source_hash": "a8084b9d6eb7",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "generate_treemap_chart",
+      "docstring": "Generate a treemap chart to display hierarchical data and can intuitively show comparisons between items at the same level, such as, show disk space usage with treemap.",
+      "source_hash": "83973c4e02a8",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "generate_venn_chart",
+      "docstring": "Generate a Venn diagram to visualize the relationships between different sets, showing how they intersect and overlap, such as the commonalities and differences between various groups.",
+      "source_hash": "bcaaf72c3b69",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "generate_violin_chart",
+      "docstring": "Generate a violin chart to show data for statistical summaries among different categories, such as, comparing the distribution of data points across categories.",
+      "source_hash": "f5d77608a39c",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "generate_waterfall_chart",
+      "docstring": "Generate a waterfall chart to visualize the cumulative effect of sequentially introduced positive or negative values, such as showing how an initial value is affected by a series of intermediate positive or negative values leading to a final result. Waterfall charts are ideal for financial analysis, budget tracking, profit and loss statements, and understanding the composition of changes over time or categories.",
+      "source_hash": "3856b83c61c3",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "generate_word_cloud_chart",
+      "docstring": "Generate a word cloud chart to show word frequency or weight through text size variation, such as, analyzing common words in social media, reviews, or feedback.",
+      "source_hash": "e1661a55c980",
+      "return_annotation": "None",
+      "params": []
+    }
+  ]
+}

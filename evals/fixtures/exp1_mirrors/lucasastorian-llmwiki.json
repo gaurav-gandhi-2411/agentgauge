@@ -1,0 +1,300 @@
+{
+  "server_id": "lucasastorian-llmwiki",
+  "source_repo": "lucasastorian/llmwiki",
+  "language": "Python",
+  "stars": 1252,
+  "stratum": "near_empty",
+  "notes": "commit=2f190303f8c978400f422b90ae666262ce5d8dc4; extraction_method=ast; doc_density_composite=25.0; params are name-only placeholders (annotation='Any') -- EXP-1 classifier tests selection only, not call-correctness.",
+  "tools": [
+    {
+      "name": "ping",
+      "docstring": "",
+      "source_hash": "e3b0c44298fc",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "delete",
+      "docstring": "",
+      "source_hash": "e3b0c44298fc",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "knowledge_base",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "path",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "guide",
+      "docstring": "",
+      "source_hash": "e3b0c44298fc",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "lint",
+      "docstring": "",
+      "source_hash": "e3b0c44298fc",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "knowledge_base",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "path",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "scope",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "include_graph",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "create_knowledge_base",
+      "docstring": "",
+      "source_hash": "e3b0c44298fc",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "name",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "description",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "kind",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "set_course_mode",
+      "docstring": "",
+      "source_hash": "e3b0c44298fc",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "knowledge_base",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "kind",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "list_knowledge_bases",
+      "docstring": "",
+      "source_hash": "e3b0c44298fc",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "read",
+      "docstring": "",
+      "source_hash": "e3b0c44298fc",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "knowledge_base",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "path",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "pages",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "sections",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "include_images",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "search",
+      "docstring": "",
+      "source_hash": "e3b0c44298fc",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "knowledge_base",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "mode",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "query",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "path",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "tags",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "limit",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "annotated_only",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "scope",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "create",
+      "docstring": "",
+      "source_hash": "e3b0c44298fc",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "knowledge_base",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "title",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "content",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "tags",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "path",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "date_str",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "overwrite",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "edit",
+      "docstring": "",
+      "source_hash": "e3b0c44298fc",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "knowledge_base",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "path",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "old_text",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "new_text",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "append",
+      "docstring": "",
+      "source_hash": "e3b0c44298fc",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "knowledge_base",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "path",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "content",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "wrapper",
+      "docstring": "",
+      "source_hash": "e3b0c44298fc",
+      "return_annotation": "None",
+      "params": []
+    }
+  ]
+}

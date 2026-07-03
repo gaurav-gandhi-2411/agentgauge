@@ -1,0 +1,427 @@
+{
+  "server_id": "stickerdaniel-linkedin-mcp-server",
+  "source_repo": "stickerdaniel/linkedin-mcp-server",
+  "language": "Python",
+  "stars": 2610,
+  "stratum": "thin",
+  "notes": "commit=a8ca5df79ded1b454bf734f010485c815a6b315a; extraction_method=ast; doc_density_composite=94.2; params are name-only placeholders (annotation='Any') -- EXP-1 classifier tests selection only, not call-correctness.",
+  "tools": [
+    {
+      "name": "_patchright_install_targets",
+      "docstring": "Resolve {dir_prefix: revision} from patchright's bundled browsers.json.\n\nReads ``<patchright>/driver/package/browsers.json`` — the authoritative\nfile patchright itself consults to know which revision it expects.\nReturns ``None`` if the registry can't be read; callers treat ``None``\nas \"not ready\" so the next gate triggers reinstall.\n\nCached for the process lifetime: the patchright revision only changes on\npackage upgrade, which requires a process restart. Tests reset the cache\nvia ``reset_bootstrap_for_testing()``.",
+      "source_hash": "1eff43eae3b4",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "close_session",
+      "docstring": "Close the current browser session and clean up resources.",
+      "source_hash": "5311497f62c2",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "get_company_profile",
+      "docstring": "Get a specific company's LinkedIn profile.\n\nArgs:\n    company_name: LinkedIn company name (e.g., \"docker\", \"anthropic\", \"microsoft\")\n    ctx: FastMCP context for progress reporting\n    sections: Comma-separated list of extra sections to scrape.\n        The about page is always included.\n        Available sections: posts, jobs\n        Examples: \"posts\", \"posts,jobs\"\n        Default (None) scrapes only the about page.\n\nReturns:\n    Dict with url, sections (name -> raw text), and optional references.\n    Includes unknown_sections list when unrecognised names are passed.\n    The LLM should parse the raw text in each section.\n\n    When the about section is included, references[\"about\"] may\n    include a {kind: \"company_urn\", value: \"<numeric-id>\"} entry —\n    present whenever the page exposes the \"See all employees\" link\n    (typically all but the smallest companies). The value is the\n    numeric id LinkedIn's people-search uses in its currentCompany\n    URL facet; plain-text company names are silently ignored by\n    that facet.",
+      "source_hash": "e2d94567fcaf",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "company_name",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "sections",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "extractor",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "get_company_posts",
+      "docstring": "Get recent posts from a company's LinkedIn feed.\n\nArgs:\n    company_name: LinkedIn company name (e.g., \"docker\", \"anthropic\", \"microsoft\")\n    ctx: FastMCP context for progress reporting\n\nReturns:\n    Dict with url, sections (name -> raw text), and optional references.\n    The LLM should parse the raw text to extract individual posts.",
+      "source_hash": "4f5bc3b4ed5d",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "company_name",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "extractor",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "search_companies",
+      "docstring": "Search for companies on LinkedIn.\n\nArgs:\n    keywords: Search keywords (e.g., \"fintech\", \"anthropic\", \"electric vehicles\")\n    ctx: FastMCP context for progress reporting\n\nReturns:\n    Dict with url, sections (search_results -> raw text), and optional references.\n    The LLM should parse the raw text to extract individual companies and their pages.",
+      "source_hash": "9c4fef1d067d",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "keywords",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "extractor",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "get_company_employees",
+      "docstring": "List employees at a company from the LinkedIn /people/ page, including\nthe demographics aggregate that this view exposes: where employees\nlive, where they studied, and a function breakdown (Engineering, Sales,\nOperations, etc.). The demographics are unique to this tool.\n\nFor filtered search by network degree (1st/2nd/3rd) or location, prefer\nsearch_people with current_company set to the company URN id. That path\nalso returns more result pages than the /people/ tab.\n\nThe optional keywords filter narrows results by name, title, or skill.\n\ncompany_name must be the exact LinkedIn URL slug (the path segment after\n/company/), not the display name. LinkedIn assigns unique slugs and the\ndisplay name often does not match. For example, the AI lab Anthropic\nlives at /company/anthropicresearch/, not /company/anthropic/. If you\nare unsure of the slug, call search_companies first and pick the slug\nfrom the returned references.\n\nArgs:\n    company_name: LinkedIn company URL slug (e.g., \"docker\", \"anthropicresearch\", \"microsoft\")\n    ctx: FastMCP context for progress reporting\n    keywords: Optional filter by name, job title, or skill (e.g., \"engineer\", \"sales\")\n\nReturns:\n    Dict with url, sections (employees -> raw text), and optional references.\n    References include /in/ profile paths for listed employees.",
+      "source_hash": "53fab83f17db",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "company_name",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "keywords",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "extractor",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "get_feed",
+      "docstring": "Get posts from the authenticated user's LinkedIn feed.\n\nArgs:\n    ctx: FastMCP context for progress reporting\n    num_posts: Number of posts to fetch (1-50, default 10).\n               Posts are loaded in batches of ~5 as the page scrolls,\n               so the actual count may slightly exceed the target.\n\nReturns:\n    Dict with url, sections (name -> raw text), and optional keys:\n    - references[\"feed\"]: list of {kind: \"feed_post\", url, ...}\n      entries. URLs are relative paths and may carry either\n      ``/feed/update/<urn>/`` (DOM-anchor-derived) or\n      ``/posts/<slug>`` (SDUI-derived) shape — both are valid\n      LinkedIn permalinks.\n    - section_errors: present when the feed is rate-limited or\n      extraction fails.\n\n    Truncated posts are not auto-expanded; full text for any post\n    is reachable via its permalink in references[\"feed\"]. The LLM\n    should parse sections[\"feed\"] for post bodies.",
+      "source_hash": "6afcd7cb1fa1",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "num_posts",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "extractor",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "get_job_details",
+      "docstring": "Get job details for a specific job posting on LinkedIn.\n\nArgs:\n    job_id: LinkedIn job ID (e.g., \"4252026496\", \"3856789012\")\n    ctx: FastMCP context for progress reporting\n\nReturns:\n    Dict with url, sections (name -> raw text), and optional references.\n    The LLM should parse the raw text to extract job details.",
+      "source_hash": "8eae418e3dd7",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "job_id",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "extractor",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "search_jobs",
+      "docstring": "Search for jobs on LinkedIn.\n\nReturns job_ids that can be passed to get_job_details for full info.\n\nArgs:\n    keywords: Search keywords (e.g., \"software engineer\", \"data scientist\")\n    ctx: FastMCP context for progress reporting\n    location: Optional location filter (e.g., \"San Francisco\", \"Remote\")\n    max_pages: Maximum number of result pages to load (1-10, default 3)\n    date_posted: Filter by posting date (past_hour, past_24_hours, past_week, past_month)\n    job_type: Filter by job type, comma-separated (full_time, part_time, contract, temporary, volunteer, internship, other)\n    experience_level: Filter by experience level, comma-separated (internship, entry, associate, mid_senior, director, executive)\n    work_type: Filter by work type, comma-separated (on_site, remote, hybrid)\n    easy_apply: Only show Easy Apply jobs (default false)\n    sort_by: Sort results (date, relevance)\n\nReturns:\n    Dict with url, sections (name -> raw text), job_ids (list of\n    numeric job ID strings usable with get_job_details), and optional references.",
+      "source_hash": "64ca05ae6663",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "keywords",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "location",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "max_pages",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "date_posted",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "job_type",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "experience_level",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "work_type",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "easy_apply",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "sort_by",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "extractor",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "get_inbox",
+      "docstring": "List recent conversations from the LinkedIn messaging inbox.\n\nArgs:\n    ctx: FastMCP context for progress reporting\n    limit: Maximum number of conversations to load (1-50, default 20)\n\nReturns:\n    Dict with url, sections (inbox -> raw text), and optional references.",
+      "source_hash": "18b26d086db6",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "limit",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "extractor",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "get_conversation",
+      "docstring": "Read a specific messaging conversation.\n\nProvide either linkedin_username or thread_id to identify the conversation.\n\nWhen looked up by linkedin_username, resolution searches the messaging\ninbox for the participant's display name and click-visits every\nmatching row to capture its thread ID — LinkedIn's sidebar has no\nanchor hrefs or thread-id attributes, so this is the only available\npath. Each visit selects the row in the LinkedIn UI and may mark it\nas read. Pass thread_id directly to skip this enumeration.\n\nArgs:\n    ctx: FastMCP context for progress reporting\n    linkedin_username: LinkedIn username of the conversation participant\n    thread_id: LinkedIn messaging thread ID\n    index: 0-based selector for which thread to open when the\n        participant has multiple threads (e.g. an organic 1-on-1 plus\n        an InMail). Ignored when thread_id is provided. To enumerate\n        thread IDs first, call search_conversations.\n\nReturns:\n    Dict with url, sections (conversation -> raw text), and optional references.",
+      "source_hash": "8c76739a1249",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "linkedin_username",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "thread_id",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "index",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "extractor",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "search_conversations",
+      "docstring": "Search messages by keyword.\n\nArgs:\n    keywords: Search keywords to filter conversations\n    ctx: FastMCP context for progress reporting\n    limit: Maximum number of search-result rows to enumerate as\n        conversation references (1-50, default 20). Each enumeration\n        selects the row in LinkedIn's UI and may mark it as read, so\n        a low cap is preferable for noisy queries.\n\nReturns:\n    Dict with url, sections (search_results -> raw text), and optional references.",
+      "source_hash": "dd5390525684",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "keywords",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "limit",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "extractor",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "send_message",
+      "docstring": "Send a message to a LinkedIn user.\n\nThe recipient must be directly messageable from the profile page. This is a\nwrite operation when confirm_send is True.\n\nArgs:\n    linkedin_username: LinkedIn username of the recipient\n    message: The message text to send\n    confirm_send: Must be True to send the message\n    ctx: FastMCP context for progress reporting\n    profile_urn: Optional profile URN (e.g. ACoAAB...) to construct the\n        compose URL directly. Providing this bypasses the Message-button\n        lookup and is more reliable when available. Obtain via\n        get_person_profile. Note: inbox may not always show all\n        messages; use search_conversations as a fallback.\n\nReturns:\n    Dict with url, status, message, recipient_selected, and sent.",
+      "source_hash": "7f0423c7fae0",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "linkedin_username",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "message",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "confirm_send",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "profile_urn",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "extractor",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "get_person_profile",
+      "docstring": "Get a specific person's LinkedIn profile.\n\nArgs:\n    linkedin_username: LinkedIn username (e.g., \"stickerdaniel\", \"williamhgates\")\n    ctx: FastMCP context for progress reporting\n    sections: Comma-separated list of extra sections to scrape.\n        The main profile page is always included.\n        Available sections: experience, education, interests, honors, languages, certifications, skills, projects, contact_info, posts\n        Examples: \"experience,education\", \"contact_info\", \"skills,projects\", \"honors,languages\", \"posts\"\n        Default (None) scrapes only the main profile page.\n    max_scrolls: Maximum pagination attempts per section to load more content.\n        On detail sections (experience, certifications, skills, etc.) this\n        is the max number of \"Show more\" button clicks. On activity/posts\n        it is the max scroll-to-bottom iterations. Applies to all sections\n        in this call. Default (None) uses 5 for detail sections and 10 for\n        posts. Increase when a profile has many items in a section\n        (e.g., 30+ certifications, max_scrolls=20). To avoid slowing down\n        other sections, request heavy sections in a separate call.\n\nReturns:\n    Dict with url, sections (name -> raw text), and optional references.\n    Sections may be absent if extraction yielded no content for that page.\n    Includes unknown_sections list when unrecognised names are passed.\n    The LLM should parse the raw text in each section.",
+      "source_hash": "6c2e76574b99",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "linkedin_username",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "sections",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "max_scrolls",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "extractor",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "search_people",
+      "docstring": "Search for people on LinkedIn.\n\nArgs:\n    keywords: Search keywords (e.g., \"software engineer\", \"recruiter at Google\")\n    ctx: FastMCP context for progress reporting\n    location: Optional location filter (e.g., \"New York\", \"Remote\")\n    network: Optional connection-degree filter. Each element is one of\n        \"F\" (1st-degree), \"S\" (2nd-degree), \"O\" (3rd-degree and beyond).\n        Example: [\"F\"] to only return 1st-degree connections.\n    current_company: Optional current-employer filter. LinkedIn's\n        currentCompany facet only filters on the numeric company URN id\n        (e.g. \"1115\" for SAP); plain company names are accepted by the\n        URL but ignored by LinkedIn and return the unfiltered result\n        set. Look up a company's URN via get_company_profile -- it is\n        exposed under references[\"about\"]. For company-wide employee\n        demographics (location/education/function breakdown) plus a\n        slug-based lookup, use get_company_employees instead.\n\nReturns:\n    Dict with url, sections (name -> raw text), and optional references.\n    The LLM should parse the raw text to extract individual people and their profiles.",
+      "source_hash": "374b117e208f",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "keywords",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "location",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "network",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "current_company",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "extractor",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "connect_with_person",
+      "docstring": "Send a LinkedIn connection request or accept an incoming one.\n\nThe tool is annotated with destructiveHint so MCP clients will\nprompt for user confirmation before execution.\n\nArgs:\n    linkedin_username: LinkedIn username (e.g., \"stickerdaniel\", \"williamhgates\")\n    ctx: FastMCP context for progress reporting\n    note: Optional note to include with the invitation\n\nReturns:\n    Dict with url, status, message, and note_sent.\n    Statuses: pending, already_connected, follow_only,\n    connect_unavailable, unavailable, send_failed,\n    note_not_supported, custom_note_limit_reached,\n    connected, or accepted.\n\n    When status is ``custom_note_limit_reached`` LinkedIn rejected\n    personalized invite notes because the free note quota for the\n    account is exhausted. The ``message`` is the raw Premium dialog\n    text read from LinkedIn.",
+      "source_hash": "0875cf393ada",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "linkedin_username",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "note",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "extractor",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "get_sidebar_profiles",
+      "docstring": "Get profile links from sidebar recommendation sections on a LinkedIn profile page.\n\nExtracts profiles from \"More profiles for you\", \"Explore premium profiles\",\nand \"People you may know\" sidebar sections. Follows \"Show all\" links to\nreturn the full list from each section. Sections that redirect to\nlinkedin.com/premium are skipped.\n\nArgs:\n    linkedin_username: LinkedIn username of the profile page to scrape\n        (e.g., \"stickerdaniel\", \"williamhgates\")\n    ctx: FastMCP context for progress reporting\n\nReturns:\n    Dict with url and sidebar_profiles mapping section key to a list of\n    /in/username/ paths. Only sections present on the page are included.",
+      "source_hash": "b521a6dccd0d",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "linkedin_username",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "extractor",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "get_my_profile",
+      "docstring": "Get the authenticated user's own LinkedIn profile.\n\nNavigates to /in/me/ and resolves the redirect to obtain the real\nusername before scraping, so the url field in the result is the actual\nprofile URL (e.g. linkedin.com/in/johndoe/) rather than /in/me/.\n\nArgs:\n    ctx: FastMCP context for progress reporting\n    sections: Comma-separated list of extra sections to scrape.\n        The main profile page is always included.\n        Available sections: experience, education, interests, honors, languages, certifications, skills, projects, contact_info, posts\n        Examples: \"experience,education\", \"contact_info\", \"skills,projects\"\n        Default (None) scrapes only the main profile page.\n    max_scrolls: Maximum pagination attempts per section (same as get_person_profile).\n\nReturns:\n    Dict with url, sections (name -> raw text), and optional references.\n    The url field reflects the resolved profile URL, revealing the real username.",
+      "source_hash": "fc6dc18c1099",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "sections",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "max_scrolls",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "extractor",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    }
+  ]
+}
