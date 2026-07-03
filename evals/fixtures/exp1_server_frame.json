@@ -1,8 +1,12 @@
 {
   "experiment_id": "EXP-1",
   "frame_version": "v2 -- doc-density stratified (supersedes v1 star-stratified frame at commit 05db7ca)",
-  "frame_status": "PROVISIONAL -- AWAITING EXPLICIT GG RATIFICATION",
-  "frame_status_note": "Rebuilt per GGs correction: star-stratification held documentation quality roughly constant across strata, so it did not sample the documented-vs-under-documented axis the papers thesis is about. This frame re-stratifies the SAME 30 structurally-vetted candidates (frame v1, commit 05db7ca) by MECHANICAL doc-density (agentgauge/exp1_doc_density.py), computed from real extracted tool definitions (agentgauge/exp1_tool_def_extractor.py), not README prose or star count. Do NOT begin mirroring/scoring against this frame until GG explicitly ratifies or overrides the open decisions below.",
+  "frame_status": "RATIFIED (2026-07-04) -- N=23 fresh + 2 anchors; empirical-tercile tiering kept as pre-committed",
+  "frame_status_note": "Rebuilt per GGs correction: star-stratification held documentation quality roughly constant across strata, so it did not sample the documented-vs-under-documented axis the papers thesis is about. This frame re-stratifies the SAME 30 structurally-vetted candidates (frame v1, commit 05db7ca) by MECHANICAL doc-density (agentgauge/exp1_doc_density.py), computed from real extracted tool definitions (agentgauge/exp1_tool_def_extractor.py), not README prose or star count. GG ratified both open decisions on 2026-07-04 (see ratification_2026_07_04 below): proceed with N=23 (no backfill/no further extractor engineering), keep the pre-committed tercile methodology with the relative-vs-absolute caveat stated explicitly in the paper's methods section. Mirroring (pre-reg per_server_procedure STEP 1) may now begin against this frame.",
+  "ratification_2026_07_04": {
+    "fresh_count_23_vs_28_shortfall": "RATIFIED as N=23 fresh + 2 anchors. No backfill from the backup pool; no further extractor engineering for Java/YAML-manifest patterns this round.",
+    "tier_labels_relative_not_absolute": "RATIFIED: keep empirical terciles as pre-committed (not tuned post-hoc). Caveat -- near_empty is a within-sample relative label, not an absolute doc-quality band; only 2/23 servers are absolutely near-empty (0% description coverage) -- must be stated explicitly wherever this frame's tiers are used, including the paper's methods section."
+  },
   "pre_registration_ref": "evals/fixtures/exp1_pre_registration.json",
   "pre_registration_amendment_note": "This frame construction deviates from the pre-reg original 5-source, star-stratified sampling plan on two axes -- both amended explicitly in exp1_pre_registration.json's amendments section, not silently: (1) single-source (GitHub topic search only), (2) doc-density stratification, not star-based.",
   "predecessor_frame_note": "v1 (star-stratified, superseded) available at git commit 05db7ca for audit trail.",
@@ -26,7 +30,8 @@
         "Backfill 5-7 replacements from the already-fetched backup pool (70/stratum, evals/fixtures/exp1_candidate_list.json backup_pool) -- REQUIRES a fresh manual vetting pass (is_focused_mcp_server + approx_tool_count>=5 judgment) on backup candidates, since the backup pool is raw/unvetted (e.g. contains n8n-io/n8n, a general automation platform, exactly the pattern excluded during v1 vetting). Deferred: this is judgment work, not mechanical, and doing it now risks the same selection-effect problem being corrected if done casually.",
         "Extend the extractor to cover Java annotation-based registration and/or the YAML-manifest pattern -- deferred as scope creep for this pass (per this session's explicit redirect against per-language extractor rabbit-holing); would only recover up to 2 of the 7 (the 2 Java servers; no clean win on the YAML-manifest one, which is repo-specific)."
       ],
-      "requires_gg_confirmation": true
+      "requires_gg_confirmation": false,
+      "status": "RATIFIED_2026-07-04"
     },
     {
       "id": "tier_labels_relative_not_absolute",
@@ -35,8 +40,9 @@
       "alternatives_not_applied": [
         "Redefine tiers by absolute composite-score thresholds instead of empirical terciles -- would change the pre-committed methodology after seeing results (exactly the never-tune-to-a-positive pre-reg violation the frozen protocol prohibits)."
       ],
-      "requires_gg_confirmation": true,
-      "reportable_finding": "This is itself a confirmation, on a MECHANICAL (not README-based) doc-density measure, of the same finding that motivated this frame's rebuild: GitHub-discoverable, structurally-valid MCP servers (>=5 tools, focused catalog) overwhelmingly ship non-empty tool descriptions. Only 2 of 23 scored servers (vitali87-code-graph-rag, lucasastorian-llmwiki) have 0% description coverage -- genuinely near-empty. The population may lack a large truly-thin-doc segment even under this stricter, non-circular measure."
+      "requires_gg_confirmation": false,
+      "reportable_finding": "This is itself a confirmation, on a MECHANICAL (not README-based) doc-density measure, of the same finding that motivated this frame's rebuild: GitHub-discoverable, structurally-valid MCP servers (>=5 tools, focused catalog) overwhelmingly ship non-empty tool descriptions. Only 2 of 23 scored servers (vitali87-code-graph-rag, lucasastorian-llmwiki) have 0% description coverage -- genuinely near-empty. The population may lack a large truly-thin-doc segment even under this stricter, non-circular measure.",
+      "status": "RATIFIED_2026-07-04"
     }
   ],
   "strata": {
