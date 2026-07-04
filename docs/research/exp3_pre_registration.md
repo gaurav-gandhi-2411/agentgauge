@@ -183,7 +183,80 @@ per the frozen protocol appendix.
   split is a materially weaker signal than 3-0, and that nuance must not be
   collapsed into the binary verdict alone.
 
-## 6. Governance
+## 7. Graded-confidence retry (pre-registered 2026-07-04, before any judge call)
+
+**Ratified by GG:** the binary result (Section 3's method, run 2026-07-04 — see `STATUS.md`
+EXP-3 section and `evals/fixtures/exp3_localizer_result.json`: precision 0.167, recall 1.00,
+24/24 pairs verdicted CONFUSABLE) is the degenerate yes-sayer failure — an unanchored binary
+"could these be confused?" question has no incentive to
+discriminate, so the judge defaults to a uniform `YES`. This is the same root cause as the
+flat-70 single-score judge (Non-Regime 4): unanchored judgments default to a uniform answer.
+This is **one pre-registered retry, time-boxed** — not tuning to a positive, since the method,
+threshold, and ground truth are fixed here, before this result is known, and this is the
+**last** variant tried regardless of outcome.
+
+**Method chosen: graded confidence (not ranking).** A forced pairwise/listwise ranking was the
+other option GG offered; graded confidence is chosen because it keeps each pair's judgment
+independent (matching the ground truth's pair-independent structure — ranking would require
+presenting multiple pairs to the judge in one call, a materially different and more complex
+call structure), and it mirrors this codebase's existing `_judge_discoverability` /
+`_parse_distinguish_score` pattern (`scorer.py`), which is already anchored with a 0–10 scale
+and scoring-guide bands.
+
+**Prompt (frozen before any call):**
+
+```
+You are evaluating whether two MCP tool descriptions could cause an AI agent to select the
+wrong tool for a task.
+
+Tool A: {name_a}
+Description: {desc_a}
+
+Tool B: {name_b}
+Description: {desc_b}
+
+On a scale of 0-10, how likely is an AI agent to confuse these two tools when selecting which
+one to call for a task?
+
+Scoring guide:
+- 0-2: Completely distinct -- no reasonable task would create ambiguity between them
+- 3-4: Minor surface similarity (e.g. shared verb or domain) but functionally clearly distinct
+- 5-6: Real overlap -- a plausible task could go either way
+- 7-8: Strong overlap -- significant chance of agent confusion
+- 9-10: Near-identical in function -- an agent would struggle to tell them apart
+
+Answer with exactly one line:
+CONFUSABILITY: <number 0-10>
+```
+
+- **Judge model:** `llama3.1:8b` (unchanged, frozen).
+- **Trials per pair:** 3, seed = `JUDGE_SEED + trial_idx` (42, 43, 44) — same convention as the
+  binary run.
+- **Parsing:** `CONFUSABILITY\s*:?\s*(\d+(?:\.\d+)?)` (case-insensitive) as the labeled strategy;
+  fallback to the last bare number in the response (mirrors `_parse_distinguish_score`'s
+  strategy order in `scorer.py`); a response with no digit at all is `PARSE-FAILED` for that
+  trial, excluded from the mean (not coerced to 0), consistent with the binary run's
+  parse-failed handling.
+- **Aggregation:** mean of the non-parse-failed trial scores. If all 3 trials parse-failed, the
+  pair's verdict is `UNDETERMINED` (same convention as the binary run).
+- **Threshold (pre-registered, midpoint of the 0–10 scale, chosen for being the least arbitrary
+  possible cut point — not chosen by looking at any score distribution):** mean score **>= 5.0**
+  => predicted `CONFUSABLE`; else `NOT-CONFUSABLE`.
+- **Ground truth, metric formulas, and interpretation bar: unchanged** — same 24-pair fixture
+  (`evals/fixtures/exp3_ground_truth.json`), same precision/recall formulas (Section 4), same
+  precision ≥ 0.50 AND recall ≥ 0.50 bar (Section 5).
+
+**Pre-committed interpretation (fixed now, before this result is known):**
+- Clears the bar → the graded localizer **is** EXP-3's positive method: it predicts behavioral
+  confusion. Report as the paper's positive contribution, with the binary attempt reported
+  alongside as the (failed) first framing tried.
+- Fails the bar → **the robust negative**: pairwise judging fails under both a binary and a
+  graded framing — a fundamental limit of asking this frozen judge to localize confusability
+  this way, not an artifact of the binary phrasing. This is the final EXP-3 result either way.
+
+**Hard stop:** this is the only retry. No third variant will be proposed regardless of outcome.
+
+## 8. Governance
 
 - Condition #1: this PR is DRAFT and escalated to GG before merge.
 - `generator != judge != agent`: no generator or agent call is made in this
