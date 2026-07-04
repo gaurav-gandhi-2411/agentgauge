@@ -1,4 +1,4 @@
-# When Does Tool-Description Quality Improve Agent Behavior? A Regime Analysis
+# Tool-Description Quality Is Not One Axis: A Regime Analysis of Where It Helps and Where It Backfires
 
 **Status:** DRAFT — Framing A (boundary-establishment), locked by GG. Every number in this
 draft traces to a row in `docs/paper/evidence_table.md`; do not add a number here without
