@@ -4,32 +4,63 @@
   "language": "Python",
   "stars": 2919,
   "stratum": "near_empty",
-  "notes": "commit=d58901760d7ede4adb162eaba1725209a933f100; extraction_method=ast; doc_density_composite=71.8; params are name-only placeholders (annotation='Any') -- EXP-1 classifier tests selection only, not call-correctness.",
+  "notes": "commit=d58901760d7ede4adb162eaba1725209a933f100; extraction_method=tool_constructor_python; doc_density_composite=71.8; params are name-only placeholders (annotation='Any') -- EXP-1 classifier tests selection only, not call-correctness.",
   "tools": [
     {
-      "name": "list_tools",
-      "docstring": "List available arXiv research tools.",
-      "source_hash": "b5dd73bd120e",
+      "name": "check_alerts",
+      "docstring": "Check all saved topic watches for newly published papers since the last check. Omitting the topic parameter runs ALL saved watches and returns new papers for each. Passing a topic string checks only that specific watch. Updates each watch's last_checked timestamp after running, so subsequent calls only return newer papers. Use watch_topic to register topics before calling this. Returns a summary with new paper counts and full paper metadata per topic.",
+      "source_hash": "8f20a1cee948",
       "return_annotation": "None",
       "params": []
     },
     {
-      "name": "call_tool",
-      "docstring": "Handle tool calls for arXiv research functionality.",
-      "source_hash": "f2ec6316c9bc",
+      "name": "citation_graph",
+      "docstring": "Return papers citing an arXiv paper and papers that it references using Semantic Scholar's citation graph.",
+      "source_hash": "09d8a669029f",
       "return_annotation": "None",
-      "params": [
-        {
-          "name": "name",
-          "annotation": "Any",
-          "default": null
-        },
-        {
-          "name": "arguments",
-          "annotation": "Any",
-          "default": null
-        }
-      ]
+      "params": []
+    },
+    {
+      "name": "download_paper",
+      "docstring": "Download a paper from arXiv and return its text content. Tries the HTML version first for clean extraction; falls back to PDF conversion if HTML is unavailable. Stores the paper locally and supports start/max_chars pagination for very large papers.",
+      "source_hash": "611c1f1a8a55",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "get_abstract",
+      "docstring": "Fetch the abstract and metadata of an arXiv paper by ID, WITHOUT downloading the full paper. Use this before download_paper to assess relevance and save tokens. Returns: title, authors, abstract, categories, published date, and PDF URL. Workflow tip: search_papers -> get_abstract (check relevance) -> download_paper (if needed) -> read_paper.",
+      "source_hash": "98bd9278678f",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "list_papers",
+      "docstring": "List all papers that have been downloaded and stored locally via download_paper. Returns arXiv IDs only — use read_paper to access content. Returns an empty list if no papers have been downloaded yet. Workflow: search_papers -> download_paper -> list_papers -> read_paper.",
+      "source_hash": "d938772bf037",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "read_paper",
+      "docstring": "Read the text content of a paper that was previously downloaded via download_paper. Returns the paper in markdown format and supports start/max_chars pagination for large papers. Will fail with a clear error if the paper has not been downloaded yet — call download_paper first. Workflow: search_papers -> download_paper -> read_paper.",
+      "source_hash": "ef87d06cf8ea",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "search_papers",
+      "docstring": "Search for papers on arXiv with advanced filtering and query optimization.\n\nQUERY CONSTRUCTION GUIDELINES:\n- Use QUOTED PHRASES for exact matches: \"multi-agent systems\", \"neural networks\", \"machine learning\"\n- Combine related concepts with OR: \"AI agents\" OR \"software agents\" OR \"intelligent agents\"  \n- Use field-specific searches for precision:\n  - ti:\"exact title phrase\" - search in titles only\n  - au:\"author name\" - search by author\n  - abs:\"keyword\" - search in abstracts only\n- Use ANDNOT to exclude unwanted results: \"machine learning\" ANDNOT \"survey\"\n- For best results, use 2-4 core concepts rather than long keyword lists\n\nADVANCED SEARCH PATTERNS:\n- Field + phrase: ti:\"transformer architecture\" for papers with exact title phrase\n- Multiple fields: au:\"Smith\" AND ti:\"quantum\" for author Smith's quantum papers  \n- Exclusions: \"deep learning\" ANDNOT (\"survey\" OR \"review\") to exclude survey papers\n- Broad + narrow: \"artificial intelligence\" AND (robotics OR \"computer vision\")\n\nCATEGORY FILTERING (highly recommended for relevance):\nComputer Science:\n- cs.AI: Artificial Intelligence\n- cs.LG: Machine Learning\n- cs.CL: Computation and Language (NLP)\n- cs.CV: Computer Vision\n- cs.MA: Multi-Agent Systems\n- cs.RO: Robotics\n- cs.NE: Neural and Evolutionary Computing\n- cs.IR: Information Retrieval\n- cs.HC: Human-Computer Interaction\n- cs.CR: Cryptography and Security\n- cs.DB: Databases\nStatistics & Math:\n- stat.ML: Machine Learning (Statistics)\n- stat.AP: Applications\n- math.OC: Optimization and Control\n- math.ST: Statistics Theory\nPhysics & Other:\n- quant-ph: Quantum Physics\n- eess.SP: Signal Processing\n- eess.AS: Audio and Speech Processing\n- physics.data-an: Data Analysis and Statistics\n\nEXAMPLES OF EFFECTIVE QUERIES:\n- ti:\"reinforcement learning\" with categories: [\"cs.LG\", \"cs.AI\"] - for RL papers by title\n- au:\"Hinton\" AND \"deep learning\" with categories: [\"cs.LG\"] - for Hinton's deep learning work\n- \"multi-agent\" ANDNOT \"survey\" with categories: [\"cs.MA\"] - exclude survey papers\n- abs:\"transformer\" AND ti:\"attention\" with categories: [\"cs.CL\"] - attention papers with transformer abstracts\n\nDATE FILTERING: Use YYYY-MM-DD format for historical research:\n- date_to: \"2015-12-31\" - for foundational/classic work (pre-2016)\n- date_from: \"2020-01-01\" - for recent developments (post-2020)\n- Both together for specific time periods\n\nRESULT QUALITY: Default sort is RELEVANCE (most pertinent results first). Use sort_by: \"date\" to get newest papers first.\nChoose relevance for focused topic searches; choose date for monitoring recent developments.\n\nRATE LIMITING: arXiv enforces a 3-second minimum between requests. This server handles that automatically.\nIf you see a rate limit error, wait 60 seconds before retrying — do not call the tool repeatedly in a loop.\n\nTIPS FOR FOUNDATIONAL RESEARCH:\n- Use date_to: \"2010-12-31\" to find classic papers on BDI, SOAR, ACT-R\n- Combine with field searches: ti:\"BDI\" AND abs:\"belief desire intention\"  \n- Try author searches: au:\"Rao\" AND \"BDI\" for Anand Rao's foundational BDI work",
+      "source_hash": "3f0a80b1488a",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "reindex",
+      "docstring": "Rebuild the local semantic index for downloaded papers.",
+      "source_hash": "afd09007512e",
+      "return_annotation": "None",
+      "params": []
     }
   ]
 }

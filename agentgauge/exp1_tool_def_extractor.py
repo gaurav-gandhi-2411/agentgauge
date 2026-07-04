@@ -227,7 +227,12 @@ def extract_python_add_tool_calls(files: list[Path]) -> list[ExtractedTool]:
                 elif isinstance(node.iter, ast.Name) and node.iter.id in list_literals:
                     referenced_names.update(list_literals[node.iter.id])
 
-        for name in referenced_names:
+        # Sorted for deterministic output -- referenced_names is a set, whose
+        # iteration order depends on Python's per-process string hash randomization
+        # and is NOT stable across separate runs (observed: identical 21-tool set for
+        # stefanoamorelli/sec-edgar-mcp extracted in a different order run-to-run).
+        # Reproducibility (docs/research, CLAUDE.md) requires deterministic output.
+        for name in sorted(referenced_names):
             fn = func_defs.get(name)
             if fn is None or name in seen_names:
                 continue
@@ -299,6 +304,55 @@ def _unescape(s: str) -> str:
     return s.replace('\\"', '"').replace("\\'", "'").replace("\\n", " ").replace("\\t", " ")
 
 
+# Python-specific: the low-level MCP SDK's types.Tool(name=..., description=...)
+# constructor idiom, kwarg-style, description often triple-quoted OR a parenthesized
+# run of adjacent string literals (Python's implicit string concatenation, used for
+# long descriptions split across lines: description=("part one " "part two")).
+# Deliberately anchored on the literal "Tool(" identifier (not the fully generic
+# name/description proximity match used for non-Python sources) -- that generic
+# pattern also matches mcp.types.Prompt(name=..., description=...)/PromptArgument(...)
+# in the SAME files, silently conflating MCP prompts (and their arguments) with tools
+# (observed: blazickjp/arxiv-mcp-server, where 7 prompts + their PromptArguments were
+# extracted as 14 phantom "tools" alongside the 2 real ones actually found this way).
+_PYTHON_TOOL_CONSTRUCTOR_PATTERN = re.compile(
+    r"""\bTool\(\s*"""
+    r"""name\s*=\s*""" + _quoted("q9", "name") + r"""[\s\S]{0,600}?description\s*=\s*"""
+    r"""(?:'''(?P<desc_t1>(?:(?!''').)*)'''"""
+    r"""|\"\"\"(?P<desc_t2>(?:(?!\"\"\").)*)\"\"\""""
+    r"""|\(\s*(?P<desc_concat>(?:"(?:[^"\\]|\\.)*"\s*)+)\)"""
+    r"""|""" + _quoted("q10", "desc_s") + r""")""",
+    re.DOTALL,
+)
+_QUOTED_SEGMENT = re.compile(r'"((?:[^"\\]|\\.)*)"')
+
+
+def extract_python_tool_constructor_calls(files: list[Path]) -> list[ExtractedTool]:
+    seen_names: set[str] = set()
+    tools: list[ExtractedTool] = []
+    for f in files:
+        try:
+            text = f.read_text(encoding="utf-8", errors="ignore")
+        except OSError:
+            continue
+        for m in _PYTHON_TOOL_CONSTRUCTOR_PATTERN.finditer(text):
+            name = m.group("name")
+            if name in seen_names:
+                continue
+            desc = m.group("desc_t1") or m.group("desc_t2") or m.group("desc_s")
+            if desc is None and m.group("desc_concat"):
+                # Python's implicit adjacent-string-literal concatenation has NO
+                # separator -- join with "", matching the interpreter's own semantics
+                # (source relies on each literal's own trailing space for spacing).
+                desc = "".join(
+                    _unescape(seg) for seg in _QUOTED_SEGMENT.findall(m.group("desc_concat"))
+                )
+            seen_names.add(name)
+            tools.append(
+                ExtractedTool(name=name, description=_unescape((desc or "").strip()), params=[])
+            )
+    return tools
+
+
 def extract_non_python_tool_defs(files: list[Path]) -> list[ExtractedTool]:
     seen_names: set[str] = set()
     tools: list[ExtractedTool] = []
@@ -323,16 +377,22 @@ def extract_non_python_tool_defs(files: list[Path]) -> list[ExtractedTool]:
 def extract_tools_for_repo(repo_dir: Path, language: str) -> tuple[list[ExtractedTool], str]:
     """Returns (tools, extraction_method). extraction_method is 'ast' for Python,
     'regex_best_effort' otherwise -- callers should treat the latter as lower confidence.
-    'regex_fallback_on_python' is a third, LOWEST-confidence tier: AST found nothing (no
-    decorators, no add_tool() calls) so we fall back to the same JSON/dict-literal regex
-    used for non-Python sources -- observed in servers that declare tools as a plain
-    module-level TOOLS_SCHEMA = [{"name": ..., "description": ...}] list."""
+    For Python, when AST finds nothing, two lower-confidence fallbacks are tried in
+    order of precision: 'tool_constructor_python' (Tool(name=..., description=...)
+    constructor calls -- anchored on the literal "Tool" identifier, so it does NOT
+    conflate mcp.types.Prompt(...)/PromptArgument(...) definitions with tools), then
+    'regex_fallback_on_python' (the fully generic JSON/dict-literal proximity match
+    used for non-Python sources -- lowest confidence, since it matches ANY name/
+    description pair regardless of what construct it belongs to)."""
     lang = language.lower()
     if lang == "python":
         files = find_source_files(repo_dir, _SOURCE_EXTENSIONS["python"])
         tools = extract_python_tool_defs(files)
         if tools:
             return tools, "ast"
+        constructor_tools = extract_python_tool_constructor_calls(files)
+        if constructor_tools:
+            return constructor_tools, "tool_constructor_python"
         fallback_tools = extract_non_python_tool_defs(files)
         if fallback_tools:
             return fallback_tools, "regex_fallback_on_python"

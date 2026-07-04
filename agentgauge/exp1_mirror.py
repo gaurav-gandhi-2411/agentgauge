@@ -39,12 +39,39 @@ def tool_docstring_hash(docstring: str) -> str:
     return hashlib.sha256(docstring.encode()).hexdigest()[:12]
 
 
+def _decorator_kwarg_str(node: ast.FunctionDef | ast.AsyncFunctionDef, kwarg: str) -> str | None:
+    """First string-literal value of `kwarg=` passed to any decorator call on node,
+    e.g. @mcp.tool(name="x", description="y") -> _decorator_kwarg_str(node, "description")
+    returns "y". None if no decorator passes that kwarg as a plain string literal."""
+    for dec in node.decorator_list:
+        if not isinstance(dec, ast.Call):
+            continue
+        for kw in dec.keywords:
+            if (
+                kw.arg == kwarg
+                and isinstance(kw.value, ast.Constant)
+                and isinstance(kw.value.value, str)
+            ):
+                return kw.value.value
+    return None
+
+
 def extract_python_tools(source_path: pathlib.Path) -> list[MirrorTool]:
     """Parse a Python MCP server file and extract tool definitions.
 
     Looks for functions decorated with any decorator whose name or attribute
     contains 'tool' (e.g. @server.tool(), @mcp.tool(), @app.tool, @tool).
-    Returns tools with verbatim docstrings.
+
+    Description precedence matches FastMCP's own runtime behavior: an explicit
+    description="..." decorator keyword argument (e.g. @mcp.tool(description="..."))
+    OVERRIDES the function's docstring if both are present; the docstring is only
+    used as a fallback when no decorator kwarg is given. A prior version of this
+    function read ONLY the docstring, silently mis-extracting "" for every tool
+    that uses the (very common, officially-documented) decorator-kwarg style --
+    observed: lucasastorian/llmwiki, where all 13 tools carry real, substantial
+    descriptions as decorator kwargs but had bare/empty function docstrings.
+    Similarly, an explicit name="..." kwarg overrides the Python function name,
+    since that -- not the function name -- is what MCP registers as the tool name.
     """
     source_text = source_path.read_text(encoding="utf-8")
     tree = ast.parse(source_text, filename=str(source_path))
@@ -56,13 +83,19 @@ def extract_python_tools(source_path: pathlib.Path) -> list[MirrorTool]:
         if not _has_tool_decorator(node):
             continue
 
-        docstring = ast.get_docstring(node) or ""
+        decorator_description = _decorator_kwarg_str(node, "description")
+        docstring = (
+            decorator_description
+            if decorator_description is not None
+            else (ast.get_docstring(node) or "")
+        )
+        name = _decorator_kwarg_str(node, "name") or node.name
         params = _extract_params(node)
         return_ann = _annotation_to_str(node.returns)
 
         tools.append(
             MirrorTool(
-                name=node.name,
+                name=name,
                 docstring=docstring,
                 params=params,
                 source_hash=tool_docstring_hash(docstring),
@@ -73,8 +106,42 @@ def extract_python_tools(source_path: pathlib.Path) -> list[MirrorTool]:
     return tools
 
 
+# Low-level MCP SDK Server class registration methods -- required protocol-handler
+# boilerplate present on essentially every low-level-SDK server, NOT domain tool
+# decorators. "list_tools"/"call_tool" contain the substring "tool" and were
+# false-positiving as if they were @server.tool()-style domain-tool decorators
+# (observed: vitali87/code-graph-rag, whose real ~10-tool catalog lives behind a
+# dynamic registry these two handlers dispatch to -- not itself AST-extractable).
+_MCP_PROTOCOL_HANDLER_NAMES = frozenset(
+    {
+        "list_tools",
+        "call_tool",
+        "list_resources",
+        "read_resource",
+        "list_prompts",
+        "get_prompt",
+        "list_resource_templates",
+        "subscribe_resource",
+        "unsubscribe_resource",
+        "set_logging_level",
+        "completion",
+    }
+)
+
+
+def _decorator_attr_name(dec: ast.expr) -> str | None:
+    func = dec.func if isinstance(dec, ast.Call) else dec
+    if isinstance(func, ast.Attribute):
+        return func.attr
+    if isinstance(func, ast.Name):
+        return func.id
+    return None
+
+
 def _has_tool_decorator(node: ast.FunctionDef | ast.AsyncFunctionDef) -> bool:
     for dec in node.decorator_list:
+        if _decorator_attr_name(dec) in _MCP_PROTOCOL_HANDLER_NAMES:
+            continue
         dec_str = ast.unparse(dec).lower()
         if "tool" in dec_str:
             return True

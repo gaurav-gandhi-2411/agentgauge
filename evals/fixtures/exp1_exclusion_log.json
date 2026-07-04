@@ -56,17 +56,27 @@
       "language": "unknown",
       "reason": "extraction_failed",
       "detail": "0 tools extracted; vetting recorded approx_tool_count=250, doc_quality=polished. Language was never determined during discovery (recorded 'unknown'); extractor fell through to the generic non-Python regex path, which did not match this repo's convention."
+    },
+    {
+      "server_id": "vitali87-code-graph-rag",
+      "source_repo": "vitali87/code-graph-rag",
+      "language": "Python",
+      "reason": "extraction_failed",
+      "detail": "ADDED 2026-07-04 (v3 correction): initially scored composite=25.0 on 2 tools ('list_tools', 'call_tool') that were NEVER real domain tools -- they are the low-level MCP SDK's own @server.list_tools()/@server.call_tool() protocol-handler registration methods, false-positived by _has_tool_decorator's substring-'tool' check (fixed, see agentgauge/exp1_mirror.py). CONFIRMED via direct source inspection: this server's real ~10-tool catalog is returned dynamically by tools.get_tool_schemas(), which aggregates from a runtime registry (self._tools dict populated elsewhere) -- not itself AST-extractable without deep, repo-specific call-graph tracing. Excluded as extraction_failed, not scored as a 2-tool near-empty server."
     }
   ],
   "not_excluded_diagnostic_fixes_applied": [
     "sec-edgar-mcp (Python): initially 0 tools -- AST decorator extraction found nothing because this repo registers tools imperatively (mcp.add_tool(fn) over a plain function list, no decorator). Fixed by extending agentgauge/exp1_tool_def_extractor.py to also resolve this idiom; recovered 21 tools, composite=80.1.",
     "LycheeMem (Python): initially 0 tools -- tools are declared as a module-level TOOLS_SCHEMA = [{'name':..., 'description':...}] dict literal, not decorators. Fixed by falling back to the existing JSON-literal regex (already used for non-Python sources) when Python AST finds nothing; recovered 4 tools, composite=100.0.",
-    "aws-iam-mcp anchor (Python, awslabs/mcp monorepo): initially 0 tools -- the anchor loader hardcoded language='unknown' for both validation anchors regardless of actual language, and scored the ENTIRE monorepo rather than the pre-registered src/iam-mcp-server subpath. Fixed: anchors now carry explicit language + source_subpath fields; recovered 29 tools, composite=100.0."
+    "aws-iam-mcp anchor (Python, awslabs/mcp monorepo): initially 0 tools -- the anchor loader hardcoded language='unknown' for both validation anchors regardless of actual language, and scored the ENTIRE monorepo rather than the pre-registered src/iam-mcp-server subpath. Fixed: anchors now carry explicit language + source_subpath fields; recovered 29 tools, composite=100.0.",
+    "blazickjp-arxiv-mcp-server (Python): ADDED 2026-07-04 (v3) -- initially 71.8/2-tools, computed on phantom tools bled in from mcp.types.Prompt(...)/PromptArgument(...) definitions (a DIFFERENT MCP primitive, same name/description shape as a real Tool()). Fixed by adding a precise Tool(name=..., description=...) constructor-call pattern anchored on the literal 'Tool' identifier, tried before the generic fallback. Recovered 8 real tools, composite=100.0 (near_empty -> well_documented).",
+    "lucasastorian-llmwiki (Python): ADDED 2026-07-04 (v3) -- initially 25.0/0%-described, because agentgauge.exp1_mirror.extract_python_tools read ONLY the function's own docstring, never a decorator keyword argument like @mcp.tool(name=..., description=...) -- FastMCP's own officially-documented kwarg style, and this repo's actual convention for all 13 tools. Fixed: decorator kwarg now takes precedence over docstring (matching FastMCP's runtime behavior). Real: 92.3% described, composite=78.1 -- this server was NOT genuinely near-empty; it was a measurement artifact."
   ],
   "summary": {
     "fresh_candidates_total": 30,
-    "fresh_excluded_extraction_failed": 7,
-    "fresh_scoreable": 23,
-    "shortfall_vs_pre_registered_freshly_sampled_count": "28 - 23 = 5 short; escalated to GG as an open decision (see exp1_pre_registration.json amendments), not silently resolved."
+    "fresh_excluded_extraction_failed": 8,
+    "fresh_scoreable": 22,
+    "shortfall_vs_pre_registered_freshly_sampled_count": "28 - 22 = 6 short; escalated to GG as an open decision (see exp1_pre_registration.json amendments), not silently resolved.",
+    "v3_correction_note": "vitali87-code-graph-rag moved from 'scoreable/near_empty' to 'excluded/extraction_failed' on 2026-07-04, after 3 confirmed extraction bugs were found and fixed (see exp1_server_frame.json bug_fixes_this_version). Two other scoreable servers had composite scores corrected in place (see not_excluded_diagnostic_fixes_applied): blazickjp-arxiv-mcp-server and lucasastorian-llmwiki."
   }
 }

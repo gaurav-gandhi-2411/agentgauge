@@ -37,10 +37,12 @@ def _rmtree_windows_safe(path: Path) -> None:
 
 
 def load_target_repos() -> list[dict]:
+    """Frame v2+ stores each stratum as a flat list of server dicts directly (v1 used
+    to nest them under a "servers" key -- superseded, see git history at 05db7ca)."""
     frame = json.loads(FRAME_PATH.read_text(encoding="utf-8"))
     targets: list[dict] = []
-    for stratum_name, stratum in frame["strata"].items():
-        for server in stratum["servers"]:
+    for stratum_name, servers in frame["strata"].items():
+        for server in servers:
             targets.append(
                 {
                     "server_id": server["server_id"],

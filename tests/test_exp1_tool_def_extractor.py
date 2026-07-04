@@ -5,6 +5,7 @@ import pathlib
 from agentgauge.exp1_tool_def_extractor import (
     extract_non_python_tool_defs,
     extract_python_add_tool_calls,
+    extract_python_tool_constructor_calls,
     extract_python_tool_defs,
     extract_tools_for_repo,
     find_source_files,
@@ -220,6 +221,134 @@ def test_extract_tools_for_repo_python_prefers_ast_over_fallback(
     tools, method = extract_tools_for_repo(tmp_path, "python")
     assert method == "ast"
     assert len(tools) == 2
+
+
+# ── extract_python_tool_constructor_calls (types.Tool(name=..., description=...)) ──
+
+_PY_FIXTURE_TOOL_CONSTRUCTOR = '''\
+from mcp import types
+
+search_tool = types.Tool(
+    name="search_papers",
+    description="""Search for papers on arXiv with advanced filtering."""
+)
+
+read_tool = types.Tool(
+    name="read_paper",
+    description="Download and read a specific paper by ID.",
+)
+'''
+
+
+def test_extract_python_tool_constructor_calls(tmp_path: pathlib.Path) -> None:
+    f = tmp_path / "search.py"
+    f.write_text(_PY_FIXTURE_TOOL_CONSTRUCTOR, encoding="utf-8")
+
+    tools = extract_python_tool_constructor_calls([f])
+    names = {t.name for t in tools}
+    assert names == {"search_papers", "read_paper"}
+    search = next(t for t in tools if t.name == "search_papers")
+    assert search.description == "Search for papers on arXiv with advanced filtering."
+
+
+_PY_FIXTURE_TOOL_CONSTRUCTOR_CONCAT_DESC = """\
+download_tool = types.Tool(
+    name="download_paper",
+    annotations=ToolAnnotations(readOnlyHint=False, openWorldHint=True),
+    description=(
+        "Download a paper from arXiv and return its text content. "
+        "Falls back to PDF conversion if HTML is unavailable."
+    ),
+    inputSchema={"type": "object", "properties": {}},
+)
+"""
+
+
+def test_extract_python_tool_constructor_calls_handles_implicit_string_concat(
+    tmp_path: pathlib.Path,
+) -> None:
+    """Regression: description=(\\n \"a \" \"b\"\\n) -- Python's implicit adjacent-
+    string-literal concatenation, used for long descriptions split across lines
+    (observed: blazickjp/arxiv-mcp-server download_tool). Also confirms a kwarg
+    (annotations=...) between name= and description= doesn't break the match."""
+    f = tmp_path / "download.py"
+    f.write_text(_PY_FIXTURE_TOOL_CONSTRUCTOR_CONCAT_DESC, encoding="utf-8")
+
+    tools = extract_python_tool_constructor_calls([f])
+    assert len(tools) == 1
+    assert tools[0].name == "download_paper"
+    assert tools[0].description == (
+        "Download a paper from arXiv and return its text content. "
+        "Falls back to PDF conversion if HTML is unavailable."
+    )
+
+
+# Regression: mcp.types.Prompt(name=..., description=...) and its PromptArgument(...)
+# entries share the exact name=/description= shape with types.Tool(...) but are a
+# DIFFERENT MCP primitive (prompts, not tools) -- observed in blazickjp/arxiv-mcp-server,
+# where 7 prompts + their arguments were extracted as 14 phantom tools. The constructor
+# pattern must be anchored on "Tool(" specifically and must NOT match "Prompt(" or
+# "PromptArgument(".
+_PY_FIXTURE_PROMPT_NOT_TOOL = """\
+from mcp.types import Prompt, PromptArgument
+
+PROMPTS = {
+    "research-discovery": Prompt(
+        name="research-discovery",
+        description="Begin research exploration on a specific topic",
+        arguments=[
+            PromptArgument(
+                name="topic", description="Research topic or question", required=True
+            ),
+        ],
+    ),
+}
+"""
+
+
+def test_extract_python_tool_constructor_calls_excludes_prompts(
+    tmp_path: pathlib.Path,
+) -> None:
+    f = tmp_path / "prompts.py"
+    f.write_text(_PY_FIXTURE_PROMPT_NOT_TOOL, encoding="utf-8")
+
+    tools = extract_python_tool_constructor_calls([f])
+    assert tools == []
+
+
+def test_extract_tools_for_repo_python_prefers_constructor_over_generic_fallback(
+    tmp_path: pathlib.Path,
+) -> None:
+    (tmp_path / "search.py").write_text(_PY_FIXTURE_TOOL_CONSTRUCTOR, encoding="utf-8")
+    tools, method = extract_tools_for_repo(tmp_path, "python")
+    assert method == "tool_constructor_python"
+    assert {t.name for t in tools} == {"search_papers", "read_paper"}
+
+
+def test_extract_tools_for_repo_python_excludes_prompts_when_real_tools_present(
+    tmp_path: pathlib.Path,
+) -> None:
+    """The real-world shape this regression guards: a repo with BOTH a prompts.py
+    (no tools) and a genuine Tool()-constructor file elsewhere -- prompts must not
+    leak into the extracted tool set."""
+    (tmp_path / "prompts.py").write_text(_PY_FIXTURE_PROMPT_NOT_TOOL, encoding="utf-8")
+    (tmp_path / "search.py").write_text(_PY_FIXTURE_TOOL_CONSTRUCTOR, encoding="utf-8")
+    tools, method = extract_tools_for_repo(tmp_path, "python")
+    assert method == "tool_constructor_python"
+    assert {t.name for t in tools} == {"search_papers", "read_paper"}
+
+
+def test_extract_tools_for_repo_python_prompts_only_falls_through_to_generic_last_resort(
+    tmp_path: pathlib.Path,
+) -> None:
+    """Documented, intentional lowest-confidence behavior: if NO Tool() constructor
+    exists anywhere in the repo, the dispatcher falls through to the fully generic
+    name/description proximity match as a last resort -- imprecise, but still the
+    documented 'regex_fallback_on_python' tier, not a silent zero."""
+    (tmp_path / "prompts.py").write_text(_PY_FIXTURE_PROMPT_NOT_TOOL, encoding="utf-8")
+    tools, method = extract_tools_for_repo(tmp_path, "python")
+    assert method == "regex_fallback_on_python"
+    assert len(tools) > 0
 
 
 # ── extract_non_python_tool_defs ──────────────────────────────────────────────────

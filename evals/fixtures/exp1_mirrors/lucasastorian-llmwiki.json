@@ -8,15 +8,15 @@
   "tools": [
     {
       "name": "ping",
-      "docstring": "",
-      "source_hash": "e3b0c44298fc",
+      "docstring": "Test connectivity",
+      "source_hash": "01e0c287637d",
       "return_annotation": "None",
       "params": []
     },
     {
       "name": "delete",
-      "docstring": "",
-      "source_hash": "e3b0c44298fc",
+      "docstring": "Delete documents or wiki pages from the knowledge vault.\n\nProvide a path to delete a single file, or a glob pattern to delete multiple.\nExamples:\n- `path=\"old-notes.md\"` — delete a single file\n- `path=\"/wiki/drafts/*\"` — delete all files in a folder\n- `path=\"/wiki/**\"` — delete the entire wiki\n\nNote: overview.md and log.md are structural pages and cannot be deleted.\nReturns a list of deleted files. This action cannot be undone.",
+      "source_hash": "f1d42406e254",
       "return_annotation": "None",
       "params": [
         {
@@ -33,15 +33,15 @@
     },
     {
       "name": "guide",
-      "docstring": "",
-      "source_hash": "e3b0c44298fc",
+      "docstring": "Get started with LLM Wiki. Call this to understand how the knowledge vault works and see your available knowledge bases.",
+      "source_hash": "170bec98926e",
       "return_annotation": "None",
       "params": []
     },
     {
       "name": "lint",
-      "docstring": "",
-      "source_hash": "e3b0c44298fc",
+      "docstring": "Run deterministic hygiene checks across a knowledge base.\n\nChecks wiki frontmatter, tag/date index consistency, footnote hygiene, citation resolution, citation graph edges, dangling wiki links, orphan pages, uncited sources, and stale pages.\n\nUse `path` to scope the run, e.g. `*`, `/wiki/**`, or `/wiki/concepts/*.md`.",
+      "source_hash": "e9d561e7a446",
       "return_annotation": "None",
       "params": [
         {
@@ -68,8 +68,8 @@
     },
     {
       "name": "create_knowledge_base",
-      "docstring": "",
-      "source_hash": "e3b0c44298fc",
+      "docstring": "Create a new knowledge base and scaffold starter overview/log pages.\n\nSet kind='course' to create a course instead of a wiki — same structure, but the app renders lesson progress (mark-complete, current/locked lessons). Default 'wiki'.\n\nIn hosted mode this creates a separate knowledge base with a unique slug. In local MCP mode there is one workspace per server, so this returns the existing workspace if it has already been initialized.",
+      "source_hash": "9aab3d058749",
       "return_annotation": "None",
       "params": [
         {
@@ -91,8 +91,8 @@
     },
     {
       "name": "set_course_mode",
-      "docstring": "",
-      "source_hash": "e3b0c44298fc",
+      "docstring": "Convert an existing knowledge base into a course (kind='course') or back into a plain wiki (kind='wiki'). A course renders its pages as ordered lessons with progress tracking; a wiki is free-form. Reversible — this only changes how the app renders the knowledge base, never its content.",
+      "source_hash": "0b61bb55d348",
       "return_annotation": "None",
       "params": [
         {
@@ -109,15 +109,15 @@
     },
     {
       "name": "list_knowledge_bases",
-      "docstring": "",
-      "source_hash": "e3b0c44298fc",
+      "docstring": "List the user's knowledge bases with their names and slugs.\n\nEvery other tool takes a `knowledge_base` slug — call this first to discover the valid slugs, or whenever you need to confirm which knowledge bases exist.",
+      "source_hash": "6f32cc569925",
       "return_annotation": "None",
       "params": []
     },
     {
       "name": "read",
-      "docstring": "",
-      "source_hash": "e3b0c44298fc",
+      "docstring": "Read document content from the knowledge vault.\n\nAccepts a single file path OR a glob pattern to batch-read multiple files:\n- `path=\"notes.md\"` — read one file\n- `path=\"*.md\"` — read all markdown files in root\n- `path=\"/wiki/**\"` — read all wiki pages\n- `path=\"**/*.md\"` — read all markdown files everywhere\n\nBatch reads are the PREFERRED way to read multiple documents at once — use them generously.\nGlob reads sample the first few pages from each document (including PDFs) up to a 120k char budget. This gives you a broad overview of an entire folder in one call. Read individual files for full content.\n\nFor PDFs and office docs, use `pages` to read specific page ranges (e.g. '1-50', '3', '10-30').\nYou can read up to 50+ pages in a single call — use wide ranges to avoid unnecessary round trips.\nFor spreadsheets, each sheet is a page (call without pages first to see sheet names).\nSet `include_images=true` to include embedded images (e.g. figures in PDFs, standalone image files). Off by default to save context — enable when you need to see charts, diagrams, or photos.\n\nWhen reading sources to compile wiki pages, note the filename and page ranges for citation.",
+      "source_hash": "2c17fcf18982",
       "return_annotation": "None",
       "params": [
         {
@@ -149,8 +149,8 @@
     },
     {
       "name": "search",
-      "docstring": "",
-      "source_hash": "e3b0c44298fc",
+      "docstring": "Browse or search the knowledge vault.\n\nSources (raw documents) live at `/`. Wiki pages (LLM-compiled) live at `/wiki/`.\n\nModes:\n- list: browse files and folders\n- search: keyword search across document content (searches chunks for precise results with page numbers)\n- references: query the citation/link graph for a document\n\nReferences mode examples:\n- `search(mode=\"references\", path=\"/wiki/concepts/scaling.md\")` — what it cites + what links to it\n- `search(mode=\"references\", path=\"paper.pdf\")` — which wiki pages cite this source\n- `search(mode=\"references\", query=\"uncited\")` — sources with no wiki citations\n- `search(mode=\"references\", query=\"stale\")` — pages flagged as potentially stale\n\nUse `path` to scope: `*` for root, `/wiki/**` for wiki only, `*.pdf` for PDFs, etc.\nUse `tags` to filter by document tags.",
+      "source_hash": "bfa74dc220b8",
       "return_annotation": "None",
       "params": [
         {
@@ -197,8 +197,8 @@
     },
     {
       "name": "create",
-      "docstring": "",
-      "source_hash": "e3b0c44298fc",
+      "docstring": "Create a new wiki page, note, or asset in the knowledge vault.\n\nWiki pages should be created under `/wiki/` and should cite their sources using markdown footnotes (e.g. `[^1]: paper.pdf, p.3`). If markdown wiki content does not include YAML frontmatter, this tool adds it from `title`, `tags`, and `date_str`.\n\nYou can also create SVG diagrams and CSV data files as wiki assets:\n- `create(path=\"/wiki/\", title=\"architecture-diagram.svg\", content=\"<svg>...</svg>\", tags=[\"diagram\"])`\n- `create(path=\"/wiki/\", title=\"data-table.csv\", content=\"col1,col2\\nval1,val2\", tags=[\"data\"])`\nSVGs and other assets can be embedded in wiki pages via `![Architecture](architecture-diagram.svg)`\n\nRejects if the page already exists — use `overwrite=true` to replace, or use the `edit` tool to modify.",
+      "source_hash": "c4517978b251",
       "return_annotation": "None",
       "params": [
         {
@@ -240,8 +240,8 @@
     },
     {
       "name": "edit",
-      "docstring": "",
-      "source_hash": "e3b0c44298fc",
+      "docstring": "Replace exact text in an existing wiki page or note.\n\nWorks like find-and-replace: provide the exact text to find (`old_text`) and the replacement (`new_text`). The match must be unique — if multiple matches are found, provide more surrounding context to disambiguate.\n\nRead the page first to see its current content before editing.",
+      "source_hash": "d4f558329346",
       "return_annotation": "None",
       "params": [
         {
@@ -268,8 +268,8 @@
     },
     {
       "name": "append",
-      "docstring": "",
-      "source_hash": "e3b0c44298fc",
+      "docstring": "Append content to the end of an existing wiki page or note.\n\nUseful for adding new sections, log entries, or additional findings to a page without reading and rewriting the entire document.",
+      "source_hash": "d3f65daec584",
       "return_annotation": "None",
       "params": [
         {

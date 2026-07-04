@@ -79,6 +79,79 @@ def test_extract_python_tools_verbatim_docstrings(tmp_path: pathlib.Path) -> Non
     assert tools["ping"].docstring == PING_DOCSTRING
 
 
+_DECORATOR_KWARG_FIXTURE = '''\
+from __future__ import annotations
+
+from mcp.server.fastmcp import FastMCP
+
+mcp = FastMCP("test")
+
+
+@mcp.tool(
+    name="create_knowledge_base",
+    description=(
+        "Create a new knowledge base and scaffold starter overview/log pages."
+    ),
+)
+async def create_knowledge_base(name: str, kind: str = "wiki") -> str:
+    return ""
+
+
+@mcp.tool()
+async def has_own_docstring(x: int) -> int:
+    """This tool relies on its function docstring, no decorator kwarg override."""
+    return x
+'''
+
+
+def test_extract_python_tools_reads_decorator_description_kwarg(
+    tmp_path: pathlib.Path,
+) -> None:
+    """Regression: @mcp.tool(name=..., description=...) is FastMCP's own documented
+    kwarg style -- the description lives in the DECORATOR CALL, not the function's
+    docstring (which is often absent entirely). A prior version of extract_python_tools
+    read ONLY ast.get_docstring(), silently extracting "" for every such tool
+    (observed: lucasastorian/llmwiki, all 13 tools this style)."""
+    src = tmp_path / "server.py"
+    src.write_text(_DECORATOR_KWARG_FIXTURE, encoding="utf-8")
+
+    tools = {t.name: t for t in extract_python_tools(src)}
+    assert tools["create_knowledge_base"].docstring == (
+        "Create a new knowledge base and scaffold starter overview/log pages."
+    )
+    # Function without a decorator kwarg still falls back to its own docstring.
+    assert tools["has_own_docstring"].docstring == (
+        "This tool relies on its function docstring, no decorator kwarg override."
+    )
+
+
+_DECORATOR_KWARG_OVERRIDES_DOCSTRING_FIXTURE = '''\
+from __future__ import annotations
+
+from mcp.server.fastmcp import FastMCP
+
+mcp = FastMCP("test")
+
+
+@mcp.tool(description="The decorator kwarg description wins.")
+async def my_tool(x: int) -> int:
+    """This docstring should be IGNORED since a decorator kwarg is present."""
+    return x
+'''
+
+
+def test_extract_python_tools_decorator_kwarg_overrides_docstring(
+    tmp_path: pathlib.Path,
+) -> None:
+    """Matches FastMCP's own runtime precedence: an explicit description= kwarg
+    overrides the function's docstring when both are present."""
+    src = tmp_path / "server.py"
+    src.write_text(_DECORATOR_KWARG_OVERRIDES_DOCSTRING_FIXTURE, encoding="utf-8")
+
+    tools = {t.name: t for t in extract_python_tools(src)}
+    assert tools["my_tool"].docstring == "The decorator kwarg description wins."
+
+
 def test_extract_python_tools_skips_non_tool_functions(tmp_path: pathlib.Path) -> None:
     src = tmp_path / "server.py"
     src.write_text(FIXTURE_SOURCE, encoding="utf-8")
@@ -86,6 +159,46 @@ def test_extract_python_tools_skips_non_tool_functions(tmp_path: pathlib.Path) -
     tools = extract_python_tools(src)
     names = {t.name for t in tools}
     assert "not_a_tool" not in names
+
+
+_LOW_LEVEL_SDK_FIXTURE = '''\
+from __future__ import annotations
+
+from mcp.server import Server
+
+server = Server("test")
+
+
+@server.list_tools()
+async def list_tools() -> list:
+    """MCP SDK protocol handler -- NOT a domain tool."""
+    return []
+
+
+@server.call_tool()
+async def call_tool(name: str, arguments: dict) -> list:
+    """MCP SDK protocol handler -- NOT a domain tool."""
+    return []
+
+
+@server.tool()
+def real_domain_tool(query: str) -> str:
+    """An actual domain tool, alongside the low-level SDK boilerplate above."""
+    return ""
+'''
+
+
+def test_extract_python_tools_excludes_mcp_protocol_handlers(tmp_path: pathlib.Path) -> None:
+    """Regression: @server.list_tools()/@server.call_tool() are the low-level MCP
+    SDK's own protocol-handler registration methods, not domain-tool decorators --
+    they contain the substring "tool" and were false-positiving as if they were
+    @server.tool()-style decorators (observed: vitali87/code-graph-rag)."""
+    src = tmp_path / "server.py"
+    src.write_text(_LOW_LEVEL_SDK_FIXTURE, encoding="utf-8")
+
+    tools = extract_python_tools(src)
+    names = {t.name for t in tools}
+    assert names == {"real_domain_tool"}
 
 
 def test_extract_python_tools_params(tmp_path: pathlib.Path) -> None:

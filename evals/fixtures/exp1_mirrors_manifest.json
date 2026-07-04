@@ -3,8 +3,8 @@
   "step": "STEP 1 -- mirroring (pre-reg per_server_procedure)",
   "frame_ref": "evals/fixtures/exp1_server_frame.json (v2, RATIFIED 2026-07-04)",
   "n_targets": 25,
-  "n_mirrored_ok": 25,
-  "n_failed": 0,
+  "n_mirrored_ok": 24,
+  "n_failed": 1,
   "framing_locks": [
     "Only 2/23 fresh servers are absolutely near-empty (0% description coverage) -- public-server under-documentation is RARE. This reproduces RW1/RW2 + the pre-registered 'public skews documented' caveat as the DOMINANT effect, not a sampling problem. A mostly-OUT-OF-REGIME result is the finding.",
     "doc_density_tier labels (well_documented/thin/near_empty) are RELATIVE to this 23-server sample, not absolute bands. 'near_empty tier' = the least-documented third of a well-documented pool, NOT the under-documented segment. State this wherever per-tier prevalence is reported."
@@ -147,12 +147,8 @@
     },
     {
       "server_id": "vitali87-code-graph-rag",
-      "mirrored_ok": true,
-      "n_tools": 2,
-      "commit_sha": "30c5417a6d0ebfaad3741f1dc47130c85587bb74",
-      "extraction_method": "ast",
-      "doc_density_tier": "near_empty",
-      "composite_score": 25.0
+      "mirrored_ok": false,
+      "error": "0 tools extracted (method=ast) -- inconsistent with doc-density pass"
     },
     {
       "server_id": "lucasastorian-llmwiki",
@@ -184,9 +180,9 @@
     {
       "server_id": "blazickjp-arxiv-mcp-server",
       "mirrored_ok": true,
-      "n_tools": 2,
+      "n_tools": 8,
       "commit_sha": "d58901760d7ede4adb162eaba1725209a933f100",
-      "extraction_method": "ast",
+      "extraction_method": "tool_constructor_python",
       "doc_density_tier": "near_empty",
       "composite_score": 71.8
     },

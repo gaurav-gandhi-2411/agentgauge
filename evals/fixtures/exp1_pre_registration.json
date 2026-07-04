@@ -28,9 +28,18 @@
       "date": "2026-07-02",
       "id": "freshly_sampled_count_shortfall",
       "amends": "sampling_frame.freshly_sampled_count / reporting.pooled_prevalence denominator",
-      "change": "Actual N is 23 fresh (scored) + 2 anchors, not the pre-registered 28 + 2, pending a GG decision.",
+      "change": "Actual N is 23 fresh (scored) + 2 anchors, not the pre-registered 28 + 2.",
       "reason": "Mechanical extraction failed for 7 of the 30 structurally-vetted candidates (confirmed extraction-method gaps -- Java annotation-based registration, one YAML-manifest architecture, and other unmodeled patterns -- NOT genuinely empty catalogs; all 7 have >=13 tools per manual vetting). Full detail in evals/fixtures/exp1_exclusion_log.json. Backfilling to 28 requires a fresh manual vetting pass on the already-fetched but unvetted backup pool -- judgment work, deferred pending GG ratification rather than done unilaterally under time pressure (the exact failure mode this whole rebuild is correcting for).",
-      "disclosure": "OPEN -- escalated to GG alongside exp1_server_frame.json v2. Do not treat N=23 as final until ratified.",
+      "disclosure": "RATIFIED by GG 2026-07-04: proceed with N=23, no backfill. SUPERSEDED by the v3 correction below (N=22).",
+      "status": "RATIFIED_THEN_SUPERSEDED_BY_v3_correction"
+    },
+    {
+      "date": "2026-07-04",
+      "id": "v3_correction_three_extraction_bugs",
+      "amends": "exp1_server_frame.json (v2 -> v3), sampling_frame.freshly_sampled_count denominator, exp1_exclusion_log.json",
+      "change": "N corrected from 23 fresh (v2, ratified) to 22 fresh + 1 additional exclusion (vitali87-code-graph-rag). Two other servers' composite scores/tiers corrected in place: blazickjp-arxiv-mcp-server (71.8 near_empty -> 100.0 well_documented), lucasastorian-llmwiki (25.0 near_empty -> 78.1 near_empty, i.e. still bottom-tercile but no longer absolutely near-empty -- 92.3% description coverage, not 0%).",
+      "reason": "3 confirmed mechanical-extraction bugs found while preparing the GG-approved batch-1 trial (see exp1_server_frame.json bug_fixes_this_version for full detail): (1) a protocol-handler false-positive (@server.list_tools()/@server.call_tool() mistaken for domain-tool decorators), (2) MCP Prompt/Tool primitive conflation in the generic regex fallback, (3) a blind spot in the core AST extractor that read ONLY function docstrings, never a decorator's own description= keyword argument (FastMCP's officially-documented style). All 3 fixed in agentgauge/exp1_mirror.py and agentgauge/exp1_tool_def_extractor.py with regression tests; blast radius re-verified via the authoritative pipeline after each fix (confirmed exactly these 3 servers affected, no others -- an earlier ad-hoc verification script incorrectly suggested 5 more had changed due to a bug in the VERIFICATION script itself, caught and discarded before being reported).",
+      "disclosure": "OPEN -- re-escalated to GG alongside exp1_server_frame.json v3. Do not treat N=22 or any v3 tier assignment as final until ratified. Note: the GG-approved batch-1 trial target (lucasastorian-llmwiki) was approved on the premise that it was 0% documented -- that premise is no longer true post-correction.",
       "status": "AWAITING_GG_RATIFICATION"
     }
   ],

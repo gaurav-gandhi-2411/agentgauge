@@ -1,19 +1,38 @@
 {
   "experiment_id": "EXP-1",
-  "frame_version": "v2 -- doc-density stratified (supersedes v1 star-stratified frame at commit 05db7ca)",
-  "frame_status": "RATIFIED (2026-07-04) -- N=23 fresh + 2 anchors; empirical-tercile tiering kept as pre-committed",
-  "frame_status_note": "Rebuilt per GGs correction: star-stratification held documentation quality roughly constant across strata, so it did not sample the documented-vs-under-documented axis the papers thesis is about. This frame re-stratifies the SAME 30 structurally-vetted candidates (frame v1, commit 05db7ca) by MECHANICAL doc-density (agentgauge/exp1_doc_density.py), computed from real extracted tool definitions (agentgauge/exp1_tool_def_extractor.py), not README prose or star count. GG ratified both open decisions on 2026-07-04 (see ratification_2026_07_04 below): proceed with N=23 (no backfill/no further extractor engineering), keep the pre-committed tercile methodology with the relative-vs-absolute caveat stated explicitly in the paper's methods section. Mirroring (pre-reg per_server_procedure STEP 1) may now begin against this frame.",
-  "ratification_2026_07_04": {
-    "fresh_count_23_vs_28_shortfall": "RATIFIED as N=23 fresh + 2 anchors. No backfill from the backup pool; no further extractor engineering for Java/YAML-manifest patterns this round.",
-    "tier_labels_relative_not_absolute": "RATIFIED: keep empirical terciles as pre-committed (not tuned post-hoc). Caveat -- near_empty is a within-sample relative label, not an absolute doc-quality band; only 2/23 servers are absolutely near-empty (0% description coverage) -- must be stated explicitly wherever this frame's tiers are used, including the paper's methods section."
-  },
+  "frame_version": "v3 -- three confirmed extraction bugs fixed (supersedes v2, commits 4bebfd7/c29e534)",
+  "frame_status": "PROVISIONAL -- AWAITING GG RATIFICATION (v3, post-bugfix)",
+  "frame_status_note": "v2 was ratified 2026-07-04 on data later found to contain 3 confirmed mechanical-extraction bugs, discovered while preparing the GG-approved trial batch (see bug_fixes_this_version below). All 3 are FIXED in agentgauge/exp1_mirror.py and agentgauge/exp1_tool_def_extractor.py, with regression tests. This frame reflects the corrected, re-verified doc-density scores. v2's ratification of the TIERING METHODOLOGY (empirical terciles, exclude confirmed extraction failures) still stands -- only the underlying per-server DATA changed. Re-escalated for ratification because the correction is material: N changes (23->22 fresh), 3 servers change tier, and the headline near-empty-prevalence finding strengthens (2/23 -> 0/22 absolutely near-empty). Do NOT begin contested-task authoring or Arm A/B trials against this frame until GG ratifies.",
+  "bug_fixes_this_version": [
+    {
+      "id": "mcp_protocol_handler_false_positive",
+      "affected": [
+        "vitali87-code-graph-rag"
+      ],
+      "summary": "_has_tool_decorator matched ANY decorator containing the substring 'tool', including the low-level MCP SDK's own @server.list_tools()/@server.call_tool() protocol-handler registration methods (required boilerplate on every low-level-SDK server). vitali87-code-graph-rag's real ~10-tool catalog lives behind a dynamic registry (tools.get_tool_schemas()) that is not AST-extractable at all -- correctly excluded now (extraction_failed), not scored as 2 fake near-empty tools."
+    },
+    {
+      "id": "prompt_tool_conflation_in_regex_fallback",
+      "affected": [
+        "blazickjp-arxiv-mcp-server"
+      ],
+      "summary": "The fully generic Python regex fallback matched ANY name/description proximity pair, including mcp.types.Prompt(...)/PromptArgument(...) definitions (a DIFFERENT MCP primitive) in the same files as real tools. 7 prompts + their arguments were extracted as 14 phantom tools alongside the 2 real ones found this way. Fixed by adding a precise Tool(name=..., description=...) constructor pattern (tried before the generic fallback) that cannot match Prompt(...). Real count: 8 tools, composite 71.8 -> 100.0 (near_empty -> well_documented)."
+    },
+    {
+      "id": "decorator_kwarg_vs_docstring_blind_spot",
+      "affected": [
+        "lucasastorian-llmwiki"
+      ],
+      "summary": "extract_python_tools (the core, highest-confidence AST path, used by MOST Python servers in this frame) read ONLY the function's own docstring, never a decorator keyword argument like @mcp.tool(name=..., description=...) -- FastMCP's own officially-documented kwarg style. lucasastorian-llmwiki's 13 tools all use this style with substantial real descriptions, but were scored 0% description coverage (composite 25.0). Fixed: decorator kwarg now takes precedence over docstring (matching FastMCP's own runtime behavior); docstring is the fallback when no kwarg is given. Real: 92.3% described, composite=78.1."
+    }
+  ],
+  "blast_radius_verification": "Re-ran mirroring + doc-density scoring for ALL 25 servers after each fix to confirm no other server was affected -- confirmed via the AUTHORITATIVE pipeline (scripts/exp1_score_doc_density.py, which correctly parses per-param docstring descriptions). An earlier ad-hoc verification script incorrectly suggested 5 more servers changed; that script had its own bug (it reconstructed ExtractedTool objects from the already-built MirrorTool/MirrorParam objects, which do not carry per-param descriptions, forcing them to '' and understating param_description_coverage). That false alarm was caught and discarded before being reported -- the authoritative re-run confirms EXACTLY the 3 servers listed above changed, no others.",
   "pre_registration_ref": "evals/fixtures/exp1_pre_registration.json",
-  "pre_registration_amendment_note": "This frame construction deviates from the pre-reg original 5-source, star-stratified sampling plan on two axes -- both amended explicitly in exp1_pre_registration.json's amendments section, not silently: (1) single-source (GitHub topic search only), (2) doc-density stratification, not star-based.",
-  "predecessor_frame_note": "v1 (star-stratified, superseded) available at git commit 05db7ca for audit trail.",
+  "predecessor_frame_note": "v2 (commits 4bebfd7, c29e534) superseded -- kept for audit trail.",
   "candidate_list_ref": "evals/fixtures/exp1_candidate_list.json",
   "candidate_list_sha256": "956d3ebbb5becab2ab3c85376fe9e93bed587a8cdc450352f6500d394111a151",
   "discovery_date": "2026-07-02",
-  "discovery_source": "GitHub topic:mcp-server, 500 repos fetched (unchanged from v1 -- same 30 structurally-vetted candidates, re-scored not re-discovered)",
+  "discovery_source": "GitHub topic:mcp-server, 500 repos fetched (unchanged from v1/v2 -- same 30 structurally-vetted candidates, re-scored not re-discovered)",
   "vetting_method_note": "Each candidate was screened by an independent research pass against two criteria GG specified: (a) is_focused_mcp_server -- primary purpose is exposing a FIXED MCP tool catalog, not a general platform/framework/aggregator/gateway/SDK-for-building-servers with MCP as an incidental feature; (b) approx_tool_count >= 5, so a confusable family (2+ similarly-named/purposed tools) can plausibly exist. ~55 candidates were screened across the 500-repo discovery pool; 30 passed. A previously-unanticipated failure mode was found and excluded throughout: aggregators/gateways/proxies that dynamically route to OTHER MCP servers rather than exposing their own fixed catalog (e.g. metatool-ai/metamcp, tadata-org/fastapi_mcp) -- these have no stable docstring surface to mirror.",
   "exclusion_log_ref": "evals/fixtures/exp1_exclusion_log.json",
   "doc_density_methodology": {
@@ -21,48 +40,18 @@
     "extractor": "agentgauge/exp1_tool_def_extractor.py -- deterministic, no LLM/agent: git clone --depth 1, static parsing (Python AST decorator + imperative add_tool() + JSON-literal fallback; regex proximity for other languages)",
     "tiering": "assign_tiers() -- empirical terciles (p33/p67) of composite_score WITHIN the 23 successfully-scored fresh candidates. Tier names (well_documented/thin/near_empty) are RELATIVE to this sample, not absolute doc-quality bands -- see honest_caveat below."
   },
+  "ratification_2026_07_04_v2": "N=23 fresh + 2 anchors ratified; empirical-tercile tiering kept as pre-committed. SUPERSEDED by this v3 correction -- see bug_fixes_this_version.",
   "open_decisions_applied_by_default": [
     {
-      "id": "fresh_count_23_vs_28_shortfall",
-      "issue": "Mechanical extraction failed (0 tools extracted) for 7 of the 30 structurally-vetted fresh candidates, despite all 7 having >=13 tools per the manual vetting pass (approx_tool_count) -- confirmed extraction-method gaps (2x Java: no annotation-based pattern implemented; 1x confirmed YAML-manifest architecture, not source code; 4x C/Go/TS/unknown-language misses), not real near-empty signal. Full detail + per-server reasons in exp1_exclusion_log.json. This leaves only 23 fresh candidates with a valid doc-density score, short of the pre-registered freshly_sampled_count=28 by 5.",
-      "default_applied": "Proceed with N=23 fresh (scored) + 2 anchors = 25 total as the ACTUAL measured frame. Terciles computed over the 23. The 7 exclusions are logged, not silently dropped.",
-      "alternatives_not_applied": [
-        "Backfill 5-7 replacements from the already-fetched backup pool (70/stratum, evals/fixtures/exp1_candidate_list.json backup_pool) -- REQUIRES a fresh manual vetting pass (is_focused_mcp_server + approx_tool_count>=5 judgment) on backup candidates, since the backup pool is raw/unvetted (e.g. contains n8n-io/n8n, a general automation platform, exactly the pattern excluded during v1 vetting). Deferred: this is judgment work, not mechanical, and doing it now risks the same selection-effect problem being corrected if done casually.",
-        "Extend the extractor to cover Java annotation-based registration and/or the YAML-manifest pattern -- deferred as scope creep for this pass (per this session's explicit redirect against per-language extractor rabbit-holing); would only recover up to 2 of the 7 (the 2 Java servers; no clean win on the YAML-manifest one, which is repo-specific)."
-      ],
-      "requires_gg_confirmation": false,
-      "status": "RATIFIED_2026-07-04"
-    },
-    {
-      "id": "tier_labels_relative_not_absolute",
-      "issue": "The composite-score distribution across the 23 scoreable fresh candidates is heavily right-skewed: range 25.0-100.0, 7 of 23 tied at exactly 100.0 (possible ceiling/saturation in the metric), median ~80. Empirical terciles place 8 servers in near_empty by construction, but only 3 of those 8 are near-empty in an ABSOLUTE sense (pct_tools_with_description < 0.20 -- i.e. genuinely lack descriptions on most tools). The other 6 near_empty-tier servers have 86-100% of tools WITH a description (e.g. chrisryugj-korean-law-mcp: 115 tools, 100% described, composite=80.0 -- tiered near_empty purely because it falls in the bottom third of THIS specific sample, not because it is thin).",
-      "default_applied": "Keep the pre-committed tercile methodology (assign_tiers() was fixed before this run, per pre-reg discipline -- not tuned post-hoc). Flag the relative-vs-absolute distinction explicitly here and in the papers methods section rather than silently treating near_empty as if it meant absolutely thin.",
-      "alternatives_not_applied": [
-        "Redefine tiers by absolute composite-score thresholds instead of empirical terciles -- would change the pre-committed methodology after seeing results (exactly the never-tune-to-a-positive pre-reg violation the frozen protocol prohibits)."
-      ],
-      "requires_gg_confirmation": false,
-      "reportable_finding": "This is itself a confirmation, on a MECHANICAL (not README-based) doc-density measure, of the same finding that motivated this frame's rebuild: GitHub-discoverable, structurally-valid MCP servers (>=5 tools, focused catalog) overwhelmingly ship non-empty tool descriptions. Only 2 of 23 scored servers (vitali87-code-graph-rag, lucasastorian-llmwiki) have 0% description coverage -- genuinely near-empty. The population may lack a large truly-thin-doc segment even under this stricter, non-circular measure.",
-      "status": "RATIFIED_2026-07-04"
+      "id": "near_empty_segment_now_empty",
+      "issue": "After the 3 bugfixes, composite scores across the 22 scoreable fresh servers range 37.3-100.0. 0 of 22 have 0% description coverage (down from 2/23 in v2) and 1 have <20% coverage (oraios-serena, 11.1%, composite=37.3, is now the single closest-to-thin candidate in the entire scoreable pool). The near_empty TERCILE still exists by construction (terciles always produce 3 groups), but its members (37.3-80.1 composite, up to 92%+ description coverage) are not absolutely thin -- e.g. lucasastorian-llmwiki (78.1, 92.3% described) was the server GG approved as the batch-1 trial target BEFORE this correction, on the false premise that it was 0% documented.",
+      "default_applied": "None -- explicitly re-escalated, not resolved by default.",
+      "reportable_finding": "STRENGTHENS the v2 finding: under-documented public MCP servers are not just rare (2/23) but, once measurement bugs are fixed, nearly ABSENT (0/22 absolutely near-empty) in this GitHub-discoverable, structurally-valid population. This is now a headline-strength result for the paper's regime map: the public segment is overwhelmingly OUT-OF-REGIME on doc-density grounds alone, before any behavioral testing. Register this as THE finding, not a sampling shortfall -- per the frozen protocol's own honest_caveat, this remains a LOWER BOUND on prevalence in the unsampleable under-documented internal segment.",
+      "requires_gg_confirmation": true
     }
   ],
   "strata": {
     "well_documented": [
-      {
-        "server_id": "matlab-matlab-mcp-server",
-        "source_repo": "matlab/matlab-mcp-server",
-        "language": "Go",
-        "star_stratum_v1": "low",
-        "stars": 1087,
-        "approx_tool_count_manual_vetting": 5,
-        "doc_quality_manual_vetting": "polished",
-        "n_tools_extracted": 12,
-        "extraction_method": "regex_best_effort",
-        "composite_score": 97.9,
-        "mean_description_length": 203.9,
-        "pct_tools_with_description": 1.0,
-        "pct_name_echo_only": 0.083,
-        "param_description_coverage": 1.0
-      },
       {
         "server_id": "ChromeDevTools-chrome-devtools-mcp",
         "source_repo": "ChromeDevTools/chrome-devtools-mcp",
@@ -174,25 +163,25 @@
         "pct_tools_with_description": 1.0,
         "pct_name_echo_only": 0.0,
         "param_description_coverage": 1.0
+      },
+      {
+        "server_id": "blazickjp-arxiv-mcp-server",
+        "source_repo": "blazickjp/arxiv-mcp-server",
+        "language": "Python",
+        "star_stratum_v1": "mid",
+        "stars": 2919,
+        "approx_tool_count_manual_vetting": 7,
+        "doc_quality_manual_vetting": "polished",
+        "n_tools_extracted": 8,
+        "extraction_method": "tool_constructor_python",
+        "composite_score": 100.0,
+        "mean_description_length": 608.2,
+        "pct_tools_with_description": 1.0,
+        "pct_name_echo_only": 0.0,
+        "param_description_coverage": 1.0
       }
     ],
     "thin": [
-      {
-        "server_id": "stefanoamorelli-sec-edgar-mcp",
-        "source_repo": "stefanoamorelli/sec-edgar-mcp",
-        "language": "Python",
-        "star_stratum_v1": "low",
-        "stars": 328,
-        "approx_tool_count_manual_vetting": 18,
-        "doc_quality_manual_vetting": "polished",
-        "n_tools_extracted": 21,
-        "extraction_method": "ast",
-        "composite_score": 80.1,
-        "mean_description_length": 182.2,
-        "pct_tools_with_description": 0.571,
-        "pct_name_echo_only": 0.0,
-        "param_description_coverage": 0.538
-      },
       {
         "server_id": "yvgude-lean-ctx",
         "source_repo": "yvgude/lean-ctx",
@@ -288,41 +277,25 @@
         "pct_tools_with_description": 0.992,
         "pct_name_echo_only": 0.0,
         "param_description_coverage": 0.831
+      },
+      {
+        "server_id": "matlab-matlab-mcp-server",
+        "source_repo": "matlab/matlab-mcp-server",
+        "language": "Go",
+        "star_stratum_v1": "low",
+        "stars": 1087,
+        "approx_tool_count_manual_vetting": 5,
+        "doc_quality_manual_vetting": "polished",
+        "n_tools_extracted": 12,
+        "extraction_method": "regex_best_effort",
+        "composite_score": 97.9,
+        "mean_description_length": 203.9,
+        "pct_tools_with_description": 1.0,
+        "pct_name_echo_only": 0.083,
+        "param_description_coverage": 1.0
       }
     ],
     "near_empty": [
-      {
-        "server_id": "vitali87-code-graph-rag",
-        "source_repo": "vitali87/code-graph-rag",
-        "language": "Python",
-        "star_stratum_v1": "mid",
-        "stars": 2281,
-        "approx_tool_count_manual_vetting": 10,
-        "doc_quality_manual_vetting": "polished",
-        "n_tools_extracted": 2,
-        "extraction_method": "ast",
-        "composite_score": 25.0,
-        "mean_description_length": 0.0,
-        "pct_tools_with_description": 0.0,
-        "pct_name_echo_only": 0.0,
-        "param_description_coverage": 0.0
-      },
-      {
-        "server_id": "lucasastorian-llmwiki",
-        "source_repo": "lucasastorian/llmwiki",
-        "language": "Python",
-        "star_stratum_v1": "low",
-        "stars": 1252,
-        "approx_tool_count_manual_vetting": 10,
-        "doc_quality_manual_vetting": "polished",
-        "n_tools_extracted": 13,
-        "extraction_method": "ast",
-        "composite_score": 25.0,
-        "mean_description_length": 0.0,
-        "pct_tools_with_description": 0.0,
-        "pct_name_echo_only": 0.0,
-        "param_description_coverage": 0.0
-      },
       {
         "server_id": "oraios-serena",
         "source_repo": "oraios/serena",
@@ -356,18 +329,18 @@
         "param_description_coverage": 1.0
       },
       {
-        "server_id": "blazickjp-arxiv-mcp-server",
-        "source_repo": "blazickjp/arxiv-mcp-server",
+        "server_id": "lucasastorian-llmwiki",
+        "source_repo": "lucasastorian/llmwiki",
         "language": "Python",
-        "star_stratum_v1": "mid",
-        "stars": 2919,
-        "approx_tool_count_manual_vetting": 7,
+        "star_stratum_v1": "low",
+        "stars": 1252,
+        "approx_tool_count_manual_vetting": 10,
         "doc_quality_manual_vetting": "polished",
-        "n_tools_extracted": 2,
+        "n_tools_extracted": 13,
         "extraction_method": "ast",
-        "composite_score": 71.8,
-        "mean_description_length": 43.5,
-        "pct_tools_with_description": 1.0,
+        "composite_score": 78.1,
+        "mean_description_length": 393.9,
+        "pct_tools_with_description": 0.923,
         "pct_name_echo_only": 0.0,
         "param_description_coverage": 0.0
       },
@@ -418,11 +391,27 @@
         "pct_tools_with_description": 1.0,
         "pct_name_echo_only": 0.0,
         "param_description_coverage": 0.0
+      },
+      {
+        "server_id": "stefanoamorelli-sec-edgar-mcp",
+        "source_repo": "stefanoamorelli/sec-edgar-mcp",
+        "language": "Python",
+        "star_stratum_v1": "low",
+        "stars": 328,
+        "approx_tool_count_manual_vetting": 18,
+        "doc_quality_manual_vetting": "polished",
+        "n_tools_extracted": 21,
+        "extraction_method": "ast",
+        "composite_score": 80.1,
+        "mean_description_length": 182.2,
+        "pct_tools_with_description": 0.571,
+        "pct_name_echo_only": 0.0,
+        "param_description_coverage": 0.538
       }
     ]
   },
-  "n_fresh_scoreable": 23,
-  "n_fresh_excluded_extraction_failed": 7,
+  "n_fresh_scoreable": 22,
+  "n_fresh_excluded_extraction_failed": 1,
   "validation_anchors": [
     {
       "server_id": "github-mcp",
@@ -446,6 +435,5 @@
       "composite_score": 100.0
     }
   ],
-  "star_stratified_v1_ref": "git commit 05db7ca:evals/fixtures/exp1_server_frame.json (superseded, kept for audit trail)",
-  "next_step": "Awaiting GG ratification of the two open_decisions_applied_by_default entries above. No mirroring/scoring has begun."
+  "next_step": "Awaiting GG ratification of this corrected frame (v3) before any mirroring beyond what already exists, contested-task authoring, or Arm A/B trials. The GG-approved batch-1 trial target (lucasastorian-llmwiki) needs to be reconsidered given its premise (0% documented) is no longer true -- oraios-serena is now the closest candidate to genuinely thin in the corrected pool."
 }
