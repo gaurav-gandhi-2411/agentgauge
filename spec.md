@@ -105,6 +105,12 @@ found in-regime (i.e. where the agent actually confused tools)? Localizer precis
 behavioral ground truth. Compare against the single-score baseline (which flags ~nothing). A localizer
 that predicts behavioral confusion = the positive methodological contribution.
 
+**Pre-registered 2026-07-04:** `docs/research/exp3_pre_registration.md` — 24-pair ground truth
+(4 CONFUSED / 20 NOT_CONFUSED) drawn entirely from already-collected EXP-1 + RW1/RW2 behavioral
+trial data, judge prompt, 3-trial/seed-42+idx majority-vote scheme, and the precision≥0.50 AND
+recall≥0.50 pre-committed bar for "real positive method" vs "honest negative." Fixture:
+`evals/fixtures/exp3_ground_truth.json`.
+
 ---
 
 ## EXP 4 (lighter) — consolidate the existing results into the paper's regime map
