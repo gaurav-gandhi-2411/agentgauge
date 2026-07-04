@@ -27,6 +27,20 @@ table is the single point of truth for "did we source this."
 | Conditions required | ≥60 tools / ≥10 families; real within-family axis; targeted descriptions | same | same | ✓ |
 | Fixture | `evals/fixtures/t18_catalog.py` | — | `fa766c9` | ✓ |
 
+**Density is a bracket, not a measured curve — flagged in the adversarial self-audit, fixed here.**
+Only two points on the density axis have been tested:
+
+| Metric | Value | Source | Commit | Ancestor? |
+|---|---|---|---|---|
+| T17 (16 tools / 8 clusters): Arm A accuracy from names alone | **81.2%** — ABORTED for fixture-quality (headroom 81.2% > the 70% ad hoc target used in that pre-frozen-protocol-era experiment; note T17 predates `frozen_protocol.md`'s later-codified 85% headroom ceiling — do not conflate the two thresholds). The oracle arm was never run; no A/B comparison was made; this is a "no headroom to test" result, not a tested-and-null result. | `STATUS.md` T17 section ("Q1 oracle A/B ... ABORTED — fixture-quality, headroom 81.2% > 70% target. NOT a null result (oracle was never run; no comparison made)") | `2be73df` (also `29fee93`, `54a55ff`) | ✓ |
+| T18 (60 tools / 10 families): Arm A parse-success accuracy | 62.9% (110/175) | see above | `fa766c9` | ✓ |
+
+No fixture between 16 and 60 tools was ever run. The paper must state the density-gating claim as
+"an effect was observed at 60 tools/10 families and no effect was even testable at 16 tools/8
+clusters (headroom too high to proceed to an oracle A/B) — the precise transition point is
+untested, not established," never "density is *the* gating variable" as a flat, measured fact,
+and never "establishes exactly where" the boundary sits.
+
 ### 1.2 Regime 2 — Under-documented source with docstrings (Q3/Q5/Q6 Guard-B)
 
 | Condition | Recovery (n=6 structural) | p | No-fabrication | Source commit | Ancestor? |
@@ -89,6 +103,7 @@ and hash-verified; harness-code merge is a separate, still-pending repo action.
 | No testable family | 3/10 servers (Dataojitori-nocturne_memory, blazickjp-arxiv-mcp-server, LycheeMem-LycheeMem) | same | same | ✓ |
 | Seed-bug false positives caught + reversed | 2 (`mrexodia-ida-pro-mcp` +50pp→90% no-headroom; `datalayer-jupyter-mcp-server` +25pp→−15pp HARM) | `STATUS.md` EXP-1 "Methodological note" | `0da8199` | ✓ |
 | Fixtures | `evals/fixtures/exp1_*.json` (server frame, doc-density scores, trial batches, anchor validation) | — | `0da8199` and frame-history commits | ✓ |
+| `taylorwilsdon-google_workspace_mcp` catalog size | 116 tools (0%/0% catalog-overwhelm failure mode) — added, flagged missing in second-pass adversarial audit | `STATUS.md` EXP-1 section ("...malformed/hedged output under a 116-tool catalog") | `0da8199` | ✓ |
 
 **Precision note for drafting (FIXED, GG-directed):** the precise figure is **0 of 9 servers
 with a testable confusable family** showed in-regime behavior (10 servers total in the frame;
@@ -119,6 +134,14 @@ paper — never "0/10."
 | Result fixtures | — | — | `evals/fixtures/exp3_localizer_result.json` (binary, verified directly — TP/FP/FN/TN and per-pair mean scores match STATUS.md prose), `evals/fixtures/exp3_localizer_graded_result.json` (graded, verified directly — spot-checked pairs 1–4 against STATUS.md text) | `a4d7f1b`, `8fadbe0` | ✓ ✓ |
 | Baseline (single-score discoverability) | 0/24 localized by construction (one number per catalog) | | `docs/research/exp3_pre_registration.md` §1 | `603bfb2` | ✓ |
 
+**Ground-truth composition (added — flagged as missing in the adversarial self-audit):**
+
+| Metric | Value | Source | Commit | Ancestor? |
+|---|---|---|---|---|
+| Servers contributing pairs | 6 fresh EXP-1 servers (`AminForou-mcp-gsc`, `datalayer-jupyter-mcp-server`, `mrexodia-ida-pro-mcp`, `stefanoamorelli-sec-edgar-mcp`, `stickerdaniel-linkedin-mcp-server`, `lucasastorian-llmwiki`) + RW1/RW2 anchors | `docs/research/exp3_pre_registration.md` §3 | `603bfb2` | ✓ |
+| Pairs from RW1/RW2 anchors | **10** of the 24 (rows #15–24: 5 from RW1/github-mcp, 5 from RW2/aws-iam-mcp) — **correction found this session**: `paper.md` §6.2 previously said "nine pairs," miscounted; fixed to ten | same §3 table, rows #15–24 | `603bfb2` | ✓ |
+| Cross-mechanical-family-boundary confusions | 2 of the 4 real `CONFUSED` pairs (`AminForou-mcp-gsc` delete_sitemap/manage_sitemaps; `datalayer-jupyter-mcp-server` read_notebook/list_notebooks) | same §3, "Cross-family note" | `603bfb2` | ✓ |
+
 ---
 
 ## 4. Non-regime evidence (harm, retrieval, structural limits)
@@ -134,6 +157,15 @@ paper — never "0/10."
 Aggregate P2-A (31 contested tasks, all families): A=77.4%, Guard-B=96.8%, Oracle=93.5%; sign
 tests GuardB-vs-A p=0.07, Oracle-vs-A p=0.125 (both n.s. at N=31). Do-no-harm thorough set:
 0/17 regressions. Source: same commit `925b3cb`.
+
+**Other named P2-A per-family figures cited in `paper.md` (added — flagged as missing rows in
+the adversarial self-audit; same source commit as above, `925b3cb`):**
+
+| Family | A | Guard-B | Oracle | Note |
+|---|---|---|---|---|
+| `order_read` (n=4) | 0.0% | 100.0% | 100.0% | +100pp both — fully RECOVERED, the one complete-failure family in P2-A |
+| `ticket_lifecycle` (n=4) | 100.0% | 100.0% | 100.0% | +0pp all arms — high-stakes/destructive family, resolved from task context, no incremental safety from descriptions |
+| `invoice_write` (n=5) | 100.0% | 100.0% | 100.0% | +0pp all arms — same pattern as ticket_lifecycle |
 
 ### 4.2 F2 retrieval-readiness — CLOSED negative, all three retrievers
 

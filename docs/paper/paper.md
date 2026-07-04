@@ -13,27 +13,40 @@ dropped and justified in `spec.md`.
 Tool-description quality is widely treated as a broadly-applicable, improvable lever for
 agent tool-use: better descriptions are assumed to help agents pick the right tool more
 often, and tooling that rewrites, grounds, or scores descriptions is built on that
-assumption. We test the assumption directly with a single frozen evaluation protocol —
-one classifier, one judge, one generator family, pre-registered thresholds — applied across
-a synthetic confusable-catalog experiment, two real production MCP-server mirrors, a
-synthetic internal-proxy catalog, and a sampled pilot of ten public MCP servers. We find the
-effect is real but **regime-bounded**: it appears only when a catalog is dense enough that
-tool names stop disambiguating themselves (≥60 tools, ≥10 confusable families) and only when
-description generation has access to documented source code, giving a +34.5 percentage-point
-(pp) selection-accuracy gain on a synthetic catalog (gemma2:9b) that survives, undiminished,
-on a substantially stronger open model (+40.8pp, Llama-3.3-70B). Outside that regime, the
-effect vanishes or reverses: two well-documented production servers (GitHub, AWS IAM) show
-zero headroom because agents already resolve tool selection from task context; a synthetic
-internal-proxy catalog shows a family where better descriptions **harm** already-correctly-resolved
-selections (−20pp); improved descriptions **harm** retrieval-based tool lookup across three
-retriever types (lexical BM25/TF-IDF and semantic embedding); and a pilot sample of ten public
-MCP servers shows the confusable-at-scale regime occurring in **0 of 9** servers with a testable
-confusable family. We additionally test whether the regime can be cheaply *localized* — flagged
-automatically before an agent ever encounters it — with a pairwise LLM-judge confusability
-method, and find it cannot: under both a binary and a graded-confidence framing, the judge
-flags roughly all pairs as confusable (precision 0.167, recall 1.00 in both), a robust failure
-mode rather than an artifact of question phrasing. Together these results map where the
-field's central assumption holds, and show it holds in a narrower and rarer place than current
+assumption [Anthropic engineering, 2026; GitHub engineering, 2026; Hasan et al., 2026]. We
+test the assumption directly with a single frozen evaluation protocol — one classifier, one
+judge, one generator family, pre-registered thresholds — applied across a synthetic
+confusable-catalog experiment, two real production MCP-server mirrors, a synthetic
+internal-proxy catalog, and a sampled pilot of ten public **Python** MCP servers. We find the
+effect is real but **regime-bounded**. Using hand-written oracle descriptions, a selection-accuracy
+effect appears at one tested density point (60 tools / 10 confusable families: +34.5pp,
+gemma2:9b) and was not even testable at a lower tested density (16 tools / 8 clusters: no
+headroom to test against, names alone already resolve 81.2% of tasks) — the precise threshold
+between these two points is bracketed, not measured. The same oracle effect does not collapse
+on one substantially stronger open-weight model tested independently (+40.8pp, Llama-3.3-70B —
+a single data point, on a different harness, not directly comparable in magnitude to the
+gemma2:9b figure). Realizing this effect safely through *automatic* description generation is a
+separate, additional finding: it requires documented source code, and interface-only generation
+recovers only 12.5% of the oracle gain. Outside these conditions, the effect vanishes or
+reverses: two well-documented production servers (GitHub, AWS IAM) show zero headroom because
+agents already resolve tool selection from task context; on a synthetic internal-proxy catalog,
+one already-correctly-resolved family is **harmed** by better descriptions (−20pp) while two
+other already-resolved families in the same experiment show no harm; improved descriptions
+**harm** retrieval-based tool lookup across three retriever types on that same catalog (lexical
+BM25/TF-IDF and semantic embedding); and a pre-registered pilot sample of ten public Python MCP
+servers shows this general behaviorally-defined in-regime condition (not a re-test of the
+60-tool density point specifically) occurring in **0 of 9** servers with a testable confusable
+family — a lower bound on a Python-only, public-GitHub sample, not a population estimate. We
+additionally test whether the regime can be cheaply *localized* — flagged automatically before
+an agent ever encounters it — with a pairwise LLM-judge confusability method, and find it
+cannot: under both a binary and a graded-confidence framing, the judge flags all 24 of 24 pairs
+as confusable (precision 0.167, recall 1.00 in both), the identical outcome reached via two
+different degeneracy mechanisms rather than one repeated failure mode. One further limitation is
+itself methodologically central: a bug that silently suppressed a real in-regime signal, rather
+than manufacturing a false one, would not have the same "surprising result triggers a recheck"
+property that let us catch and reverse two false positives in this pilot (§8.3.1) — a structural
+asymmetry any null-results claim in this space should carry. Together these results map where
+the field's assumption holds, and show it holds in a narrower and rarer place than current
 practice assumes.
 
 ---
@@ -44,13 +57,34 @@ practice assumes.
 
 Agentic systems that call external tools — via MCP servers, OpenAI-style function schemas, or
 similar interfaces — depend on an LLM agent correctly selecting which tool to invoke for a
-given task. A large and growing body of practice treats the *quality of the tool description
-text* as the primary lever for improving that selection: description linters, LLM-based
-description rewriters, retrieval-readiness scoring, and "documentation quality" rubrics all
-assume that clearer, more precise descriptions make agents more reliable, broadly and by
-default. This assumption is rarely tested against real agent behavior at the regime level —
-most evaluations either show a positive result on a hand-built adversarial fixture, or assume
-the result generalizes without checking where it stops holding.
+given task. Practitioner-facing engineering guidance treats the *quality of the tool description
+text* as a primary lever for improving that selection: Anthropic's own tool-use engineering
+guidance states that "even small refinements to tool descriptions can yield dramatic
+improvements," reporting that precise refinements to tool descriptions helped Claude Sonnet 3.5
+reach state-of-the-art on SWE-bench Verified (Anthropic Engineering, "Writing tools for
+agents" — publication date not independently confirmed this session, cited for content only).
+GitHub's engineering team, running an offline evaluation harness against their own MCP server —
+the same `github/github-mcp-server` mirrored in RW1 (§4.3.1) — reports the same sensitivity from
+the other side: "tightening a description, adding or removing a tool, or combining a few similar
+tools can shift results a lot" (GitHub Engineering, "Measuring what matters: how offline
+evaluation of GitHub MCP Server works" — publication date not independently confirmed this
+session, cited for content only). This appears to sit in tension with RW1's own finding of zero
+headroom on that exact server for gemma2:9b (§4.3.1) — we do not resolve this tension here, since
+GitHub's harness details (which model(s), which metric, which task distribution) were not
+verified this session beyond the quoted sentence; flagged as an open question rather than
+silently juxtaposed as if the two results agree. An empirical audit of 856 tools across 103 real
+MCP servers found 97.1% of tool
+descriptions contain at least one quality "smell" and 56% fail to state their purpose clearly,
+and that LLM-based description augmentation lifts task success by a median of +5.85pp — but
+also regresses performance in 16.67% of cases and inflates execution steps by 67.46% (Hasan et
+al., "Model Context Protocol (MCP) Tool Descriptions Are Smelly!," arXiv:2602.14878, 2026). Real
+tool-name collisions cause user-visible failures in production agent frameworks, independent of
+any synthetic fixture (e.g., a reported GitHub issue: "Duplicate tool names across MCP servers
+cause errors," `openai/openai-agents-python#464`). Taken together, this is real evidence that
+description quality matters *somewhere* and that even small edits move outcomes — but none of
+these sources characterize the *boundary* of where it matters, whether it generalizes across
+catalog scales, or whether the same fix that helps selection also helps or harms retrieval and
+already-correctly-resolving cases. That is the gap this paper addresses.
 
 ### 1.2 What this paper does instead
 
@@ -70,16 +104,23 @@ questions in sequence:
 ### 1.3 Contributions
 
 - **A falsifiable, regime-bounded map** of where tool-description quality changes agent
-  selection behavior: it requires catalog density (≥60 tools / ≥10 confusable families) *and*
-  documented source access for safe generation; outside that intersection the effect is null or
-  negative (Section 4).
+  selection behavior. Two distinct conditions compose it, from different experiments: (i) the
+  hand-written oracle *effect* appears at 60-tool/10-family catalog density and was untestable
+  (no headroom) at 16-tool/8-cluster density — one tested point and one untested-for-headroom
+  point, bracketing an unmeasured transition, not a precisely located threshold (Section 4.2.1);
+  (ii) realizing that effect safely through *automatic generation* additionally requires
+  documented source code — interface-only generation recovers only 12.5% of the oracle gain
+  (Section 4.2.2). Outside this intersection the effect is null or negative (Section 4.3).
 - **A prevalence measurement**: on a pre-registered pilot sample of 10 Python-only public MCP
-  servers, 0 of 9 servers with a testable confusable family showed in-regime behavior — a lower
-  bound, not a closed claim, on how rare the regime is among public, documented servers
-  (Section 5).
-- **A localizer negative result**: a pairwise LLM-judge confusability method — the natural
-  cheap alternative to running the full behavioral protocol against every server — fails under
-  two independently pre-registered framings, in the same way both times (Section 6).
+  servers, 0 of 9 servers with a testable confusable family showed in-regime behavior, using
+  the general behavioral regime definition (§5.1) — not a re-test of the specific 60-tool
+  density point above — a lower bound, not a closed claim, on how rare the regime is among
+  public, documented servers (Section 5).
+- **A localizability boundary**: a pairwise LLM-judge confusability method — the natural cheap
+  alternative to running the full behavioral protocol against every server — fails under two
+  independently pre-registered framings, reaching the identical confusion matrix both times via
+  two different degeneracy mechanisms rather than one repeated failure mode (Section 6). This
+  extends the map from *where the regime occurs* to *where it can, and cannot, be found cheaply*.
 
 ### 1.4 Roadmap
 
@@ -97,38 +138,55 @@ the synthesis. Sections 8–9 cover threats to validity and the reproducibility 
 ### 2.1 Tool-use and function-calling benchmarks
 
 Benchmarks for LLM tool/function-calling typically measure whether an agent calls the *correct*
-tool and constructs a *valid* call, usually against a fixed, hand-built catalog. Our starting
-point is that these benchmarks say little about description *quality* specifically unless the
-catalog is built to isolate it — which is why the regime map in Section 4 spans purpose-built
-synthetic catalogs at controlled scale (T18) alongside real production-server mirrors (RW1,
-RW2) rather than a single fixture.
+tool and constructs a *valid* call, usually against a fixed, hand-built catalog. Selection
+reliability is known to degrade as the tool menu grows — a synthetic causal-filtering study
+reports wrong-tool calls increasing with larger tool menus across four LLM backends (Babu and
+Iyer, "ToolChoiceConfusion: Causal Minimal Tool Filtering for Reliable LLM Agents,"
+arXiv:2606.06284, 2026), and a large real-usage benchmark of tool-use "in the wild" finds no
+model, of 57 tested, exceeds 15% accuracy on tasks reflecting authentic multi-turn, mixed-intent
+user behavior (Yu et al., "Benchmarking LLM Tool-Use in the Wild" [WildToolBench],
+arXiv:2604.06185, 2026). Neither benchmark isolates description *quality* specifically as the
+independent variable — which is why the regime map in Section 4 spans purpose-built synthetic
+catalogs at controlled scale (T18) alongside real production-server mirrors (RW1, RW2) rather
+than a single fixture designed for a different question.
 
 ### 2.2 MCP ecosystem and documentation practice
 
-The Model Context Protocol ecosystem has produced a growing set of public servers with
-widely varying documentation quality, and a parallel set of tools (linters, description
-scorers, `llms.txt` conventions) that assume documentation quality is both measurable and
-improvable in a way that changes agent behavior. Section 4.3.4 and Section 6 directly test
-the measurability half of that assumption (can a scorer identify which tool pairs are
-confusable) and find it fails at both the single-score and pairwise level as currently
-constructed.
+The Model Context Protocol ecosystem has produced a growing set of public servers with widely
+varying documentation quality (Hasan et al., 2026, above: 97.1% of a 856-tool sample shows at
+least one description "smell"), and a parallel set of tools (linters, description scorers,
+`llms.txt` conventions) that assume documentation quality is both measurable and improvable in a
+way that changes agent behavior. Section 4.3.4 and Section 6 directly test the measurability
+half of that assumption for one specific construct — can a scorer identify *which tool pairs*
+in a catalog are confusable — and find it fails at both the single-score and pairwise level as
+currently constructed, on the fixtures tested here.
 
 ### 2.3 Retrieval-augmented tool selection
 
-Where a catalog is too large to place in-context, tool retrieval (lexical or embedding-based)
-is used to narrow the candidate set before selection. Retrieval and direct-selection
-description quality are often assumed to move together — a better description should help
-both. Section 4.3.3 shows they are anti-correlated: the same precision that helps
-direct-selection disambiguation matches poorly against the coarse, intent-level queries a
-retrieval index is queried with.
+Where a catalog is too large to place in-context, tool retrieval (lexical or embedding-based) is
+used to narrow the candidate set before selection. A large retrieval benchmark (7.6k tasks, 43k
+tools) finds even strong information-retrieval models perform poorly at this task — the
+best-performing model reaches only 33.83 nDCG@10 (Shi et al., "Retrieval Models Aren't
+Tool-Savvy: Benchmarking Tool Retrieval for Large Language Models" [ToolRet], ACL 2025 Findings
+/ arXiv:2503.01763). One proposed remedy is LLM-based description *expansion*, reported to yield
+state-of-the-art retrieval gains on two benchmarks (Lu et al., "Tools are under-documented:
+Simple Document Expansion Boosts Tool Retrieval" [Tool-DE], arXiv:2510.22670, 2025). Retrieval
+and direct-selection description quality are often assumed to move together on this basis —
+richer descriptions should help both. Section 4.3.3 shows they are anti-correlated *on the one
+synthetic catalog tested here*: the same behavioral-axis precision that helps direct-selection
+disambiguation matches poorly against the coarse, intent-level queries a retrieval index is
+queried with — a result that sits in tension with, rather than replicating, Tool-DE's
+description-expansion gains, and that we do not claim generalizes beyond this fixture (see
+§8.1).
 
 ### 2.4 Positioning
 
-This paper positions against the implicit claim, common across the practices above, that
-tool-description-quality improvement is a broadly-applicable, low-risk intervention. We do not
-dispute that it helps in *some* regime — Section 4.2 establishes exactly where — but we show
-the regime is narrower, and the intervention riskier outside it, than that implicit claim
-assumes.
+This paper positions against the implicit claim, common across the practices surveyed above,
+that tool-description-quality improvement is a broadly-applicable, low-risk intervention. We do
+not dispute that it helps in *some* regime — Section 4.2 characterizes one such regime, bounded
+by the specific fixtures tested — but we show that regime is narrower and less precisely located
+than a flat "improve your descriptions" recommendation implies, and that the same intervention
+is risky outside it.
 
 ---
 
@@ -218,12 +276,16 @@ descriptions also destabilize call *formation* itself — parse-failure rate fal
 (25/200) to 2.5% (5/200) under oracle descriptions, contributing roughly 5–6pp of the
 aggregate delta separately from the discrimination effect.
 
-Critically, this effect is **density-gated**, not a general property of description quality:
-an earlier fixture at 16 tools / 8 clusters (T17) placed Arm A at 81.2% accuracy from names
-alone — above the headroom ceiling, aborted before any description effect could even be
-tested. The same description-quality manipulation that produces +34.5pp at 60-tool density
-produces nothing measurable at 16-tool density, because names alone already disambiguate at
-that scale. Density is the gating variable.
+This effect appears **density-gated** rather than a general property of description quality,
+but the paper has only two points on the density axis, not a measured curve: an earlier fixture
+at 16 tools / 8 clusters (T17) placed Arm A at 81.2% accuracy from names alone — headroom too
+high (by the ad hoc 70% target that experiment used) for the oracle arm to be run at all, so the
+description effect was never actually tested at that density, not tested-and-absent. The
+60-tool/10-family point is positive (+34.5pp); the 16-tool/8-cluster point is untested; nothing
+between 16 and 60 tools has been run. The defensible claim is that density gates *whether the
+effect is even testable* (headroom exists or doesn't) at these two specific fixtures — not that
+density is *the* gating variable in general, and not that the transition point is located more
+precisely than "somewhere in this untested bracket."
 
 #### 4.2.2 Under-documented source with docstrings (Q3 → Q6, Guard-B)
 
@@ -266,11 +328,13 @@ p<0.0001; on the stable set excluding 5 Arm-A trial-flippers, n+=14, n−=0, p<0
 Arm-A miss tasks were fully recovered by the oracle, with no oracle-resistant floor in this
 fixture. The effect does not collapse, and does not shrink, moving from a 9B to a 70B agent.
 
-This is a survival claim, not a growth claim, and not a frontier claim: Llama-3.3-70B is a
-strong open model, not a Claude/GPT-class proprietary frontier model, and the +40.8pp figure is
-**not directly comparable** to T18's +34.5pp — different harness, different classifier host
-(Section 3.5). The result rules out "the T18 effect is a weak-agent artifact" as an
-explanation; it does not close the question of whether a true frontier model would behave
+This is a survival claim, not a growth claim, and not a frontier claim: Llama-3.3-70B is one
+strong open model, one data point, not a Claude/GPT-class proprietary frontier model, and the
++40.8pp figure is **not directly comparable** to T18's +34.5pp — different harness, different
+classifier host (Section 3.5). The result is **inconsistent with** "the T18 effect is a
+gemma2:9b-specific capability artifact" as an explanation; it is one additional data point, on a
+different harness, not a proof that no capability tier would show the effect shrink — and it
+does not close the question of whether a true proprietary frontier model would behave
 differently.
 
 ### 4.2 Where it doesn't help, or actively harms
@@ -324,16 +388,17 @@ underspecified natural-language queries, across three retriever types:
 | Guard-B | 0.225 (−0.079) | 0.204 (−0.113) | 0.286 (−0.224) |
 | Oracle | 0.234 | 0.228 | 0.362 |
 
-Thin descriptions **outperform** Guard-B and oracle descriptions on every retriever tested,
-with the harm larger under semantic embedding retrieval than lexical retrieval. The mechanism
-is legible: compact verb-noun descriptions ("Get the order.") keyword- and semantically-match
-coarse, intent-level queries ("get an order") directly; precision-optimized descriptions
-("Returns order summary fields including status, total, item count...") match at the
-implementation level — exactly the level that helps within-family selection disambiguation
-(Section 4.2.1) and hurts coarse retrieval matching. The property that makes a description good
-for one downstream use (direct selection in a fully-listed catalog) makes it worse for another
-(retrieval against a partial query) — this is the central non-obvious finding connecting
-Sections 4.2 and 4.3.
+On this catalog, thin descriptions **outperform** Guard-B and oracle descriptions on every
+retriever tested, with the harm larger under semantic embedding retrieval than lexical
+retrieval. The mechanism is legible: compact verb-noun descriptions ("Get the order.") keyword-
+and semantically-match coarse, intent-level queries ("get an order") directly; precision-optimized
+descriptions ("Returns order summary fields including status, total, item count...") match at
+the implementation level — exactly the level that helps within-family selection disambiguation
+(Section 4.2.1) and hurts coarse retrieval matching here. The property that makes a description
+good for one downstream use (direct selection in a fully-listed catalog) makes it worse for
+another (retrieval against a partial query) on this synthetic proxy — this is the central
+non-obvious finding connecting Sections 4.2 and 4.3, tested on one fixture and not yet checked
+against a real server's retrieval behavior (§8.1).
 
 #### 4.3.4 Single-score judging cannot localize which pairs are confusable
 
@@ -350,19 +415,22 @@ not a calibration issue that more judge tuning would fix.
 ### 4.4 Mechanism throughline
 
 ```
-Description precision HELPS within-family discrimination when:
- - Catalog density is high enough (>=60 tools / >=10 families) that
-   names alone are ambiguous, AND
+Description precision HELPS within-family discrimination when (each tested at
+one fixture/point, not a swept curve):
+ - Catalog density is at least as high as the one positive point tested
+   (60 tools / 10 families) -- untested, not confirmed-absent, at the one
+   lower point tried (16 tools / 8 clusters, no headroom to test), AND
  - Source access includes docstrings (safe generation requires this;
    body-only source opens a fabrication vector), AND
  - Arm A shows real headroom (the agent is not already resolving from
    task-context wording).
 
-The same precision is ORTHOGONAL or ANTI-CORRELATED to:
+The same precision is ORTHOGONAL or ANTI-CORRELATED to, on the fixtures tested:
  - what context-rich agents need (RW1, RW2, and P2-A's high-stakes
    families all resolve at 100% from context alone, regardless of
    description quality),
- - what retrieval rewards (F2: harm across all three retriever types), and
+ - what retrieval rewards on one synthetic catalog (F2: harm across all
+   three retriever types tested there), and
  - what a single-score judge can report (localization requires a
    pairwise comparison, tested next in Section 6).
 ```
@@ -379,6 +447,16 @@ description-quality property (which would be circular): a confusable family on a
 in-regime iff, under the frozen protocol, (a) the server's real shipped descriptions fail at
 least one contested task, **and** (b) an oracle description recovers it. "Thin descriptions" is
 an input property; only behavior the fix actually repairs counts as in-regime.
+
+**This is the general behavioral construct, not a re-test of Section 4.2.1's specific
+density point.** None of the ten sampled servers were selected or verified to actually reach
+the 60-tool/10-family density where T18 found an effect (most have far fewer tools; the one
+large-catalog server sampled, at 116 tools, failed for an unrelated reason — catalog overwhelm,
+malformed output under a large listing, not confident wrong-tool selection — and contributes no
+evidence either way about the density regime specifically). What EXP-1 measures is the
+prevalence of the general two-condition behavioral regime across whatever confusable families
+each server happens to have, at whatever scale it happens to be built at — a broader and
+different question than "how many real servers are built at T18's specific tested density."
 
 ### 5.2 Sampling frame
 
@@ -426,11 +504,13 @@ the first run sampled zero real trial-to-trial variance. That run reported two s
 in-regime (`mrexodia-ida-pro-mcp` +50pp; `datalayer-jupyter-mcp-server` +25pp). Fixing the seed
 and re-running **reversed both findings**: ida-pro's real Arm A accuracy is 90% (correctly
 aborts, no headroom), and jupyter's Arm B is a genuine harm (−15pp, not a +25pp recovery). Both
-apparent in-regime results were seed artifacts, caught before being reported as findings — we
-report this as a credibility asset for the pipeline's own error-detection, and separately, in
-Section 8.3, as a threat to validity in the opposite direction (a bug that suppressed a real
-signal, rather than manufacturing a false one, would not have an analogous "surprising result"
-trigger to catch it by).
+apparent in-regime results were seed artifacts, caught before being reported as findings — a
+credibility asset for the pipeline's own error-detection, reported here as such.
+
+This asset has a mirror-image limitation that is *more* important than the credit above, and is
+given its own standalone treatment, not folded into this paragraph: **§8.3.1** states why a bug
+that suppressed a real in-regime signal, rather than manufacturing a false one, would not have
+been caught the same way.
 
 ### 5.5 Scope
 
@@ -449,27 +529,27 @@ data.
 
 Section 4.3.4 established that the existing single-score `discoverability` judge cannot say
 *which* tool pair in a catalog is confusable — a structural limit of returning one number per
-catalog. If the confusable-at-scale regime (Section 4.2.1) is to be found cheaply, before
-running the full behavioral protocol against every server, a localizer is needed that outputs a
-per-pair signal. This section builds and tests the natural next attempt: ask the same frozen
-judge a pairwise question directly.
+catalog. If the regime Section 4 characterizes is to be found cheaply, before running the full
+behavioral protocol against every server, a localizer is needed that outputs a per-pair signal.
+This section builds and tests the natural next attempt: ask the same frozen judge a pairwise
+question directly.
 
 ### 6.2 Method
 
 For each candidate tool pair (A, B), one judge call (`llama3.1:8b`, frozen) asks whether a task
 intended for A could plausibly select B instead, and vice versa. Ground truth is a
 pre-registered, 24-pair fixture (4 CONFUSED / 20 NOT_CONFUSED) built entirely from
-already-collected behavioral trial data — six servers from Section 5's fresh EXP-1 scoring, plus
-nine pairs from the RW1/RW2 anchors, including several pairs the *old* Levenshtein-based
-heuristic had already false-positived (a deliberately adversarial inclusion). 3 trials per pair
-(seed 42+trial_idx), majority vote. The pre-committed bar for "a real positive method": precision
-≥ 0.50 **and** recall ≥ 0.50.
+already-collected behavioral trial data — 6 fresh servers from Section 5's EXP-1 scoring (14
+pairs), plus **10** pairs from the RW1/RW2 anchors (5 GitHub + 5 AWS IAM), including several
+pairs the *old* Levenshtein-based heuristic had already false-positived (a deliberately
+adversarial inclusion). 3 trials per pair (seed 42+trial_idx), majority vote. The pre-committed
+bar for "a real positive method": precision ≥ 0.50 **and** recall ≥ 0.50.
 
 ### 6.3 Binary result
 
 Confusion matrix: TP=4, FP=20, FN=0, TN=0. **Precision = 0.167, recall = 1.00** — recall clears
 the bar; precision does not. All **24 of 24** pairs were verdicted CONFUSABLE, including all
-nine sampled pairs from the two 100%-accuracy anchor servers (GitHub, AWS IAM) and both pairs
+**ten** sampled pairs from the two 100%-accuracy anchor servers (GitHub, AWS IAM) and both pairs
 where the old heuristic already false-positived. The judge catches every real behavioral
 confusion (perfect recall) by flagging almost everything — a direct yes/no confusability
 question elicits a near-uniform "yes" from this judge on this fixture, not a discriminating
@@ -500,27 +580,43 @@ consider from a full catalog), and two of the four real confusions in the ground
 mechanical name-prefix family boundaries that a family-scoped candidate generator would not
 have proposed in the first place.
 
+**This is itself a boundary finding, not a second defeat stacked on Section 4's negatives.**
+Section 4 established that the helps-regime is real and characterizable at the catalog level
+(density, source access, headroom). This section establishes a further, independent boundary:
+even where the regime is real, it is not currently *findable* below the cost of running the
+full behavioral protocol, using the one localization approach natural to try with an existing
+frozen judge. That is new information the map did not have before this experiment — it narrows
+where a cheap pre-deployment check can substitute for the protocol, which is a distinct question
+from whether the regime itself exists.
+
 ---
 
 ## 7. Discussion
 
 Read together, Sections 4–6 answer the paper's title question precisely rather than broadly.
-Tool-description quality *does* change agent selection behavior — but only inside an
-intersection of conditions (catalog density, source documentation, real headroom) that a
-pre-registered pilot sample of real public servers places at 0 of 9 tested servers, and that
-cannot currently be located cheaply by asking an LLM judge pairwise whether two tools are
-confusable. Outside that intersection, the same intervention that helps direct selection can
-be neutral, harmful to selection on already-resolved families, or harmful to retrieval — three
-independently-measured non-regimes, not one.
+Tool-description quality *does* change agent selection behavior — but the evidence for this
+comes from separate findings that compose, not one single joint condition: an oracle-effect
+that appears at one tested high-density point and is untested (not disproven) at a lower one
+(§4.2.1), a generation-safety condition that requires documented source (§4.2.2), and a
+prevalence measurement — using the general behavioral regime construct, not a re-test of the
+density point specifically — that a pre-registered pilot sample of real public Python servers
+places at 0 of 9 tested (Section 5). Separately, even where the regime does occur, it has not
+been shown findable cheaply: a pairwise LLM-judge localizer fails to identify which specific
+tool pairs are confusable on a new, unscored server (Section 6). Outside the helps-conditions,
+the same intervention that helps direct selection in the
+tested fixtures can be neutral, harmful to selection on at least one already-resolved family, or
+harmful to retrieval on the one synthetic catalog tested — three independently-measured
+non-regimes, not one, and not (yet) shown to generalize beyond the fixtures each was measured on.
 
 The practical implication for MCP server authors and tool-catalog builders is not "descriptions
 don't matter" — it is "check whether you are in the regime before investing in description
-tooling." A server with fewer than ~60 tools and no dense within-family collisions, whose
-agent already resolves tasks from context, gains nothing from more precise descriptions and
-risks the account_query-style harm pattern (Section 4.3.2) if it applies them blanket. A server
-that *is* in the regime should generate descriptions from documented source with a
-target-grounded, non-comparative prompt (Section 4.2.2's Q5/Q6 configuration), not from the
-interface alone.
+tooling," where "the regime" is checked behaviorally (does Arm A actually fail a contested task,
+and does an oracle description actually recover it) rather than assumed from catalog size alone.
+A server whose agent already resolves tasks from context gains nothing from more precise
+descriptions and risks the account_query-style harm pattern (Section 4.3.2) if it applies them
+blanket. A server that *is* in the regime should generate descriptions from documented source
+with a target-grounded, non-comparative prompt (Section 4.2.2's Q5/Q6 configuration), not from
+the interface alone.
 
 What would change this picture: a larger or non-Python-verified EXP-1 sample (Section 5.5); a
 true proprietary-frontier-model replication of Section 4.2.3; or a localizer signal that does
@@ -534,7 +630,27 @@ judgment call.
 
 Full list: `docs/paper/threats_to_validity.md`. Summarized here by category; every item there
 traces to a specific finding already reported in Sections 4–6, not a hedge added at write-up
-time.
+time. **§8.3.1 is read first** — it is the single most important threat to a paper whose
+headline results are nulls, and it is stated standalone, not as a clause inside another
+paragraph.
+
+### 8.3.1 The false-negative asymmetry (read this one first)
+
+**This paper's positive findings were caught being wrong; its negative findings have no
+analogous check.** Section 5.4 reports two false positives from a seed-configuration bug,
+caught and reversed before publication *because* they were surprising enough to trigger a
+recheck (a server unexpectedly showing in-regime behavior got a second look). A bug that instead
+silently *suppressed* a real in-regime signal — turning a true positive into a false null — would
+produce a result indistinguishable from a correctly-measured null: "this server is not
+in-regime" looks the same whether it's true or an artifact, and nothing about a null result
+prompts the same "that's surprising, let's recheck" response that caught the two false
+positives. This asymmetry means EXP-1's 0-of-9 headline, and EXP-3's localizer-fails headline,
+carry a category of risk that this paper's own error-detection track record does not bound. We
+have not found evidence of such a bug; we also have no mechanism that would necessarily surface
+one, which is precisely the point. Any reader treating EXP-1 or EXP-3's null as more secure than
+"we looked and did not find a positive, using a pipeline whose false-positive-catching capacity
+is demonstrated and whose false-negative-catching capacity is not" should recalibrate against
+this paragraph specifically.
 
 ### 8.1 Sampling / generalizability
 N=10, Python-only, public-GitHub pilot. The strength claimed is *convergence* — the EXP-1 null,
@@ -553,13 +669,11 @@ is one model, one data point, not apples-to-apples with the gemma2:9b harness, a
 proprietary-frontier-model result.
 
 ### 8.3 Measurement / judge validity
-Two seed-bug false positives were caught and reversed before reporting (Section 5.4) — a
-credibility asset for the pipeline's self-correction, paired with a genuine asymmetry threat: a
-bug that silently suppressed a real signal (a false negative) would not have the same
-"surprising result triggers a recheck" property that caught these false positives. EXP-3's
-negative is robust across two framings, not a single-question artifact, but validates the
-judging step only, not candidate-pair generation. Trial counts deviate from the 5-per-arm
-default for FRONTIER-T18 and EXP-3 (3 each), independently pre-registered and justified.
+Two seed-bug false positives were caught and reversed before reporting (Section 5.4;
+asymmetry discussed prominently in §8.3.1, not here). EXP-3's negative is robust across two
+framings, not a single-question artifact, but validates the judging step only, not candidate-pair
+generation. Trial counts deviate from the 5-per-arm default for FRONTIER-T18 and EXP-3 (3 each),
+independently pre-registered and justified.
 
 ### 8.4 Harm / asymmetric risk
 Blanket description-fixing is not universally safe: P2-A's account_query family shows
@@ -581,8 +695,12 @@ reported number; the harness code that produced it remains in an unmerged branch
 
 Every figure in Sections 4–6 traces to a committed file on this paper-writing branch, verified
 against a specific commit reachable from `HEAD` (full trace: `docs/paper/evidence_table.md`).
-Fixture files carry pre-registered SHA-256[:12] hashes recorded at pre-registration time
-(protocol appendix: `docs/research/frozen_protocol.md`).
+Most fixture files carry SHA-256[:12] hashes recorded at pre-registration time, before their
+experiment's results were known (protocol appendix: `docs/research/frozen_protocol.md`). **The
+FRONTIER-T18 fixtures are the stated exception** — see §9.2 immediately below: their hashes were
+computed post-hoc, during this paper's preparation, not at pre-registration time, because the
+original pre-registered artifact had to be recovered from a gitignored local file rather than
+read from a tracked one.
 
 ### 9.2 FRONTIER-T18 data/code split (state plainly, not silently)
 
@@ -608,17 +726,28 @@ in this research program has auto-merge; a human merges every one.
 ## 10. Conclusion
 
 Tool-description quality changes agent tool-selection behavior in a real, measurable, and
-mechanistically legible way — but only inside a narrow, checkable regime: catalogs dense enough
-that names stop disambiguating themselves, and generation with access to documented source. That
-regime survives a substantial capability increase in the agent tested (Section 4.2.3), which
-rules out "weak agent artifact" as an explanation for it being real. But it appears in 0 of 9
-servers with a testable confusable family in a pre-registered pilot sample of real, public,
-documented MCP servers (Section 5), the same intervention harms selection on already-resolved
-families and harms retrieval across every retriever type tested outside that regime (Section
-4.3), and the regime cannot currently be located cheaply by asking an LLM judge pairwise whether
-two tools are confusable (Section 6). The field's assumption that description-quality
-improvement is a broadly beneficial, low-risk lever is not wrong so much as over-general: this
-paper's contribution is the boundary that makes "broadly" precise enough to check.
+mechanistically legible way — but only inside a narrow, checkable set of conditions: a catalog
+at least as dense as the one point where an effect was tested and found (60 tools / 10
+families; untested, not disproven, at a lower point tried), and generation with access to
+documented source. That effect does not collapse under a substantial capability increase in the
+one additional agent tested (Section 4.2.3) — a finding *inconsistent with* "this is a
+gemma2:9b-specific capability artifact," though one data point on a different harness does not
+prove the effect is capability-independent in general. Outside these conditions: the same
+general behavioral regime construct (not a re-test of the density point specifically) appears in
+0 of 9 servers with a testable confusable family in a pre-registered pilot sample of real,
+public, documented Python MCP servers (Section 5); the same kind of intervention harms selection
+on at least one already-resolved family tested, while two other already-resolved families in the
+same experiment show no harm (Section 4.3.2); it harms retrieval across every retriever type
+tested on the one synthetic catalog used for that test (Section 4.3.3); and the regime cannot
+currently be located cheaply by asking an LLM judge pairwise whether two tools are confusable
+(Section 6) — itself a boundary finding, not a second defeat (§6.5). One threat bounds all of
+these null and boundary claims at once and is not a footnote: a bug that silently suppressed a
+real in-regime signal would look identical to a correctly-measured null, and this paper's
+demonstrated error-detection catches false positives, not false negatives (§8.3.1). With that
+caveat stated plainly, the field's assumption that description-quality improvement is a broadly
+beneficial, low-risk lever reads, on this evidence, as over-general rather than wrong: this
+paper's contribution is a first pass at the boundary that makes "broadly" precise enough to
+check and re-test.
 
 ---
 
@@ -633,3 +762,74 @@ paper's contribution is the boundary that makes "broadly" precise enough to chec
   two FRONTIER-T18 hashes added this session are recorded in Section 9.2 above and in
   `docs/paper/evidence_table.md` §1.3.
 - **A.4** Per-server EXP-1 table: Section 5.3 above (reproduced from `STATUS.md` EXP-1 section).
+- **A.5** Bibliography — every citation below was independently fetched and checked against its
+  claimed content this session (title, authors, and the specific figure/quote cited all
+  confirmed against the primary source, not copied from a prior internal desk-research doc
+  without re-verification). None were invented; where a candidate citation from prior internal
+  research (`reports/frontier_phase1_research.md`, itself gitignored/uncommitted and self-flagged
+  as "arXiv IDs not independently re-resolved") could not be verified to support its claimed
+  content, it was dropped rather than included on trust — see the exclusions list below.
+
+  **Cited in this paper:**
+  1. Anthropic Engineering, "Writing tools for agents" (publication date not independently
+     confirmed this session — content verified, date not).
+     `https://www.anthropic.com/engineering/writing-tools-for-agents` — verified: contains the
+     quoted claim that small tool-description refinements yielded SOTA SWE-bench Verified
+     results for Claude Sonnet 3.5.
+  2. GitHub Engineering, "Measuring what matters: how offline evaluation of GitHub MCP Server
+     works" (publication date not independently confirmed this session — content verified, date
+     not). `https://github.blog/ai-and-ml/generative-ai/measuring-what-matters-how-offline-evaluation-of-github-mcp-server-works/`
+     — verified: contains the quoted claim that small description edits "shift results a lot."
+     **Second-pass audit note:** this is a claim about the *same* GitHub MCP server mirrored in
+     RW1 (§4.3.1), which found zero headroom for gemma2:9b on that server. The tension is flagged
+     explicitly in §1.1 body text, not silently juxtaposed; not resolved (harness/model/metric
+     details of GitHub's own eval were not verified this session).
+  3. Hasan, M. M., Li, H., Rajbahadur, G. K., Adams, B., and Hassan, A. E., "Model Context
+     Protocol (MCP) Tool Descriptions Are Smelly! Towards Improving AI Agent Efficiency with
+     Augmented MCP Tool Descriptions," arXiv:2602.14878, 2026. Verified via `arxiv.org/abs/2602.14878`
+     — 856 tools / 103 servers, 97.1% ≥1 "smell," 56% unclear purpose, +5.85pp median task-success
+     gain from augmentation, 16.67% regression rate, +67.46% execution-step inflation, all
+     confirmed against the abstract.
+  4. Lu, X., Huang, H., Meng, R., Jin, Y., Zeng, W., and Shen, X., "Tools are under-documented:
+     Simple Document Expansion Boosts Tool Retrieval" (Tool-DE), arXiv:2510.22670, 2025 (arXiv
+     ID year prefix "25" = 2025 — corrected in second-pass audit; originally mislabeled 2026).
+     Verified
+     via `arxiv.org/abs/2510.22670` — Tool-Embed/Tool-Rank, SOTA retrieval gains from LLM-driven
+     document expansion, confirmed against the abstract.
+  5. Shi, Z., Wang, Y., Yan, L., Ren, P., Wang, S., Yin, D., and Ren, Z., "Retrieval Models
+     Aren't Tool-Savvy: Benchmarking Tool Retrieval for Large Language Models" (ToolRet), ACL 2025
+     Findings (`aclanthology.org/2025.findings-acl.1258`) / arXiv:2503.01763. Verified via
+     web search cross-referencing the ACL Anthology and arXiv listings — 7.6k tasks / 43k tools,
+     best model (NV-embed-v1) 33.83 nDCG@10, both figures confirmed.
+  6. Yu, P., Liu, W., Yang, Y., Li, J., Zhang, Z., Feng, X., and Zhang, F., "Benchmarking LLM
+     Tool-Use in the Wild" (WildToolBench), arXiv:2604.06185, 2026. Verified via
+     `arxiv.org/abs/2604.06185v1` — confirmed: "no model achieves an accuracy of more than 15%"
+     across 57 evaluated LLMs. **Not cited: a specific "Grok-4 24.07% wrong-name error" figure**
+     from the prior internal desk-research doc — this could not be confirmed from the abstract
+     and full-text confirmation was not obtained; excluded rather than asserted on trust.
+  7. Babu, R. S., and Iyer, L. G., "ToolChoiceConfusion: Causal Minimal Tool Filtering for
+     Reliable LLM Agents," arXiv:2606.06284, 2026. Verified via `arxiv.org/abs/2606.06284v1` —
+     confirmed: Causal Minimal Tool Filtering (CMTF), 102 tasks / 100 tools / four LLM backends,
+     reliability-vs-tool-menu-size problem statement. **Not cited: the prior internal doc's
+     characterization of this paper's evaluation as "fully synthetic" with an explicit disclaimer
+     of "no empirical measurement of how frequently this confusion regime occurs in
+     practice"** — this specific framing/quote could not be confirmed from the fetched abstract;
+     excluded rather than asserted on trust.
+  8. GitHub issue, "Duplicate tool names across MCP servers cause errors,"
+     `github.com/openai/openai-agents-python#464` (closed). Verified via `gh api` — title and
+     closed state confirmed.
+  9. GitHub issue, "Feedback for dynamic tool selection," `github.com/github/github-mcp-server#275`
+     (closed). Verified via `gh api` — title and closed state confirmed; referenced only in this
+     appendix as supporting context, not cited in body prose in this draft.
+
+  **Checked and excluded (candidate citations from prior internal desk research that did NOT
+  verify — listed so the exclusion is visible, not silent):**
+  - "arXiv:2603.20313, retrieval quality fundamentally bounded by the informativeness of tool
+    descriptions" — fetched; the paper at this ID ("Semantic Tool Discovery for Large Language
+    Models: A Vector-Based Approach to MCP Tool Selection") does not support this claim per its
+    abstract. Not used anywhere in this paper.
+  - Any secondary-source selection-accuracy-vs-tool-count percentages (e.g., ">90% at 5-7 tools
+    → ~13% at 100+ tools") from `docs/research/phase1-buyer-and-landscape.md` — that document's
+    own "Confidence & gaps" section already flags these as "secondary-source paraphrase, not
+    verified against a primary benchmark." Not used in this paper for the same reason its
+    original author already gave.

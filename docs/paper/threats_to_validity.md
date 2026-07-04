@@ -7,6 +7,24 @@ Every item traces to a specific finding already in the repo — nothing here is 
 
 ---
 
+## 0. THE FALSE-NEGATIVE ASYMMETRY (read this one first — elevated per adversarial self-audit)
+
+**This is the single most important threat to this paper's null results, and it must be the
+most visible item in this document, not bullet 2 of 6 under "measurement/judge validity."**
+
+Section 5.4/8.3.1 of `paper.md` reports two false positives from a seed-configuration bug,
+caught and reversed *because* they were surprising enough to trigger a recheck. A bug that
+instead silently **suppressed** a real in-regime signal — turning a true positive into a false
+null — would produce a result indistinguishable from a correctly-measured null. Nothing about a
+null prompts the same "that's surprising, recheck it" response that caught the two false
+positives. **This means EXP-1's 0-of-9 headline and EXP-3's localizer-fails headline both carry
+a category of risk this paper's own demonstrated error-detection does not bound**: the pipeline
+has shown it catches false positives; it has not shown, and structurally cannot easily show, that
+it catches false negatives. State this before any other limitation, in the paper's Abstract or
+Limitations summary, not only in a body-section subordinate clause.
+
+---
+
 ## 1. Sampling / generalizability
 
 - **N=10, Python-only, public-GitHub pilot (EXP-1).** The strength is *convergence* across
@@ -60,14 +78,9 @@ Every item traces to a specific finding already in the repo — nothing here is 
 - **Two seed-bug false positives caught and reversed before reporting**
   (`mrexodia-ida-pro-mcp`, `datalayer-jupyter-mcp-server` — see `STATUS.md` EXP-1
   "Methodological note"). Report this as a credibility asset per the honesty spine: it shows
-  the pipeline catches its own artifacts, not that the pipeline is unreliable. Pair it with —
-- **False-negative asymmetry as a genuine threat.** The seed bug that was caught happened to
-  produce false *positives* (spurious IN-REGIME/HARM signals), which are self-correcting once
-  noticed (they don't survive a second look). A parallel bug that produced false *negatives*
-  (silently suppressing a real in-regime signal) would be much harder to catch by inspection —
-  there is no analogous "surprising result triggers a recheck" trigger for a null. State this
-  asymmetry explicitly as a limitation of the pipeline's error-detection posture, not just note
-  the two bugs that were found.
+  the pipeline catches its own artifacts, not that the pipeline is unreliable. **The
+  false-negative asymmetry this implies is covered in §0 above, standalone — do not re-bury it
+  here as a subordinate clause.**
 - **The single-score `discoverability` judge structurally cannot localize** (Non-Regime 4) —
   this is a known, reported limitation of the *product*, and it is the motivating fact for
   EXP-3, not a threat to EXP-3's own validity.
