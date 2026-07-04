@@ -50,8 +50,8 @@ generalize." Same facts, different opening clause.]
     - 4.2.2 Under-documented source with docstrings (Q3→Q6 Guard-B progression): the
       safety/recovery inversion story (whole-file vs scoped, docstrings vs body-only).
     - 4.2.3 Strong-agent survival (FRONTIER-T18): effect does not collapse at 70B open-weight
-      scale. [Must resolve the evidence-table §1.3 sourcing gap before this subsection is
-      drafted — see `evidence_table.md`.]
+      scale. (Sourcing gap resolved — see `evidence_table.md` §1.3; cites the committed,
+      hash-verified fixture, not the original unmerged-branch prose.)
 4.3 Where it doesn't / harms:
     - 4.3.1 No-headroom real servers (RW1 GitHub, RW2 AWS IAM).
     - 4.3.2 Harm on already-resolved families (P2-A account_query, −20pp).
@@ -103,9 +103,9 @@ stability, reproducibility gaps).
 9.1 One-command reproduction claim: exact server set + hashes, model strings/versions, seeds,
     frozen protocol.
 9.2 Governance: condition-#1 gating, DRAFT-PR-only merge policy.
-9.3 Known artifact gap: FRONTIER-T18's result currently requires a branch not in this repo's
-    merged history — state this plainly if unresolved by submission time (see
-    `evidence_table.md` §1.3).
+9.3 FRONTIER-T18 data/code split: the result data is committed and hash-verified on this branch
+    (`evals/fixtures/frontier_t18_step2_*.json`); the harness code that produced it still lives
+    only in unmerged PR #50 — state this distinction plainly (see `evidence_table.md` §1.3).
 
 ### 10. Conclusion
 One paragraph restating the three results and the field-level takeaway, framing-dependent in

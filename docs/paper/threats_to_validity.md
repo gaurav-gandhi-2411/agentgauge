@@ -40,15 +40,20 @@ Every item traces to a specific finding already in the repo — nothing here is 
   `docs/research/frozen_protocol.md` §Cross-Experiment Comparisons). It shows the effect
   *survives* at a stronger open-weight tier; it does not show a *trend*, and it is not a
   Claude/GPT-class frontier result. The frontier (proprietary-model) question remains open.
-- **Reproducibility gap on FRONTIER-T18 itself (newly found during this session):** the commit
-  that recorded the +40.8pp result (`5269645`) is not reachable from this paper-writing
-  branch's history (nor from `main`) — it lives only on the unmerged sibling branch
-  `claude/frontier-t18`. The fuller writeup (`reports/frontier_t18_pr_body.md`) is not
-  git-tracked on any branch (`reports/` is gitignored). No raw per-trial JSON is committed for
-  this experiment anywhere. This is a reproducibility-artifact threat distinct from the
-  scientific finding itself — flag prominently in §9 (Reproducibility Artifact) and resolve
-  (merge/cherry-pick or commit a hashed result file) before the paper claims "one command
-  reproduces every figure." Full detail: `docs/paper/evidence_table.md` §1.3.
+- **Reproducibility gap on FRONTIER-T18 itself — RESOLVED.** The commit that recorded the
+  +40.8pp result in prose (`5269645`) was not reachable from this paper-writing branch's history
+  (nor from `main`) — it lived only on the unmerged sibling branch `claude/frontier-t18`
+  (open DRAFT PR #50), and the writeup was gitignored everywhere. The raw per-task and
+  per-call result files survived on local disk; both were independently re-derived (counting
+  `SELECTED-CORRECT` directly from the 240 raw per-call records reproduces 71/120 and 120/120
+  exactly) and committed as hashed fixtures: `evals/fixtures/frontier_t18_step2_result.json`
+  (sha256[:12] `3ca4a25dbd25`) and `evals/fixtures/frontier_t18_step2_raw_calls.json`
+  (sha256[:12] `93fb0d77262d`), plus `docs/research/frontier_t18_result.md` for the caveats
+  writeup. **Residual scope note:** the harness code itself (`agentgauge/frontier.py`,
+  `scripts/run_frontier_t18.py`) still lives only in unmerged PR #50 — a from-scratch re-run
+  requires merging that PR first, even though the reported number is now independently
+  verifiable from committed data. State this distinction in §9 (Reproducibility Artifact).
+  Full detail: `docs/paper/evidence_table.md` §1.3.
 
 ## 3. Measurement / judge validity
 

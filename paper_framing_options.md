@@ -2,7 +2,8 @@
 
 Your evidence base (final): descriptions help ONLY in confusable-at-scale/under-documented regimes
 (T18 +34.5pp; Frontier-T18 Llama-70B +40.8pp; Guard-B recovers documented source safely) — and that
-regime is RARE in real servers (EXP-1: 0/10 Python public servers in-regime; RW1/RW2 anchors
+regime is RARE in real servers (EXP-1: 0 of 9 servers with testable confusable families in-regime,
+N=10 Python-only pilot; RW1/RW2 anchors
 confirm); descriptions can HARM already-resolved families (P2-A account_query); the retrieval-index
 thesis is dead (F2 negative across BM25/TFIDF/embedding); and localizing where descriptions would
 help FAILS (EXP-3: single-score localizes nothing, pairwise localizes everything, both framings).

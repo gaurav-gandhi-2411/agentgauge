@@ -41,44 +41,41 @@ table is the single point of truth for "did we source this."
 
 Source docs: `docs/research/exp4_regime_map.md` §Regime 2, §Non-Regime 5; `STATUS.md` Q2a/Q2b/Q3/Q4/Q5/Q6 sections.
 
-### 1.3 Regime 3 — Strong-agent survival (FRONTIER-T18, Llama-3.3-70B) — ⚠️ SOURCING GAP, see below
+### 1.3 Regime 3 — Strong-agent survival (FRONTIER-T18, Llama-3.3-70B) — ✅ SOURCING GAP RESOLVED
 
 | Metric | Value | Source |
 |---|---|---|
-| Arm A accuracy | 59.2% (71/120) | `docs/research/exp4_regime_map.md` §Regime 3 |
+| Arm A accuracy | 59.2% (71/120) | `evals/fixtures/frontier_t18_step2_result.json` (`rate_a`), independently re-derived from `evals/fixtures/frontier_t18_step2_raw_calls.json` |
 | Arm B (oracle) accuracy | 100.0% (120/120) | same |
-| Effect | **+40.8pp** | same |
-| Sign test | n+=19, n−=0, ties=21, p<0.0001; stable-set (excl. 5 Arm-A flippers) n+=14, n−=0, p<0.001 | same |
-| Parse-failed | 0/200 both arms | same |
+| Effect | **+40.8pp** | `frontier_t18_step2_result.json` (`effect_pp: 40.833...`) |
+| Sign test | n+=19, n−=0, ties=21, p≈0 (<0.0001); stable-set (excl. 5 Arm-A flippers) n+=14, n−=0, p<0.001 | `frontier_t18_step2_result.json` (`sign_test`); stable-set figure from `docs/research/frontier_t18_result.md` |
+| Parse-failed / abstained | 0/240 calls | re-derived from `frontier_t18_step2_raw_calls.json` (no `PARSE-FAILED`/`ABSTAINED-OR-HEDGED` outcomes in either arm) |
 
-**⚠️ FLAG — not independently reproducible from this branch.** `docs/research/exp4_regime_map.md`
-(committed on this branch's ancestry, commit `1493791`) cites this result as an already-banked
-source experiment, but:
+**RESOLVED (this session, GG-directed).** Original flag: the commit that recorded these numbers
+in prose (`5269645`, on branch `claude/frontier-t18`, open **DRAFT PR #50**, unmerged) is not an
+ancestor of `HEAD` or of `main`; the fuller writeup (`reports/frontier_t18_pr_body.md`) was
+gitignored on every branch; no raw result JSON was committed anywhere.
 
-- The commit that actually recorded these numbers (`5269645`, `fix(frontier-t18): ... record
-  STEP 2 durability result`, which edited `STATUS.md` with the full Arm A/B breakdown) lives
-  on branch `claude/frontier-t18` — **verified NOT an ancestor of `HEAD`** (`git merge-base
-  --is-ancestor 5269645 HEAD` → false), and **NOT an ancestor of `main`** either. This branch's
-  stack (`claude/p2a-internal-proxy` → `claude/frozen-protocol-exp4` → `claude/exp1-prevalence`
-  → `claude/exp3-localizer`) forked from `main` at `8cb679b` (RW2, PR #49), **before**
-  `claude/frontier-t18` existed. The two branch lines never merged.
-- The fuller writeup with caveats (`reports/frontier_t18_pr_body.md`) is **not git-tracked on
-  any branch, including `claude/frontier-t18` itself** — `reports/` was added to `.gitignore`
-  in the same commit (`5269645`) that produced this report. It exists only as a local file.
-- No raw per-trial result JSON is committed anywhere for this experiment. The ad-hoc analysis
-  script `scripts/analyze_frontier_t18.py` (currently untracked in this session's working tree
-  — see git status) writes to `reports/frontier_t18_step2_groq.json` / `frontier_t18_ckpt.json`,
-  both gitignored.
+**Resolution:** the raw per-task result file and the raw per-call file both survived on local
+disk (`reports/frontier_t18_step2_openrouter.json`, `reports/frontier_t18_ckpt_openrouter.json`
+— gitignored but never deleted). Both were:
+1. **Independently re-derived and cross-checked** before committing: counting `SELECTED-CORRECT`
+   directly from the 240 raw per-call records gives A=71/120, B=120/120 — exact match to the
+   claimed 59.2%/100.0%/+40.8pp. Not just copied — verified.
+2. **Committed as hashed fixtures**, reachable from this branch's `HEAD`:
+   - `evals/fixtures/frontier_t18_step2_result.json` (per-task, 40 records; sha256[:12] = `3ca4a25dbd25`)
+   - `evals/fixtures/frontier_t18_step2_raw_calls.json` (per-call, 240 raw LLM responses + classified
+     outcomes; sha256[:12] = `93fb0d77262d`)
+   - `docs/research/frontier_t18_result.md` (the caveats writeup, previously gitignored, now tracked)
+3. Committed in this branch's paper-prep history (see commit adding these three files).
 
-**Net effect:** the paper's third "helps" regime and its second-most novel claim (effect
-survives at 70B) rests entirely on prose in a `STATUS.md` revision that a clone of the current
-paper-writing branch cannot check out. **Before this number is cited in the paper, either (a)
-merge or cherry-pick `claude/frontier-t18`'s commits (`9cd97ca`..`0a370de`) into this branch's
-lineage so `git log` on the paper branch actually contains the result, or (b) commit a
-fixture-hashed result JSON for it now.** Recommend escalating this as a pre-submission task,
-not silently drafting around it. Not a reason to doubt the number (the underlying run is real
-and its narrative is internally consistent with the T18 result it replicates) — purely a repo-
-hygiene / reproducibility-artifact gap.
+**Residual, smaller caveat (not a sourcing gap, a scope note):** the *harness code*
+(`agentgauge/frontier.py`, `scripts/run_frontier_t18.py`, `tests/test_frontier.py`) still lives
+only in the still-open `claude/frontier-t18` / PR #50 and has not been merged into this branch or
+`main`. The committed fixtures make the **reported numbers** independently verifiable from this
+branch today; a from-scratch **re-run** of the experiment still requires merging PR #50 first.
+State this distinction in the paper's Reproducibility Artifact section (§9): data is committed
+and hash-verified; harness-code merge is a separate, still-pending repo action.
 
 ---
 
@@ -93,11 +90,12 @@ hygiene / reproducibility-artifact gap.
 | Seed-bug false positives caught + reversed | 2 (`mrexodia-ida-pro-mcp` +50pp→90% no-headroom; `datalayer-jupyter-mcp-server` +25pp→−15pp HARM) | `STATUS.md` EXP-1 "Methodological note" | `0da8199` | ✓ |
 | Fixtures | `evals/fixtures/exp1_*.json` (server frame, doc-density scores, trial batches, anchor validation) | — | `0da8199` and frame-history commits | ✓ |
 
-**Precision note for drafting:** `paper_framing_options.md` (GG's own framing doc, uncommitted)
-paraphrases this as "0/10 Python public servers in-regime" — the precise figure is **0/9
-scored** (10 servers total, 3 had no testable confusable family and were never scored either
-way). Use "0/9 scored servers, 0/10 total including 3 with no testable family" in the paper,
-not the shorthand "0/10."
+**Precision note for drafting (FIXED, GG-directed):** the precise figure is **0 of 9 servers
+with a testable confusable family** showed in-regime behavior (10 servers total in the frame;
+3 had no testable confusable family and were never scored either way). `paper_framing_options.md`'s
+original shorthand ("0/10 Python public servers in-regime") has been corrected in that file and
+must be written as **"0 of 9 servers with testable confusable families"** everywhere in the
+paper — never "0/10."
 
 **RW1/RW2 anchors cited within EXP-1's N=10+2:**
 
@@ -179,10 +177,13 @@ Source: `docs/research/exp4_regime_map.md` §Non-Regime 4; `STATUS.md` RW1/RW2 s
 
 ## 6. Numbers flagged as NOT independently sourceable from this branch
 
-1. **FRONTIER-T18 (+40.8pp) — see §1.3.** The only genuine gap found. Everything else in this
-   table checks out against a commit reachable from `HEAD`.
+**None remaining.** FRONTIER-T18 (§1.3) was the only genuine gap found; it is now resolved —
+the raw per-task and per-call result files are committed and hash-verified on this branch (see
+§1.3). Every other EXP-1, EXP-3, EXP-4/T18/Q-series, RW1/RW2, P2-A, and F2 figure traces to a
+commit on this branch's direct ancestry path, cross-checked against either `STATUS.md` prose or
+the underlying fixture JSON (spot-checked for EXP-3's binary and graded result files, and
+independently re-derived for FRONTIER-T18).
 
-No other unsourceable numbers were found. All EXP-1, EXP-3, EXP-4/T18/Q-series, RW1/RW2, P2-A,
-and F2 figures trace to commits on this branch's direct ancestry path, cross-checked against
-either `STATUS.md` prose or the underlying fixture JSON (spot-checked for EXP-3's binary and
-graded result files).
+The one residual scope note (not a sourcing gap): FRONTIER-T18's harness *code* still lives only
+in the unmerged `claude/frontier-t18` branch (PR #50) — see §1.3's closing paragraph. This
+affects re-run reproducibility, not the validity of the reported/committed number.
