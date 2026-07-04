@@ -1,0 +1,107 @@
+# Threats to Validity / Limitations — Compiled List
+
+**Status:** PREP — compiled from the honesty spine (`paper_framing_options.md`), the frozen
+protocol's governance section (`docs/research/frozen_protocol.md`), and gaps found while
+sourcing the evidence table (`docs/paper/evidence_table.md`). Applies under either framing.
+Every item traces to a specific finding already in the repo — nothing here is speculative.
+
+---
+
+## 1. Sampling / generalizability
+
+- **N=10, Python-only, public-GitHub pilot (EXP-1).** The strength is *convergence* across
+  four independent signals — EXP-1's own null, the RW1/RW2 anchors, P2-A's account_query harm,
+  and the doc-density-rarity pattern across tiers — not N=10 in isolation. Never write "the
+  regime doesn't occur"; write "rare in sampled public servers; the under-documented internal
+  segment is unmeasurable from public data." (`STATUS.md` EXP-1 section, commit `0da8199`.)
+- **Non-Python extraction was dropped, not merely deferred.** 11 non-Python servers were
+  excluded after a systematic audit found the generic regex fallback pulls in template
+  literals, parameter names, and unrelated example data — a capability limit of blind
+  text-proximity matching, not a fixable bug. State this as a scope boundary of the *method*,
+  not a data-availability inconvenience.
+- **Tercile labels (well_documented / thin / near_empty) are RELATIVE ranks within the sampled
+  pool, not absolute doc-quality bands.** Do not present a tier label as if it generalizes
+  outside this specific N=10/N=23 frame.
+- **Public-servers-skew-documented lower-bound caveat.** The prevalence number is explicitly a
+  lower bound on how common the regime is among under-documented internal/custom servers,
+  which cannot be sampled from public data. State this once, prominently, near the EXP-1
+  headline — not buried in a footnote.
+
+## 2. Agent / model scope
+
+- **One default agent (gemma2:9b) for the whole regime map, T18, Q-series, RW1/RW2, and P2-A.**
+  EXP-2 (the controlled capability ladder that would test this directly) is DROPPED — ratified
+  by GG (`spec.md` EXP-2 section, `0c78f49`) — because the underlying regime this session could
+  verify is already rare; a ladder over an uncommon regime has limited external relevance.
+  State the drop and its justification explicitly; do not silently omit EXP-2 from the paper's
+  scope statement.
+- **FRONTIER-T18 (Llama-3.3-70B) is ONE model, ONE data point, and NOT apples-to-apples with
+  the gemma2:9b harness** (different classifier host, different harness — see
+  `docs/research/frozen_protocol.md` §Cross-Experiment Comparisons). It shows the effect
+  *survives* at a stronger open-weight tier; it does not show a *trend*, and it is not a
+  Claude/GPT-class frontier result. The frontier (proprietary-model) question remains open.
+- **Reproducibility gap on FRONTIER-T18 itself (newly found during this session):** the commit
+  that recorded the +40.8pp result (`5269645`) is not reachable from this paper-writing
+  branch's history (nor from `main`) — it lives only on the unmerged sibling branch
+  `claude/frontier-t18`. The fuller writeup (`reports/frontier_t18_pr_body.md`) is not
+  git-tracked on any branch (`reports/` is gitignored). No raw per-trial JSON is committed for
+  this experiment anywhere. This is a reproducibility-artifact threat distinct from the
+  scientific finding itself — flag prominently in §9 (Reproducibility Artifact) and resolve
+  (merge/cherry-pick or commit a hashed result file) before the paper claims "one command
+  reproduces every figure." Full detail: `docs/paper/evidence_table.md` §1.3.
+
+## 3. Measurement / judge validity
+
+- **Two seed-bug false positives caught and reversed before reporting**
+  (`mrexodia-ida-pro-mcp`, `datalayer-jupyter-mcp-server` — see `STATUS.md` EXP-1
+  "Methodological note"). Report this as a credibility asset per the honesty spine: it shows
+  the pipeline catches its own artifacts, not that the pipeline is unreliable. Pair it with —
+- **False-negative asymmetry as a genuine threat.** The seed bug that was caught happened to
+  produce false *positives* (spurious IN-REGIME/HARM signals), which are self-correcting once
+  noticed (they don't survive a second look). A parallel bug that produced false *negatives*
+  (silently suppressing a real in-regime signal) would be much harder to catch by inspection —
+  there is no analogous "surprising result triggers a recheck" trigger for a null. State this
+  asymmetry explicitly as a limitation of the pipeline's error-detection posture, not just note
+  the two bugs that were found.
+- **The single-score `discoverability` judge structurally cannot localize** (Non-Regime 4) —
+  this is a known, reported limitation of the *product*, and it is the motivating fact for
+  EXP-3, not a threat to EXP-3's own validity.
+- **EXP-3's negative is robust, not a single-framing artifact.** Binary yes/no and graded 0–10
+  confidence framings produced the *same* confusion matrix (precision 0.167, recall 1.00) via
+  two different degeneracy modes (uniform-YES vs anchoring at the scale midpoint). Frame this
+  as "LLM-judge confusability assessment doesn't predict agent behavior [with this frozen
+  judge, on this fixture]," not "our method failed" — and do not imply a third variant was
+  tried or would change the conclusion; the pre-registration commits to a hard stop.
+- **EXP-3 validates the judging step only, not candidate-pair generation.** 2 of the 4 real
+  confusions in the ground truth cross mechanical prefix-family boundaries; a family-scoped
+  candidate generator would not have proposed them as candidates at all, independent of the
+  judging result. State this as a pre-declared scope limit, not a discovered-after-the-fact
+  caveat.
+- **Trial-count deviation across experiments.** The frozen protocol specifies 5 trials/arm as
+  default; FRONTIER-T18 and EXP-3's judge calls use 3 trials/pair — each independently
+  pre-registered with its own justification (cost/rate-limit for FRONTIER-T18's API calls;
+  matching the existing `_judge_discoverability` convention for EXP-3). State both deviations
+  explicitly in Methods rather than presenting "5 trials" as a blanket constant.
+
+## 4. Harm / asymmetric risk
+
+- **Blanket description-fixing is not universally safe.** P2-A's account_query family shows
+  −20pp harm under BOTH Guard-B and Oracle descriptions, reproducing at the same magnitude —
+  not noise. This is a genuine risk finding, not a hedge: any practitioner-facing claim from
+  this paper must carry the harm case alongside the recovery cases, not just the positive
+  regime.
+- **Do-no-harm testing (Q6) covers only cases where honest descriptions remain semantically
+  distinct.** Total description-collapse to identical phrasing for sibling tools is explicitly
+  untested (`STATUS.md` Q6 "MECHANISM" note) — the safe-to-blanket claim is conditioned on this,
+  not unconditional.
+
+## 5. Scope / framing discipline (apply regardless of A vs B)
+
+- Never write "the regime doesn't occur" — always "rare in sampled public servers; the
+  under-documented internal segment is unmeasurable from public data."
+- Never present the FRONTIER-T18 +40.8pp and T18 gemma +34.5pp figures as directly comparable
+  or as evidence of a capability trend — different harness, explicitly flagged in
+  `docs/research/frozen_protocol.md`.
+- Every number drafted into paper prose must trace to a row in `docs/paper/evidence_table.md`;
+  if a claim doesn't have a row, it doesn't go in the paper without first adding and sourcing
+  that row.
