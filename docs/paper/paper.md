@@ -1,4 +1,4 @@
-# When Does Tool-Description Quality Actually Improve Agent Behavior? A Regime Analysis
+# When Does Tool-Description Quality Improve Agent Behavior? A Regime Analysis
 
 **Status:** DRAFT — Framing A (boundary-establishment), locked by GG. Every number in this
 draft traces to a row in `docs/paper/evidence_table.md`; do not add a number here without
@@ -261,7 +261,7 @@ not. Framing A treats this map, together with the prevalence finding in Section 
 paper's primary artifact — the field's assumption is not "false," it is **regime-bounded**, and
 this section states the boundary precisely enough to be checked against a new server.
 
-### 4.1 Where it helps
+### 4.2 Where it helps
 
 #### 4.2.1 Confusable-at-scale (T18)
 
@@ -290,17 +290,15 @@ precisely than "somewhere in this untested bracket."
 #### 4.2.2 Under-documented source with docstrings (Q3 → Q6, Guard-B)
 
 The T18 result establishes that oracle (hand-written, ground-truth) descriptions help; it does
-not establish that a *generator* can produce them safely. A four-stage progression on a
-12–23-tool fixture (Q3, Q4, Q5, Q6) establishes both the recovery and safety conditions:
+not establish that a *generator* can produce them safely. A four-stage progression (Q3, Q4, Q5,
+Q6) on a 12–23-tool fixture establishes both the recovery and safety conditions; the two
+endpoints carry the argument (full intermediate progression — including two distinct
+fabrication failure modes surfaced and closed along the way — in Appendix A.7):
 
 | Condition | Recovery (6 structural contested tasks) | p | No-fabrication |
 |---|---|---|---|
-| Q3 F-DOC (whole-file source + docstrings) | 83.3% (5/6) | 0.0625 (marginal) | PASS |
-| Q3 F-BODY (whole-file, docstrings stripped) | 83.3% (invalidated) | — | **FAIL** — cross-tool source misattribution |
-| Q4-DOC-scoped (per-tool source + docstrings) | 100% (6/6) | 0.0313 | **FAIL** — docstring-body vocabulary gap |
-| Q4-BODY-scoped | 100% (6/6) | 0.0313 | PASS |
-| Q5-guarded (per-tool source + docstrings + target-grounded prompt) | 100% (6/6) | 0.0313 | PASS |
-| Q6-guarded (23-tool blanket application) | 100% (6/6) | 0.0312 | PASS, **0/11 regressions** on already-passing tools |
+| Interface-only, no source (Q2a/Q2b) | 12.5% (11.1pp of 88.9pp available) | 0.50 (n.s.) | n/a — nothing to fabricate from |
+| Q5/Q6-guarded: scoped source + docstrings + target-grounded prompt (Q6 = 23-tool blanket application) | 100% (6/6) | 0.0313 (Q5) / 0.0312 (Q6) | PASS, **0/11 regressions** on already-passing tools (Q6) |
 
 Two findings compose into the deployment answer. First, **generation from the interface alone
 cannot recover the T18 gap**: two independent interface-only generation strategies (per-tool,
@@ -337,10 +335,10 @@ different harness, not a proof that no capability tier would show the effect shr
 does not close the question of whether a true proprietary frontier model would behave
 differently.
 
-### 4.2 Where it doesn't help, or actively harms
+### 4.3 Where it doesn't help, or actively harms
 
 This is not a separate cautionary appendix — under Framing A it is the other half of the same
-map, and the boundary in Section 4.2 is only precise because these non-regimes were tested
+map, and the boundary in Section 4.3 is only precise because these non-regimes were tested
 under the identical protocol.
 
 #### 4.3.1 No-headroom real servers (RW1, RW2)
@@ -460,19 +458,11 @@ different question than "how many real servers are built at T18's specific teste
 
 ### 5.2 Sampling frame
 
-The frame was pre-registered and rebuilt five times over the course of the experiment, each
-rebuild escalated and ratified before proceeding, never silently:
-
-- v1 (star-stratified GitHub-topic pool) → v2 (doc-density-stratified, N=23) → v3–v4 (three,
-  then a fourth, confirmed Python-AST-extractor bug found and fixed while preparing the trial
-  batch) → v5 (final): a systematic audit found that the generic regex fallback used for
-  **every non-Python server** pulls in systemic noise (template literals, parameter names,
-  category labels, unrelated example data) — a capability limit of blind text-proximity
-  matching, not a fixable parsing bug. All 11 non-Python servers were dropped.
-
-The final, ratified frame is **N=10, Python-only**, sourced from public GitHub. This is a
-narrower claim than "public MCP servers" — it is "Python MCP servers on GitHub, N=10 pilot" —
-stated as such everywhere this number appears in this paper.
+The pre-registered, ratified frame is **N=10, Python-only, doc-density-stratified**, sourced
+from public GitHub; 11 non-Python servers were dropped because the generic regex fallback
+extractor used for non-Python source proved unreliable on them (full revision history in
+Appendix A.6). This is a narrower claim than "public MCP servers" — it is "Python MCP servers on
+GitHub, N=10 pilot" — stated as such everywhere this number appears in this paper.
 
 ### 5.3 Result
 
@@ -833,3 +823,43 @@ check and re-test.
     own "Confidence & gaps" section already flags these as "secondary-source paraphrase, not
     verified against a primary benchmark." Not used in this paper for the same reason its
     original author already gave.
+
+- **A.6** EXP-1 sampling-frame revision history (moved here from §5.2 body per GG's
+  compression request — the finding that survives in §5.2 is unaffected; this is provenance,
+  not evidence). The pre-registered frame was rebuilt five times over the course of the
+  experiment, each rebuild escalated and ratified before proceeding, never silently:
+  - **v1** — star-stratified GitHub-topic pool.
+  - **v2** — doc-density-stratified, N=23.
+  - **v3–v4** — three, then a fourth, confirmed Python-AST-extractor bug found and fixed while
+    preparing the trial batch.
+  - **v5 (final, ratified)** — a systematic audit found that the generic regex fallback used for
+    every non-Python server pulls in systemic noise (template literals, parameter names,
+    category labels, unrelated example data) — a capability limit of blind text-proximity
+    matching, not a fixable parsing bug. All 11 non-Python servers were dropped, yielding the
+    final N=10, Python-only frame reported in §5.2.
+  Full commit-level trail: `STATUS.md` EXP-1 section, "Frame history" paragraph; ratification
+  commit `538affe`; `docs/paper/evidence_table.md` §2.
+
+- **A.7** Full Q3→Q6 source-aware generation progression (moved here from §4.2.2 body per GG's
+  compression request — both prose findings in §4.2.2 are unaffected; this is intermediate
+  detail, not a third finding). The two-row table in §4.2.2 shows only the endpoints
+  (interface-only failure; Q5/Q6 safe-and-recovering). The full four-stage progression, showing
+  *how* Q5/Q6 was reached and the two distinct fabrication failure modes it closes:
+
+  | Condition | Recovery (6 structural contested tasks) | p | No-fabrication |
+  |---|---|---|---|
+  | Q3 F-DOC (whole-file source + docstrings) | 83.3% (5/6) | 0.0625 (marginal) | PASS |
+  | Q3 F-BODY (whole-file, docstrings stripped) | 83.3% (invalidated) | — | **FAIL** — cross-tool source misattribution |
+  | Q4-DOC-scoped (per-tool source + docstrings) | 100% (6/6) | 0.0313 | **FAIL** — docstring-body vocabulary gap |
+  | Q4-BODY-scoped | 100% (6/6) | 0.0313 | PASS |
+  | Q5-guarded (per-tool source + docstrings + target-grounded prompt) | 100% (6/6) | 0.0313 | PASS |
+  | Q6-guarded (23-tool blanket application) | 100% (6/6) | 0.0312 | PASS, **0/11 regressions** on already-passing tools |
+
+  Reading order: Q3 (whole-file) shows docstrings are safe there but only marginally recovering,
+  and body-only is unsafe (cross-tool misattribution). Q4 (scoped) fixes the cross-tool issue but
+  *inverts* the safety finding — scoped docstrings now fabricate via a docstring-body vocabulary
+  gap, while scoped body-only is safe but discards the docstring signal. Q5 (guarded prompt)
+  resolves the inversion: scoped + docstrings + a target-grounded, non-comparative prompt is
+  safe AND 100% recovering. Q6 confirms this holds blanket across a larger, 23-tool catalog
+  with zero regressions. Full narrative: `docs/research/exp4_regime_map.md` §Regime 2;
+  `STATUS.md` Q3/Q4/Q5/Q6 sections; `docs/paper/evidence_table.md` §1.2.

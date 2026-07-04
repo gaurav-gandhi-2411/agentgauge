@@ -1,4 +1,4 @@
-# Paper Skeleton — "When Does Tool-Description Quality Actually Improve Agent Behavior? A Regime Analysis"
+# Paper Skeleton — "When Does Tool-Description Quality Improve Agent Behavior? A Regime Analysis"
 
 **Status:** Section headers + one-line intent only — NO PROSE. Framing-agnostic: works under
 either Framing A (boundary-establishment) or Framing B (cautionary/replication) from
