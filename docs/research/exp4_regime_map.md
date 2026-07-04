@@ -193,6 +193,17 @@ a single-number judge output identify pair-level confusability.
 The positive method (asking "could a task for A plausibly select B?" for each pair) directly
 addresses what the single-score approach cannot do.
 
+**EXP-3 result (2026-07-04, branch `claude/exp3-localizer`, DRAFT — condition #1, escalated to
+GG):** built and validated against a 24-pair pre-registered behavioral ground truth (4 CONFUSED /
+20 NOT_CONFUSED, drawn from EXP-1 + RW1/RW2 raw trial data). Result: precision 0.167 / recall
+1.00 — below the pre-committed real-positive-method bar. The judge verdicted **24/24 pairs
+CONFUSABLE**, including all 9 sampled RW1/RW2 pairs from servers that resolved 100% behaviorally.
+**This is a different failure mode from the single-score judge, not a fix for it**: single-score
+localizes nothing (structural, one number per catalog); naive pairwise localizes everything (a
+direct yes/no confusability question elicits yes near-uniformly). Neither, as built, is a usable
+per-pair ranking signal. Full result: `evals/fixtures/exp3_localizer_result.json`,
+`docs/research/exp3_pre_registration.md`, `STATUS.md` EXP-3 section.
+
 ---
 
 ### Non-Regime 5 — Interface-only generation (Q2a / Q2b)

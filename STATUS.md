@@ -4,6 +4,67 @@
 
 ---
 
+## EXP-3 — Pairwise confusability localizer (COMPLETE, DRAFT — condition #1, escalated to GG)
+
+**Branch:** `claude/exp3-localizer`. **Pre-registered** (`docs/research/exp3_pre_registration.md`,
+commit `603bfb2`, before any judge run): a 24-pair behavioral ground truth (4 CONFUSED / 20
+NOT_CONFUSED) built entirely from already-collected EXP-1 `raw_log_a` trials + the RW1/RW2
+validation anchors — no new agent runs. Judge design frozen before any call: `llama3.1:8b`,
+3 trials/pair at `seed=42+trial_idx`, majority vote, parse-failed reported separately, and a
+pre-committed bar (precision ≥ 0.50 AND recall ≥ 0.50 = "real positive method", else "honest
+negative") fixed before results were in hand.
+
+**Method:** `agentgauge/localizer.py` — for each candidate pair (A, B), one judge prompt asking
+whether a task for A could plausibly select B and vice versa, given both descriptions. This
+directly targets Non-Regime 4's structural limit (the single-score `discoverability` judge
+returns one number per catalog and cannot name which pair is confusable).
+
+**Result (real judge, `llama3.1:8b` — VRAM confirmed free, no residency conflict):**
+
+Confusion matrix: TP=4, FP=20, FN=0, TN=0, undetermined=0. **Precision = 4/24 = 0.167, Recall =
+4/4 = 1.00.** Per the pre-committed bar: **honest negative** (recall clears the bar; precision
+does not).
+
+**24/24 pairs were verdicted CONFUSABLE** — including both fully-resolved 100%-accuracy anchor
+servers (RW1 GitHub, RW2 AWS IAM) in every one of their 9 sampled pairs, and both adversarial
+pairs where the OLD Levenshtein heuristic already produced a false positive (RW1
+`get_pull_request_diff`/`get_pull_request_files`; RW2 `attach_user_policy`/`detach_user_policy`,
+`put_user_policy`/`get_user_policy`). The judge caught every real behavioral confusion (perfect
+recall) but did so by flagging almost everything — a direct yes/no confusability question to
+`llama3.1:8b` is close to a constant-YES predictor on this fixture, not a discriminating signal.
+
+**This is a different failure mode than the single-score baseline, not a better one.** The
+single-score judge structurally localizes nothing (0/24, by construction — one number per
+catalog). The pairwise judge *does* localize (it outputs a verdict per pair), but with precision
+indistinguishable from chance-at-base-rate on this class-imbalanced fixture (4/24 = 16.7%
+positive rate; the judge's un-discriminating positive rate is 24/24 = 100%). Neither construction
+is a usable ranking signal as built. **Pairwise localization is not automatically better just
+because it asks a pair-level question — asking a binary judge to answer a leading yes/no
+question elicits yes.**
+
+**Scope-bound, pre-declared (not discovered after the fact):** this experiment validates the
+*judging* step only, given a candidate pair — not an automatic candidate-*generation* mechanism.
+2 of the 4 real confusions (`AminForou-mcp-gsc` delete_sitemap/manage_sitemaps; `datalayer`
+read_notebook/list_notebooks) cross mechanical prefix-family boundaries; a family-scoped
+generator would not have proposed them as candidates at all, independent of this result.
+
+**Candidate next step (not run this session, GG decision):** the binary forced-choice format may
+be the cause of the over-flagging — a graded confidence prompt (0–10 confusability score with a
+tuned threshold) or a comparative framing (rank pairs by confusability rather than yes/no per
+pair) could recover discrimination the binary question destroys. Flagged for GG rather than
+run unilaterally, since it is itself a condition-#1 change requiring its own pre-registration.
+
+**Verdict for the paper:** a real, clean negative result, reported per the frozen protocol's
+null-first-class rule. "The single-score judge localizes nothing; naively asking the judge
+pairwise localizes everything — neither construction, as tested, gives a usable per-pair
+confusability signal." Full per-pair votes: `evals/fixtures/exp3_localizer_result.json`.
+Condition #1 (new judge mechanism) — this PR is DRAFT, escalated to GG before merge.
+
+CI: 696 tests (24 new in `tests/test_localizer.py`), 94.67% coverage, 100% on `localizer.py`.
+`verify.sh` PASSED (ruff, ruff format, mypy non-blocking, pytest).
+
+---
+
 ## EXP-1 — Server-population prevalence (COMPLETE — 0/9 scored servers IN-REGIME)
 
 **Branch:** `claude/exp1-prevalence`. **Status:** frame ratified at N=10 (v5, commit `538affe`);

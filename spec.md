@@ -144,4 +144,10 @@ EXP-3 (localizer, local judge) -> ~~EXP-2 (ladder)~~ DROPPED, ratified by GG 202
 section above. EXP-1 completed 2026-07-04: 0/9 scored servers IN-REGIME, N=10 Python-only pilot
 (non-Python mechanical extraction proved unreliable and was dropped mid-experiment — see
 `STATUS.md` for the full frame-correction history). Paper scope is now EXP-4 + EXP-1 + EXP-3.
-EXP-3 is next.
+EXP-3 completed 2026-07-04 (branch `claude/exp3-localizer`, DRAFT + escalated to GG — condition
+#1): precision 0.167 / recall 1.00 against the pre-registered 24-pair behavioral ground truth —
+below the pre-committed real-positive-method bar (precision AND recall >= 0.50). Reported as an
+honest negative: naive pairwise judging trades the single-score judge's "localizes nothing"
+failure for "localizes everything" (24/24 pairs verdicted CONFUSABLE, including both
+100%-accuracy anchors and both pairs where the old heuristic already false-positived). See
+`STATUS.md` EXP-3 section and `evals/fixtures/exp3_localizer_result.json` for full detail.
