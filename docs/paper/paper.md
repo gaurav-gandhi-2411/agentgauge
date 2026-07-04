@@ -17,8 +17,14 @@ assumption [Anthropic engineering, 2026; GitHub engineering, 2026; Hasan et al.,
 test the assumption directly with a single frozen evaluation protocol — one classifier, one
 judge, one generator family, pre-registered thresholds — applied across a synthetic
 confusable-catalog experiment, two real production MCP-server mirrors, a synthetic
-internal-proxy catalog, and a sampled pilot of ten public **Python** MCP servers. We find the
-effect is real but **regime-bounded**. Using hand-written oracle descriptions, a selection-accuracy
+internal-proxy catalog, and a sampled pilot of ten public **Python** MCP servers. The central
+finding is that, on the fixtures tested here, tool-description quality is not a single
+better/worse axis: the same precision that helps an agent disambiguate within a family of
+confusable tools is not what a context-rich agent already resolving from task wording needs, and
+is actively harmful to tool retrieval — an observation with a legible mechanism on these specific
+fixtures (one density point for the selection-help finding, 60 tools / 10 families; one synthetic
+catalog and three retriever types for the retrieval-harm finding), not a demonstrated general law
+about description quality. We find the effect is real but **regime-bounded**. Using hand-written oracle descriptions, a selection-accuracy
 effect appears at one tested density point (60 tools / 10 confusable families: +34.5pp,
 gemma2:9b) and was not even testable at a lower tested density (16 tools / 8 clusters: no
 headroom to test against, names alone already resolve 81.2% of tasks) — the precise threshold
@@ -52,6 +58,18 @@ practice assumes.
 ---
 
 ## 1. Introduction
+
+This paper's central finding is counterintuitive enough to state up front, with its scope
+attached: on the fixtures tested here, tool-description quality is not a single better/worse
+axis. The same behavioral-axis precision that helps an agent disambiguate within a family of
+confusable tools (§4.2.1, one density point: 60 tools / 10 families) is not what a context-rich
+agent already resolving from task wording needs, and is actively harmful to tool retrieval
+(§4.3.3, one synthetic catalog, three retriever types). Optimizing a description for one of
+these objectives can measurably neutralize or harm another — a real, mechanistically legible
+pattern on the fixtures tested, not a demonstrated general law about description quality. The
+rest of this paper places that finding inside a broader map (Section 4), asks how common the
+map's "it matters" region is in real servers (Section 5), and tests whether that region can be
+found cheaply before it is needed (Section 6).
 
 ### 1.1 The assumption under test
 
@@ -410,7 +428,14 @@ caused zero real confusion. A single number per catalog is structurally incapabl
 *which* pair is the problem — this is the motivating gap for the localizer tested in Section 6,
 not a calibration issue that more judge tuning would fix.
 
-### 4.4 Mechanism throughline
+### 4.4 Description quality is multi-objective
+
+This is the paper's central synthesis, previewed in the Introduction and Abstract: the same
+behavioral-axis precision that helps within-family selection is not one general "better"
+direction for description quality — on the fixtures tested here, it is orthogonal or actively
+harmful to other things a description interacts with (what a context-rich agent needs; what
+retrieval rewards). Every hedge below is load-bearing, not decorative: each line names exactly
+which fixture the claim is scoped to.
 
 ```
 Description precision HELPS within-family discrimination when (each tested at
@@ -583,6 +608,8 @@ from whether the regime itself exists.
 
 ## 7. Discussion
 
+### 7.1 Synthesis
+
 Read together, Sections 4–6 answer the paper's title question precisely rather than broadly.
 Tool-description quality *does* change agent selection behavior — but the evidence for this
 comes from separate findings that compose, not one single joint condition: an oracle-effect
@@ -598,21 +625,49 @@ tested fixtures can be neutral, harmful to selection on at least one already-res
 harmful to retrieval on the one synthetic catalog tested — three independently-measured
 non-regimes, not one, and not (yet) shown to generalize beyond the fixtures each was measured on.
 
+### 7.2 A diagnostic practitioners can use today: the Two-Condition Regime Test
+
+Section 5.1's regime definition is not only an analysis tool for this paper — the same two-step
+procedure is directly usable, unchanged, as a pre-investment check on a given MCP server:
+
+> **The Two-Condition Regime Test**
+>
+> 1. **Fail** — Does the agent fail at least one contested task under the server's real,
+>    currently-shipped descriptions?
+> 2. **Recover** — If it fails, does a hand-written, ground-truth (oracle) description recover it?
+>
+> - (1) is NO → the agent already resolves the task from context; description tooling has
+>   nothing to fix here.
+> - (1) is YES but (2) is also NO → the failure is not description-shaped (e.g., genuine
+>   functional overlap between tools, or a catalog-overwhelm failure mode); description tooling
+>   will not help either.
+> - (1) and (2) are both YES → this server's family is inside the regime this paper's Section 4.2
+>   findings speak to.
+
+This is exactly the check used to produce every OUT-OF-REGIME/IN-REGIME verdict in Section 5's
+table — the check *this paper used*, not a separately validated general instrument. It has been
+exercised on ten Python MCP servers plus two anchors (Section 5); nothing about the check's own
+reliability has been tested on a larger or non-Python population, and naming it is meant to make
+it adoptable, not to claim it has been validated beyond what this pilot supports. Applying it
+does not require re-running this paper's full protocol at T18 scale — steps (1) and (2) are
+exactly the frozen-protocol headroom gate and oracle A/B (§3), run at whatever scale the server
+in question actually has.
+
 The practical implication for MCP server authors and tool-catalog builders is not "descriptions
 don't matter" — it is "check whether you are in the regime before investing in description
-tooling," where "the regime" is checked behaviorally (does Arm A actually fail a contested task,
-and does an oracle description actually recover it) rather than assumed from catalog size alone.
-A server whose agent already resolves tasks from context gains nothing from more precise
-descriptions and risks the account_query-style harm pattern (Section 4.3.2) if it applies them
-blanket. A server that *is* in the regime should generate descriptions from documented source
-with a target-grounded, non-comparative prompt (Section 4.2.2's Q5/Q6 configuration), not from
-the interface alone.
+tooling," where "the regime" is checked behaviorally via the test above, rather than assumed
+from catalog size alone. A server whose agent already resolves tasks from context gains nothing
+from more precise descriptions and risks the account_query-style harm pattern (Section 4.3.2) if
+it applies them blanket. A server that *is* in the regime should generate descriptions from
+documented source with a target-grounded, non-comparative prompt (Section 4.2.2's Q5/Q6
+configuration), not from the interface alone.
 
-What would change this picture: a larger or non-Python-verified EXP-1 sample (Section 5.5); a
-true proprietary-frontier-model replication of Section 4.2.3; or a localizer signal that does
-not route through this frozen judge's pairwise-question failure mode (Section 6.5) — for
-example, a signal derived from name-embedding distance plus schema overlap rather than an LLM
-judgment call.
+### 7.3 What would change this picture
+
+A larger or non-Python-verified EXP-1 sample (Section 5.5); a true proprietary-frontier-model
+replication of Section 4.2.3; or a localizer signal that does not route through this frozen
+judge's pairwise-question failure mode (Section 6.5) — for example, a signal derived from
+name-embedding distance plus schema overlap rather than an LLM judgment call.
 
 ---
 
