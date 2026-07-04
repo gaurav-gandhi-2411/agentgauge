@@ -2,59 +2,14 @@
   "experiment_id": "EXP-1",
   "step": "STEP 1 -- mirroring (pre-reg per_server_procedure)",
   "frame_ref": "evals/fixtures/exp1_server_frame.json (v2, RATIFIED 2026-07-04)",
-  "n_targets": 25,
-  "n_mirrored_ok": 24,
-  "n_failed": 1,
+  "n_targets": 12,
+  "n_mirrored_ok": 12,
+  "n_failed": 0,
   "framing_locks": [
     "Only 2/23 fresh servers are absolutely near-empty (0% description coverage) -- public-server under-documentation is RARE. This reproduces RW1/RW2 + the pre-registered 'public skews documented' caveat as the DOMINANT effect, not a sampling problem. A mostly-OUT-OF-REGIME result is the finding.",
     "doc_density_tier labels (well_documented/thin/near_empty) are RELATIVE to this 23-server sample, not absolute bands. 'near_empty tier' = the least-documented third of a well-documented pool, NOT the under-documented segment. State this wherever per-tier prevalence is reported."
   ],
   "results": [
-    {
-      "server_id": "matlab-matlab-mcp-server",
-      "mirrored_ok": true,
-      "n_tools": 12,
-      "commit_sha": "9cd4ca2d0a5c67d1123d84ee5a9c21a04c04c459",
-      "extraction_method": "regex_best_effort",
-      "doc_density_tier": "well_documented",
-      "composite_score": 97.9
-    },
-    {
-      "server_id": "ChromeDevTools-chrome-devtools-mcp",
-      "mirrored_ok": true,
-      "n_tools": 128,
-      "commit_sha": "913308263bdc8042af74924b68dc39a374ad071d",
-      "extraction_method": "regex_best_effort",
-      "doc_density_tier": "well_documented",
-      "composite_score": 100.0
-    },
-    {
-      "server_id": "czlonkowski-n8n-mcp",
-      "mirrored_ok": true,
-      "n_tools": 68,
-      "commit_sha": "b604bea2116b09bebd250c2ef2302a946d51aad9",
-      "extraction_method": "regex_best_effort",
-      "doc_density_tier": "well_documented",
-      "composite_score": 100.0
-    },
-    {
-      "server_id": "firecrawl-firecrawl-mcp-server",
-      "mirrored_ok": true,
-      "n_tools": 2,
-      "commit_sha": "2bab1cc2f960e32a3071ec592c89e0c46731a45f",
-      "extraction_method": "regex_best_effort",
-      "doc_density_tier": "well_documented",
-      "composite_score": 100.0
-    },
-    {
-      "server_id": "antvis-mcp-server-chart",
-      "mirrored_ok": true,
-      "n_tools": 30,
-      "commit_sha": "33178096abfa58f245b456f5bacb18bc37f5cbaf",
-      "extraction_method": "regex_best_effort",
-      "doc_density_tier": "well_documented",
-      "composite_score": 100.0
-    },
     {
       "server_id": "Dataojitori-nocturne_memory",
       "mirrored_ok": true,
@@ -83,6 +38,15 @@
       "composite_score": 100.0
     },
     {
+      "server_id": "blazickjp-arxiv-mcp-server",
+      "mirrored_ok": true,
+      "n_tools": 8,
+      "commit_sha": "d58901760d7ede4adb162eaba1725209a933f100",
+      "extraction_method": "tool_constructor_python",
+      "doc_density_tier": "well_documented",
+      "composite_score": 100.0
+    },
+    {
       "server_id": "stefanoamorelli-sec-edgar-mcp",
       "mirrored_ok": true,
       "n_tools": 21,
@@ -92,45 +56,9 @@
       "composite_score": 80.1
     },
     {
-      "server_id": "yvgude-lean-ctx",
-      "mirrored_ok": true,
-      "n_tools": 82,
-      "commit_sha": "5233f418244a580095ee8acedb68e93ba1e73244",
-      "extraction_method": "regex_best_effort",
-      "doc_density_tier": "thin",
-      "composite_score": 82.9
-    },
-    {
-      "server_id": "bvisible-mcp-ssh-manager",
-      "mirrored_ok": true,
-      "n_tools": 3,
-      "commit_sha": "998551eb1602603a2dbe534bb16b0eba5ca0076e",
-      "extraction_method": "regex_best_effort",
-      "doc_density_tier": "thin",
-      "composite_score": 85.3
-    },
-    {
-      "server_id": "mongodb-js-mongodb-mcp-server",
-      "mirrored_ok": true,
-      "n_tools": 5,
-      "commit_sha": "74afba92e796ae2bbf6cf0cff2187b5f631f3440",
-      "extraction_method": "regex_best_effort",
-      "doc_density_tier": "thin",
-      "composite_score": 86.5
-    },
-    {
-      "server_id": "brightdata-brightdata-mcp",
-      "mirrored_ok": true,
-      "n_tools": 31,
-      "commit_sha": "adbfdd49b8805136662a264490118c2688da3e29",
-      "extraction_method": "regex_best_effort",
-      "doc_density_tier": "thin",
-      "composite_score": 92.4
-    },
-    {
       "server_id": "stickerdaniel-linkedin-mcp-server",
       "mirrored_ok": true,
-      "n_tools": 18,
+      "n_tools": 17,
       "commit_sha": "a8ca5df79ded1b454bf734f010485c815a6b315a",
       "extraction_method": "ast",
       "doc_density_tier": "thin",
@@ -139,68 +67,27 @@
     {
       "server_id": "taylorwilsdon-google_workspace_mcp",
       "mirrored_ok": true,
-      "n_tools": 118,
+      "n_tools": 116,
       "commit_sha": "6e1d1457746777f8512f52d40fb195b2a40bad36",
       "extraction_method": "ast",
       "doc_density_tier": "thin",
-      "composite_score": 96.4
-    },
-    {
-      "server_id": "vitali87-code-graph-rag",
-      "mirrored_ok": false,
-      "error": "0 tools extracted (method=ast) -- inconsistent with doc-density pass"
+      "composite_score": 96.6
     },
     {
       "server_id": "lucasastorian-llmwiki",
       "mirrored_ok": true,
-      "n_tools": 13,
+      "n_tools": 12,
       "commit_sha": "2f190303f8c978400f422b90ae666262ce5d8dc4",
       "extraction_method": "ast",
       "doc_density_tier": "near_empty",
-      "composite_score": 25.0
-    },
-    {
-      "server_id": "oraios-serena",
-      "mirrored_ok": true,
-      "n_tools": 9,
-      "commit_sha": "6171c484d6483e063427ad415dd80d168e457087",
-      "extraction_method": "ast",
-      "doc_density_tier": "near_empty",
-      "composite_score": 37.3
-    },
-    {
-      "server_id": "cjo4m06-mcp-shrimp-task-manager",
-      "mirrored_ok": true,
-      "n_tools": 7,
-      "commit_sha": "8a3be6bced310c7b660e5cfc3f42e4e5e45f2f61",
-      "extraction_method": "regex_best_effort",
-      "doc_density_tier": "near_empty",
-      "composite_score": 66.1
-    },
-    {
-      "server_id": "blazickjp-arxiv-mcp-server",
-      "mirrored_ok": true,
-      "n_tools": 8,
-      "commit_sha": "d58901760d7ede4adb162eaba1725209a933f100",
-      "extraction_method": "tool_constructor_python",
-      "doc_density_tier": "near_empty",
-      "composite_score": 71.8
+      "composite_score": 80.0
     },
     {
       "server_id": "mrexodia-ida-pro-mcp",
       "mirrored_ok": true,
-      "n_tools": 92,
+      "n_tools": 90,
       "commit_sha": "abb2732ad0d759d750c2e38b616f7f3e949ed2f9",
       "extraction_method": "ast",
-      "doc_density_tier": "near_empty",
-      "composite_score": 79.5
-    },
-    {
-      "server_id": "chrisryugj-korean-law-mcp",
-      "mirrored_ok": true,
-      "n_tools": 115,
-      "commit_sha": "85c681c59984fc2bb4c197d94b4b6debc36c33b7",
-      "extraction_method": "regex_best_effort",
       "doc_density_tier": "near_empty",
       "composite_score": 80.0
     },

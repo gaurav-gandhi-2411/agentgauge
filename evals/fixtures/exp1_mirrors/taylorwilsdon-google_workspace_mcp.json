@@ -4,15 +4,8 @@
   "language": "Python",
   "stars": 2778,
   "stratum": "thin",
-  "notes": "commit=6e1d1457746777f8512f52d40fb195b2a40bad36; extraction_method=ast; doc_density_composite=96.4; params are name-only placeholders (annotation='Any') -- EXP-1 classifier tests selection only, not call-correctness.",
+  "notes": "commit=6e1d1457746777f8512f52d40fb195b2a40bad36; extraction_method=ast; doc_density_composite=96.6; params are name-only placeholders (annotation='Any') -- EXP-1 classifier tests selection only, not call-correctness.",
   "tools": [
-    {
-      "name": "get_session_time",
-      "docstring": "Parse SESSION_TIME from environment with fallback, min/max clamp.\n\nResult is cached; changes require a server restart.",
-      "source_hash": "ad0fd5213b3b",
-      "return_annotation": "None",
-      "params": []
-    },
     {
       "name": "start_google_auth",
       "docstring": "Manually initiate Google OAuth authentication flow.\n\nNOTE: This is a legacy OAuth 2.0 tool and is disabled when OAuth 2.1 is enabled.\nThe authentication system automatically handles credential checks and prompts for\nauthentication when needed. Only use this tool if:\n1. You need to re-authenticate with different credentials\n2. You want to proactively authenticate before using other tools\n3. The automatic authentication flow failed and you need to retry\n\nIn most cases, simply try calling the Google Workspace tool you need - it will\nautomatically handle authentication if required.",
@@ -30,13 +23,6 @@
           "default": null
         }
       ]
-    },
-    {
-      "name": "wrapper",
-      "docstring": "",
-      "source_hash": "e3b0c44298fc",
-      "return_annotation": "None",
-      "params": []
     },
     {
       "name": "list_script_projects",

@@ -3,8 +3,8 @@
   "source_repo": "blazickjp/arxiv-mcp-server",
   "language": "Python",
   "stars": 2919,
-  "stratum": "near_empty",
-  "notes": "commit=d58901760d7ede4adb162eaba1725209a933f100; extraction_method=tool_constructor_python; doc_density_composite=71.8; params are name-only placeholders (annotation='Any') -- EXP-1 classifier tests selection only, not call-correctness.",
+  "stratum": "well_documented",
+  "notes": "commit=d58901760d7ede4adb162eaba1725209a933f100; extraction_method=tool_constructor_python; doc_density_composite=100.0; params are name-only placeholders (annotation='Any') -- EXP-1 classifier tests selection only, not call-correctness.",
   "tools": [
     {
       "name": "check_alerts",

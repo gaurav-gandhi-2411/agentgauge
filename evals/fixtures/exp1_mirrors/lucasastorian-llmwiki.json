@@ -4,7 +4,7 @@
   "language": "Python",
   "stars": 1252,
   "stratum": "near_empty",
-  "notes": "commit=2f190303f8c978400f422b90ae666262ce5d8dc4; extraction_method=ast; doc_density_composite=25.0; params are name-only placeholders (annotation='Any') -- EXP-1 classifier tests selection only, not call-correctness.",
+  "notes": "commit=2f190303f8c978400f422b90ae666262ce5d8dc4; extraction_method=ast; doc_density_composite=80.0; params are name-only placeholders (annotation='Any') -- EXP-1 classifier tests selection only, not call-correctness.",
   "tools": [
     {
       "name": "ping",
@@ -288,13 +288,6 @@
           "default": null
         }
       ]
-    },
-    {
-      "name": "wrapper",
-      "docstring": "",
-      "source_hash": "e3b0c44298fc",
-      "return_annotation": "None",
-      "params": []
     }
   ]
 }

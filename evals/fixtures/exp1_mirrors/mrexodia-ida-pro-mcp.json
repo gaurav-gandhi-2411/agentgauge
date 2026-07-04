@@ -4,7 +4,7 @@
   "language": "Python",
   "stars": 9818,
   "stratum": "near_empty",
-  "notes": "commit=abb2732ad0d759d750c2e38b616f7f3e949ed2f9; extraction_method=ast; doc_density_composite=79.5; params are name-only placeholders (annotation='Any') -- EXP-1 classifier tests selection only, not call-correctness.",
+  "notes": "commit=abb2732ad0d759d750c2e38b616f7f3e949ed2f9; extraction_method=ast; doc_density_composite=80.0; params are name-only placeholders (annotation='Any') -- EXP-1 classifier tests selection only, not call-correctness.",
   "tools": [
     {
       "name": "idb_open",
@@ -1362,20 +1362,6 @@
           "default": null
         }
       ]
-    },
-    {
-      "name": "wrapper",
-      "docstring": "",
-      "source_hash": "e3b0c44298fc",
-      "return_annotation": "None",
-      "params": []
-    },
-    {
-      "name": "ida_version",
-      "docstring": "",
-      "source_hash": "e3b0c44298fc",
-      "return_annotation": "None",
-      "params": []
     }
   ]
 }

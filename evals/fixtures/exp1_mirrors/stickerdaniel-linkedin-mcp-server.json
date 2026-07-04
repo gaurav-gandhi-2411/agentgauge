@@ -7,13 +7,6 @@
   "notes": "commit=a8ca5df79ded1b454bf734f010485c815a6b315a; extraction_method=ast; doc_density_composite=94.2; params are name-only placeholders (annotation='Any') -- EXP-1 classifier tests selection only, not call-correctness.",
   "tools": [
     {
-      "name": "_patchright_install_targets",
-      "docstring": "Resolve {dir_prefix: revision} from patchright's bundled browsers.json.\n\nReads ``<patchright>/driver/package/browsers.json`` — the authoritative\nfile patchright itself consults to know which revision it expects.\nReturns ``None`` if the registry can't be read; callers treat ``None``\nas \"not ready\" so the next gate triggers reinstall.\n\nCached for the process lifetime: the patchright revision only changes on\npackage upgrade, which requires a process restart. Tests reset the cache\nvia ``reset_bootstrap_for_testing()``.",
-      "source_hash": "1eff43eae3b4",
-      "return_annotation": "None",
-      "params": []
-    },
-    {
       "name": "close_session",
       "docstring": "Close the current browser session and clean up resources.",
       "source_hash": "5311497f62c2",
