@@ -1,6 +1,52 @@
 # AgentGauge — Project Status
 
-> Current as of 2026-06-15. Update this file when significant milestones land.
+> Current as of 2026-07-04. Update this file when significant milestones land.
+
+---
+
+## EXP-1 — Server-population prevalence (IN PROGRESS — 3/10 scored, interim result below)
+
+**Branch:** `claude/exp1-prevalence`. **Status:** frame ratified at N=10 (v5, commit `538affe`);
+3 of 10 servers behaviorally scored (2 anchors + 1 fresh). Remaining 9 queued as one deterministic
+batch — no further frame rebuilds planned barring a genuine validity issue.
+
+**Frame history (5 rebuilds, each re-escalated to GG, none silent):** started as a 30-server
+GitHub-topic-search pool, star-stratified (v1) → corrected to doc-density-stratified (v2, N=23,
+2 excluded as extraction-failed) → 3 confirmed Python-AST-extractor bugs found and fixed while
+preparing the trial batch (v3, N=22 → protocol-handler false-positive, MCP Prompt/Tool conflation,
+decorator-kwarg-vs-docstring blind spot) → a 4th bug found investigating the next candidate (v4, N=21
+→ decorator string-argument false-positive; oraios-serena additionally excluded, real architecture is
+class-based `Tool` subclasses, unsupported) → a systematic audit found the generic regex fallback used
+for ALL non-Python servers pulls in systemic noise (template literals, parameter names, category
+labels, unrelated example data) — not a fixable bug, a capability limit of blind text-proximity
+matching. **All 11 non-Python (regex_best_effort) servers dropped** (v5, ratified, commit `538affe`).
+
+**SCOPE, state explicitly wherever this number appears:** the frame is now **N=10, PYTHON-ONLY**.
+The pre-reg's "ALL languages included" criterion is violated for reliability reasons, not choice.
+The headline claim is **"Python MCP servers on GitHub, N=10 pilot"** — NOT a general public-MCP-server
+population estimate. Extending trustworthy mechanical extraction to TypeScript/JavaScript/Go/Rust
+would require real per-language AST parsers, not regex heuristics — out of scope for this pass.
+
+**Interim result (3/10 scored):**
+
+| Server | Type | Family | Arm A accuracy | Verdict |
+|---|---|---|---|---|
+| github-mcp (RW1 anchor) | anchor, cited not re-run | 5 families, 21 tasks | 100% (21/21) | OUT-OF-REGIME |
+| aws-iam-mcp (RW2 anchor) | anchor, cited not re-run | 3 families, 12 tasks | 100% (29/29 incl. 12 contested) | OUT-OF-REGIME |
+| lucasastorian-llmwiki | fresh, real trial | create_family (create vs create_knowledge_base) | 100% (20/20, real gemma2:9b) | OUT-OF-REGIME |
+
+3/3 scored servers OUT-OF-REGIME. Consistent with RW1/RW2 (already-published) and P2-A's
+high-stakes-family controls (context resolves selection; description quality adds no incremental
+accuracy where headroom is absent). Zero in-regime evidence so far in this pilot.
+
+**Next:** author contested tasks + run real Arm A/B trials for the remaining 9 servers (well_documented
+tier: Dataojitori-nocturne_memory, AminForou-mcp-gsc, LycheeMem-LycheeMem, blazickjp-arxiv-mcp-server;
+thin tier: stefanoamorelli-sec-edgar-mcp, stickerdaniel-linkedin-mcp-server,
+taylorwilsdon-google_workspace_mcp; near_empty tier: mrexodia-ida-pro-mcp, datalayer-jupyter-mcp-server),
+as one deterministic batch reusing `scripts/exp1_generate_mirror_server.py` +
+`scripts/exp1_run_trial.py`. Report pooled + per-tier prevalence with the relative-tercile caveat
+(tier names are within-sample rank, not absolute doc-quality bands). **EXP-2 (capability ladder) is
+on hold pending this number** — see `docs/research/` scope-decision escalation once EXP-1 completes.
 
 ---
 
