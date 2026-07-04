@@ -1,31 +1,12 @@
 {
   "generated_date": "2026-07-04",
   "frame_ref": "evals/fixtures/exp1_server_frame.json",
-  "n_targets": 25,
+  "n_targets": 24,
   "n_clone_failed": 0,
-  "n_zero_tools_extracted": 1,
+  "n_zero_tools_extracted": 0,
   "n_regex_best_effort_extraction": 12,
   "note": "n_zero_tools_extracted servers had extraction FAIL, not 'zero documented tools' -- treat as missing data, not a near-empty doc-density tier, when stratifying.",
   "results": [
-    {
-      "server_id": "matlab-matlab-mcp-server",
-      "source_repo": "matlab/matlab-mcp-server",
-      "language": "Go",
-      "prior_stratum": "well_documented",
-      "is_anchor": false,
-      "clone_ok": true,
-      "clone_error": null,
-      "extraction_method": "regex_best_effort",
-      "n_tools_extracted": 12,
-      "metrics": {
-        "n_tools": 12,
-        "mean_description_length": 203.9,
-        "pct_tools_with_description": 1.0,
-        "pct_name_echo_only": 0.083,
-        "param_description_coverage": 1.0,
-        "composite_score": 97.9
-      }
-    },
     {
       "server_id": "ChromeDevTools-chrome-devtools-mcp",
       "source_repo": "ChromeDevTools/chrome-devtools-mcp",
@@ -160,22 +141,22 @@
       }
     },
     {
-      "server_id": "stefanoamorelli-sec-edgar-mcp",
-      "source_repo": "stefanoamorelli/sec-edgar-mcp",
+      "server_id": "blazickjp-arxiv-mcp-server",
+      "source_repo": "blazickjp/arxiv-mcp-server",
       "language": "Python",
-      "prior_stratum": "thin",
+      "prior_stratum": "well_documented",
       "is_anchor": false,
       "clone_ok": true,
       "clone_error": null,
-      "extraction_method": "ast",
-      "n_tools_extracted": 21,
+      "extraction_method": "tool_constructor_python",
+      "n_tools_extracted": 8,
       "metrics": {
-        "n_tools": 21,
-        "mean_description_length": 182.2,
-        "pct_tools_with_description": 0.571,
+        "n_tools": 8,
+        "mean_description_length": 608.2,
+        "pct_tools_with_description": 1.0,
         "pct_name_echo_only": 0.0,
-        "param_description_coverage": 0.538,
-        "composite_score": 80.1
+        "param_description_coverage": 1.0,
+        "composite_score": 100.0
       }
     },
     {
@@ -263,10 +244,10 @@
       "clone_ok": true,
       "clone_error": null,
       "extraction_method": "ast",
-      "n_tools_extracted": 18,
+      "n_tools_extracted": 17,
       "metrics": {
-        "n_tools": 18,
-        "mean_description_length": 751.0,
+        "n_tools": 17,
+        "mean_description_length": 764.6,
         "pct_tools_with_description": 1.0,
         "pct_name_echo_only": 0.0,
         "param_description_coverage": 0.709,
@@ -282,52 +263,33 @@
       "clone_ok": true,
       "clone_error": null,
       "extraction_method": "ast",
-      "n_tools_extracted": 118,
+      "n_tools_extracted": 116,
       "metrics": {
-        "n_tools": 118,
-        "mean_description_length": 1003.8,
-        "pct_tools_with_description": 0.992,
+        "n_tools": 116,
+        "mean_description_length": 1020.1,
+        "pct_tools_with_description": 1.0,
         "pct_name_echo_only": 0.0,
         "param_description_coverage": 0.831,
-        "composite_score": 96.4
+        "composite_score": 96.6
       }
     },
     {
-      "server_id": "vitali87-code-graph-rag",
-      "source_repo": "vitali87/code-graph-rag",
-      "language": "Python",
-      "prior_stratum": "near_empty",
+      "server_id": "matlab-matlab-mcp-server",
+      "source_repo": "matlab/matlab-mcp-server",
+      "language": "Go",
+      "prior_stratum": "thin",
       "is_anchor": false,
       "clone_ok": true,
       "clone_error": null,
-      "extraction_method": "ast",
-      "n_tools_extracted": 0,
+      "extraction_method": "regex_best_effort",
+      "n_tools_extracted": 12,
       "metrics": {
-        "n_tools": 0,
-        "mean_description_length": 0.0,
-        "pct_tools_with_description": 0.0,
-        "pct_name_echo_only": 0.0,
-        "param_description_coverage": 0.0,
-        "composite_score": 0.0
-      }
-    },
-    {
-      "server_id": "lucasastorian-llmwiki",
-      "source_repo": "lucasastorian/llmwiki",
-      "language": "Python",
-      "prior_stratum": "near_empty",
-      "is_anchor": false,
-      "clone_ok": true,
-      "clone_error": null,
-      "extraction_method": "ast",
-      "n_tools_extracted": 13,
-      "metrics": {
-        "n_tools": 13,
-        "mean_description_length": 393.9,
-        "pct_tools_with_description": 0.923,
-        "pct_name_echo_only": 0.0,
-        "param_description_coverage": 0.0,
-        "composite_score": 78.1
+        "n_tools": 12,
+        "mean_description_length": 203.9,
+        "pct_tools_with_description": 1.0,
+        "pct_name_echo_only": 0.083,
+        "param_description_coverage": 1.0,
+        "composite_score": 97.9
       }
     },
     {
@@ -338,15 +300,15 @@
       "is_anchor": false,
       "clone_ok": true,
       "clone_error": null,
-      "extraction_method": "ast",
-      "n_tools_extracted": 9,
+      "extraction_method": "regex_fallback_on_python",
+      "n_tools_extracted": 1,
       "metrics": {
-        "n_tools": 9,
-        "mean_description_length": 19.0,
-        "pct_tools_with_description": 0.111,
+        "n_tools": 1,
+        "mean_description_length": 33.0,
+        "pct_tools_with_description": 1.0,
         "pct_name_echo_only": 0.0,
-        "param_description_coverage": 0.0,
-        "composite_score": 37.3
+        "param_description_coverage": 1.0,
+        "composite_score": 86.5
       }
     },
     {
@@ -369,22 +331,22 @@
       }
     },
     {
-      "server_id": "blazickjp-arxiv-mcp-server",
-      "source_repo": "blazickjp/arxiv-mcp-server",
+      "server_id": "lucasastorian-llmwiki",
+      "source_repo": "lucasastorian/llmwiki",
       "language": "Python",
       "prior_stratum": "near_empty",
       "is_anchor": false,
       "clone_ok": true,
       "clone_error": null,
-      "extraction_method": "tool_constructor_python",
-      "n_tools_extracted": 8,
+      "extraction_method": "ast",
+      "n_tools_extracted": 12,
       "metrics": {
-        "n_tools": 8,
-        "mean_description_length": 608.2,
+        "n_tools": 12,
+        "mean_description_length": 426.8,
         "pct_tools_with_description": 1.0,
         "pct_name_echo_only": 0.0,
-        "param_description_coverage": 1.0,
-        "composite_score": 100.0
+        "param_description_coverage": 0.0,
+        "composite_score": 80.0
       }
     },
     {
@@ -396,14 +358,14 @@
       "clone_ok": true,
       "clone_error": null,
       "extraction_method": "ast",
-      "n_tools_extracted": 92,
+      "n_tools_extracted": 90,
       "metrics": {
-        "n_tools": 92,
-        "mean_description_length": 108.8,
-        "pct_tools_with_description": 0.978,
+        "n_tools": 90,
+        "mean_description_length": 111.2,
+        "pct_tools_with_description": 1.0,
         "pct_name_echo_only": 0.0,
         "param_description_coverage": 0.0,
-        "composite_score": 79.5
+        "composite_score": 80.0
       }
     },
     {
@@ -442,6 +404,25 @@
         "pct_name_echo_only": 0.0,
         "param_description_coverage": 0.0,
         "composite_score": 80.0
+      }
+    },
+    {
+      "server_id": "stefanoamorelli-sec-edgar-mcp",
+      "source_repo": "stefanoamorelli/sec-edgar-mcp",
+      "language": "Python",
+      "prior_stratum": "near_empty",
+      "is_anchor": false,
+      "clone_ok": true,
+      "clone_error": null,
+      "extraction_method": "ast",
+      "n_tools_extracted": 21,
+      "metrics": {
+        "n_tools": 21,
+        "mean_description_length": 182.2,
+        "pct_tools_with_description": 0.571,
+        "pct_name_echo_only": 0.0,
+        "param_description_coverage": 0.538,
+        "composite_score": 80.1
       }
     },
     {

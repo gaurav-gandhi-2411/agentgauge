@@ -1,34 +1,31 @@
 {
   "experiment_id": "EXP-1",
-  "frame_version": "v3 -- three confirmed extraction bugs fixed (supersedes v2, commits 4bebfd7/c29e534)",
-  "frame_status": "PROVISIONAL -- AWAITING GG RATIFICATION (v3, post-bugfix)",
-  "frame_status_note": "v2 was ratified 2026-07-04 on data later found to contain 3 confirmed mechanical-extraction bugs, discovered while preparing the GG-approved trial batch (see bug_fixes_this_version below). All 3 are FIXED in agentgauge/exp1_mirror.py and agentgauge/exp1_tool_def_extractor.py, with regression tests. This frame reflects the corrected, re-verified doc-density scores. v2's ratification of the TIERING METHODOLOGY (empirical terciles, exclude confirmed extraction failures) still stands -- only the underlying per-server DATA changed. Re-escalated for ratification because the correction is material: N changes (23->22 fresh), 3 servers change tier, and the headline near-empty-prevalence finding strengthens (2/23 -> 0/22 absolutely near-empty). Do NOT begin contested-task authoring or Arm A/B trials against this frame until GG ratifies.",
+  "frame_version": "v4 -- 4th extraction bug fixed, oraios-serena excluded (supersedes v3, commit c88a74b)",
+  "frame_status": "PROVISIONAL -- PAUSED, AWAITING GG DIRECTION (see pause_rationale)",
+  "frame_status_note": "v3 was ratified 2026-07-04. Preparing the GG-redirected batch-1 trial target (oraios-serena) surfaced a 4th confirmed extraction bug (decorator STRING ARGUMENTS, not just decorator names, were matched for the substring 'tool' -- e.g. a Flask route path '/get_tool_stats' or a Click CLI flag '--tool-timeout' -- false-positiving as tool-registration decorators). Fixed with a regression test. Investigating oraios-serena further revealed its REAL tool architecture is CLASS-BASED (class ExecuteShellCommandTool(Tool, ...): ...), a third major registration paradigm this extractor does not support at all -- excluded as extraction_failed (not scored at either its old 37.3 or new 86.5-from-1-tool value, both untrustworthy).",
+  "pause_rationale": "This is the 4th confirmed extraction bug and 2nd consecutive invalidated trial candidate found in one session, each ONLY surfaced by deep-diving the SPECIFIC server selected next for the trial batch. After this correction, the near_empty tier's WORST member has 85.7% description coverage -- there is NO server left in the 21-server scoreable pool with less than 57.1% description coverage. This is an extremely strong result, arguably implausibly strong given general knowledge that thin/name-only tool descriptions are a widely reported real-world MCP pain point. Given the demonstrated pattern (every server investigated in depth so far revealed a NEW, previously undetected extraction gap), there is low confidence the remaining pool is free of similar undetected issues. Recommend NOT selecting another trial candidate reactively -- either a systematic audit of the remaining pool, or an explicit acknowledgment of mechanical-extraction limits, is warranted before further prevalence claims or trial execution.",
   "bug_fixes_this_version": [
     {
-      "id": "mcp_protocol_handler_false_positive",
+      "id": "decorator_string_argument_false_positive",
       "affected": [
-        "vitali87-code-graph-rag"
+        "oraios-serena (led to full exclusion, see below)"
       ],
-      "summary": "_has_tool_decorator matched ANY decorator containing the substring 'tool', including the low-level MCP SDK's own @server.list_tools()/@server.call_tool() protocol-handler registration methods (required boilerplate on every low-level-SDK server). vitali87-code-graph-rag's real ~10-tool catalog lives behind a dynamic registry (tools.get_tool_schemas()) that is not AST-extractable at all -- correctly excluded now (extraction_failed), not scored as 2 fake near-empty tools."
-    },
-    {
-      "id": "prompt_tool_conflation_in_regex_fallback",
-      "affected": [
-        "blazickjp-arxiv-mcp-server"
+      "minor_blast_radius": [
+        "stickerdaniel-linkedin-mcp-server (18->17 tools, composite unchanged 94.2)",
+        "taylorwilsdon-google_workspace_mcp (118->116 tools, composite 96.4->96.6)",
+        "lucasastorian-llmwiki (13->12 tools, composite 78.1->80.0)",
+        "mrexodia-ida-pro-mcp (92->90 tools, composite 79.5->80.0)"
       ],
-      "summary": "The fully generic Python regex fallback matched ANY name/description proximity pair, including mcp.types.Prompt(...)/PromptArgument(...) definitions (a DIFFERENT MCP primitive) in the same files as real tools. 7 prompts + their arguments were extracted as 14 phantom tools alongside the 2 real ones found this way. Fixed by adding a precise Tool(name=..., description=...) constructor pattern (tried before the generic fallback) that cannot match Prompt(...). Real count: 8 tools, composite 71.8 -> 100.0 (near_empty -> well_documented)."
-    },
-    {
-      "id": "decorator_kwarg_vs_docstring_blind_spot",
-      "affected": [
-        "lucasastorian-llmwiki"
-      ],
-      "summary": "extract_python_tools (the core, highest-confidence AST path, used by MOST Python servers in this frame) read ONLY the function's own docstring, never a decorator keyword argument like @mcp.tool(name=..., description=...) -- FastMCP's own officially-documented kwarg style. lucasastorian-llmwiki's 13 tools all use this style with substantial real descriptions, but were scored 0% description coverage (composite 25.0). Fixed: decorator kwarg now takes precedence over docstring (matching FastMCP's own runtime behavior); docstring is the fallback when no kwarg is given. Real: 92.3% described, composite=78.1."
+      "summary": "_has_tool_decorator checked the substring 'tool' against the FULL unparsed decorator text (ast.unparse(dec)), including string literal ARGUMENTS -- not just the decorator's own called name. A Flask route @app.route('/get_tool_stats') or a Click CLI flag @click.option('--tool-timeout', ...) both contain 'tool' inside a string argument and were mistaken for tool-registration decorators. Fixed: check ONLY the decorator's called name (attribute or bare name), never its full unparsed text or string arguments."
     }
   ],
-  "blast_radius_verification": "Re-ran mirroring + doc-density scoring for ALL 25 servers after each fix to confirm no other server was affected -- confirmed via the AUTHORITATIVE pipeline (scripts/exp1_score_doc_density.py, which correctly parses per-param docstring descriptions). An earlier ad-hoc verification script incorrectly suggested 5 more servers changed; that script had its own bug (it reconstructed ExtractedTool objects from the already-built MirrorTool/MirrorParam objects, which do not carry per-param descriptions, forcing them to '' and understating param_description_coverage). That false alarm was caught and discarded before being reported -- the authoritative re-run confirms EXACTLY the 3 servers listed above changed, no others.",
+  "additional_exclusion_this_version": {
+    "server_id": "oraios-serena",
+    "reason": "extraction_failed",
+    "detail": "Real tool catalog uses class-based registration (class FooTool(Tool, ...): ...), a third major MCP-Python registration paradigm (alongside decorator-based and imperative add_tool()) that this extractor does not parse. Post-fix extraction found only 1 phantom tool via the lowest-confidence generic regex fallback -- excluded rather than scored on either its pre-fix (37.3, 9 phantom tools) or post-fix (86.5, 1 phantom tool) value, neither of which reflects the real ~22-tool catalog (per manual vetting)."
+  },
   "pre_registration_ref": "evals/fixtures/exp1_pre_registration.json",
-  "predecessor_frame_note": "v2 (commits 4bebfd7, c29e534) superseded -- kept for audit trail.",
+  "predecessor_frame_note": "v3 (commit c88a74b) superseded -- kept for audit trail.",
   "candidate_list_ref": "evals/fixtures/exp1_candidate_list.json",
   "candidate_list_sha256": "956d3ebbb5becab2ab3c85376fe9e93bed587a8cdc450352f6500d394111a151",
   "discovery_date": "2026-07-02",
@@ -40,16 +37,6 @@
     "extractor": "agentgauge/exp1_tool_def_extractor.py -- deterministic, no LLM/agent: git clone --depth 1, static parsing (Python AST decorator + imperative add_tool() + JSON-literal fallback; regex proximity for other languages)",
     "tiering": "assign_tiers() -- empirical terciles (p33/p67) of composite_score WITHIN the 23 successfully-scored fresh candidates. Tier names (well_documented/thin/near_empty) are RELATIVE to this sample, not absolute doc-quality bands -- see honest_caveat below."
   },
-  "ratification_2026_07_04_v2": "N=23 fresh + 2 anchors ratified; empirical-tercile tiering kept as pre-committed. SUPERSEDED by this v3 correction -- see bug_fixes_this_version.",
-  "open_decisions_applied_by_default": [
-    {
-      "id": "near_empty_segment_now_empty",
-      "issue": "After the 3 bugfixes, composite scores across the 22 scoreable fresh servers range 37.3-100.0. 0 of 22 have 0% description coverage (down from 2/23 in v2) and 1 have <20% coverage (oraios-serena, 11.1%, composite=37.3, is now the single closest-to-thin candidate in the entire scoreable pool). The near_empty TERCILE still exists by construction (terciles always produce 3 groups), but its members (37.3-80.1 composite, up to 92%+ description coverage) are not absolutely thin -- e.g. lucasastorian-llmwiki (78.1, 92.3% described) was the server GG approved as the batch-1 trial target BEFORE this correction, on the false premise that it was 0% documented.",
-      "default_applied": "None -- explicitly re-escalated, not resolved by default.",
-      "reportable_finding": "STRENGTHENS the v2 finding: under-documented public MCP servers are not just rare (2/23) but, once measurement bugs are fixed, nearly ABSENT (0/22 absolutely near-empty) in this GitHub-discoverable, structurally-valid population. This is now a headline-strength result for the paper's regime map: the public segment is overwhelmingly OUT-OF-REGIME on doc-density grounds alone, before any behavioral testing. Register this as THE finding, not a sampling shortfall -- per the frozen protocol's own honest_caveat, this remains a LOWER BOUND on prevalence in the unsampleable under-documented internal segment.",
-      "requires_gg_confirmation": true
-    }
-  ],
   "strata": {
     "well_documented": [
       {
@@ -183,22 +170,6 @@
     ],
     "thin": [
       {
-        "server_id": "yvgude-lean-ctx",
-        "source_repo": "yvgude/lean-ctx",
-        "language": "Rust",
-        "star_stratum_v1": "mid",
-        "stars": 3048,
-        "approx_tool_count_manual_vetting": 78,
-        "doc_quality_manual_vetting": "polished",
-        "n_tools_extracted": 82,
-        "extraction_method": "regex_best_effort",
-        "composite_score": 82.9,
-        "mean_description_length": 33.2,
-        "pct_tools_with_description": 1.0,
-        "pct_name_echo_only": 0.146,
-        "param_description_coverage": 1.0
-      },
-      {
         "server_id": "bvisible-mcp-ssh-manager",
         "source_repo": "bvisible/mcp-ssh-manager",
         "language": "JavaScript",
@@ -254,10 +225,10 @@
         "stars": 2610,
         "approx_tool_count_manual_vetting": 15,
         "doc_quality_manual_vetting": "polished",
-        "n_tools_extracted": 18,
+        "n_tools_extracted": 17,
         "extraction_method": "ast",
         "composite_score": 94.2,
-        "mean_description_length": 751.0,
+        "mean_description_length": 764.6,
         "pct_tools_with_description": 1.0,
         "pct_name_echo_only": 0.0,
         "param_description_coverage": 0.709
@@ -270,11 +241,11 @@
         "stars": 2778,
         "approx_tool_count_manual_vetting": 100,
         "doc_quality_manual_vetting": "polished",
-        "n_tools_extracted": 118,
+        "n_tools_extracted": 116,
         "extraction_method": "ast",
-        "composite_score": 96.4,
-        "mean_description_length": 1003.8,
-        "pct_tools_with_description": 0.992,
+        "composite_score": 96.6,
+        "mean_description_length": 1020.1,
+        "pct_tools_with_description": 1.0,
         "pct_name_echo_only": 0.0,
         "param_description_coverage": 0.831
       },
@@ -296,22 +267,6 @@
       }
     ],
     "near_empty": [
-      {
-        "server_id": "oraios-serena",
-        "source_repo": "oraios/serena",
-        "language": "Python",
-        "star_stratum_v1": "high",
-        "stars": 25979,
-        "approx_tool_count_manual_vetting": 22,
-        "doc_quality_manual_vetting": "polished",
-        "n_tools_extracted": 9,
-        "extraction_method": "ast",
-        "composite_score": 37.3,
-        "mean_description_length": 19.0,
-        "pct_tools_with_description": 0.111,
-        "pct_name_echo_only": 0.0,
-        "param_description_coverage": 0.0
-      },
       {
         "server_id": "cjo4m06-mcp-shrimp-task-manager",
         "source_repo": "cjo4m06/mcp-shrimp-task-manager",
@@ -336,11 +291,11 @@
         "stars": 1252,
         "approx_tool_count_manual_vetting": 10,
         "doc_quality_manual_vetting": "polished",
-        "n_tools_extracted": 13,
+        "n_tools_extracted": 12,
         "extraction_method": "ast",
-        "composite_score": 78.1,
-        "mean_description_length": 393.9,
-        "pct_tools_with_description": 0.923,
+        "composite_score": 80.0,
+        "mean_description_length": 426.8,
+        "pct_tools_with_description": 1.0,
         "pct_name_echo_only": 0.0,
         "param_description_coverage": 0.0
       },
@@ -352,11 +307,11 @@
         "stars": 9818,
         "approx_tool_count_manual_vetting": 40,
         "doc_quality_manual_vetting": "polished",
-        "n_tools_extracted": 92,
+        "n_tools_extracted": 90,
         "extraction_method": "ast",
-        "composite_score": 79.5,
-        "mean_description_length": 108.8,
-        "pct_tools_with_description": 0.978,
+        "composite_score": 80.0,
+        "mean_description_length": 111.2,
+        "pct_tools_with_description": 1.0,
         "pct_name_echo_only": 0.0,
         "param_description_coverage": 0.0
       },
@@ -407,11 +362,27 @@
         "pct_tools_with_description": 0.571,
         "pct_name_echo_only": 0.0,
         "param_description_coverage": 0.538
+      },
+      {
+        "server_id": "yvgude-lean-ctx",
+        "source_repo": "yvgude/lean-ctx",
+        "language": "Rust",
+        "star_stratum_v1": "mid",
+        "stars": 3048,
+        "approx_tool_count_manual_vetting": 78,
+        "doc_quality_manual_vetting": "polished",
+        "n_tools_extracted": 82,
+        "extraction_method": "regex_best_effort",
+        "composite_score": 82.9,
+        "mean_description_length": 33.2,
+        "pct_tools_with_description": 1.0,
+        "pct_name_echo_only": 0.146,
+        "param_description_coverage": 1.0
       }
     ]
   },
-  "n_fresh_scoreable": 22,
-  "n_fresh_excluded_extraction_failed": 1,
+  "n_fresh_scoreable": 21,
+  "n_fresh_excluded_extraction_failed": 8,
   "validation_anchors": [
     {
       "server_id": "github-mcp",
@@ -435,5 +406,5 @@
       "composite_score": 100.0
     }
   ],
-  "next_step": "Awaiting GG ratification of this corrected frame (v3) before any mirroring beyond what already exists, contested-task authoring, or Arm A/B trials. The GG-approved batch-1 trial target (lucasastorian-llmwiki) needs to be reconsidered given its premise (0% documented) is no longer true -- oraios-serena is now the closest candidate to genuinely thin in the corrected pool."
+  "next_step": "PAUSED. Awaiting GG direction: systematically audit the remaining 21-server pool by hand before further trial selection, or proceed with an explicit caveat that mechanical extraction may still be missing undetected thin-doc servers. No contested-task authoring or Arm A/B trials have been run this session."
 }

@@ -139,11 +139,21 @@ def _decorator_attr_name(dec: ast.expr) -> str | None:
 
 
 def _has_tool_decorator(node: ast.FunctionDef | ast.AsyncFunctionDef) -> bool:
+    """True iff node has a decorator whose CALLED NAME (attribute or bare name --
+    e.g. "tool" in @mcp.tool(), @server.tool()) contains "tool".
+
+    Deliberately checks ONLY the decorator's called name, not ast.unparse(dec) of
+    the whole decorator (a prior version did the latter and false-positived on ANY
+    decorator whose STRING ARGUMENTS happen to contain "tool" -- observed:
+    @self._app.route("/get_tool_stats") (a Flask dashboard route, argument path
+    contains "tool") and @click.option("--tool-timeout", ...) (a CLI flag name)
+    in oraios/serena, both mistaken for tool-registration decorators).
+    """
     for dec in node.decorator_list:
-        if _decorator_attr_name(dec) in _MCP_PROTOCOL_HANDLER_NAMES:
+        attr_name = _decorator_attr_name(dec)
+        if attr_name is None or attr_name in _MCP_PROTOCOL_HANDLER_NAMES:
             continue
-        dec_str = ast.unparse(dec).lower()
-        if "tool" in dec_str:
+        if "tool" in attr_name.lower():
             return True
     return False
 

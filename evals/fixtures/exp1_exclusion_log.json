@@ -63,6 +63,13 @@
       "language": "Python",
       "reason": "extraction_failed",
       "detail": "ADDED 2026-07-04 (v3 correction): initially scored composite=25.0 on 2 tools ('list_tools', 'call_tool') that were NEVER real domain tools -- they are the low-level MCP SDK's own @server.list_tools()/@server.call_tool() protocol-handler registration methods, false-positived by _has_tool_decorator's substring-'tool' check (fixed, see agentgauge/exp1_mirror.py). CONFIRMED via direct source inspection: this server's real ~10-tool catalog is returned dynamically by tools.get_tool_schemas(), which aggregates from a runtime registry (self._tools dict populated elsewhere) -- not itself AST-extractable without deep, repo-specific call-graph tracing. Excluded as extraction_failed, not scored as a 2-tool near-empty server."
+    },
+    {
+      "server_id": "oraios-serena",
+      "source_repo": "oraios/serena",
+      "language": "Python",
+      "reason": "extraction_failed",
+      "detail": "ADDED 2026-07-04 (v4 correction): initially scored composite=37.3 on 9 tools, several of which were phantom (e.g. 'get_tool_stats_route', a Flask dashboard route; 'start_mcp_server', a CLI entry point) -- false-positived because _has_tool_decorator matched the substring 'tool' anywhere in a decorator's full unparsed text, including STRING ARGUMENTS like the route path '/get_tool_stats' or the CLI flag '--tool-timeout' (fixed: now checks only the decorator's called name). Post-fix, extraction found only 1 phantom tool via the lowest-confidence generic regex fallback (composite=86.5) -- CONFIRMED via source inspection that serena's real ~22-tool catalog uses CLASS-BASED registration (class ExecuteShellCommandTool(Tool, ...): ...), a third major MCP-Python registration paradigm not supported by this extractor at all. Excluded as extraction_failed rather than scored on either untrustworthy value."
     }
   ],
   "not_excluded_diagnostic_fixes_applied": [
@@ -74,9 +81,10 @@
   ],
   "summary": {
     "fresh_candidates_total": 30,
-    "fresh_excluded_extraction_failed": 8,
-    "fresh_scoreable": 22,
-    "shortfall_vs_pre_registered_freshly_sampled_count": "28 - 22 = 6 short; escalated to GG as an open decision (see exp1_pre_registration.json amendments), not silently resolved.",
-    "v3_correction_note": "vitali87-code-graph-rag moved from 'scoreable/near_empty' to 'excluded/extraction_failed' on 2026-07-04, after 3 confirmed extraction bugs were found and fixed (see exp1_server_frame.json bug_fixes_this_version). Two other scoreable servers had composite scores corrected in place (see not_excluded_diagnostic_fixes_applied): blazickjp-arxiv-mcp-server and lucasastorian-llmwiki."
+    "fresh_excluded_extraction_failed": 9,
+    "fresh_scoreable": 21,
+    "shortfall_vs_pre_registered_freshly_sampled_count": "28 - 21 = 7 short; escalated to GG as an open decision (see exp1_pre_registration.json amendments), not silently resolved.",
+    "v3_correction_note": "vitali87-code-graph-rag moved from 'scoreable/near_empty' to 'excluded/extraction_failed' on 2026-07-04, after 3 confirmed extraction bugs were found and fixed (see exp1_server_frame.json bug_fixes_this_version). Two other scoreable servers had composite scores corrected in place (see not_excluded_diagnostic_fixes_applied): blazickjp-arxiv-mcp-server and lucasastorian-llmwiki.",
+    "v4_correction_note": "oraios-serena moved from 'scoreable/near_empty' to 'excluded/extraction_failed' on 2026-07-04, after a 4th extraction bug was found and fixed. PAUSED after this correction (see exp1_server_frame.json pause_rationale): the remaining 21-server pool now shows NO server below 57.1% description coverage, an extremely strong result surfaced only after 4 bugs found in one session -- recommend a systematic audit or explicit caveat before further trial selection, rather than continuing to pick candidates reactively."
   }
 }

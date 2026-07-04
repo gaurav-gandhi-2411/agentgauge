@@ -201,6 +201,50 @@ def test_extract_python_tools_excludes_mcp_protocol_handlers(tmp_path: pathlib.P
     assert names == {"real_domain_tool"}
 
 
+_UNRELATED_DECORATOR_STRING_ARG_FIXTURE = '''\
+from __future__ import annotations
+
+import click
+
+app = object()
+
+
+class Dashboard:
+    def _setup(self):
+        @app.route("/get_tool_stats", methods=["GET"])
+        def get_tool_stats_route():
+            return {}
+
+
+@click.option("--tool-timeout", type=float, default=None, help="Tool timeout.")
+def start_mcp_server(project):
+    pass
+
+
+@app.tool()
+def real_tool(query: str) -> str:
+    """A real MCP tool, alongside the unrelated decorators above."""
+    return ""
+'''
+
+
+def test_extract_python_tools_ignores_tool_substring_in_decorator_string_args(
+    tmp_path: pathlib.Path,
+) -> None:
+    """Regression: a decorator's STRING ARGUMENTS containing the substring "tool"
+    (a Flask route path like "/get_tool_stats", a Click CLI flag like
+    "--tool-timeout") must NOT be mistaken for a tool-registration decorator --
+    only the decorator's CALLED NAME (e.g. "route", "option") should be checked.
+    Observed: oraios/serena, where a dashboard route and a CLI flag were both
+    extracted as phantom tools alongside the real ones."""
+    src = tmp_path / "server.py"
+    src.write_text(_UNRELATED_DECORATOR_STRING_ARG_FIXTURE, encoding="utf-8")
+
+    tools = extract_python_tools(src)
+    names = {t.name for t in tools}
+    assert names == {"real_tool"}
+
+
 def test_extract_python_tools_params(tmp_path: pathlib.Path) -> None:
     src = tmp_path / "server.py"
     src.write_text(FIXTURE_SOURCE, encoding="utf-8")
