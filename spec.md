@@ -56,7 +56,18 @@ data). Do not generalize beyond "public, source-available MCP servers as of date
 
 ---
 
-## EXP 2 — CAPABILITY-LADDER CURVE (replaces the single-model durability point)
+## EXP 2 — CAPABILITY-LADDER CURVE — DROPPED (ratified by GG, 2026-07-04)
+
+**Status: DROPPED from paper scope.** Paper = EXP-4 + EXP-1 + EXP-3. Justification: EXP-1's
+completed prevalence result (0/9 scored servers IN-REGIME on the N=10 Python-only pilot, a clean
+null across every doc-density tier — see `docs/research/` and `STATUS.md`) found the regime
+uncommon in the sampled population. A capability ladder characterizing how an effect's SIZE varies
+with agent capability has limited external relevance when the underlying regime this session could
+verify is this rare to begin with. EXP-3 (localizer) remains the paper's positive contribution
+regardless of this decision — a confusable-pair localization method is useful independent of how
+often the regime occurs — and is queued next. Design notes below are preserved for reference/a
+possible future revisit, not deleted, since a rare-but-real regime is still worth a ladder if a
+future, larger or non-Python-verified sample changes the prevalence picture.
 
 **Question:** how does the description effect size vary with AGENT CAPABILITY?
 
@@ -122,6 +133,9 @@ No new runs: assemble the already-banked findings into the WHERE-it-helps / WHER
   (+ frontier only if key provisioned); one fixture for the ladder = one fixture.
 
 ## Sequencing
-EXP-4 (consolidation, free, immediate) -> EXP-3 (localizer, local judge) -> EXP-1 (prevalence, the
-headline, biggest build: sampling + mirrors) -> EXP-2 (ladder, needs the model set). EXP-1 is the
-critical-path headline; start its sampling-frame design early.
+EXP-4 (consolidation, free, immediate) -> EXP-1 (prevalence, the headline, sampling + mirrors) ->
+EXP-3 (localizer, local judge) -> ~~EXP-2 (ladder)~~ DROPPED, ratified by GG 2026-07-04, see EXP-2
+section above. EXP-1 completed 2026-07-04: 0/9 scored servers IN-REGIME, N=10 Python-only pilot
+(non-Python mechanical extraction proved unreliable and was dropped mid-experiment — see
+`STATUS.md` for the full frame-correction history). Paper scope is now EXP-4 + EXP-1 + EXP-3.
+EXP-3 is next.

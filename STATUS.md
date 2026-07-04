@@ -71,12 +71,11 @@ ambiguity — no description can fix a case where two tools can legitimately bot
 under a 116-tool catalog, not confident wrong-tool selection — a catalog-SIZE failure mode, orthogonal
 to the paper's description-QUALITY thesis, and correctly not fixed by an oracle description either.
 
-**Scope-decision escalation to GG (queued):** EXP-1's headline (0/9 scored servers in-regime, on an
-N=10 Python-only pilot) is the input EXP-2 needs. Recommend paper = EXP-4 + EXP-1 + EXP-3, dropping
-EXP-2, with justification "regime uncommon in sampled population → capability-ladder external
-relevance limited." GG ratifies final paper scope. EXP-3 (localizer) queued next regardless of this
-decision — a confusable-pair localization method is valuable independent of how often the regime
-occurs.
+**Scope decision — RATIFIED by GG, 2026-07-04:** paper = EXP-4 + EXP-1 + EXP-3. EXP-2 (capability
+ladder) is DROPPED, justification "regime uncommon in sampled population → capability-ladder
+external relevance limited" (see `spec.md` EXP-2 section, updated to record the decision and
+preserve the design notes for reference). EXP-3 (localizer) is next — a confusable-pair localization
+method is valuable independent of how often the regime occurs.
 
 ---
 
