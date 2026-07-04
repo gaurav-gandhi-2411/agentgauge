@@ -53,8 +53,15 @@ def _build_input_schema(mirror: ServerMirror) -> dict[str, dict]:
     return schemas
 
 
-def generate_server_source(mirror: ServerMirror) -> str:
-    docstrings_dict = {t.name: t.docstring for t in mirror.tools}
+def generate_server_source(
+    mirror: ServerMirror, description_overrides: dict[str, str] | None = None
+) -> str:
+    """description_overrides swaps specific tools' descriptions (e.g. Arm B oracle
+    descriptions for one contested family) while leaving every other tool's real
+    Arm A docstring untouched -- Arm B tests the oracle for ONE family, not a
+    wholesale catalog rewrite."""
+    overrides = description_overrides or {}
+    docstrings_dict = {t.name: overrides.get(t.name, t.docstring) for t in mirror.tools}
     schemas_dict = _build_input_schema(mirror)
     module_name = f"exp1_{mirror.server_id.replace('-', '_')}"
 

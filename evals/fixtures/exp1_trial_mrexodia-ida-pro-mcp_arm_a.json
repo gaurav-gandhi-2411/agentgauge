@@ -1,0 +1,296 @@
+{
+  "server_id": "mrexodia-ida-pro-mcp",
+  "family_id": "xrefs_family",
+  "agent_model": "gemma2:9b",
+  "trials_per_task": 5,
+  "n_contested": 4,
+  "parse_failed_a": 0,
+  "arm_a_accuracy": 0.9,
+  "headroom_gated": false,
+  "aborted": true,
+  "abort_reason": "No headroom: Arm A accuracy=90.0% >= 85%",
+  "arm_a_outcomes": [
+    {
+      "task_id": "ida_1",
+      "trial": 0,
+      "outcome": "SELECTED-CORRECT",
+      "selected_tool": "xrefs_to"
+    },
+    {
+      "task_id": "ida_1",
+      "trial": 1,
+      "outcome": "SELECTED-CORRECT",
+      "selected_tool": "xrefs_to"
+    },
+    {
+      "task_id": "ida_1",
+      "trial": 2,
+      "outcome": "SELECTED-CORRECT",
+      "selected_tool": "xrefs_to"
+    },
+    {
+      "task_id": "ida_1",
+      "trial": 3,
+      "outcome": "SELECTED-CORRECT",
+      "selected_tool": "xrefs_to"
+    },
+    {
+      "task_id": "ida_1",
+      "trial": 4,
+      "outcome": "SELECTED-CORRECT",
+      "selected_tool": "xrefs_to"
+    },
+    {
+      "task_id": "ida_2",
+      "trial": 0,
+      "outcome": "SELECTED-CORRECT",
+      "selected_tool": "xrefs_to_field"
+    },
+    {
+      "task_id": "ida_2",
+      "trial": 1,
+      "outcome": "SELECTED-CORRECT",
+      "selected_tool": "xrefs_to_field"
+    },
+    {
+      "task_id": "ida_2",
+      "trial": 2,
+      "outcome": "SELECTED-CORRECT",
+      "selected_tool": "xrefs_to_field"
+    },
+    {
+      "task_id": "ida_2",
+      "trial": 3,
+      "outcome": "SELECTED-CORRECT",
+      "selected_tool": "xrefs_to_field"
+    },
+    {
+      "task_id": "ida_2",
+      "trial": 4,
+      "outcome": "SELECTED-CORRECT",
+      "selected_tool": "xrefs_to_field"
+    },
+    {
+      "task_id": "ida_3",
+      "trial": 0,
+      "outcome": "SELECTED-WRONG",
+      "selected_tool": "xrefs_to_field"
+    },
+    {
+      "task_id": "ida_3",
+      "trial": 1,
+      "outcome": "SELECTED-CORRECT",
+      "selected_tool": "xrefs_to"
+    },
+    {
+      "task_id": "ida_3",
+      "trial": 2,
+      "outcome": "SELECTED-CORRECT",
+      "selected_tool": "xrefs_to"
+    },
+    {
+      "task_id": "ida_3",
+      "trial": 3,
+      "outcome": "SELECTED-CORRECT",
+      "selected_tool": "xrefs_to"
+    },
+    {
+      "task_id": "ida_3",
+      "trial": 4,
+      "outcome": "SELECTED-CORRECT",
+      "selected_tool": "xrefs_to"
+    },
+    {
+      "task_id": "ida_4",
+      "trial": 0,
+      "outcome": "SELECTED-WRONG",
+      "selected_tool": "entity_query"
+    },
+    {
+      "task_id": "ida_4",
+      "trial": 1,
+      "outcome": "SELECTED-CORRECT",
+      "selected_tool": "xrefs_to_field"
+    },
+    {
+      "task_id": "ida_4",
+      "trial": 2,
+      "outcome": "SELECTED-CORRECT",
+      "selected_tool": "xrefs_to_field"
+    },
+    {
+      "task_id": "ida_4",
+      "trial": 3,
+      "outcome": "SELECTED-CORRECT",
+      "selected_tool": "xrefs_to_field"
+    },
+    {
+      "task_id": "ida_4",
+      "trial": 4,
+      "outcome": "SELECTED-CORRECT",
+      "selected_tool": "xrefs_to_field"
+    }
+  ],
+  "raw_log_a": [
+    {
+      "task_id": "ida_1",
+      "trial": 0,
+      "raw_response": "xrefs_to",
+      "selected_tool": "xrefs_to",
+      "gold_tool": "xrefs_to",
+      "outcome": "SELECTED-CORRECT"
+    },
+    {
+      "task_id": "ida_1",
+      "trial": 1,
+      "raw_response": "xrefs_to",
+      "selected_tool": "xrefs_to",
+      "gold_tool": "xrefs_to",
+      "outcome": "SELECTED-CORRECT"
+    },
+    {
+      "task_id": "ida_1",
+      "trial": 2,
+      "raw_response": "xrefs_to",
+      "selected_tool": "xrefs_to",
+      "gold_tool": "xrefs_to",
+      "outcome": "SELECTED-CORRECT"
+    },
+    {
+      "task_id": "ida_1",
+      "trial": 3,
+      "raw_response": "xrefs_to",
+      "selected_tool": "xrefs_to",
+      "gold_tool": "xrefs_to",
+      "outcome": "SELECTED-CORRECT"
+    },
+    {
+      "task_id": "ida_1",
+      "trial": 4,
+      "raw_response": "xrefs_to",
+      "selected_tool": "xrefs_to",
+      "gold_tool": "xrefs_to",
+      "outcome": "SELECTED-CORRECT"
+    },
+    {
+      "task_id": "ida_2",
+      "trial": 0,
+      "raw_response": "xrefs_to_field",
+      "selected_tool": "xrefs_to_field",
+      "gold_tool": "xrefs_to_field",
+      "outcome": "SELECTED-CORRECT"
+    },
+    {
+      "task_id": "ida_2",
+      "trial": 1,
+      "raw_response": "xrefs_to_field",
+      "selected_tool": "xrefs_to_field",
+      "gold_tool": "xrefs_to_field",
+      "outcome": "SELECTED-CORRECT"
+    },
+    {
+      "task_id": "ida_2",
+      "trial": 2,
+      "raw_response": "xrefs_to_field",
+      "selected_tool": "xrefs_to_field",
+      "gold_tool": "xrefs_to_field",
+      "outcome": "SELECTED-CORRECT"
+    },
+    {
+      "task_id": "ida_2",
+      "trial": 3,
+      "raw_response": "xrefs_to_field",
+      "selected_tool": "xrefs_to_field",
+      "gold_tool": "xrefs_to_field",
+      "outcome": "SELECTED-CORRECT"
+    },
+    {
+      "task_id": "ida_2",
+      "trial": 4,
+      "raw_response": "xrefs_to_field",
+      "selected_tool": "xrefs_to_field",
+      "gold_tool": "xrefs_to_field",
+      "outcome": "SELECTED-CORRECT"
+    },
+    {
+      "task_id": "ida_3",
+      "trial": 0,
+      "raw_response": "xrefs_to_field",
+      "selected_tool": "xrefs_to_field",
+      "gold_tool": "xrefs_to",
+      "outcome": "SELECTED-WRONG"
+    },
+    {
+      "task_id": "ida_3",
+      "trial": 1,
+      "raw_response": "xrefs_to",
+      "selected_tool": "xrefs_to",
+      "gold_tool": "xrefs_to",
+      "outcome": "SELECTED-CORRECT"
+    },
+    {
+      "task_id": "ida_3",
+      "trial": 2,
+      "raw_response": "xrefs_to",
+      "selected_tool": "xrefs_to",
+      "gold_tool": "xrefs_to",
+      "outcome": "SELECTED-CORRECT"
+    },
+    {
+      "task_id": "ida_3",
+      "trial": 3,
+      "raw_response": "xrefs_to",
+      "selected_tool": "xrefs_to",
+      "gold_tool": "xrefs_to",
+      "outcome": "SELECTED-CORRECT"
+    },
+    {
+      "task_id": "ida_3",
+      "trial": 4,
+      "raw_response": "xrefs_to",
+      "selected_tool": "xrefs_to",
+      "gold_tool": "xrefs_to",
+      "outcome": "SELECTED-CORRECT"
+    },
+    {
+      "task_id": "ida_4",
+      "trial": 0,
+      "raw_response": "entity_query",
+      "selected_tool": "entity_query",
+      "gold_tool": "xrefs_to_field",
+      "outcome": "SELECTED-WRONG"
+    },
+    {
+      "task_id": "ida_4",
+      "trial": 1,
+      "raw_response": "xrefs_to_field",
+      "selected_tool": "xrefs_to_field",
+      "gold_tool": "xrefs_to_field",
+      "outcome": "SELECTED-CORRECT"
+    },
+    {
+      "task_id": "ida_4",
+      "trial": 2,
+      "raw_response": "xrefs_to_field",
+      "selected_tool": "xrefs_to_field",
+      "gold_tool": "xrefs_to_field",
+      "outcome": "SELECTED-CORRECT"
+    },
+    {
+      "task_id": "ida_4",
+      "trial": 3,
+      "raw_response": "xrefs_to_field \nentity_query",
+      "selected_tool": "xrefs_to_field",
+      "gold_tool": "xrefs_to_field",
+      "outcome": "SELECTED-CORRECT"
+    },
+    {
+      "task_id": "ida_4",
+      "trial": 4,
+      "raw_response": "xrefs_to_field",
+      "selected_tool": "xrefs_to_field",
+      "gold_tool": "xrefs_to_field",
+      "outcome": "SELECTED-CORRECT"
+    }
+  ]
+}

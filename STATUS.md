@@ -4,11 +4,13 @@
 
 ---
 
-## EXP-1 — Server-population prevalence (IN PROGRESS — 3/10 scored, interim result below)
+## EXP-1 — Server-population prevalence (COMPLETE — 0/9 scored servers IN-REGIME)
 
 **Branch:** `claude/exp1-prevalence`. **Status:** frame ratified at N=10 (v5, commit `538affe`);
-3 of 10 servers behaviorally scored (2 anchors + 1 fresh). Remaining 9 queued as one deterministic
-batch — no further frame rebuilds planned barring a genuine validity issue.
+all 10 servers processed (7 behaviorally scored + 3 with no testable confusable family), plus
+2 anchors cited from prior published work. **Headline: 0/9 scored servers (7 fresh + 2 anchors)
+show IN-REGIME behavior.** EXP-2 (capability ladder) held pending GG's scope decision — see
+scope-decision escalation below.
 
 **Frame history (5 rebuilds, each re-escalated to GG, none silent):** started as a 30-server
 GitHub-topic-search pool, star-stratified (v1) → corrected to doc-density-stratified (v2, N=23,
@@ -27,26 +29,54 @@ The headline claim is **"Python MCP servers on GitHub, N=10 pilot"** — NOT a g
 population estimate. Extending trustworthy mechanical extraction to TypeScript/JavaScript/Go/Rust
 would require real per-language AST parsers, not regex heuristics — out of scope for this pass.
 
-**Interim result (3/10 scored):**
+**Final result (7 fresh scored + 3 no-family + 2 anchors cited):**
 
-| Server | Type | Family | Arm A accuracy | Verdict |
-|---|---|---|---|---|
-| github-mcp (RW1 anchor) | anchor, cited not re-run | 5 families, 21 tasks | 100% (21/21) | OUT-OF-REGIME |
-| aws-iam-mcp (RW2 anchor) | anchor, cited not re-run | 3 families, 12 tasks | 100% (29/29 incl. 12 contested) | OUT-OF-REGIME |
-| lucasastorian-llmwiki | fresh, real trial | create_family (create vs create_knowledge_base) | 100% (20/20, real gemma2:9b) | OUT-OF-REGIME |
+| Server | Tier | Family | Arm A | Arm B | Effect | Verdict |
+|---|---|---|---|---|---|---|
+| github-mcp (RW1 anchor) | anchor | 5 families, 21 tasks | 100% (21/21) | — | n/a | OUT-OF-REGIME (cited) |
+| aws-iam-mcp (RW2 anchor) | anchor | 3 families, 12 tasks | 100% (29/29 incl. 12 contested) | — | n/a | OUT-OF-REGIME (cited) |
+| lucasastorian-llmwiki | near_empty | create vs create_knowledge_base | 100% | — | n/a | OUT-OF-REGIME |
+| stefanoamorelli-sec-edgar-mcp | thin | discover_xbrl_concepts vs discover_company_metrics | 100% | — | n/a | OUT-OF-REGIME |
+| stickerdaniel-linkedin-mcp-server | thin | search_companies/jobs/people/conversations | 100% | — | n/a | OUT-OF-REGIME |
+| mrexodia-ida-pro-mcp | near_empty | xrefs_to vs xrefs_to_field | 90% | — | n/a | OUT-OF-REGIME |
+| AminForou-mcp-gsc | well_documented | delete_site vs delete_sitemap | 75% | 75% | +0pp | OUT-OF-REGIME (real functional overlap — manage_sitemaps can also delete; no description fixes that) |
+| taylorwilsdon-google_workspace_mcp | thin | send_message vs send_gmail_message | 0% | 0% | +0pp | OUT-OF-REGIME (catalog-overwhelm failure mode — 116-tool listing produces malformed/hedged output, not confident wrong-tool picks; oracle description can't fix a different failure mode) |
+| datalayer-jupyter-mcp-server | near_empty | read_notebook vs read_cell | 70% | 55% | −15pp | OUT-OF-REGIME (HARM — oracle description made selection WORSE, replicating P2-A's account_query HARM pattern in a fresh real-world server) |
+| Dataojitori-nocturne_memory | well_documented | none found | — | — | — | no testable family |
+| blazickjp-arxiv-mcp-server | well_documented | none found | — | — | — | no testable family |
+| LycheeMem-LycheeMem | well_documented | candidate rejected on review (not genuinely confusable) | — | — | — | no testable family |
 
-3/3 scored servers OUT-OF-REGIME. Consistent with RW1/RW2 (already-published) and P2-A's
-high-stakes-family controls (context resolves selection; description quality adds no incremental
-accuracy where headroom is absent). Zero in-regime evidence so far in this pilot.
+**Headline: 0/9 scored servers (7 fresh + 2 anchors) show IN-REGIME behavior.** 0/7 testable fresh
+families recover under oracle descriptions; 3/10 fresh servers have no genuinely confusable family
+at all (mechanical prefix clustering found none, or the candidate was rejected on manual review).
+Per-tier (fresh only): well_documented 0/1 testable, thin 0/3, near_empty 0/3 — a clean null across
+every tier of this N=10 pilot, consistent with the relative-tercile caveat (tier names are
+within-sample rank, not absolute doc-quality bands).
 
-**Next:** author contested tasks + run real Arm A/B trials for the remaining 9 servers (well_documented
-tier: Dataojitori-nocturne_memory, AminForou-mcp-gsc, LycheeMem-LycheeMem, blazickjp-arxiv-mcp-server;
-thin tier: stefanoamorelli-sec-edgar-mcp, stickerdaniel-linkedin-mcp-server,
-taylorwilsdon-google_workspace_mcp; near_empty tier: mrexodia-ida-pro-mcp, datalayer-jupyter-mcp-server),
-as one deterministic batch reusing `scripts/exp1_generate_mirror_server.py` +
-`scripts/exp1_run_trial.py`. Report pooled + per-tier prevalence with the relative-tercile caveat
-(tier names are within-sample rank, not absolute doc-quality bands). **EXP-2 (capability ladder) is
-on hold pending this number** — see `docs/research/` scope-decision escalation once EXP-1 completes.
+**Methodological note — a seed bug was caught and fixed before reporting:** the first trial run
+passed a fixed `seed=42` to every one of the 5 trial repetitions per task, instead of the codebase's
+established `seed=42+trial_idx` convention (`agentgauge/scorer.py`, `agentgauge/fixer.py`) — meaning
+the first run sampled ZERO real trial-to-trial variance. That buggy run showed 2 servers as
+IN-REGIME (`mrexodia-ida-pro-mcp` +50pp, `datalayer-jupyter-mcp-server` +25pp). Fixing the seed and
+re-running **completely reversed both findings**: ida-pro's real Arm A accuracy is 90% (not 50%,
+correctly aborts with no headroom), and jupyter's Arm B is a genuine HARM (−15pp, not +25pp
+recovery). Both "IN-REGIME" results were seed artifacts, not real effects — caught before being
+reported as findings. Real per-trial variance matters; a fixed seed across nominal "trials" silently
+converts a 5-trial design into 5 identical repeats.
+
+**Two genuinely interesting non-recovery negatives (real, seed-confirmed):** (1) AminForou-mcp-gsc's
+`delete_sitemap`/`manage_sitemaps` confusion reflects real overlapping tool CAPABILITY, not a wording
+ambiguity — no description can fix a case where two tools can legitimately both do the same thing.
+(2) taylorwilsdon-google_workspace_mcp's 0%/0% result is driven by malformed/hedged model output
+under a 116-tool catalog, not confident wrong-tool selection — a catalog-SIZE failure mode, orthogonal
+to the paper's description-QUALITY thesis, and correctly not fixed by an oracle description either.
+
+**Scope-decision escalation to GG (queued):** EXP-1's headline (0/9 scored servers in-regime, on an
+N=10 Python-only pilot) is the input EXP-2 needs. Recommend paper = EXP-4 + EXP-1 + EXP-3, dropping
+EXP-2, with justification "regime uncommon in sampled population → capability-ladder external
+relevance limited." GG ratifies final paper scope. EXP-3 (localizer) queued next regardless of this
+decision — a confusable-pair localization method is valuable independent of how often the regime
+occurs.
 
 ---
 
