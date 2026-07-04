@@ -1,0 +1,408 @@
+{
+  "pairs": [
+    {
+      "pair_id": 1,
+      "server_id": "AminForou-mcp-gsc",
+      "tool_a": "delete_sitemap",
+      "tool_b": "manage_sitemaps",
+      "label": "CONFUSED",
+      "adversarial": true,
+      "scores": [
+        5.0,
+        6.0,
+        6.0
+      ],
+      "mean_score": 5.666666666666667,
+      "verdict": "CONFUSABLE",
+      "parse_failed_count": 0
+    },
+    {
+      "pair_id": 2,
+      "server_id": "AminForou-mcp-gsc",
+      "tool_a": "delete_site",
+      "tool_b": "delete_sitemap",
+      "label": "NOT_CONFUSED",
+      "adversarial": false,
+      "scores": [
+        5.0,
+        6.0,
+        6.0
+      ],
+      "mean_score": 5.666666666666667,
+      "verdict": "CONFUSABLE",
+      "parse_failed_count": 0
+    },
+    {
+      "pair_id": 3,
+      "server_id": "datalayer-jupyter-mcp-server",
+      "tool_a": "read_notebook",
+      "tool_b": "list_notebooks",
+      "label": "CONFUSED",
+      "adversarial": true,
+      "scores": [
+        4.0,
+        6.0,
+        5.0
+      ],
+      "mean_score": 5.0,
+      "verdict": "CONFUSABLE",
+      "parse_failed_count": 0
+    },
+    {
+      "pair_id": 4,
+      "server_id": "datalayer-jupyter-mcp-server",
+      "tool_a": "read_notebook",
+      "tool_b": "read_cell",
+      "label": "NOT_CONFUSED",
+      "adversarial": false,
+      "scores": [
+        5.0,
+        6.0,
+        6.0
+      ],
+      "mean_score": 5.666666666666667,
+      "verdict": "CONFUSABLE",
+      "parse_failed_count": 0
+    },
+    {
+      "pair_id": 5,
+      "server_id": "mrexodia-ida-pro-mcp",
+      "tool_a": "xrefs_to",
+      "tool_b": "xrefs_to_field",
+      "label": "CONFUSED",
+      "adversarial": false,
+      "scores": [
+        5.0,
+        6.0,
+        6.0
+      ],
+      "mean_score": 5.666666666666667,
+      "verdict": "CONFUSABLE",
+      "parse_failed_count": 0
+    },
+    {
+      "pair_id": 6,
+      "server_id": "mrexodia-ida-pro-mcp",
+      "tool_a": "xrefs_to_field",
+      "tool_b": "entity_query",
+      "label": "CONFUSED",
+      "adversarial": true,
+      "scores": [
+        6.0,
+        4.0,
+        5.0
+      ],
+      "mean_score": 5.0,
+      "verdict": "CONFUSABLE",
+      "parse_failed_count": 0
+    },
+    {
+      "pair_id": 7,
+      "server_id": "stefanoamorelli-sec-edgar-mcp",
+      "tool_a": "discover_xbrl_concepts",
+      "tool_b": "discover_company_metrics",
+      "label": "NOT_CONFUSED",
+      "adversarial": false,
+      "scores": [
+        6.0,
+        5.0,
+        5.0
+      ],
+      "mean_score": 5.333333333333333,
+      "verdict": "CONFUSABLE",
+      "parse_failed_count": 0
+    },
+    {
+      "pair_id": 8,
+      "server_id": "stickerdaniel-linkedin-mcp-server",
+      "tool_a": "search_companies",
+      "tool_b": "search_jobs",
+      "label": "NOT_CONFUSED",
+      "adversarial": false,
+      "scores": [
+        6.0,
+        5.0,
+        5.0
+      ],
+      "mean_score": 5.333333333333333,
+      "verdict": "CONFUSABLE",
+      "parse_failed_count": 0
+    },
+    {
+      "pair_id": 9,
+      "server_id": "stickerdaniel-linkedin-mcp-server",
+      "tool_a": "search_companies",
+      "tool_b": "search_people",
+      "label": "NOT_CONFUSED",
+      "adversarial": false,
+      "scores": [
+        6.0,
+        5.0,
+        5.0
+      ],
+      "mean_score": 5.333333333333333,
+      "verdict": "CONFUSABLE",
+      "parse_failed_count": 0
+    },
+    {
+      "pair_id": 10,
+      "server_id": "stickerdaniel-linkedin-mcp-server",
+      "tool_a": "search_companies",
+      "tool_b": "search_conversations",
+      "label": "NOT_CONFUSED",
+      "adversarial": false,
+      "scores": [
+        5.0,
+        6.0,
+        6.0
+      ],
+      "mean_score": 5.666666666666667,
+      "verdict": "CONFUSABLE",
+      "parse_failed_count": 0
+    },
+    {
+      "pair_id": 11,
+      "server_id": "stickerdaniel-linkedin-mcp-server",
+      "tool_a": "search_jobs",
+      "tool_b": "search_people",
+      "label": "NOT_CONFUSED",
+      "adversarial": false,
+      "scores": [
+        6.0,
+        5.0,
+        5.0
+      ],
+      "mean_score": 5.333333333333333,
+      "verdict": "CONFUSABLE",
+      "parse_failed_count": 0
+    },
+    {
+      "pair_id": 12,
+      "server_id": "stickerdaniel-linkedin-mcp-server",
+      "tool_a": "search_jobs",
+      "tool_b": "search_conversations",
+      "label": "NOT_CONFUSED",
+      "adversarial": false,
+      "scores": [
+        6.0,
+        5.0,
+        5.0
+      ],
+      "mean_score": 5.333333333333333,
+      "verdict": "CONFUSABLE",
+      "parse_failed_count": 0
+    },
+    {
+      "pair_id": 13,
+      "server_id": "stickerdaniel-linkedin-mcp-server",
+      "tool_a": "search_people",
+      "tool_b": "search_conversations",
+      "label": "NOT_CONFUSED",
+      "adversarial": false,
+      "scores": [
+        6.0,
+        5.0,
+        5.0
+      ],
+      "mean_score": 5.333333333333333,
+      "verdict": "CONFUSABLE",
+      "parse_failed_count": 0
+    },
+    {
+      "pair_id": 14,
+      "server_id": "lucasastorian-llmwiki",
+      "tool_a": "create_knowledge_base",
+      "tool_b": "create",
+      "label": "NOT_CONFUSED",
+      "adversarial": false,
+      "scores": [
+        5.0,
+        6.0,
+        6.0
+      ],
+      "mean_score": 5.666666666666667,
+      "verdict": "CONFUSABLE",
+      "parse_failed_count": 0
+    },
+    {
+      "pair_id": 15,
+      "server_id": "github-mcp",
+      "tool_a": "get_pull_request_diff",
+      "tool_b": "get_pull_request_files",
+      "label": "NOT_CONFUSED",
+      "adversarial": true,
+      "scores": [
+        6.0,
+        5.0,
+        5.0
+      ],
+      "mean_score": 5.333333333333333,
+      "verdict": "CONFUSABLE",
+      "parse_failed_count": 0
+    },
+    {
+      "pair_id": 16,
+      "server_id": "github-mcp",
+      "tool_a": "get_pull_request",
+      "tool_b": "get_pull_request_reviews",
+      "label": "NOT_CONFUSED",
+      "adversarial": false,
+      "scores": [
+        6.0,
+        5.0,
+        5.0
+      ],
+      "mean_score": 5.333333333333333,
+      "verdict": "CONFUSABLE",
+      "parse_failed_count": 0
+    },
+    {
+      "pair_id": 17,
+      "server_id": "github-mcp",
+      "tool_a": "search_repositories",
+      "tool_b": "search_code",
+      "label": "NOT_CONFUSED",
+      "adversarial": false,
+      "scores": [
+        6.0,
+        5.0,
+        5.0
+      ],
+      "mean_score": 5.333333333333333,
+      "verdict": "CONFUSABLE",
+      "parse_failed_count": 0
+    },
+    {
+      "pair_id": 18,
+      "server_id": "github-mcp",
+      "tool_a": "list_pull_requests",
+      "tool_b": "list_issues",
+      "label": "NOT_CONFUSED",
+      "adversarial": false,
+      "scores": [
+        6.0,
+        5.0,
+        5.0
+      ],
+      "mean_score": 5.333333333333333,
+      "verdict": "CONFUSABLE",
+      "parse_failed_count": 0
+    },
+    {
+      "pair_id": 19,
+      "server_id": "github-mcp",
+      "tool_a": "get_repository",
+      "tool_b": "list_repositories",
+      "label": "NOT_CONFUSED",
+      "adversarial": false,
+      "scores": [
+        6.0,
+        5.0,
+        5.0
+      ],
+      "mean_score": 5.333333333333333,
+      "verdict": "CONFUSABLE",
+      "parse_failed_count": 0
+    },
+    {
+      "pair_id": 20,
+      "server_id": "aws-iam-mcp",
+      "tool_a": "attach_user_policy",
+      "tool_b": "detach_user_policy",
+      "label": "NOT_CONFUSED",
+      "adversarial": true,
+      "scores": [
+        6.0,
+        5.0,
+        5.0
+      ],
+      "mean_score": 5.333333333333333,
+      "verdict": "CONFUSABLE",
+      "parse_failed_count": 0
+    },
+    {
+      "pair_id": 21,
+      "server_id": "aws-iam-mcp",
+      "tool_a": "attach_user_policy",
+      "tool_b": "attach_group_policy",
+      "label": "NOT_CONFUSED",
+      "adversarial": true,
+      "scores": [
+        6.0,
+        5.0,
+        5.0
+      ],
+      "mean_score": 5.333333333333333,
+      "verdict": "CONFUSABLE",
+      "parse_failed_count": 0
+    },
+    {
+      "pair_id": 22,
+      "server_id": "aws-iam-mcp",
+      "tool_a": "put_user_policy",
+      "tool_b": "get_user_policy",
+      "label": "NOT_CONFUSED",
+      "adversarial": true,
+      "scores": [
+        6.0,
+        5.0,
+        5.0
+      ],
+      "mean_score": 5.333333333333333,
+      "verdict": "CONFUSABLE",
+      "parse_failed_count": 0
+    },
+    {
+      "pair_id": 23,
+      "server_id": "aws-iam-mcp",
+      "tool_a": "list_user_policies",
+      "tool_b": "list_role_policies",
+      "label": "NOT_CONFUSED",
+      "adversarial": true,
+      "scores": [
+        6.0,
+        5.0,
+        5.0
+      ],
+      "mean_score": 5.333333333333333,
+      "verdict": "CONFUSABLE",
+      "parse_failed_count": 0
+    },
+    {
+      "pair_id": 24,
+      "server_id": "aws-iam-mcp",
+      "tool_a": "delete_user_policy",
+      "tool_b": "delete_role_policy",
+      "label": "NOT_CONFUSED",
+      "adversarial": false,
+      "scores": [
+        6.0,
+        5.0,
+        5.0
+      ],
+      "mean_score": 5.333333333333333,
+      "verdict": "CONFUSABLE",
+      "parse_failed_count": 0
+    }
+  ],
+  "summary": {
+    "experiment_id": "EXP-3",
+    "mode": "real",
+    "judge_model": "llama3.1:8b",
+    "fixture_hash": "0dd97c6e3194",
+    "n_pairs": 24,
+    "n_confused_labeled": 4,
+    "n_not_confused_labeled": 20,
+    "confusion_matrix": {
+      "tp": 4,
+      "fp": 20,
+      "fn": 0,
+      "tn": 0,
+      "undetermined_pair_ids": []
+    },
+    "precision": 0.16666666666666666,
+    "recall": 1.0,
+    "interpretation": "honest negative",
+    "threshold": 5.0
+  }
+}

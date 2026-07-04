@@ -48,20 +48,37 @@ question elicits yes.**
 read_notebook/list_notebooks) cross mechanical prefix-family boundaries; a family-scoped
 generator would not have proposed them as candidates at all, independent of this result.
 
-**Candidate next step (not run this session, GG decision):** the binary forced-choice format may
-be the cause of the over-flagging — a graded confidence prompt (0–10 confusability score with a
-tuned threshold) or a comparative framing (rank pairs by confusability rather than yes/no per
-pair) could recover discrimination the binary question destroys. Flagged for GG rather than
-run unilaterally, since it is itself a condition-#1 change requiring its own pre-registration.
+**GG-ratified retry (graded confidence, one time-boxed attempt, pre-registered before any judge
+call — `docs/research/exp3_pre_registration.md` Section 7):** same 24-pair ground truth, same
+precision≥0.50 AND recall≥0.50 bar. Method: 0–10 CONFUSABILITY score per pair (mirrors
+`scorer.py`'s existing `_judge_discoverability`/`_parse_distinguish_score` pattern), 3 trials at
+seed=42+idx, mean-aggregated, threshold ≥5.0 (scale midpoint, fixed before any result).
 
-**Verdict for the paper:** a real, clean negative result, reported per the frozen protocol's
-null-first-class rule. "The single-score judge localizes nothing; naively asking the judge
-pairwise localizes everything — neither construction, as tested, gives a usable per-pair
-confusability signal." Full per-pair votes: `evals/fixtures/exp3_localizer_result.json`.
-Condition #1 (new judge mechanism) — this PR is DRAFT, escalated to GG before merge.
+**Graded result (real judge, `llama3.1:8b`):** every one of the 24 pairs' mean score landed in a
+**5.00–5.67 band** (raw per-trial scores clustered at 4, 5, 6) — **24/24 verdicted CONFUSABLE**,
+identical confusion matrix to the binary run: TP=4, FP=20, FN=0, TN=0. **Precision = 0.167,
+Recall = 1.00 — fails the bar, same numbers as the binary attempt.** This is a *different*
+degenerate failure than the binary run's uniform-YES: the judge is not refusing to discriminate
+by defaulting to one categorical answer, it is anchoring near the midpoint of its own 0–10
+scoring guide regardless of input — genuinely-confused pairs (e.g. GSC delete_sitemap/
+manage_sitemaps) and 100%-resolved anchor pairs (e.g. AWS IAM list_user_policies/
+list_role_policies, GitHub search_repositories/search_code) score in the same narrow band.
 
-CI: 696 tests (24 new in `tests/test_localizer.py`), 94.67% coverage, 100% on `localizer.py`.
-`verify.sh` PASSED (ruff, ruff format, mypy non-blocking, pytest).
+**FINAL EXP-3 RESULT (hard stop per GG's pre-registered instruction — no third variant):**
+pairwise judging fails to localize behavioral confusability under both a binary and a graded
+framing, using the frozen `llama3.1:8b` judge. Not a framing artifact — the same near-uninformative
+output (precision 0.167, recall 1.00) survives a materially different question format. **The
+robust paper claim:** "the single-score discoverability judge localizes nothing (structural, one
+number per catalog); asking the same frozen judge pairwise — whether as a binary yes/no or a
+graded 0–10 confidence score — localizes everything, indiscriminately. Neither construction, as
+tested, gives a usable per-pair confusability ranking signal." Full per-pair detail: binary —
+`evals/fixtures/exp3_localizer_result.json`; graded — `evals/fixtures/exp3_localizer_graded_result.json`.
+
+Condition #1 (new judge mechanism, both attempts) — DRAFT PR #53, escalated to GG for review
+before merge. EXP-3 is now CLOSED; next step is paper writing (EXP-4 + EXP-1 + EXP-3 scope).
+
+CI: 710 tests (24 binary + 16 graded, all in `tests/test_localizer.py`), 94.79% coverage, 100% on
+`localizer.py`. `verify.sh` PASSED (ruff, ruff format, mypy non-blocking, pytest).
 
 ---
 

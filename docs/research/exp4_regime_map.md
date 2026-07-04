@@ -204,6 +204,15 @@ direct yes/no confusability question elicits yes near-uniformly). Neither, as bu
 per-pair ranking signal. Full result: `evals/fixtures/exp3_localizer_result.json`,
 `docs/research/exp3_pre_registration.md`, `STATUS.md` EXP-3 section.
 
+**GG-ratified graded-confidence retry (one time-boxed attempt, pre-registered before running):**
+same 24-pair ground truth, 0–10 CONFUSABILITY score per pair instead of binary yes/no, threshold
+>=5.0. Result: identical confusion matrix (TP=4, FP=20, FN=0, TN=0; precision 0.167, recall
+1.00) — every pair's mean score landed in a narrow 5.00–5.67 band regardless of whether it was a
+real behavioral confusion or a 100%-resolved anchor pair. **Final EXP-3 result (hard stop, no
+third variant):** pairwise judging fails to localize behavioral confusability under both a
+binary and a graded framing with the frozen `llama3.1:8b` judge — a robust negative, not a
+framing artifact. Full detail: `evals/fixtures/exp3_localizer_graded_result.json`.
+
 ---
 
 ### Non-Regime 5 — Interface-only generation (Q2a / Q2b)
