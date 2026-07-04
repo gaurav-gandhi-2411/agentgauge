@@ -7,6 +7,12 @@
     "not_in_original_pre_registration": true,
     "note": "The original pre-reg's valid_exclusion_reasons (no_source / unrunnable / duplicate) did not anticipate a mechanical-extraction-method gap distinct from 'unrunnable'. This is a genuine amendment, flagged here and in exp1_pre_registration.json's amendments log, not silently absorbed into 'unrunnable' (the stub server was never built -- extraction failed before that step)."
   },
+  "second_new_exclusion_reason_added": {
+    "id": "unreliable_extraction_method",
+    "definition": "ADDED 2026-07-04 (v5). Mechanical extraction returned n_tools > 0, but via the 'regex_best_effort' method -- a generic name/description text-proximity regex applied to non-Python source with NO structural (AST) understanding. A systematic audit (prompted by an implausibly clean v4 result, after 4 confirmed Python-specific extraction bugs) found this method pulls in massive false-positive noise: template literal placeholders, raw parameter names, MCP meta-concept labels, HTTP header names, UI category labels, and unrelated example data, mixed indiscriminately with real tool names. This is DIFFERENT from extraction_failed (which means 0 tools, missing data) -- these servers produced NON-ZERO but UNTRUSTWORTHY tool lists and composite scores. Excluded rather than scored, since the false-positive rate is high and not bounded.",
+    "not_in_original_pre_registration": true,
+    "note": "This is a SYSTEMIC method limitation (blind text-proximity regex has no way to distinguish a tool-registration call from an unrelated name/description-shaped string elsewhere in the file), not a fixable one-line bug like the 4 Python AST-parser gaps found earlier this session. Fixing it properly would require real per-language AST parsers (TypeScript/JavaScript/Go/Rust), out of scope for this pass. This exclusion reason, and dropping ALL regex_best_effort-extracted servers rather than attempting further regex tightening, was a GG-directed decision after the systemic pattern was surfaced -- not resolved unilaterally."
+  },
   "excluded": [
     {
       "server_id": "DeusData-codebase-memory-mcp",
@@ -72,6 +78,85 @@
       "detail": "ADDED 2026-07-04 (v4 correction): initially scored composite=37.3 on 9 tools, several of which were phantom (e.g. 'get_tool_stats_route', a Flask dashboard route; 'start_mcp_server', a CLI entry point) -- false-positived because _has_tool_decorator matched the substring 'tool' anywhere in a decorator's full unparsed text, including STRING ARGUMENTS like the route path '/get_tool_stats' or the CLI flag '--tool-timeout' (fixed: now checks only the decorator's called name). Post-fix, extraction found only 1 phantom tool via the lowest-confidence generic regex fallback (composite=86.5) -- CONFIRMED via source inspection that serena's real ~22-tool catalog uses CLASS-BASED registration (class ExecuteShellCommandTool(Tool, ...): ...), a third major MCP-Python registration paradigm not supported by this extractor at all. Excluded as extraction_failed rather than scored on either untrustworthy value."
     }
   ],
+  "excluded_unreliable_extraction_method": [
+    {
+      "server_id": "ChromeDevTools-chrome-devtools-mcp",
+      "source_repo": "ChromeDevTools/chrome-devtools-mcp",
+      "language": "TypeScript",
+      "reason": "unreliable_extraction_method",
+      "detail": "128 'tools' extracted via regex_best_effort included '${tool.name}' (a template literal placeholder) and dozens of raw parameter names ('uid', 'x', 'y', 'filePath') alongside real tool names."
+    },
+    {
+      "server_id": "czlonkowski-n8n-mcp",
+      "source_repo": "czlonkowski/n8n-mcp",
+      "language": "TypeScript",
+      "reason": "unreliable_extraction_method",
+      "detail": "68 'tools' extracted via regex_best_effort included '${toolName}', '{{ $json.name }}' (template expressions), 'List Tools'/'Read Resource' (MCP meta-concept labels, not tools), 'X-Request-ID' (an HTTP header), and unrelated example content ('Calculate Shipping', 'Research Specialist')."
+    },
+    {
+      "server_id": "antvis-mcp-server-chart",
+      "source_repo": "antvis/mcp-server-chart",
+      "language": "TypeScript",
+      "reason": "unreliable_extraction_method",
+      "detail": "30 'tools' extracted via regex_best_effort included real generate_*_chart tool names mixed with 'CEO'/'CTO'/'Dev Manager' -- sample input data for an org-chart-generation tool, not tool names."
+    },
+    {
+      "server_id": "brightdata-brightdata-mcp",
+      "source_repo": "brightdata/brightdata-mcp",
+      "language": "JavaScript",
+      "reason": "unreliable_extraction_method",
+      "detail": "31 'tools' extracted via regex_best_effort included real scraping_* tool names mixed with category/taxonomy labels ('E-commerce', 'Social Media', 'Travel', 'Custom') used to organize tools in documentation, not tool names themselves."
+    },
+    {
+      "server_id": "bvisible-mcp-ssh-manager",
+      "source_repo": "bvisible/mcp-ssh-manager",
+      "language": "JavaScript",
+      "reason": "unreliable_extraction_method",
+      "detail": "Extracted via regex_best_effort -- excluded as part of the systemic fix; not individually source-verified, but the method itself is confirmed unreliable across the sample checked."
+    },
+    {
+      "server_id": "chrisryugj-korean-law-mcp",
+      "source_repo": "chrisryugj/korean-law-mcp",
+      "language": "TypeScript",
+      "reason": "unreliable_extraction_method",
+      "detail": "115 'tools' extracted via regex_best_effort -- suspiciously high count relative to manual vetting's approx_tool_count=9; excluded as part of the systemic fix."
+    },
+    {
+      "server_id": "cjo4m06-mcp-shrimp-task-manager",
+      "source_repo": "cjo4m06/mcp-shrimp-task-manager",
+      "language": "JavaScript",
+      "reason": "unreliable_extraction_method",
+      "detail": "Extracted via regex_best_effort -- excluded as part of the systemic fix."
+    },
+    {
+      "server_id": "firecrawl-firecrawl-mcp-server",
+      "source_repo": "firecrawl/firecrawl-mcp-server",
+      "language": "JavaScript",
+      "reason": "unreliable_extraction_method",
+      "detail": "Extracted via regex_best_effort -- excluded as part of the systemic fix."
+    },
+    {
+      "server_id": "matlab-matlab-mcp-server",
+      "source_repo": "matlab/matlab-mcp-server",
+      "language": "Go",
+      "reason": "unreliable_extraction_method",
+      "detail": "Extracted via regex_best_effort -- excluded as part of the systemic fix, despite this specific server having matched the intended mark3labs/mcp-go pattern cleanly in earlier spot checks; dropped for consistency since the METHOD is unreliable in general, not because this specific server was individually confirmed bad."
+    },
+    {
+      "server_id": "mongodb-js-mongodb-mcp-server",
+      "source_repo": "mongodb-js/mongodb-mcp-server",
+      "language": "TypeScript",
+      "reason": "unreliable_extraction_method",
+      "detail": "Extracted via regex_best_effort -- excluded as part of the systemic fix."
+    },
+    {
+      "server_id": "yvgude-lean-ctx",
+      "source_repo": "yvgude/lean-ctx",
+      "language": "Rust",
+      "reason": "unreliable_extraction_method",
+      "detail": "Extracted via regex_best_effort -- excluded as part of the systemic fix."
+    }
+  ],
   "not_excluded_diagnostic_fixes_applied": [
     "sec-edgar-mcp (Python): initially 0 tools -- AST decorator extraction found nothing because this repo registers tools imperatively (mcp.add_tool(fn) over a plain function list, no decorator). Fixed by extending agentgauge/exp1_tool_def_extractor.py to also resolve this idiom; recovered 21 tools, composite=80.1.",
     "LycheeMem (Python): initially 0 tools -- tools are declared as a module-level TOOLS_SCHEMA = [{'name':..., 'description':...}] dict literal, not decorators. Fixed by falling back to the existing JSON-literal regex (already used for non-Python sources) when Python AST finds nothing; recovered 4 tools, composite=100.0.",
@@ -82,9 +167,11 @@
   "summary": {
     "fresh_candidates_total": 30,
     "fresh_excluded_extraction_failed": 9,
-    "fresh_scoreable": 21,
-    "shortfall_vs_pre_registered_freshly_sampled_count": "28 - 21 = 7 short; escalated to GG as an open decision (see exp1_pre_registration.json amendments), not silently resolved.",
+    "fresh_excluded_unreliable_extraction_method": 11,
+    "fresh_scoreable": 10,
+    "shortfall_vs_pre_registered_freshly_sampled_count": "28 - 10 = 18 short; escalated to GG as an open decision (see exp1_pre_registration.json amendments), not silently resolved.",
     "v3_correction_note": "vitali87-code-graph-rag moved from 'scoreable/near_empty' to 'excluded/extraction_failed' on 2026-07-04, after 3 confirmed extraction bugs were found and fixed (see exp1_server_frame.json bug_fixes_this_version). Two other scoreable servers had composite scores corrected in place (see not_excluded_diagnostic_fixes_applied): blazickjp-arxiv-mcp-server and lucasastorian-llmwiki.",
-    "v4_correction_note": "oraios-serena moved from 'scoreable/near_empty' to 'excluded/extraction_failed' on 2026-07-04, after a 4th extraction bug was found and fixed. PAUSED after this correction (see exp1_server_frame.json pause_rationale): the remaining 21-server pool now shows NO server below 57.1% description coverage, an extremely strong result surfaced only after 4 bugs found in one session -- recommend a systematic audit or explicit caveat before further trial selection, rather than continuing to pick candidates reactively."
+    "v4_correction_note": "oraios-serena moved from 'scoreable/near_empty' to 'excluded/extraction_failed' on 2026-07-04, after a 4th extraction bug was found and fixed. Immediately after, GG directed a systematic audit rather than picking another trial candidate reactively.",
+    "v5_correction_note": "The systematic audit found the 'regex_best_effort' extraction method (used for ALL non-Python servers) pulls in massive false-positive noise -- a SYSTEMIC reliability problem, not a fixable bug. GG directed dropping all 11 regex_best_effort-extracted servers from the scoreable frame. The frame is now Python-only, N=10, far below the pre-registered target of 28. This is the authoritative, GG-ratification-pending state as of 2026-07-04."
   }
 }
