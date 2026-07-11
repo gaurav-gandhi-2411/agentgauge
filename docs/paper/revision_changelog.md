@@ -354,3 +354,69 @@ consistent with the published-surface principle used throughout §§4/7/8 (paper
 cites by path). Nothing outside that boundary was touched. If the codebase comments or `spec.md`
 /`TASKS.md` need the same treatment, that's a separate decision — flagging rather than acting
 unilaterally, per the same discipline applied to the `STATUS.md` citation gap noted in §7.
+
+---
+
+## 9. Abstract precision fixes
+
+Two one-line accuracy fixes to the abstract only (`docs/paper/paper.md` and the LaTeX mirror
+`docs/paper/latex/abstract_body.tex`). No result, claim, or scope changed — both fixes correct
+which finding a phrase refers to, or remove a non-comparable figure the body itself forbids
+presenting as a direct comparison.
+
+### Fix 1 — "this regime" incorrectly bound to the density regime
+
+**Verified against §5.1 before editing:** "**This is the general behavioral construct, not a
+re-test of Section 4.2.1's specific density point.**" (`paper.md` L437-438) — §5.1 explicitly
+warns against exactly the misreading "this regime" invited in the abstract (binding EXP-1's
+0-of-9 result to the §4.2.1 density regime rather than the general two-condition behavioral
+regime it actually measures). The fix is supported by the paper's own text, not a new claim.
+
+**Before:** "...a pre-registered prevalence measurement finding **this regime** in 0 of 9
+testable Python MCP servers — a lower bound, not a population estimate..."
+
+**After:** "...a pre-registered prevalence measurement finding **the behavioral regime** in 0 of
+9 testable Python MCP servers — a lower bound, not a population estimate..."
+
+### Fix 2 — +40.8pp figure removed from adjacency with +34.5pp
+
+§3.5 states the two figures are "explicitly **not** part of a single controlled ladder... and
+are never combined into a claim that the effect 'grows with capability,' only that it
+'survives'"; §4.2.3 frames FRONTIER-T18 as "a survival claim, not a growth claim." Showing both
+numbers side-by-side in the abstract's compressed form risked exactly the growth/comparison
+reading both sections forbid. The survival claim stays in the abstract; the non-comparable
+number is dropped, matching the guidance to state the qualitative result ("does not collapse")
+rather than the two magnitudes together.
+
+**Before:** "...a hand-written oracle description helps at one tested catalog density (60
+tools/10 families, +34.5pp on gemma2:9b, **surviving at +40.8pp on Llama-3.3-70B**) when the
+agent lacks headroom; realizing it safely through automatic generation is a separate condition,
+requiring documented source."
+
+**After:** "...an oracle description helps at one tested catalog density (60 tools/10 families,
++34.5pp on gemma2:9b, **and not collapsing on a substantially stronger model, Llama-3.3-70B**)
+with no headroom; realizing it safely through automatic generation is a separate condition,
+requiring documented source."
+
+("hand-written oracle description" was also trimmed to "oracle description" — a length-only cut
+to stay under the word ceiling after fix 2 added net words; "oracle" is already the paper's
+defined term for hand-written ground-truth descriptions, used interchangeably with the full
+phrase throughout the body, e.g. §4.2.1's own heading and running text. "when the agent lacks
+headroom" was tightened to "with no headroom" for the same reason — both phrasings state the
+identical fact using the paper's own term, "headroom," defined in §3.2.)
+
+### Word count
+
+**228 words (before this task's two fixes) -> 230 words (after).** At the ceiling, not over it.
+The two requested fixes added net words (+1 for fix 1, +3 for fix 2's literal requested text);
+two additional length-only trims within the same two edited clauses — dropping "hand-written"
+and tightening "when the agent lacks headroom" to "with no headroom" — brought the total back
+under the ceiling without touching any other sentence or any claim.
+
+### Verification
+
+- `paper.md` and `abstract_body.tex` abstracts diffed word-for-word after normalizing
+  Markdown-em-dash (`—`) vs LaTeX-em-dash (`---`) conventions: **identical**.
+- `main.pdf` recompiled with tectonic: clean, only the same pre-existing cosmetic underfull/
+  overfull-hbox warnings present before this change (unrelated to content).
+- Nothing outside the abstract paragraph was touched in either file.

@@ -11,16 +11,17 @@ and for tool retrieval. We test this with a single frozen evaluation protocol �
 one judge, one generator family, pre-registered thresholds — across a synthetic
 confusable-catalog experiment, two real production MCP-server mirrors (GitHub, AWS IAM), a
 synthetic internal-proxy catalog, and a pre-registered pilot of ten public Python MCP servers.
-The effect is real but regime-bounded, not a general law: a hand-written oracle description
-helps at one tested catalog density (60 tools/10 families, +34.5pp on gemma2:9b, surviving at
-+40.8pp on Llama-3.3-70B) when the agent lacks headroom; realizing it safely through automatic
-generation is a separate condition, requiring documented source. Outside these conditions the
-effect is null or reverses (zero headroom on two well-documented production servers; −20pp harm
-on one already-resolved family; harm to retrieval across three retriever types). Contributions:
-a falsifiable regime map of where description quality helps, harms, or does nothing; a
-pre-registered prevalence measurement finding this regime in 0 of 9 testable Python MCP servers
-— a lower bound, not a population estimate; and a localizability boundary — a pairwise LLM-judge
-confusability method fails under two independent framings, via two distinct failure mechanisms.
+The effect is real but regime-bounded, not a general law: an oracle description helps at one
+tested catalog density (60 tools/10 families, +34.5pp on gemma2:9b, and not collapsing on a
+substantially stronger model, Llama-3.3-70B) with no headroom; realizing it safely through
+automatic generation is a separate condition, requiring documented source. Outside these
+conditions the effect is null or reverses (zero headroom on two well-documented production
+servers; −20pp harm on one already-resolved family; harm to retrieval across three retriever
+types). Contributions: a falsifiable regime map of where description quality helps, harms, or
+does nothing; a pre-registered prevalence measurement finding the behavioral regime in 0 of 9
+testable Python MCP servers — a lower bound, not a population estimate; and a localizability
+boundary — a pairwise LLM-judge confusability method fails under two independent framings, via
+two distinct failure mechanisms.
 
 ---
 
