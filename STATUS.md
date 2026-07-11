@@ -702,15 +702,25 @@ models — always record the model alongside any stored score.
     below the 40% floor; still effectively a floor-effect regime. **Confirmed on clean
     harness (2026-06-06, PR #40):** parse_failed=0/180; the 33.3% is not a measurement
     artifact.
-  Both dimensions landed outside the target window on the first attempt and require fixture
-  redesign to test. The window exists in principle but is sensitive to the agent's prior
-  knowledge about the specific vocabulary used.
+  Both dimensions landed outside the target window on the first attempt and resisted every
+  fixture redesign tried (see (a) below). The window exists in principle but is sensitive to
+  the agent's prior knowledge about the specific vocabulary used.
 
-  **Candidate explanations to test next:**
-  - *(a) Guessable-but-error-prone constraints:* Use constraints the agent "knows" but
-    applies inconsistently — e.g., ISO date formats, HTTP status codes, standard SI units.
-    These should land in the 40–70% zone because the agent has partial exposure but not
-    perfect recall. Requires pre-registration and inferability guard.
+  **Candidate explanations tested / next:**
+  - *(a) Guessable-but-error-prone constraints — TESTED, ABORTED (Ty2, PR #37, branch
+    `claude/ty2-guessable-constraints`, 2026-06-05):* near-miss enums (e.g.
+    settled/voided/disputed vs. completed/cancelled), RFC3339+offset date formats,
+    ms-magnitude unit ranges, and required-field presence (`idempotency_key`) — constraints
+    the agent "knows" but applies inconsistently. Arm A baseline **36.7%**, still below the
+    40% headroom gate → **ABORT, no A/B run**. Across all three attempts on gemma2:9b for
+    `call_correctness` — Run 1 (arbitrary enum codes, 0%, tautological), Run 2 (exotic
+    formats/units, 33.3%, floor — clean-harness-confirmed above), and Ty2-guessable (36.7%,
+    floor) — **the 40-70% partial-ability window is unreachable by fixture design on
+    gemma2:9b for `call_correctness`.** Full fixture (30 tasks,
+    `evals/fixtures/ty_guessable_tasks.py`) and CI detail (25 new tests,
+    `tests/test_ty_guessable_fixture.py`, `verify.sh` green at merge time) recorded in PR #37
+    — open, not merged; this entry records the finding for provenance, the branch
+    `claude/ty2-guessable-constraints` remains the source of record for the full artifact.
   - *(b) Weaker runner agent:* gemma2:9b may simply be too capable for 9B-class schema
     vocabulary. A smaller model (e.g., gemma2:2b, phi3:mini) would have a lower knowledge
     floor and more constraint-sensitive behavior, potentially landing Arm A in range without
@@ -719,8 +729,9 @@ models — always record the model alongside any stored score.
     on clean-harness rerun. The 33.3% floor is not caused by JSON formatting failures being
     silently coerced to empty dicts. The floor is genuine model behavior.
 
-  Which fork to take (another Ty attempt via (a) vs. weaker-agent pivot (b) vs. write the
-  meta-finding as the deliverable) is a design decision — tracked as open in TASKS.md.
+  With (a) now closed (ABORT, all three constraint bands tried), the only remaining fork is
+  (b) weaker-agent pivot vs. writing the meta-finding as the deliverable — tracked as open in
+  TASKS.md.
 
 - **T18 (IN-REVIEW, branch `claude/t18-discoverability-scale`):** Oracle A/B on `selection_accuracy`
   with a 60-tool confusable catalog (10 families × 6 near-neighbors). Arm A = empty descriptions;
@@ -759,7 +770,7 @@ models — always record the model alongside any stored score.
   | Experiment | Dimension | Verdict | Why |
   |------------|-----------|---------|-----|
   | T17 (16 tools, 8 clusters) | selection | **inert** — ABORTED above ceiling | names saturated Arm A at 81.2%; descriptions never tested |
-  | Ty (call construction) | calls | **inconclusive** — ABORTED all runs | unguessable tokens → tautological; format/unit constraints → floor |
+  | Ty (call construction) | calls | **inconclusive** — ABORTED all 3 runs | unguessable tokens → tautological; format/unit constraints → floor (33.3%, clean-harness-confirmed); guessable-but-error-prone (Ty2, PR #37) → floor (36.7%) — partial-ability window unreachable by fixture design |
   | T18 (60 tools, 10 families) | selection | **POSITIVE** | density created the confusable regime; discrimination +34.5 pp |
 
   Effect is **scale-gated**: the confusable regime required 60-tool density. At T17's scale,

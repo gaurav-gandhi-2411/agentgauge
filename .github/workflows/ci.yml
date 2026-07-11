@@ -58,3 +58,11 @@ jobs:
             exit 1
           fi
           echo "OK: commit hygiene verified"
+          echo "RANGE=$RANGE" >> "$GITHUB_ENV"
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Check docs/paper/paper.md and docs/paper/latex/ stay in sync
+        run: python3 scripts/check_paper_latex_sync.py "$RANGE"
