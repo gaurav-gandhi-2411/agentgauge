@@ -1,0 +1,1325 @@
+\hypertarget{introduction}{%
+\section{1. Introduction}\label{introduction}}
+
+This paper's central finding is counterintuitive enough to state up
+front, with its scope attached: on the fixtures tested here,
+tool-description quality is not a single better/worse axis. The same
+behavioral-axis precision that helps an agent disambiguate within a
+family of confusable tools (§4.2.1, one density point: 60 tools / 10
+families) is not what a context-rich agent already resolving from task
+wording needs, and is actively harmful to tool retrieval (§4.3.3, one
+synthetic catalog, three retriever types). Optimizing a description for
+one of these objectives can measurably neutralize or harm another --- a
+real, mechanistically legible pattern on the fixtures tested, not a
+demonstrated general law about description quality. The rest of this
+paper places that finding inside a broader map (Section 4), asks how
+common the map's ``it matters'' region is in real servers (Section 5),
+and tests whether that region can be found cheaply before it is needed
+(Section 6).
+
+\hypertarget{the-assumption-under-test}{%
+\subsection{1.1 The assumption under
+test}\label{the-assumption-under-test}}
+
+Agentic systems that call external tools --- via MCP servers,
+OpenAI-style function schemas, or similar interfaces --- depend on an
+LLM agent correctly selecting which tool to invoke for a given task.
+Practitioner-facing engineering guidance treats the \emph{quality of the
+tool description text} as a primary lever for improving that selection:
+Anthropic's own tool-use engineering guidance states that ``even small
+refinements to tool descriptions can yield dramatic improvements,''
+reporting that precise refinements to tool descriptions helped Claude
+Sonnet 3.5 reach state-of-the-art on SWE-bench Verified (Anthropic
+Engineering, ``Writing tools for agents'' --- publication date not
+independently confirmed this session, cited for content
+only) \nocite{anthropic2026tools}. GitHub's
+engineering team, running an offline evaluation harness against their
+own MCP server --- the same \url{github/github-mcp-server} mirrored
+in RW1 (§4.3.1) --- reports the same sensitivity from the other side:
+``tightening a description, adding or removing a tool, or combining a
+few similar tools can shift results a lot'' (GitHub Engineering,
+``Measuring what matters: how offline evaluation of GitHub MCP Server
+works'' --- publication date not independently confirmed this session,
+cited for content only) \nocite{github2026measuring}. This appears to sit in tension with RW1's own
+finding of zero headroom on that exact server for gemma2:9b (§4.3.1) ---
+we do not resolve this tension here, since GitHub's harness details
+(which model(s), which metric, which task distribution) were not
+verified this session beyond the quoted sentence; flagged as an open
+question rather than silently juxtaposed as if the two results agree. An
+empirical audit of 856 tools across 103 real MCP servers found 97.1\% of
+tool descriptions contain at least one quality ``smell'' and 56\% fail
+to state their purpose clearly, and that LLM-based description
+augmentation lifts task success by a median of +5.85pp --- but also
+regresses performance in 16.67\% of cases and inflates execution steps
+by 67.46\% (Hasan et al., ``Model Context Protocol (MCP) Tool
+Descriptions Are Smelly!,'' arXiv:2602.14878, 2026) \nocite{hasan2026smelly}. Real tool-name
+collisions cause user-visible failures in production agent frameworks,
+independent of any synthetic fixture (e.g., a reported GitHub issue:
+``Duplicate tool names across MCP servers cause errors,''
+\url{openai/openai-agents-python#464}) \nocite{openai2024issue464}. Taken together, this is real
+evidence that description quality matters \emph{somewhere} and that even
+small edits move outcomes --- but none of these sources characterize the
+\emph{boundary} of where it matters, whether it generalizes across
+catalog scales, or whether the same fix that helps selection also helps
+or harms retrieval and already-correctly-resolving cases. That is the
+gap this paper addresses.
+
+\hypertarget{what-this-paper-does-instead}{%
+\subsection{1.2 What this paper does
+instead}\label{what-this-paper-does-instead}}
+
+We hold three properties fixed across every experiment reported here:
+one frozen evaluation protocol (Section 3), one classifier, and
+null-first-class reporting --- an aborted or negative result is reported
+as a finding, not omitted. Against that fixed protocol we ask three
+questions in sequence:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \textbf{Where does description quality change agent behavior, and
+  where doesn't it?} (Section 4, EXP-4 --- a regime map assembled from
+  every experiment run under the frozen protocol.)
+\item
+  \textbf{How common is the ``it matters'' regime in real, sampled MCP
+  servers?} (Section 5, EXP-1 --- a behavioral prevalence measurement on
+  a pre-registered sample.)
+\item
+  \textbf{Can the regime be found cheaply, before deploying an agent
+  against a real server?} (Section 6, EXP-3 --- a pairwise confusability
+  localizer, tested against behavioral ground truth.)
+\end{enumerate}
+
+\hypertarget{contributions}{%
+\subsection{1.3 Contributions}\label{contributions}}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{A falsifiable, regime-bounded map} of where tool-description
+  quality changes agent selection behavior. Two distinct conditions
+  compose it, from different experiments: (i) the hand-written oracle
+  \emph{effect} appears at 60-tool/10-family catalog density and was
+  untestable (no headroom) at 16-tool/8-cluster density --- one tested
+  point and one untested-for-headroom point, bracketing an unmeasured
+  transition, not a precisely located threshold (Section 4.2.1);
+
+  \begin{enumerate}
+  \def\labelenumi{(\roman{enumi})}
+  \setcounter{enumi}{1}
+  \tightlist
+  \item
+    realizing that effect safely through \emph{automatic generation}
+    additionally requires documented source code --- interface-only
+    generation recovers only 12.5\% of the oracle gain (Section 4.2.2).
+    Outside this intersection the effect is null or negative (Section
+    4.3).
+  \end{enumerate}
+\item
+  \textbf{A prevalence measurement}: on a pre-registered pilot sample of
+  10 Python-only public MCP servers, 0 of 9 servers with a testable
+  confusable family showed in-regime behavior, using the general
+  behavioral regime definition (§5.1) --- not a re-test of the specific
+  60-tool density point above --- a lower bound, not a closed claim, on
+  how rare the regime is among public, documented servers (Section 5).
+\item
+  \textbf{A localizability boundary}: a pairwise LLM-judge confusability
+  method --- the natural cheap alternative to running the full
+  behavioral protocol against every server --- fails under two
+  independently pre-registered framings, reaching the identical
+  confusion matrix both times via two different degeneracy mechanisms
+  rather than one repeated failure mode (Section 6). This extends the
+  map from \emph{where the regime occurs} to \emph{where it can, and
+  cannot, be found cheaply}.
+\end{itemize}
+
+\hypertarget{roadmap}{%
+\subsection{1.4 Roadmap}\label{roadmap}}
+
+Section 2 positions this work against tool-use benchmarks, MCP
+documentation practice, and retrieval-augmented tool selection. Section
+3 fixes the evaluation protocol every experiment reuses. Section 4
+presents the regime map: where the effect helps, and --- as part of the
+same map, not a separate cautionary appendix --- where it does nothing
+or actively harms. Section 5 presents the prevalence result. Section 6
+presents the localizer result. Section 7 discusses the synthesis.
+Sections 8--9 cover threats to validity and the reproducibility
+artifact.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\hypertarget{related-work}{%
+\section{2. Related Work}\label{related-work}}
+
+\hypertarget{tool-use-and-function-calling-benchmarks}{%
+\subsection{2.1 Tool-use and function-calling
+benchmarks}\label{tool-use-and-function-calling-benchmarks}}
+
+Benchmarks for LLM tool/function-calling typically measure whether an
+agent calls the \emph{correct} tool and constructs a \emph{valid} call,
+usually against a fixed, hand-built catalog. Selection reliability is
+known to degrade as the tool menu grows --- a synthetic causal-filtering
+study reports wrong-tool calls increasing with larger tool menus across
+four LLM backends (Babu and Iyer, ``ToolChoiceConfusion: Causal Minimal
+Tool Filtering for Reliable LLM Agents,'' arXiv:2606.06284,
+2026) \nocite{babu2026toolchoice}, and a
+large real-usage benchmark of tool-use ``in the wild'' finds no model,
+of 57 tested, exceeds 15\% accuracy on tasks reflecting authentic
+multi-turn, mixed-intent user behavior (Yu et al., ``Benchmarking LLM
+Tool-Use in the Wild'' {[}WildToolBench{]}, arXiv:2604.06185,
+2026) \nocite{yu2026wildtool}.
+Neither benchmark isolates description \emph{quality} specifically as
+the independent variable --- which is why the regime map in Section 4
+spans purpose-built synthetic catalogs at controlled scale (T18)
+alongside real production-server mirrors (RW1, RW2) rather than a single
+fixture designed for a different question.
+
+\hypertarget{mcp-ecosystem-and-documentation-practice}{%
+\subsection{2.2 MCP ecosystem and documentation
+practice}\label{mcp-ecosystem-and-documentation-practice}}
+
+The Model Context Protocol ecosystem has produced a growing set of
+public servers with widely varying documentation quality (Hasan et al.,
+2026, above \nocite{hasan2026smelly}: 97.1\% of a 856-tool sample shows at least one description
+``smell''), and a parallel set of tools (linters, description scorers,
+\texttt{llms.txt} conventions) that assume documentation quality is both
+measurable and improvable in a way that changes agent behavior. Section
+4.3.4 and Section 6 directly test the measurability half of that
+assumption for one specific construct --- can a scorer identify
+\emph{which tool pairs} in a catalog are confusable --- and find it
+fails at both the single-score and pairwise level as currently
+constructed, on the fixtures tested here.
+
+\hypertarget{retrieval-augmented-tool-selection}{%
+\subsection{2.3 Retrieval-augmented tool
+selection}\label{retrieval-augmented-tool-selection}}
+
+Where a catalog is too large to place in-context, tool retrieval
+(lexical or embedding-based) is used to narrow the candidate set before
+selection. A large retrieval benchmark (7.6k tasks, 43k tools) finds
+even strong information-retrieval models perform poorly at this task ---
+the best-performing model reaches only 33.83 nDCG@10 (Shi et al.,
+``Retrieval Models Aren't Tool-Savvy: Benchmarking Tool Retrieval for
+Large Language Models'' {[}ToolRet{]}, ACL 2025 Findings /
+arXiv:2503.01763) \nocite{shi2025toolret}. One proposed remedy is LLM-based description
+\emph{expansion}, reported to yield state-of-the-art retrieval gains on
+two benchmarks (Lu et al., ``Tools are under-documented: Simple Document
+Expansion Boosts Tool Retrieval'' {[}Tool-DE{]}, arXiv:2510.22670,
+2025) \nocite{lu2025toolde}. Retrieval and direct-selection description quality are often
+assumed to move together on this basis --- richer descriptions should
+help both. Section 4.3.3 shows they are anti-correlated \emph{on the one
+synthetic catalog tested here}: the same behavioral-axis precision that
+helps direct-selection disambiguation matches poorly against the coarse,
+intent-level queries a retrieval index is queried with --- a result that
+sits in tension with, rather than replicating, Tool-DE's
+description-expansion gains, and that we do not claim generalizes beyond
+this fixture (see §8.1).
+
+\hypertarget{positioning}{%
+\subsection{2.4 Positioning}\label{positioning}}
+
+This paper positions against the implicit claim, common across the
+practices surveyed above, that tool-description-quality improvement is a
+broadly-applicable, low-risk intervention. We do not dispute that it
+helps in \emph{some} regime --- Section 4.2 characterizes one such
+regime, bounded by the specific fixtures tested --- but we show that
+regime is narrower and less precisely located than a flat ``improve your
+descriptions'' recommendation implies, and that the same intervention is
+risky outside it.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\hypertarget{methods-the-frozen-evaluation-protocol}{%
+\section{3. Methods --- The Frozen Evaluation
+Protocol}\label{methods-the-frozen-evaluation-protocol}}
+
+All results in this paper are produced under a single protocol,
+committed once (\url{docs/research/frozen_protocol.md}) and never
+edited after any experiment's results were collected. This section
+states it in full; individual experiment sections do not repeat it.
+
+\hypertarget{governance}{%
+\subsection{3.1 Governance}\label{governance}}
+
+Every experiment's spec --- task set, gold labels, stability-screen
+procedure, and sidedness of the sign test --- is pre-registered to its
+branch \textbf{before} any run starts. Any change to the judge, scorer,
+rubric, or calibration constants (``condition \#1'') is escalated as a
+draft PR for human review before merge. Null and aborted results are
+reported as-is; results are never tuned after being observed.
+\url{ANTHROPIC_API_KEY} is never used in any experiment reported
+here, to keep judge/generator/agent model families structurally
+independent of the assistant used to run the research program.
+
+\hypertarget{frozen-configuration}{%
+\subsection{3.2 Frozen configuration}\label{frozen-configuration}}
+
+\renewcommand{\arraystretch}{1.15}
+\begin{longtable}{@{}p{0.26\textwidth}p{0.68\textwidth}@{}}
+\toprule
+\textbf{Component} & \textbf{Value} \\
+\midrule
+\endhead
+Judge model / seed & \texttt{llama3.1:8b} / \texttt{42} \\
+Generator model & \texttt{qwen3:8b} (always distinct from the judge) \\
+Default agent & \texttt{gemma2:9b} \\
+Trials per arm & 5 (default); \textbf{3} for FRONTIER-T18 and EXP-3's
+judge calls --- each independently pre-registered and justified (API
+rate/cost limits for FRONTIER-T18; matching the codebase's existing
+graded-judge convention for EXP-3) \\
+Sign-test $\alpha$ & 0.05, two-sided unless pre-registered one-sided \\
+Headroom ceiling & 0.85 --- if Arm A (unmodified descriptions) already
+scores $\geq$85\% parse-success accuracy on the contested set, the experiment
+aborts as a null (no headroom), rather than proceeding to an A/B
+comparison \\
+Minimum contested tasks & 6 \\
+\bottomrule
+\end{longtable}
+\renewcommand{\arraystretch}{1}
+
+\hypertarget{classifier}{%
+\subsection{3.3 Classifier}\label{classifier}}
+
+Every trial is classified into exactly one of three outcomes, plus a
+separate flag:
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{SELECTED-CORRECT} --- the agent selected the pre-registered
+  gold tool.
+\item
+  \texttt{SELECTED-WRONG} --- the agent selected a different tool.
+\item
+  \texttt{ABSTAINED-OR-HEDGED} --- the agent produced output but hedged
+  or explicitly abstained.
+\item
+  \texttt{PARSE-FAILED} --- the output could not be parsed into a
+  structured selection at all.
+\end{itemize}
+
+\texttt{PARSE-FAILED} is always reported and never folded into the
+three-outcome denominator; a model or condition that appears to show
+``no effect'' is checked against its parse-failure rate before that
+conclusion is accepted (Section 8.3).
+
+\hypertarget{effect-measurement}{%
+\subsection{3.4 Effect measurement}\label{effect-measurement}}
+
+The unit of analysis is the \textbf{task}, not the trial. Arm A is run
+twice with independent seeds as a stability screen; a task whose per-run
+accuracy differs by more than one trial is dropped from the primary
+analysis and reported separately. Effect is Arm B accuracy minus Arm A
+accuracy on parse-success, stable, contested tasks; the sign test is
+computed per-task (B-beats-A vs.~A-beats-B vs.~tie), not per-trial.
+
+\hypertarget{cross-experiment-comparability}{%
+\subsection{3.5 Cross-experiment
+comparability}\label{cross-experiment-comparability}}
+
+Cross-experiment effect-size comparisons (e.g., ``does the T18 effect
+hold at a different capability tier?'') are valid only when the fixture,
+judge, classifier, and sign-test procedure are identical and the
+\emph{only} varying factor is the one under test. The T18 gemma2:9b
+(+34.5pp) and FRONTIER-T18 Llama-3.3-70B (+40.8pp) figures reported in
+Section 4.2.3 are explicitly \textbf{not} part of a single controlled
+ladder --- they come from different harnesses and hosts --- and are
+never combined into a claim that the effect ``grows with capability,''
+only that it ``survives'' at a higher capability tier tested
+independently. EXP-2, the controlled same-family capability ladder that
+would test this properly, was dropped from this paper's scope (see
+Section 8.2).
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\hypertarget{exp-4-regime-map}{%
+\section{4. EXP-4 --- Regime Map}\label{exp-4-regime-map}}
+
+\hypertarget{what-exp-4-consolidates}{%
+\subsection{4.1 What EXP-4 consolidates}\label{what-exp-4-consolidates}}
+
+EXP-4 makes no new runs; it consolidates every experiment already run
+under the frozen protocol into a single map of where tool-description
+quality changes agent behavior and where it does not. Framing A treats
+this map, together with the prevalence finding in Section 5, as the
+paper's primary artifact --- the field's assumption is not ``false,'' it
+is \textbf{regime-bounded}, and this section states the boundary
+precisely enough to be checked against a new server.
+
+\hypertarget{where-it-helps}{%
+\subsection{4.2 Where it helps}\label{where-it-helps}}
+
+\hypertarget{confusable-at-scale-t18}{%
+\subsubsection{4.2.1 Confusable-at-scale
+(T18)}\label{confusable-at-scale-t18}}
+
+On a synthetic 60-tool catalog (10 families of 6 near-neighbor tools
+each, gemma2:9b agent), empty descriptions leave the agent to resolve
+tool selection from names alone: parse-success accuracy on the contested
+subset is \textbf{62.9\%} (110/175). Oracle descriptions that target
+each family's within-family distinguishing dimension (storage medium,
+operation scope, permanence, notification channel, computation type)
+raise this to \textbf{97.4\%} (190/195) --- a \textbf{+34.5pp}
+discrimination effect (task-clustered sign test: n+=16, n−=0, ties=24,
+p\textless0.0001). A second, mechanistically distinct effect appears
+alongside it: at this catalog density, empty descriptions also
+destabilize call \emph{formation} itself --- parse-failure rate falls
+from 12.5\% (25/200) to 2.5\% (5/200) under oracle descriptions,
+contributing roughly 5--6pp of the aggregate delta separately from the
+discrimination effect.
+
+This effect appears \textbf{density-gated} rather than a general
+property of description quality, but the paper has only two points on
+the density axis, not a measured curve: an earlier fixture at 16 tools /
+8 clusters (T17) placed Arm A at 81.2\% accuracy from names alone ---
+headroom too high (by the ad hoc 70\% target that experiment used) for
+the oracle arm to be run at all, so the description effect was never
+actually tested at that density, not tested-and-absent. The
+60-tool/10-family point is positive (+34.5pp); the 16-tool/8-cluster
+point is untested; nothing between 16 and 60 tools has been run. The
+defensible claim is that density gates \emph{whether the effect is even
+testable} (headroom exists or doesn't) at these two specific fixtures
+--- not that density is \emph{the} gating variable in general, and not
+that the transition point is located more precisely than ``somewhere in
+this untested bracket.''
+
+\hypertarget{under-documented-source-with-docstrings-q3-q6-guard-b}{%
+\subsubsection{4.2.2 Under-documented source with docstrings (Q3 → Q6,
+Guard-B)}\label{under-documented-source-with-docstrings-q3-q6-guard-b}}
+
+The T18 result establishes that oracle (hand-written, ground-truth)
+descriptions help; it does not establish that a \emph{generator} can
+produce them safely. A four-stage progression (Q3, Q4, Q5, Q6) on a
+12--23-tool fixture establishes both the recovery and safety conditions;
+the two endpoints carry the argument (full intermediate progression ---
+including two distinct fabrication failure modes surfaced and closed
+along the way --- in Appendix A.7):
+
+\renewcommand{\arraystretch}{1.15}
+\begin{longtable}{@{}p{0.34\textwidth}p{0.20\textwidth}p{0.12\textwidth}p{0.24\textwidth}@{}}
+\toprule
+\textbf{Condition} & \textbf{Recovery (6 structural contested tasks)} & \textbf{p} &
+\textbf{No-fabrication} \\
+\midrule
+\endhead
+Interface-only, no source (Q2a/Q2b) & 12.5\% (11.1pp of 88.9pp
+available) & 0.50 (n.s.) & n/a --- nothing to fabricate from \\
+Q5/Q6-guarded: scoped source + docstrings + target-grounded prompt (Q6 =
+23-tool blanket application) & 100\% (6/6) & 0.0313 (Q5) / 0.0312 (Q6) &
+PASS, \textbf{0/11 regressions} on already-passing tools (Q6) \\
+\bottomrule
+\end{longtable}
+\renewcommand{\arraystretch}{1}
+
+Two findings compose into the deployment answer. First,
+\textbf{generation from the interface alone cannot recover the T18 gap}:
+two independent interface-only generation strategies (per-tool, Q2a;
+catalog-aware, Q2b) both recover only 12.5\% of the oracle gain (11.1pp
+of 88.9pp available), not significant (p=0.50). The T18-decisive
+distinctions live in tool \emph{behavior} --- absent from both tool
+names and identical parameter schemas --- and no amount of
+interface-level prompting recovers information that is not present in
+the interface. Second, \textbf{source access alone is not automatically
+safe}: whole-file source with docstrings stripped, and per-tool scoped
+source with docstrings present, each open a distinct fabrication failure
+mode (cross-tool symbol misattribution; docstring-body vocabulary gaps,
+respectively). The safe \emph{and} fully recovering configuration ---
+scoped source, docstrings retained, target-grounded prompting that
+forbids comparative neighbor claims (Guard-B) --- was reached only at
+the fourth iteration (Q5), and confirmed to cause zero regressions when
+applied blanket across a 23-tool catalog including three collision-prone
+pairs (Q6).
+
+\hypertarget{strong-agent-survival-frontier-t18}{%
+\subsubsection{4.2.3 Strong-agent survival
+(FRONTIER-T18)}\label{strong-agent-survival-frontier-t18}}
+
+A natural objection to Section 4.2.1 is that the effect might be an
+artifact of gemma2:9b's specific capability level --- a stronger agent
+might resolve the same catalog from names alone. We re-ran the identical
+T18 fixture and oracle descriptions against Llama-3.3-70B (OpenRouter),
+a substantially stronger open-weight agent, using a 3-outcome classifier
+and 3 trials per task. Arm A accuracy was \textbf{59.2\%} (71/120) ---
+comparable headroom to the gemma2:9b run --- and Arm B (oracle) reached
+\textbf{100.0\%} (120/120): an effect of \textbf{+40.8pp} (sign test
+n+=19, n−=0, ties=21, p\textless0.0001; on the stable set excluding 5
+Arm-A trial-flippers, n+=14, n−=0, p\textless0.001). All 19 Arm-A miss
+tasks were fully recovered by the oracle, with no oracle-resistant floor
+in this fixture. The effect does not collapse, and does not shrink,
+moving from a 9B to a 70B agent.
+
+This is a survival claim, not a growth claim, and not a frontier claim:
+Llama-3.3-70B is one strong open model, one data point, not a
+Claude/GPT-class proprietary frontier model, and the +40.8pp figure is
+\textbf{not directly comparable} to T18's +34.5pp --- different harness,
+different classifier host (Section 3.5). The result is
+\textbf{inconsistent with} ``the T18 effect is a gemma2:9b-specific
+capability artifact'' as an explanation; it is one additional data
+point, on a different harness, not a proof that no capability tier would
+show the effect shrink --- and it does not close the question of whether
+a true proprietary frontier model would behave differently.
+
+\hypertarget{where-it-doesnt-help-or-actively-harms}{%
+\subsection{4.3 Where it doesn't help, or actively
+harms}\label{where-it-doesnt-help-or-actively-harms}}
+
+This is not a separate cautionary appendix --- under Framing A it is the
+other half of the same map, and the boundary in Section 4.3 is only
+precise because these non-regimes were tested under the identical
+protocol.
+
+\hypertarget{no-headroom-real-servers-rw1-rw2}{%
+\subsubsection{4.3.1 No-headroom real servers (RW1,
+RW2)}\label{no-headroom-real-servers-rw1-rw2}}
+
+Two production MCP-server mirrors --- GitHub
+(\url{github/github-mcp-server}, 21 tools, 5 confusable families,
+real docstrings) and AWS IAM (\url{awslabs/mcp}, 29 tools, 3
+confusable families, including four-way attach/detach/user/group
+confusability) --- were tested with real, unmodified docstrings. Both
+resolved \textbf{100\%} of tasks correctly, including every
+pre-registered contested task (21/21 for GitHub; 29/29 including 12
+contested for AWS IAM). There is no headroom for a description fixer to
+recover on either server: gemma2:9b resolves these tools from
+task-context wording alone, and the terse, one-sentence docstrings both
+servers already ship are sufficient. The regime identified in Section
+4.2.1--4.2.2 requires headroom that these two real, well-documented
+servers simply do not have.
+
+\hypertarget{harm-on-an-already-resolved-family-p2-a-account_query}{%
+\subsubsection{4.3.2 Harm on an already-resolved family (P2-A
+account\_query)}\label{harm-on-an-already-resolved-family-p2-a-account_query}}
+
+On a 48-tool synthetic internal-proxy catalog built to test whether
+description improvement is uniformly safe across many confusable
+families, one family (\texttt{account\_query}, 5 tools) shows the
+opposite of the T18/Q-series pattern. Under thin descriptions, the
+task's SQL-like WHERE-clause phrasing heuristically matches
+\texttt{query\_accounts} by name: \textbf{100\%} (5/5) correct. Under
+both Guard-B-generated and hand-written oracle descriptions, more
+precise phrasing (``Executes a parameterized SQL-like WHERE clause'')
+introduces disambiguation noise among five semantically related tools,
+and accuracy \textbf{drops to 80\%} (4/5) under both --- a \textbf{−20pp
+harm}, reproducing at the same magnitude under two independent
+generation strategies, ruling out noise as the explanation. Two other
+families on the same catalog (\texttt{ticket\_lifecycle}:
+delete/purge/archive/ expire; \texttt{invoice\_write}:
+update/upsert/patch/replace/amend) stay at 100\% across all three arms
+--- task-context phrasing already signals the dangerous distinction
+(``this cannot be undone''), and better descriptions add no incremental
+safety there either way. The one family that is \emph{fully} recovered
+from a genuine failure (\texttt{order\_read}, 0\%→100\% under both
+Guard-B and oracle) is a low-stakes return-shape disambiguation, not a
+high-stakes one. Aggregate across all 31 contested tasks (A=77.4\%,
+Guard-B=96.8\%, Oracle=93.5\%) is directional but underpowered (sign
+test p=0.07/0.125); the account\_query harm is the reproducible,
+per-family finding, and the aggregate number should not be read as a
+headline recovery rate.
+
+\hypertarget{retrieval-readiness-is-anti-correlated-not-neutral-f2}{%
+\subsubsection{4.3.3 Retrieval-readiness is anti-correlated, not neutral
+(F2)}\label{retrieval-readiness-is-anti-correlated-not-neutral-f2}}
+
+If a catalog is too large to place in-context, tool selection is often
+mediated by a retrieval step (lexical or embedding-based lookup against
+description text) before the agent ever sees a candidate set. Testing
+the same P2-A catalog's descriptions as retrieval documents against 93
+underspecified natural-language queries, across three retriever types:
+
+\renewcommand{\arraystretch}{1.15}
+\begin{table}[h]
+\centering
+\begin{tabular}{@{}lccc@{}}
+\toprule
+\textbf{Arm} & \textbf{BM25 MRR} & \textbf{TF-IDF MRR} & \textbf{Embedding MRR (nomic-embed-text)} \\
+\midrule
+Thin & \textbf{0.304} & \textbf{0.317} & \textbf{0.510} \\
+Guard-B & 0.225 ($-$0.079) & 0.204 ($-$0.113) & 0.286 ($-$0.224) \\
+Oracle & 0.234 & 0.228 & 0.362 \\
+\bottomrule
+\end{tabular}
+\end{table}
+\renewcommand{\arraystretch}{1}
+
+On this catalog, thin descriptions \textbf{outperform} Guard-B and
+oracle descriptions on every retriever tested, with the harm larger
+under semantic embedding retrieval than lexical retrieval. The mechanism
+is legible: compact verb-noun descriptions (``Get the order.'') keyword-
+and semantically-match coarse, intent-level queries (``get an order'')
+directly; precision-optimized descriptions (``Returns order summary
+fields including status, total, item count\ldots{}'') match at the
+implementation level --- exactly the level that helps within-family
+selection disambiguation (Section 4.2.1) and hurts coarse retrieval
+matching here. The property that makes a description good for one
+downstream use (direct selection in a fully-listed catalog) makes it
+worse for another (retrieval against a partial query) on this synthetic
+proxy --- this is the central non-obvious finding connecting Sections
+4.2 and 4.3, tested on one fixture and not yet checked against a real
+server's retrieval behavior (§8.1).
+
+\hypertarget{single-score-judging-cannot-localize-which-pairs-are-confusable}{%
+\subsubsection{4.3.4 Single-score judging cannot localize which pairs
+are
+confusable}\label{single-score-judging-cannot-localize-which-pairs-are-confusable}}
+
+Both real-server mirrors were also scored with AgentGauge's existing
+\texttt{discoverability} judge, whose sub-score returns a single number
+per catalog. On GitHub, the score is flat at \textasciitilde70/100
+across every family, and does not flag either of the two families
+GitHub's own maintainers consolidated to reduce confusion (0/2 overlap).
+On AWS IAM, the score is flat at \textasciitilde68.7/100, and does not
+flag any of the three contested families (0/3 overlap); the accompanying
+name-collision heuristic instead flags verb-antonym pairs
+(\url{attach_user_policy}/\url{detach_user_policy}) that
+caused zero real confusion. A single number per catalog is structurally
+incapable of naming \emph{which} pair is the problem --- this is the
+motivating gap for the localizer tested in Section 6, not a calibration
+issue that more judge tuning would fix.
+
+\hypertarget{description-quality-is-multi-objective}{%
+\subsection{4.4 Description quality is
+multi-objective}\label{description-quality-is-multi-objective}}
+
+This is the paper's central synthesis, previewed in the Introduction and
+Abstract: the same behavioral-axis precision that helps within-family
+selection is not one general ``better'' direction for description
+quality --- on the fixtures tested here, it is orthogonal or actively
+harmful to other things a description interacts with (what a
+context-rich agent needs; what retrieval rewards). Every hedge below is
+load-bearing, not decorative: each line names exactly which fixture the
+claim is scoped to.
+
+\begin{verbatim}
+Description precision HELPS within-family discrimination when (each tested at
+one fixture/point, not a swept curve):
+ - Catalog density is at least as high as the one positive point tested
+   (60 tools / 10 families) -- untested, not confirmed-absent, at the one
+   lower point tried (16 tools / 8 clusters, no headroom to test), AND
+ - Source access includes docstrings (safe generation requires this;
+   body-only source opens a fabrication vector), AND
+ - Arm A shows real headroom (the agent is not already resolving from
+   task-context wording).
+
+The same precision is ORTHOGONAL or ANTI-CORRELATED to, on the fixtures tested:
+ - what context-rich agents need (RW1, RW2, and P2-A's high-stakes
+   families all resolve at 100% from context alone, regardless of
+   description quality),
+ - what retrieval rewards on one synthetic catalog (F2: harm across all
+   three retriever types tested there), and
+ - what a single-score judge can report (localization requires a
+   pairwise comparison, tested next in Section 6).
+\end{verbatim}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\hypertarget{exp-1-server-population-prevalence}{%
+\section{5. EXP-1 --- Server-Population
+Prevalence}\label{exp-1-server-population-prevalence}}
+
+\hypertarget{question-and-regime-definition}{%
+\subsection{5.1 Question and regime
+definition}\label{question-and-regime-definition}}
+
+Section 4 establishes \emph{where} the effect exists; it does not
+establish \emph{how common} that regime is among real MCP servers. We
+define ``in-regime'' behaviorally, not by any static description-quality
+property (which would be circular): a confusable family on a server is
+in-regime iff, under the frozen protocol, (a) the server's real shipped
+descriptions fail at least one contested task, \textbf{and} (b) an
+oracle description recovers it. ``Thin descriptions'' is an input
+property; only behavior the fix actually repairs counts as in-regime.
+
+\textbf{This is the general behavioral construct, not a re-test of
+Section 4.2.1's specific density point.} None of the ten sampled servers
+were selected or verified to actually reach the 60-tool/10-family
+density where T18 found an effect (most have far fewer tools; the one
+large-catalog server sampled, at 116 tools, failed for an unrelated
+reason --- catalog overwhelm, malformed output under a large listing,
+not confident wrong-tool selection --- and contributes no evidence
+either way about the density regime specifically). What EXP-1 measures
+is the prevalence of the general two-condition behavioral regime across
+whatever confusable families each server happens to have, at whatever
+scale it happens to be built at --- a broader and different question
+than ``how many real servers are built at T18's specific tested
+density.''
+
+\hypertarget{sampling-frame}{%
+\subsection{5.2 Sampling frame}\label{sampling-frame}}
+
+The pre-registered, ratified frame is \textbf{N=10, Python-only,
+doc-density-stratified}, sourced from public GitHub; 11 non-Python
+servers were dropped because the generic regex fallback extractor used
+for non-Python source proved unreliable on them (full revision history
+in Appendix A.6). This is a narrower claim than ``public MCP servers''
+--- it is ``Python MCP servers on GitHub, N=10 pilot'' --- stated as
+such everywhere this number appears in this paper.
+
+\hypertarget{result}{%
+\subsection{5.3 Result}\label{result}}
+
+\begingroup
+\footnotesize
+\renewcommand{\arraystretch}{1.2}
+\begin{longtable}{@{}p{0.20\textwidth}p{0.10\textwidth}p{0.13\textwidth}p{0.13\textwidth}p{0.07\textwidth}p{0.27\textwidth}@{}}
+\toprule
+\textbf{Server} & \textbf{Tier} & \textbf{Arm A} & \textbf{Arm B (oracle)} & \textbf{Effect} & \textbf{Verdict} \\
+\midrule
+\endhead
+github-mcp (RW1, anchor) & anchor & 100\% (21/21) & --- & n/a &
+OUT-OF-REGIME \\
+aws-iam-mcp (RW2, anchor) & anchor & 100\% (29/29 incl.\ 12 contested) &
+--- & n/a & OUT-OF-REGIME \\
+lucasastorian-llmwiki & near\_empty & 100\% & --- & n/a &
+OUT-OF-REGIME \\
+stefanoamorelli-sec-edgar-mcp & thin & 100\% & --- & n/a &
+OUT-OF-REGIME \\
+stickerdaniel-linkedin-mcp-server & thin & 100\% & --- & n/a &
+OUT-OF-REGIME \\
+mrexodia-ida-pro-mcp & near\_empty & 90\% & --- & n/a & OUT-OF-REGIME
+(above headroom ceiling) \\
+AminForou-mcp-gsc & well\_documented & 75\% & 75\% & +0pp &
+OUT-OF-REGIME (real functional overlap; no description fixes it) \\
+taylorwilsdon-google\_workspace\_mcp & thin & 0\% & 0\% & +0pp &
+OUT-OF-REGIME (catalog-overwhelm failure mode, not confusability) \\
+datalayer-jupyter-mcp-server & near\_empty & 70\% & 55\% &
+\textbf{$-$15pp} & OUT-OF-REGIME (HARM --- replicates the P2-A
+account\_query pattern on a fresh real server) \\
+Dataojitori / blazickjp-arxiv / LycheeMem & well\_documented & --- & ---
+& --- & no testable confusable family (3 servers) \\
+\bottomrule
+\end{longtable}
+\endgroup
+
+\textbf{Headline: 0 of 9 servers with a testable confusable family show
+in-regime behavior} (7 freshly scored + 2 RW1/RW2 anchors cited from
+Section 4.3.1). Per fresh-only tier: well\_documented 0/1 testable, thin
+0/3, near\_empty 0/3 --- a clean null across every tier of this pilot.
+Three of the ten servers had no genuinely confusable family at all
+(mechanical clustering found none, or the one candidate was rejected on
+manual review as not genuinely confusable).
+
+\hypertarget{the-seed-bug-episode}{%
+\subsection{5.4 The seed-bug episode}\label{the-seed-bug-episode}}
+
+A first trial run passed a single fixed seed (\texttt{seed=42}) to every
+one of five nominal repeated trials per task, instead of the codebase's
+established \texttt{seed=42+trial\_idx} convention --- meaning the first
+run sampled zero real trial-to-trial variance. That run reported two
+servers as in-regime (\texttt{mrexodia-ida-pro-mcp} +50pp;
+\texttt{datalayer-jupyter-mcp-server} +25pp). Fixing the seed and
+re-running \textbf{reversed both findings}: ida-pro's real Arm A
+accuracy is 90\% (correctly aborts, no headroom), and jupyter's Arm B is
+a genuine harm (−15pp, not a +25pp recovery). Both apparent in-regime
+results were seed artifacts, caught before being reported as findings
+--- a credibility asset for the pipeline's own error-detection, reported
+here as such.
+
+This asset has a mirror-image limitation that is \emph{more} important
+than the credit above, and is given its own standalone treatment, not
+folded into this paragraph: \textbf{the note opening §8} states why a bug that
+suppressed a real in-regime signal, rather than manufacturing a false
+one, would not have been caught the same way.
+
+\hypertarget{scope}{%
+\subsection{5.5 Scope}\label{scope}}
+
+Public servers skew documented relative to the internal/custom long
+tail; this prevalence figure is a \textbf{lower bound} on how common the
+regime is, not a closed population estimate. We do not claim the regime
+``does not occur'' --- we claim it is rare in this sampled population of
+public, source-available Python MCP servers as of the frame's fixed
+date, and that the under-documented internal segment this bounds is, by
+construction, unsampleable from public data.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\hypertarget{exp-3-confusability-localization}{%
+\section{6. EXP-3 --- Confusability
+Localization}\label{exp-3-confusability-localization}}
+
+\hypertarget{motivation}{%
+\subsection{6.1 Motivation}\label{motivation}}
+
+Section 4.3.4 established that the existing single-score
+\texttt{discoverability} judge cannot say \emph{which} tool pair in a
+catalog is confusable --- a structural limit of returning one number per
+catalog. If the regime Section 4 characterizes is to be found cheaply,
+before running the full behavioral protocol against every server, a
+localizer is needed that outputs a per-pair signal. This section builds
+and tests the natural next attempt: ask the same frozen judge a pairwise
+question directly.
+
+\hypertarget{method}{%
+\subsection{6.2 Method}\label{method}}
+
+For each candidate tool pair (A, B), one judge call
+(\texttt{llama3.1:8b}, frozen) asks whether a task intended for A could
+plausibly select B instead, and vice versa. Ground truth is a
+pre-registered, 24-pair fixture (4 CONFUSED / 20 NOT\_CONFUSED) built
+entirely from already-collected behavioral trial data --- 6 fresh
+servers from Section 5's EXP-1 scoring (14 pairs), plus \textbf{10}
+pairs from the RW1/RW2 anchors (5 GitHub + 5 AWS IAM), including several
+pairs the \emph{old} Levenshtein-based heuristic had already
+false-positived (a deliberately adversarial inclusion). 3 trials per
+pair (seed 42+trial\_idx), majority vote. The pre-committed bar for ``a
+real positive method'': precision $\geq$ 0.50 \textbf{and} recall $\geq$ 0.50.
+
+\hypertarget{binary-result}{%
+\subsection{6.3 Binary result}\label{binary-result}}
+
+Confusion matrix: TP=4, FP=20, FN=0, TN=0. \textbf{Precision = 0.167,
+recall = 1.00} --- recall clears the bar; precision does not. All
+\textbf{24 of 24} pairs were verdicted CONFUSABLE, including all
+\textbf{ten} sampled pairs from the two 100\%-accuracy anchor servers
+(GitHub, AWS IAM) and both pairs where the old heuristic already
+false-positived. The judge catches every real behavioral confusion
+(perfect recall) by flagging almost everything --- a direct yes/no
+confusability question elicits a near-uniform ``yes'' from this judge on
+this fixture, not a discriminating per-pair signal.
+
+\hypertarget{graded-confidence-retry}{%
+\subsection{6.4 Graded-confidence retry}\label{graded-confidence-retry}}
+
+One further, pre-registered, time-boxed retry (ratified before running,
+per the ``is this a framing artifact'' question) replaced the binary
+question with a 0--10 confidence score, using the same aggregation and
+ground truth, threshold $\geq$5.0 (scale midpoint, fixed before any result
+was seen). Result: \textbf{every one of the 24 pairs'} mean score landed
+in a \textbf{5.00--5.67 band} --- identical confusion matrix to the
+binary run (precision 0.167, recall 1.00). This is a \emph{different}
+degenerate failure mode from the binary run's uniform-yes: rather than
+defaulting to one categorical answer, the judge anchors near the numeric
+midpoint of its own scoring guide regardless of input --- genuinely
+confused pairs and 100\%-resolved anchor pairs score in the same narrow
+band.
+
+\hypertarget{conclusion}{%
+\subsection{6.5 Conclusion}\label{conclusion}}
+
+The negative is robust to framing, not an artifact of question phrasing:
+two structurally different question formats (categorical yes/no; graded
+0--10 confidence) produce the same confusion matrix via two different
+degeneracy mechanisms. \textbf{Pairwise judging, binary or graded, with
+this frozen judge, is not a usable per-pair confusability signal on this
+fixture.} Per pre-registration, this is a hard stop --- no third variant
+was attempted. We note the scope of what this rules out: the experiment
+validates the \emph{judging} step only, given a candidate pair; it does
+not test an automatic candidate-\emph{generation} mechanism (which pairs
+to even consider from a full catalog), and two of the four real
+confusions in the ground truth cross mechanical name-prefix family
+boundaries that a family-scoped candidate generator would not have
+proposed in the first place.
+
+\textbf{This is itself a boundary finding, not a second defeat stacked
+on Section 4's negatives.} Section 4 established that the helps-regime
+is real and characterizable at the catalog level (density, source
+access, headroom). This section establishes a further, independent
+boundary: even where the regime is real, it is not currently
+\emph{findable} below the cost of running the full behavioral protocol,
+using the one localization approach natural to try with an existing
+frozen judge. That is new information the map did not have before this
+experiment --- it narrows where a cheap pre-deployment check can
+substitute for the protocol, which is a distinct question from whether
+the regime itself exists.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\hypertarget{discussion}{%
+\section{7. Discussion}\label{discussion}}
+
+\hypertarget{synthesis}{%
+\subsection{7.1 Synthesis}\label{synthesis}}
+
+Read together, Sections 4--6 answer the paper's title question precisely
+rather than broadly. Tool-description quality \emph{does} change agent
+selection behavior --- but the evidence for this comes from separate
+findings that compose, not one single joint condition: an oracle-effect
+that appears at one tested high-density point and is untested (not
+disproven) at a lower one (§4.2.1), a generation-safety condition that
+requires documented source (§4.2.2), and a prevalence measurement ---
+using the general behavioral regime construct, not a re-test of the
+density point specifically --- that a pre-registered pilot sample of
+real public Python servers places at 0 of 9 tested (Section 5).
+Separately, even where the regime does occur, it has not been shown
+findable cheaply: a pairwise LLM-judge localizer fails to identify which
+specific tool pairs are confusable on a new, unscored server (Section
+6). Outside the helps-conditions, the same intervention that helps
+direct selection in the tested fixtures can be neutral, harmful to
+selection on at least one already-resolved family, or harmful to
+retrieval on the one synthetic catalog tested --- three
+independently-measured non-regimes, not one, and not (yet) shown to
+generalize beyond the fixtures each was measured on.
+
+\hypertarget{a-diagnostic-practitioners-can-use-today-the-two-condition-regime-test}{%
+\subsection{7.2 A diagnostic practitioners can use today: the
+Two-Condition Regime
+Test}\label{a-diagnostic-practitioners-can-use-today-the-two-condition-regime-test}}
+
+Section 5.1's regime definition is not only an analysis tool for this
+paper --- the same two-step procedure is directly usable, unchanged, as
+a pre-investment check on a given MCP server:
+
+\begin{quote}
+\textbf{The Two-Condition Regime Test}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \textbf{Fail} --- Does the agent fail at least one contested task
+  under the server's real, currently-shipped descriptions?
+\item
+  \textbf{Recover} --- If it fails, does a hand-written, ground-truth
+  (oracle) description recover it?
+\end{enumerate}
+
+\begin{itemize}
+\item
+  (1) is NO $\rightarrow$ the agent already resolves the task from context;
+  description tooling has nothing to fix here.
+\item
+  (1) is YES but (2) is also NO $\rightarrow$ the failure is not description-shaped
+  (e.g., genuine functional overlap between tools, or a
+  catalog-overwhelm failure mode); description tooling will not help
+  either.
+\item
+  (1) and (2) are both YES $\rightarrow$ this server's family is inside the regime
+  this paper's Section 4.2 findings speak to.
+\end{itemize}
+\end{quote}
+
+This is exactly the check used to produce every OUT-OF-REGIME/IN-REGIME
+verdict in Section 5's table --- the check \emph{this paper used}, not a
+separately validated general instrument. It has been exercised on ten
+Python MCP servers plus two anchors (Section 5); nothing about the
+check's own reliability has been tested on a larger or non-Python
+population, and naming it is meant to make it adoptable, not to claim it
+has been validated beyond what this pilot supports. Applying it does not
+require re-running this paper's full protocol at T18 scale --- steps (1)
+and (2) are exactly the frozen-protocol headroom gate and oracle A/B
+(§3), run at whatever scale the server in question actually has.
+
+The practical implication for MCP server authors and tool-catalog
+builders is not ``descriptions don't matter'' --- it is ``check whether
+you are in the regime before investing in description tooling,'' where
+``the regime'' is checked behaviorally via the test above, rather than
+assumed from catalog size alone. A server whose agent already resolves
+tasks from context gains nothing from more precise descriptions and
+risks the account\_query-style harm pattern (Section 4.3.2) if it
+applies them blanket. A server that \emph{is} in the regime should
+generate descriptions from documented source with a target-grounded,
+non-comparative prompt (Section 4.2.2's Q5/Q6 configuration), not from
+the interface alone.
+
+\hypertarget{what-would-change-this-picture}{%
+\subsection{7.3 What would change this
+picture}\label{what-would-change-this-picture}}
+
+A larger or non-Python-verified EXP-1 sample (Section 5.5); a true
+proprietary-frontier-model replication of Section 4.2.3; or a localizer
+signal that does not route through this frozen judge's pairwise-question
+failure mode (Section 6.5) --- for example, a signal derived from
+name-embedding distance plus schema overlap rather than an LLM judgment
+call.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\hypertarget{threats-to-validity-limitations}{%
+\section{8. Threats to Validity /
+Limitations}\label{threats-to-validity-limitations}}
+
+Full list: \url{docs/paper/threats_to_validity.md}. Summarized here
+by category; every item there traces to a specific finding already
+reported in Sections 4--6, not a hedge added at write-up time.
+\textbf{The note opening §8 is read first} --- it is the single most important threat
+to a paper whose headline results are nulls, and it is stated
+standalone, not as a clause inside another paragraph.
+
+\hypertarget{the-false-negative-asymmetry-read-this-one-first}{%
+\subsection{The false-negative asymmetry (read this one
+first)}\label{the-false-negative-asymmetry-read-this-one-first}}
+
+\textbf{This paper's positive findings were caught being wrong; its
+negative findings have no analogous check.} Section 5.4 reports two
+false positives from a seed-configuration bug, caught and reversed
+before publication \emph{because} they were surprising enough to trigger
+a recheck (a server unexpectedly showing in-regime behavior got a second
+look). A bug that instead silently \emph{suppressed} a real in-regime
+signal --- turning a true positive into a false null --- would produce a
+result indistinguishable from a correctly-measured null: ``this server
+is not in-regime'' looks the same whether it's true or an artifact, and
+nothing about a null result prompts the same ``that's surprising, let's
+recheck'' response that caught the two false positives. This asymmetry
+means EXP-1's 0-of-9 headline, and EXP-3's localizer-fails headline,
+carry a category of risk that this paper's own error-detection track
+record does not bound. We have not found evidence of such a bug; we also
+have no mechanism that would necessarily surface one, which is precisely
+the point. Any reader treating EXP-1 or EXP-3's null as more secure than
+``we looked and did not find a positive, using a pipeline whose
+false-positive-catching capacity is demonstrated and whose
+false-negative-catching capacity is not'' should recalibrate against
+this paragraph specifically.
+
+\hypertarget{sampling-generalizability}{%
+\subsection{8.1 Sampling /
+generalizability}\label{sampling-generalizability}}
+
+N=10, Python-only, public-GitHub pilot. The strength claimed is
+\emph{convergence} --- the EXP-1 null, the RW1/RW2 anchors, the P2-A
+account\_query harm, and the doc-density-rarity pattern across tiers all
+point the same direction independently --- not N=10 in isolation.
+Non-Python mechanical extraction was dropped as a capability limit of
+the method, not a data-availability inconvenience. Tier labels
+(well\_documented/thin/near\_empty) are relative ranks within the
+sampled pool, not absolute bands.
+
+\hypertarget{agent-model-scope}{%
+\subsection{8.2 Agent / model scope}\label{agent-model-scope}}
+
+One default agent (gemma2:9b) across the regime map, Q-series, RW1/RW2,
+and P2-A. The controlled capability ladder that would test
+agent-capability sensitivity directly (EXP-2) was dropped from this
+paper's scope --- ratified, justified by the regime already being
+uncommon in the sampled population (a ladder over a rare regime has
+limited external relevance). FRONTIER-T18 is one model, one data point,
+not apples-to-apples with the gemma2:9b harness, and not a
+proprietary-frontier-model result.
+
+\hypertarget{measurement-judge-validity}{%
+\subsection{8.3 Measurement / judge
+validity}\label{measurement-judge-validity}}
+
+Two seed-bug false positives were caught and reversed before reporting
+(Section 5.4; asymmetry discussed prominently in §8's opening note, not here).
+EXP-3's negative is robust across two framings, not a single-question
+artifact, but validates the judging step only, not candidate-pair
+generation. Trial counts deviate from the 5-per-arm default for
+FRONTIER-T18 and EXP-3 (3 each), independently pre-registered and
+justified.
+
+\hypertarget{harm-asymmetric-risk}{%
+\subsection{8.4 Harm / asymmetric risk}\label{harm-asymmetric-risk}}
+
+Blanket description-fixing is not universally safe: P2-A's
+account\_query family shows reproducible −20pp harm under two
+independent generation strategies. Do-no-harm testing (Q6) covers only
+the case where honest descriptions remain semantically distinct across
+sibling tools; total description collapse to identical phrasing is
+explicitly untested.
+
+\hypertarget{reproducibility-artifact-note}{%
+\subsection{8.5 Reproducibility-artifact
+note}\label{reproducibility-artifact-note}}
+
+The FRONTIER-T18 result (Section 4.2.3) required, during this paper's
+preparation, recovering a raw result file that existed only as a
+gitignored local artifact and independently re-deriving its numbers
+before committing it as a hashed fixture (Section 9.2). This is now
+resolved for the reported number; the harness code that produced it
+remains in an unmerged branch (Section 9.2).
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\hypertarget{reproducibility-artifact}{%
+\section{9. Reproducibility Artifact}\label{reproducibility-artifact}}
+
+\hypertarget{claim}{%
+\subsection{9.1 Claim}\label{claim}}
+
+Every figure in Sections 4--6 traces to a committed file on this
+paper-writing branch, verified against a specific commit reachable from
+\texttt{HEAD} (full trace: \url{docs/paper/evidence_table.md}). Most
+fixture files carry SHA-256{[}:12{]} hashes recorded at pre-registration
+time, before their experiment's results were known (protocol appendix:
+\url{docs/research/frozen_protocol.md}). \textbf{The FRONTIER-T18
+fixtures are the stated exception} --- see §9.2 immediately below: their
+hashes were computed post-hoc, during this paper's preparation, not at
+pre-registration time, because the original pre-registered artifact had
+to be recovered from a gitignored local file rather than read from a
+tracked one.
+
+\hypertarget{frontier-t18-datacode-split-state-plainly-not-silently}{%
+\subsection{9.2 FRONTIER-T18 data/code split (state plainly, not
+silently)}\label{frontier-t18-datacode-split-state-plainly-not-silently}}
+
+The result data underlying Section 4.2.3 is committed and independently
+re-derivable from this branch:
+\url{evals/fixtures/frontier_t18_step2_result.json} (per-task,
+sha256{[}:12{]}=\texttt{3ca4a25dbd25}) and
+\url{evals/fixtures/frontier_t18_step2_raw_calls.json} (all 240
+raw per-call LLM responses, sha256{[}:12{]}=\texttt{93fb0d77262d}) ---
+re-counting \texttt{SELECTED-CORRECT} directly from the raw calls
+reproduces 71/120 (Arm A) and 120/120 (Arm B) exactly. The
+\textbf{harness code} that produced these files
+(\url{agentgauge/frontier.py},
+\url{scripts/run_frontier_t18.py}) still lives only in an unmerged
+branch (\url{claude/frontier-t18}, open draft PR \#50) --- a
+from-scratch re-run of this experiment requires merging that code first,
+even though the reported number is verifiable from committed data today.
+This split --- data committed, harness code pending merge --- should be
+resolved (by merging PR \#50) before final submission if a fully
+push-button re-run is required by a venue.
+
+\hypertarget{governance-1}{%
+\subsection{9.3 Governance}\label{governance-1}}
+
+All research-program branches route through draft, human-reviewed PRs;
+any change touching the judge, scorer, rubric, or calibration constants
+is escalated before merge (Section 3.1). No PR in this research program
+has auto-merge; a human merges every one.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\hypertarget{conclusion-1}{%
+\section{10. Conclusion}\label{conclusion-1}}
+
+Tool-description quality changes agent tool-selection behavior in a
+real, measurable, and mechanistically legible way --- but only inside a
+narrow, checkable set of conditions: a catalog at least as dense as the
+one point where an effect was tested and found (60 tools / 10 families;
+untested, not disproven, at a lower point tried), and generation with
+access to documented source. That effect does not collapse under a
+substantial capability increase in the one additional agent tested
+(Section 4.2.3) --- a finding \emph{inconsistent with} ``this is a
+gemma2:9b-specific capability artifact,'' though one data point on a
+different harness does not prove the effect is capability-independent in
+general. Outside these conditions: the same general behavioral regime
+construct (not a re-test of the density point specifically) appears in 0
+of 9 servers with a testable confusable family in a pre-registered pilot
+sample of real, public, documented Python MCP servers (Section 5); the
+same kind of intervention harms selection on at least one
+already-resolved family tested, while two other already-resolved
+families in the same experiment show no harm (Section 4.3.2); it harms
+retrieval across every retriever type tested on the one synthetic
+catalog used for that test (Section 4.3.3); and the regime cannot
+currently be located cheaply by asking an LLM judge pairwise whether two
+tools are confusable (Section 6) --- itself a boundary finding, not a
+second defeat (§6.5). One threat bounds all of these null and boundary
+claims at once and is not a footnote: a bug that silently suppressed a
+real in-regime signal would look identical to a correctly-measured null,
+and this paper's demonstrated error-detection catches false positives,
+not false negatives (§8, opening note). With that caveat stated plainly, the
+field's assumption that description-quality improvement is a broadly
+beneficial, low-risk lever reads, on this evidence, as over-general
+rather than wrong: this paper's contribution is a first pass at the
+boundary that makes ``broadly'' precise enough to check and re-test.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\hypertarget{appendix}{%
+\section{Appendix}\label{appendix}}
+
+\begin{itemize}
+\item
+  \textbf{A.1} Full cross-experiment regime table:
+  \url{docs/research/exp4_regime_map.md} §Cross-Experiment Regime
+  Table.
+\item
+  \textbf{A.2} Frozen judge/generator prompts (Guard-B target-grounded
+  prompt; pairwise binary/graded confusability prompts):
+  \url{agentgauge/fixer.py}
+  (\url{_DESC_GENERATOR_GUARD_B_PROMPT}),
+  \url{docs/research/exp3_pre_registration.md} §2, §7.
+\item
+  \textbf{A.3} Fixture hash manifest: generate per
+  \url{docs/research/frozen_protocol.md} Appendix; the two
+  FRONTIER-T18 hashes added this session are recorded in Section 9.2
+  above and in \url{docs/paper/evidence_table.md} §1.3.
+\item
+  \textbf{A.4} Per-server EXP-1 table: Section 5.3 above (reproduced
+  from \texttt{STATUS.md} EXP-1 section).
+\item
+  \textbf{A.5} Bibliography --- every citation below was independently
+  fetched and checked against its claimed content this session (title,
+  authors, and the specific figure/quote cited all confirmed against the
+  primary source, not copied from a prior internal desk-research doc
+  without re-verification). None were invented; where a candidate
+  citation from prior internal research
+  (\url{reports/frontier_phase1_research.md}, itself
+  gitignored/uncommitted and self-flagged as ``arXiv IDs not
+  independently re-resolved'') could not be verified to support its
+  claimed content, it was dropped rather than included on trust --- see
+  the exclusions list below.
+
+  \textbf{Cited in this paper:}
+
+  \begin{enumerate}
+  \def\labelenumi{\arabic{enumi}.}
+  \tightlist
+  \item
+    Anthropic Engineering, ``Writing tools for agents'' (publication
+    date not independently confirmed this session --- content verified,
+    date not).
+    \url{https://www.anthropic.com/engineering/writing-tools-for-agents}
+    --- verified: contains the quoted claim that small tool-description
+    refinements yielded SOTA SWE-bench Verified results for Claude
+    Sonnet 3.5. \nocite{anthropic2026tools}
+  \item
+    GitHub Engineering, ``Measuring what matters: how offline evaluation
+    of GitHub MCP Server works'' (publication date not independently
+    confirmed this session --- content verified, date not).
+    \url{https://github.blog/ai-and-ml/generative-ai/measuring-what-matters-how-offline-evaluation-of-github-mcp-server-works/}
+    --- verified: contains the quoted claim that small description edits
+    ``shift results a lot.'' \textbf{Second-pass audit note:} this is a
+    claim about the \emph{same} GitHub MCP server mirrored in RW1
+    (§4.3.1), which found zero headroom for gemma2:9b on that server.
+    The tension is flagged explicitly in §1.1 body text, not silently
+    juxtaposed; not resolved (harness/model/metric details of GitHub's
+    own eval were not verified this session). \nocite{github2026measuring}
+  \item
+    Hasan, M. M., Li, H., Rajbahadur, G. K., Adams, B., and Hassan, A.
+    E., ``Model Context Protocol (MCP) Tool Descriptions Are Smelly!
+    Towards Improving AI Agent Efficiency with Augmented MCP Tool
+    Descriptions,'' arXiv:2602.14878, 2026. Verified via
+    \url{arxiv.org/abs/2602.14878} --- 856 tools / 103 servers,
+    97.1\% $\geq$1 ``smell,'' 56\% unclear purpose, +5.85pp median
+    task-success gain from augmentation, 16.67\% regression rate,
+    +67.46\% execution-step inflation, all confirmed against the
+    abstract. \nocite{hasan2026smelly}
+  \item
+    Lu, X., Huang, H., Meng, R., Jin, Y., Zeng, W., and Shen, X.,
+    ``Tools are under-documented: Simple Document Expansion Boosts Tool
+    Retrieval'' (Tool-DE), arXiv:2510.22670, 2025 (arXiv ID year prefix
+    ``25'' = 2025 --- corrected in second-pass audit; originally
+    mislabeled 2026). Verified via \url{arxiv.org/abs/2510.22670} ---
+    Tool-Embed/Tool-Rank, SOTA retrieval gains from LLM-driven document
+    expansion, confirmed against the abstract. \nocite{lu2025toolde}
+  \item
+    Shi, Z., Wang, Y., Yan, L., Ren, P., Wang, S., Yin, D., and Ren, Z.,
+    ``Retrieval Models Aren't Tool-Savvy: Benchmarking Tool Retrieval
+    for Large Language Models'' (ToolRet), ACL 2025 Findings
+    (\url{aclanthology.org/2025.findings-acl.1258}) /
+    arXiv:2503.01763. Verified via web search cross-referencing the ACL
+    Anthology and arXiv listings --- 7.6k tasks / 43k tools, best model
+    (NV-embed-v1) 33.83 nDCG@10, both figures confirmed. \nocite{shi2025toolret}
+  \item
+    Yu, P., Liu, W., Yang, Y., Li, J., Zhang, Z., Feng, X., and Zhang,
+    F., ``Benchmarking LLM Tool-Use in the Wild'' (WildToolBench),
+    arXiv:2604.06185, 2026. Verified via
+    \url{arxiv.org/abs/2604.06185v1} --- confirmed: ``no model
+    achieves an accuracy of more than 15\%'' across 57 evaluated LLMs.
+    \textbf{Not cited: a specific ``Grok-4 24.07\% wrong-name error''
+    figure} from the prior internal desk-research doc --- this could not
+    be confirmed from the abstract and full-text confirmation was not
+    obtained; excluded rather than asserted on trust. \nocite{yu2026wildtool}
+  \item
+    Babu, R. S., and Iyer, L. G., ``ToolChoiceConfusion: Causal Minimal
+    Tool Filtering for Reliable LLM Agents,'' arXiv:2606.06284, 2026.
+    Verified via \url{arxiv.org/abs/2606.06284v1} --- confirmed:
+    Causal Minimal Tool Filtering (CMTF), 102 tasks / 100 tools / four
+    LLM backends, reliability-vs-tool-menu-size problem statement.
+    \textbf{Not cited: the prior internal doc's characterization of this
+    paper's evaluation as ``fully synthetic'' with an explicit
+    disclaimer of ``no empirical measurement of how frequently this
+    confusion regime occurs in practice''} --- this specific
+    framing/quote could not be confirmed from the fetched abstract;
+    excluded rather than asserted on trust. \nocite{babu2026toolchoice}
+  \item
+    GitHub issue, ``Duplicate tool names across MCP servers cause
+    errors,'' \url{github.com/openai/openai-agents-python#464}
+    (closed). Verified via \texttt{gh\ api} --- title and closed state
+    confirmed. \nocite{openai2024issue464}
+  \item
+    GitHub issue, ``Feedback for dynamic tool selection,''
+    \url{github.com/github/github-mcp-server#275} (closed). Verified
+    via \texttt{gh\ api} --- title and closed state confirmed;
+    referenced only in this appendix as supporting context, not cited in
+    body prose in this draft. \nocite{github2024issue275}
+  \end{enumerate}
+
+  \textbf{Checked and excluded (candidate citations from prior internal
+  desk research that did NOT verify --- listed so the exclusion is
+  visible, not silent):}
+
+  \begin{itemize}
+  \tightlist
+  \item
+    ``arXiv:2603.20313, retrieval quality fundamentally bounded by the
+    informativeness of tool descriptions'' --- fetched; the paper at
+    this ID (``Semantic Tool Discovery for Large Language Models: A
+    Vector-Based Approach to MCP Tool Selection'') does not support this
+    claim per its abstract. Not used anywhere in this paper.
+  \item
+    Any secondary-source selection-accuracy-vs-tool-count percentages
+    (e.g., ``\textgreater90\% at 5-7 tools → \textasciitilde13\% at 100+
+    tools'') from \url{docs/research/phase1-buyer-and-landscape.md}
+    --- that document's own ``Confidence \& gaps'' section already flags
+    these as ``secondary-source paraphrase, not verified against a
+    primary benchmark.'' Not used in this paper for the same reason its
+    original author already gave.
+  \end{itemize}
+\item
+  \textbf{A.6} EXP-1 sampling-frame revision history (moved here from
+  §5.2 body per GG's compression request --- the finding that survives
+  in §5.2 is unaffected; this is provenance, not evidence). The
+  pre-registered frame was rebuilt five times over the course of the
+  experiment, each rebuild escalated and ratified before proceeding,
+  never silently:
+
+  \begin{itemize}
+  \tightlist
+  \item
+    \textbf{v1} --- star-stratified GitHub-topic pool.
+  \item
+    \textbf{v2} --- doc-density-stratified, N=23.
+  \item
+    \textbf{v3--v4} --- three, then a fourth, confirmed
+    Python-AST-extractor bug found and fixed while preparing the trial
+    batch.
+  \item
+    \textbf{v5 (final, ratified)} --- a systematic audit found that the
+    generic regex fallback used for every non-Python server pulls in
+    systemic noise (template literals, parameter names, category labels,
+    unrelated example data) --- a capability limit of blind
+    text-proximity matching, not a fixable parsing bug. All 11
+    non-Python servers were dropped, yielding the final N=10,
+    Python-only frame reported in §5.2. Full commit-level trail:
+    \texttt{STATUS.md} EXP-1 section, ``Frame history'' paragraph;
+    ratification commit \texttt{538affe};
+    \url{docs/paper/evidence_table.md} §2.
+  \end{itemize}
+\item
+  \textbf{A.7} Full Q3→Q6 source-aware generation progression (moved
+  here from §4.2.2 body per GG's compression request --- both prose
+  findings in §4.2.2 are unaffected; this is intermediate detail, not a
+  third finding). The two-row table in §4.2.2 shows only the endpoints
+  (interface-only failure; Q5/Q6 safe-and-recovering). The full
+  four-stage progression, showing \emph{how} Q5/Q6 was reached and the
+  two distinct fabrication failure modes it closes:
+
+  \renewcommand{\arraystretch}{1.15}
+  \begin{longtable}{@{}p{0.30\linewidth}p{0.19\linewidth}p{0.11\linewidth}p{0.26\linewidth}@{}}
+  \toprule
+  \textbf{Condition} & \textbf{Recovery (6 structural contested tasks)} & \textbf{p} &
+  \textbf{No-fabrication} \\
+  \midrule
+  \endhead
+  Q3 F-DOC (whole-file source + docstrings) & 83.3\% (5/6) & 0.0625
+  (marginal) & PASS \\
+  Q3 F-BODY (whole-file, docstrings stripped) & 83.3\% (invalidated) &
+  --- & \textbf{FAIL} --- cross-tool source misattribution \\
+  Q4-DOC-scoped (per-tool source + docstrings) & 100\% (6/6) & 0.0313 &
+  \textbf{FAIL} --- docstring-body vocabulary gap \\
+  Q4-BODY-scoped & 100\% (6/6) & 0.0313 & PASS \\
+  Q5-guarded (per-tool source + docstrings + target-grounded prompt) &
+  100\% (6/6) & 0.0313 & PASS \\
+  Q6-guarded (23-tool blanket application) & 100\% (6/6) & 0.0312 &
+  PASS, \textbf{0/11 regressions} on already-passing tools \\
+  \bottomrule
+  \end{longtable}
+  \renewcommand{\arraystretch}{1}
+
+  Reading order: Q3 (whole-file) shows docstrings are safe there but
+  only marginally recovering, and body-only is unsafe (cross-tool
+  misattribution). Q4 (scoped) fixes the cross-tool issue but
+  \emph{inverts} the safety finding --- scoped docstrings now fabricate
+  via a docstring-body vocabulary gap, while scoped body-only is safe
+  but discards the docstring signal. Q5 (guarded prompt) resolves the
+  inversion: scoped + docstrings + a target-grounded, non-comparative
+  prompt is safe AND 100\% recovering. Q6 confirms this holds blanket
+  across a larger, 23-tool catalog with zero regressions. Full
+  narrative: \url{docs/research/exp4_regime_map.md} §Regime 2;
+  \texttt{STATUS.md} Q3/Q4/Q5/Q6 sections;
+  \url{docs/paper/evidence_table.md} §1.2.
+\end{itemize}

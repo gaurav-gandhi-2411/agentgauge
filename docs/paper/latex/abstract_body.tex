@@ -1,0 +1,58 @@
+Tool-description quality is widely treated as a broadly-applicable,
+improvable lever for agent tool-use: better descriptions are assumed to
+help agents pick the right tool more often, and tooling that rewrites,
+grounds, or scores descriptions is built on that assumption \citep{anthropic2026tools,github2026measuring,hasan2026smelly}. We
+test the assumption directly with a single frozen evaluation protocol
+--- one classifier, one judge, one generator family, pre-registered
+thresholds --- applied across a synthetic confusable-catalog experiment,
+two real production MCP-server mirrors, a synthetic internal-proxy
+catalog, and a sampled pilot of ten public \textbf{Python} MCP servers.
+The central finding is that, on the fixtures tested here,
+tool-description quality is not a single better/worse axis: the same
+precision that helps an agent disambiguate within a family of confusable
+tools is not what a context-rich agent already resolving from task
+wording needs, and is actively harmful to tool retrieval --- an
+observation with a legible mechanism on these specific fixtures (one
+density point for the selection-help finding, 60 tools / 10 families;
+one synthetic catalog and three retriever types for the retrieval-harm
+finding), not a demonstrated general law about description quality. We
+find the effect is real but \textbf{regime-bounded}. Using hand-written
+oracle descriptions, a selection-accuracy effect appears at one tested
+density point (60 tools / 10 confusable families: +34.5pp, gemma2:9b)
+and was not even testable at a lower tested density (16 tools / 8
+clusters: no headroom to test against, names alone already resolve
+81.2\% of tasks) --- the precise threshold between these two points is
+bracketed, not measured. The same oracle effect does not collapse on one
+substantially stronger open-weight model tested independently (+40.8pp,
+Llama-3.3-70B --- a single data point, on a different harness, not
+directly comparable in magnitude to the gemma2:9b figure). Realizing
+this effect safely through \emph{automatic} description generation is a
+separate, additional finding: it requires documented source code, and
+interface-only generation recovers only 12.5\% of the oracle gain.
+Outside these conditions, the effect vanishes or reverses: two
+well-documented production servers (GitHub, AWS IAM) show zero headroom
+because agents already resolve tool selection from task context; on a
+synthetic internal-proxy catalog, one already-correctly-resolved family
+is \textbf{harmed} by better descriptions (−20pp) while two other
+already-resolved families in the same experiment show no harm; improved
+descriptions \textbf{harm} retrieval-based tool lookup across three
+retriever types on that same catalog (lexical BM25/TF-IDF and semantic
+embedding); and a pre-registered pilot sample of ten public Python MCP
+servers shows this general behaviorally-defined in-regime condition (not
+a re-test of the 60-tool density point specifically) occurring in
+\textbf{0 of 9} servers with a testable confusable family --- a lower
+bound on a Python-only, public-GitHub sample, not a population estimate.
+We additionally test whether the regime can be cheaply \emph{localized}
+--- flagged automatically before an agent ever encounters it --- with a
+pairwise LLM-judge confusability method, and find it cannot: under both
+a binary and a graded-confidence framing, the judge flags all 24 of 24
+pairs as confusable (precision 0.167, recall 1.00 in both), the
+identical outcome reached via two different degeneracy mechanisms rather
+than one repeated failure mode. One further limitation is itself
+methodologically central: a bug that silently suppressed a real
+in-regime signal, rather than manufacturing a false one, would not have
+the same ``surprising result triggers a recheck'' property that let us
+catch and reverse two false positives in this pilot (§8, opening note) --- a
+structural asymmetry any null-results claim in this space should carry.
+Together these results map where the field's assumption holds, and show
+it holds in a narrower and rarer place than current practice assumes.
