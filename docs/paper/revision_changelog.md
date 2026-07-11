@@ -278,3 +278,79 @@ docs/research/exp3_pre_registration.md docs/research/exp4_regime_map.md` -> zero
 six files. `grep -n "ANTHROPIC_API_KEY" docs/research/frozen_protocol.md
 docs/research/exp3_pre_registration.md` -> zero matches. Independently re-run after the edits,
 not just taken from the executor's report.
+
+---
+
+## 8. STATUS.md scrub + final full-repo sweep
+
+### Cite-site check (task instruction: verify before editing)
+
+`STATUS.md` is cited by path **3 times** in `docs/paper/paper.md` (not 4 — the prior turn's
+report over-counted; corrected here):
+
+| Line | Citation |
+|---|---|
+| 771 | A.4: "Per-server EXP-1 table: Section 5.3 above (reproduced from `STATUS.md` EXP-1 section)." |
+| 857 | A.6: "Full commit-level trail: `STATUS.md` EXP-1 section, 'Frame history' paragraph; ratification..." |
+| 882 | A.7: "Full narrative: `docs/research/exp4_regime_map.md` §Regime 2; `STATUS.md` Q3/Q4/Q5/Q6 sections..." |
+
+All three are path/section pointers, not references to specific line content — the scrub below
+doesn't require any corresponding edit in `paper.md` itself.
+
+### Pre-edit grep of STATUS.md (reported before editing, per task instruction)
+
+`\bGG\b`: **10 hits** — lines 7, 51, 67, 77, 90, 93, 152, 227, 301, 331.
+`ANTHROPIC_API_KEY` / vendor-credential rule phrasing: **0 hits** — no such rule stated in this
+file, nothing to generalize.
+`compression request`: **0 hits**.
+`TODO`/`FIXME`: **3 hits** (lines 1114, 1125, 1127) — all part of the phrase "`TASKS.md` TODO
+queue" / "highest-priority TODO from `TASKS.md`", describing the project's real automated
+work-queue mechanism, not a leftover code-comment marker. **Left as-is** — not a leak, and the
+task scope is "GG / author-initials / internal-process phrasing / ANTHROPIC_API_KEY", not
+general TODO markers describing an actual system.
+
+### Before -> after (all 10 `GG` hits, author-initial -> "the author", governance gates preserved)
+
+| Line | Before | After |
+|---|---|---|
+| 7 | "...condition #1, escalated to GG)" | "...condition #1, escalated to the author)" |
+| 51 | "**GG-ratified retry (graded confidence...**" | "**Ratified retry (graded confidence...**" |
+| 67 | "hard stop per GG's pre-registered instruction" | "hard stop per the author's pre-registered instruction" |
+| 77 | "...DRAFT PR #53, escalated to GG for review before merge." | "...DRAFT PR #53, escalated to the author for review before merge." |
+| 90 | "held pending GG's scope decision" | "held pending the author's scope decision" |
+| 93 | "**Frame history (5 rebuilds, each re-escalated to GG, none silent):**" | "**Frame history (5 rebuilds, each re-escalated to the author, none silent):**" |
+| 152 | "**Scope decision — RATIFIED by GG, 2026-07-04:**" | "**Scope decision — RATIFIED, 2026-07-04:**" |
+| 227 | "**ESCALATION TO GG — F2 direction decision...**" | "**ESCALATION TO THE AUTHOR — F2 direction decision...**" |
+| 301 | "**CONSOLIDATED P2-A + F2 PICTURE FOR GG...**" | "**CONSOLIDATED P2-A + F2 PICTURE FOR THE AUTHOR...**" |
+| 331 | "Bringing to GG as a consolidated direction escalation." | "Bringing to the author as a consolidated direction escalation." |
+
+Every edit is a name substitution only — the escalation/ratification gate itself (a real
+human-review checkpoint before merge/scope decisions) is stated identically before and after.
+File line count unchanged (1145 -> 1145): pure in-place substitution, nothing reformatted or
+restructured.
+
+### Post-edit verification (independently re-run, not taken from the executor's report alone)
+
+`grep -n "\bGG\b" STATUS.md` -> **zero matches**. `grep -n "ANTHROPIC_API_KEY|compression
+request" STATUS.md` -> **zero matches**.
+
+### Final full-repo sweep (tracked files, `git grep -n -E "\bGG\b|compression request|ANTHROPIC_API_KEY"`)
+
+Beyond `STATUS.md` (now clean) and this changelog (intentional — see §7), the sweep surfaces
+hits in six other locations. None were edited. Each is reported with its disposition and reason:
+
+| Location | Hits | Disposition | Reason |
+|---|---|---|---|
+| `evals/fixtures/exp1_exclusion_log.json`, `exp1_pre_registration.json`, `exp1_server_frame.json`, `p2a_f2_retrieval_spec.json` | ~20 `GG` refs across the four files | **Left — must not touch** | These are pre-registered fixture files. The frozen protocol this paper documents (§3.2, and `docs/research/frozen_protocol.md`) states fixture contents are "never edited after results are in hand" as a core integrity rule. Editing them post-hoc — even just to remove a name — would violate the exact governance this packaging pass is protecting, and would invalidate their pre-registration timestamps. Also not cited by path from `paper.md` (only the two hash-pinned `frontier_t18_step2_*.json` files are cited, at §9.2 — checked directly, zero `GG` hits in those two) — so not part of the published surface either. Two independent reasons to leave untouched. |
+| `TASKS.md` | 7 `GG` refs (lines 33, 36, 40, 44, 52, 70, 75, 85, 107, 109, 123 — governance/escalation task-queue notes) | **Left** | Not cited by path anywhere in `paper.md` — an internal operational task tracker, not part of the published surface. |
+| `agentgauge/exp1_doc_density.py:8` | 1 `GG` ref (code comment: "GG's correction (2026-07-02)...") | **Left** | Source code comment, not cited by `paper.md`, not reader-facing documentation. |
+| `scripts/exp1_discover_registry.py:5`, `scripts/exp1_discover_servers.py:4,170` | 3 `GG` refs (code comments) | **Left** | Same — source code, not cited, not published surface. |
+| `spec.md` | 4 `GG` refs (lines 48, 64, 71, 91 — the paper-rewrite planning doc discussed in the earlier commit `65ac284`) | **Left** | Checked: not cited by path anywhere in `paper.md`. An internal planning/process document, not part of the reproducibility trail a reader is pointed to. |
+| `docs/research/frontier_t18_result.md:46` | 1 `ANTHROPIC_API_KEY` ref ("no ANTHROPIC_API_KEY used anywhere") | **Left** (already reported in §7) | Not cited by path in `paper.md`; a factual negative-use statement, not a leak. |
+
+**Scope boundary stated plainly:** this task's mandate was "STATUS.md, tightly scoped." The
+full-repo sweep above is a reporting/audit pass, not a mandate to scrub the whole repository —
+consistent with the published-surface principle used throughout §§4/7/8 (paper + everything it
+cites by path). Nothing outside that boundary was touched. If the codebase comments or `spec.md`
+/`TASKS.md` need the same treatment, that's a separate decision — flagging rather than acting
+unilaterally, per the same discipline applied to the `STATUS.md` citation gap noted in §7.
