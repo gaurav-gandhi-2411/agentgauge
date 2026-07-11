@@ -42,6 +42,10 @@ def main() -> int:
         files = _files_changed(commit)
         touches_paper = PAPER_MD in files
         touches_latex = any(f.startswith(LATEX_DIR) for f in files)
+        # Directional check: paper.md -> latex only. A latex-only commit (e.g. swapping in a
+        # venue .cls, reflowing tables, recompiling main.pdf after an unrelated fix) is a
+        # legitimate build-only change and must NOT be flagged -- there's nothing in paper.md
+        # for it to be "out of sync" with.
         if touches_paper and not touches_latex:
             violations.append(commit)
 

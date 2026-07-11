@@ -702,9 +702,9 @@ models — always record the model alongside any stored score.
     below the 40% floor; still effectively a floor-effect regime. **Confirmed on clean
     harness (2026-06-06, PR #40):** parse_failed=0/180; the 33.3% is not a measurement
     artifact.
-  Both dimensions landed outside the target window on the first attempt and require fixture
-  redesign to test. The window exists in principle but is sensitive to the agent's prior
-  knowledge about the specific vocabulary used.
+  Both dimensions landed outside the target window on the first attempt and resisted every
+  fixture redesign tried (see (a) below). The window exists in principle but is sensitive to
+  the agent's prior knowledge about the specific vocabulary used.
 
   **Candidate explanations tested / next:**
   - *(a) Guessable-but-error-prone constraints — TESTED, ABORTED (Ty2, PR #37, branch
