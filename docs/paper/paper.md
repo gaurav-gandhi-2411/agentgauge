@@ -1,11 +1,5 @@
 # Tool-Description Quality Is Not One Axis: A Regime Analysis of Where It Helps and Where It Backfires
 
-**Status:** DRAFT — Framing A (boundary-establishment), locked by GG. Every number in this
-draft traces to a row in `docs/paper/evidence_table.md`; do not add a number here without
-adding and sourcing it there first. Scope: EXP-4 (regime map, consolidation) + EXP-1
-(prevalence) + EXP-3 (confusability localizer). EXP-2 (capability ladder) is out of scope —
-dropped and justified in `spec.md`.
-
 ---
 
 ## Abstract
