@@ -173,3 +173,108 @@ patched at the corresponding 11 locations (not regenerated via pandoc, to avoid 
 ~1,325 unrelated lines). `main.pdf` recompiled with tectonic — no errors, only pre-existing
 cosmetic hbox warnings unrelated to this pass. Recompiled a second time after the post-verifier
 abstract disambiguation fix (§1 above); same clean result.
+
+---
+
+## 7. Docs scrub — reproducibility/threats/evidence trail
+
+Follow-up pass: the paper's leak-free bar (§4 above) extended to every file the paper cites by
+path as part of its reproducibility, threats, and evidence trail — "the published surface" is
+the paper plus what it points a reader to, not just `paper.md` itself. No number, path, hash,
+verdict, or governance rule was altered in this pass — only author-name and internal-process
+phrasing.
+
+**Which files the paper actually cites by path** (checked before editing, per task instruction):
+
+| File | Cited by `paper.md`? | Where |
+|---|---|---|
+| `docs/paper/threats_to_validity.md` | Yes | §8 preamble ("Full list: ...") |
+| `docs/paper/evidence_table.md` | Yes | §9.1, A.1, A.3, A.6, A.7 |
+| `docs/paper/skeleton.md` | **No** | not referenced — scaffolding artifact, scrubbed as a precaution per task instruction regardless |
+| `docs/research/frozen_protocol.md` | Yes | §3 intro, A.3 |
+| `docs/research/exp3_pre_registration.md` | Yes | A.2 |
+| `docs/research/exp4_regime_map.md` | Yes | A.1, A.7 |
+
+The last three (`docs/research/...`) were not in the original named task list but meet the
+task's own stated criterion — cited by path, part of the reproducibility trail — so they were
+scrubbed under the same rule, decision made and logged here rather than silently expanding
+scope.
+
+### Before -> after, per file
+
+**`docs/paper/skeleton.md`** (not cited, scrubbed as precaution):
+- L9: "...is DROPPED — ratified by GG, see `spec.md`." -> "...is DROPPED — ratified, see `spec.md`."
+- L84: "6.4 GG-ratified graded-confidence retry..." -> "6.4 Ratified graded-confidence retry..."
+
+**`docs/paper/evidence_table.md`** (cited, reader-facing):
+- L3: "Compiled while awaiting GG's Framing A vs B decision" -> "Compiled while awaiting the Framing A vs B decision"
+- L68: "**RESOLVED (this session, GG-directed).**" -> "**RESOLVED (during this paper's preparation).**"
+- L108: "**Precision note for drafting (FIXED, GG-directed):**" -> "**Precision note for drafting (FIXED):**"
+
+**`docs/paper/threats_to_validity.md`** (cited, reader-facing):
+- L50-53: "...is DROPPED — ratified by GG (`spec.md` EXP-2 section, `0c78f49`) — because the
+  underlying regime this session could verify is already rare..." -> "...is DROPPED — ratified
+  (`spec.md` EXP-2 section, `0c78f49`) — because the underlying regime this paper's preparation
+  could verify is already rare..."
+
+**`docs/research/frozen_protocol.md`** (cited, reader-facing):
+- "`ANTHROPIC_API_KEY` must **never** be set or used in any experiment." -> "No assistant-vendor
+  credentials (e.g. coding-assistant API keys) may be set or used in any experiment —
+  judge/generator/agent model families stay structurally independent of the tooling used to run
+  the research program." (Rule strengthened/clarified, not weakened: same never-use constraint,
+  generalized past one specific vendor's key name, plus the independence rationale made
+  explicit.)
+- "escalate to GG before executing" -> "escalate to the author before executing" (the
+  human-review gate itself — DRAFT PR + escalation for any judge/scorer/rubric change — is
+  unchanged; only the name is gone.)
+
+**`docs/research/exp3_pre_registration.md`** (cited, reader-facing):
+- "escalated to GG before merge" (condition #1 notice) -> "escalated to the author before merge"
+- "**Ratified by GG:**" -> "**Ratified:**"
+- "other option GG offered" -> "other option considered"
+- "escalated to GG before merge" (§8 Governance) -> "escalated to the author before merge"
+- "`ANTHROPIC_API_KEY` is never set." -> "No assistant-vendor credentials are set or used."
+
+**`docs/research/exp4_regime_map.md`** (cited, reader-facing):
+- "condition #1, escalated to GG" -> "condition #1, escalated to the author"
+- "**GG-ratified graded-confidence retry...**" -> "**Ratified graded-confidence retry...**"
+- "## Paper Claim Inventory (for GG ratification...)" -> "## Paper Claim Inventory (for author ratification...)"
+- "GG ratifies all external framing" -> "The author ratifies all external framing"
+
+### Full `docs/` tree grep, every hit — fixed or left, with reason
+
+Pattern: `GG|compression request|ANTHROPIC_API_KEY|TODO|FIXME` (author-initials check folded
+into the `GG` pattern; `TODO`/`FIXME` also swept).
+
+| File:line | Hit | Status | Reason |
+|---|---|---|---|
+| `docs/paper/skeleton.md:9,84` | `GG` | **Fixed** | listed above |
+| `docs/paper/evidence_table.md:3,68,108` | `GG` | **Fixed** | listed above |
+| `docs/paper/threats_to_validity.md:52` | `GG` | **Fixed** | listed above |
+| `docs/research/frozen_protocol.md:21,22` | `ANTHROPIC_API_KEY`, `GG` | **Fixed** | listed above |
+| `docs/research/exp3_pre_registration.md:12,188,199,261,264` | `GG`, `ANTHROPIC_API_KEY` | **Fixed** | listed above |
+| `docs/research/exp4_regime_map.md:197,207,282,284` | `GG` | **Fixed** | listed above |
+| `docs/research/frontier_t18_result.md:46` | `ANTHROPIC_API_KEY` (in "no ANTHROPIC_API_KEY used anywhere") | **Left** | not cited by path anywhere in `paper.md` (confirmed by grep) — not part of the published surface as scoped by this task; also not a leak in the security sense, a factual negative-use statement in an internal-only doc |
+| `docs/paper/revision_changelog.md:127,133,135,137,149,154` | `GG`, `compression request`, `ANTHROPIC_API_KEY` | **Left** | this changelog's own job is to document what was removed and where — quoting the removed strings is the historical record, not a leak; the file is a process artifact, not cited by `paper.md`, not part of the published surface |
+
+No `TODO`/`FIXME` hits anywhere in `docs/`. No other author-initial patterns found beyond `GG`.
+
+**Boundary note, not fixed (out of the stated `docs/` scope, flagged for awareness):**
+`STATUS.md` is cited by path four times in `paper.md` (§8 A.4, A.6, A.7 — "Full narrative:
+`STATUS.md` ... section") and, as the project's main execution tracker, almost certainly
+contains extensive `GG` references — but it lives at the repo root, not under `docs/`, so it
+falls outside this task's explicitly stated grep scope ("the ENTIRE docs/ tree"). Flagging the
+gap rather than silently expanding scope to a large, actively-used operational file without
+being asked.
+
+`docs/research/phase1-buyer-and-landscape.md` (cited once, §2.3/related-work sourcing) was
+checked and has zero hits on any pattern — no action needed.
+
+### Verification
+
+`grep -n "\bGG\b" docs/paper/skeleton.md docs/paper/evidence_table.md
+docs/paper/threats_to_validity.md docs/research/frozen_protocol.md
+docs/research/exp3_pre_registration.md docs/research/exp4_regime_map.md` -> zero matches, all
+six files. `grep -n "ANTHROPIC_API_KEY" docs/research/frozen_protocol.md
+docs/research/exp3_pre_registration.md` -> zero matches. Independently re-run after the edits,
+not just taken from the executor's report.

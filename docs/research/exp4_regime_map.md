@@ -194,7 +194,7 @@ The positive method (asking "could a task for A plausibly select B?" for each pa
 addresses what the single-score approach cannot do.
 
 **EXP-3 result (2026-07-04, branch `claude/exp3-localizer`, DRAFT — condition #1, escalated to
-GG):** built and validated against a 24-pair pre-registered behavioral ground truth (4 CONFUSED /
+the author):** built and validated against a 24-pair pre-registered behavioral ground truth (4 CONFUSED /
 20 NOT_CONFUSED, drawn from EXP-1 + RW1/RW2 raw trial data). Result: precision 0.167 / recall
 1.00 — below the pre-committed real-positive-method bar. The judge verdicted **24/24 pairs
 CONFUSABLE**, including all 9 sampled RW1/RW2 pairs from servers that resolved 100% behaviorally.
@@ -204,7 +204,7 @@ direct yes/no confusability question elicits yes near-uniformly). Neither, as bu
 per-pair ranking signal. Full result: `evals/fixtures/exp3_localizer_result.json`,
 `docs/research/exp3_pre_registration.md`, `STATUS.md` EXP-3 section.
 
-**GG-ratified graded-confidence retry (one time-boxed attempt, pre-registered before running):**
+**Ratified graded-confidence retry (one time-boxed attempt, pre-registered before running):**
 same 24-pair ground truth, 0–10 CONFUSABILITY score per pair instead of binary yes/no, threshold
 >=5.0. Result: identical confusion matrix (TP=4, FP=20, FN=0, TN=0; precision 0.167, recall
 1.00) — every pair's mean score landed in a narrow 5.00–5.67 band regardless of whether it was a
@@ -279,9 +279,9 @@ not universally beneficial; it is regime-specific.
 
 ---
 
-## Paper Claim Inventory (for GG ratification — factual syntheses, not framed claims)
+## Paper Claim Inventory (for author ratification — factual syntheses, not framed claims)
 
-The following are factual descriptions of what the data shows. GG ratifies all
+The following are factual descriptions of what the data shows. The author ratifies all
 external framing (e.g., "market is durable", "blanket fixing is unsafe").
 
 1. **Regime-bounded effect:** The description improvement effect is real but regime-bounded.

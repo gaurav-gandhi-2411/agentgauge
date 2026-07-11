@@ -9,7 +9,7 @@ at commit time and must not be edited after results are collected.
 
 **Condition #1 notice:** this experiment builds a new judge-touching mechanism (the
 pairwise confusability judge). Per `spec.md` / `frozen_protocol.md` governance, this
-is a DRAFT PR, escalated to GG before merge, with a held-out re-validation split
+is a DRAFT PR, escalated to the author before merge, with a held-out re-validation split
 called out explicitly below.
 
 ---
@@ -185,7 +185,7 @@ per the frozen protocol appendix.
 
 ## 7. Graded-confidence retry (pre-registered 2026-07-04, before any judge call)
 
-**Ratified by GG:** the binary result (Section 3's method, run 2026-07-04 — see `STATUS.md`
+**Ratified:** the binary result (Section 3's method, run 2026-07-04 — see `STATUS.md`
 EXP-3 section and `evals/fixtures/exp3_localizer_result.json`: precision 0.167, recall 1.00,
 24/24 pairs verdicted CONFUSABLE) is the degenerate yes-sayer failure — an unanchored binary
 "could these be confused?" question has no incentive to
@@ -196,7 +196,7 @@ threshold, and ground truth are fixed here, before this result is known, and thi
 **last** variant tried regardless of outcome.
 
 **Method chosen: graded confidence (not ranking).** A forced pairwise/listwise ranking was the
-other option GG offered; graded confidence is chosen because it keeps each pair's judgment
+other option considered; graded confidence is chosen because it keeps each pair's judgment
 independent (matching the ground truth's pair-independent structure — ranking would require
 presenting multiple pairs to the judge in one call, a materially different and more complex
 call structure), and it mirrors this codebase's existing `_judge_discoverability` /
@@ -258,10 +258,10 @@ CONFUSABILITY: <number 0-10>
 
 ## 8. Governance
 
-- Condition #1: this PR is DRAFT and escalated to GG before merge.
+- Condition #1: this PR is DRAFT and escalated to the author before merge.
 - `generator != judge != agent`: no generator or agent call is made in this
   experiment; only the judge is invoked. No conflict.
-- `ANTHROPIC_API_KEY` is never set.
+- No assistant-vendor credentials are set or used.
 - No fixture edits after this commit. If the implementation script's counts
   don't match, that is reported as a discrepancy, not fixed by editing the
   ground truth after the fact.
