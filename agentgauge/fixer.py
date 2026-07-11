@@ -157,7 +157,9 @@ class FixCandidate:
     accepted: bool
     rejection_reason: str = ""
     new_description: str = ""
+    old_description: str = ""
     new_schema_props: dict[str, Any] = field(default_factory=dict)
+    old_schema_props: dict[str, Any] = field(default_factory=dict)
     new_required: list[str] = field(default_factory=list)
 
 
@@ -192,6 +194,92 @@ _DESC_GENERATOR_PROMPT = (
     "Write ONLY the new description text. No quotes, no preamble, no markdown."
 )
 
+_DESC_GENERATOR_CATALOG_AWARE_PROMPT = (
+    "You are improving an MCP tool's description to help AI agents use it correctly.\n"
+    "Write a clear, concise description (1-2 sentences) that:\n"
+    "- States what this tool does and names any key parameters\n"
+    "- If this tool differs meaningfully from the neighbors listed below, state that difference\n\n"
+    "CRITICAL — NO FABRICATION: If this tool is NOT meaningfully different from a neighbor "
+    "based on the names, schemas, and descriptions shown here, say what it does plainly and "
+    "DO NOT invent a distinction. Only state a difference directly supported by the "
+    "names, schemas, or descriptions shown.\n\n"
+    "Target tool:\n"
+    "  Name: {name}\n"
+    "  Current description: {current}\n"
+    "  Input schema: {schema}\n\n"
+    "Confusable neighbors from the same server catalog:\n"
+    "{neighbors}\n\n"
+    "Write ONLY the new description text. No quotes, no preamble, no markdown."
+)
+
+_DESC_GENERATOR_SOURCE_AWARE_PROMPT = (
+    "You are improving an MCP tool's description to help AI agents use it correctly.\n"
+    "Write a clear, concise description (1-2 sentences) that:\n"
+    "- States what this tool does and names any key parameters\n"
+    "- If this tool differs meaningfully from confusable neighbors, state that difference "
+    "USING THE SOURCE CODE as evidence\n\n"
+    "CRITICAL — NO FABRICATION: Only state a difference that is directly supported by "
+    "the source code shown below. If the source does not support a distinction from "
+    "similar tools, say what it does plainly and DO NOT invent a difference.\n\n"
+    "Target tool:\n"
+    "  Name: {name}\n"
+    "  Current description: {current}\n"
+    "  Input schema: {schema}\n\n"
+    "Source code (read this to understand what the tool actually does):\n"
+    "```python\n{source}\n```\n\n"
+    "Write ONLY the new description text. No quotes, no preamble, no markdown."
+)
+
+_DESC_GENERATOR_SCOPED_SOURCE_PROMPT = (
+    "You are improving an MCP tool's description to help AI agents use it correctly.\n"
+    "Write a clear, concise description (1-2 sentences) that:\n"
+    "- States what this tool does and names any key parameters\n"
+    "- If this tool differs meaningfully from the confusable neighbors listed below, state that "
+    "difference USING THE SOURCE CODE as evidence\n\n"
+    "CRITICAL — NO FABRICATION: Only state a difference that is directly supported by the source "
+    "code shown below. The source shown is ONLY this tool's own implementation — it does NOT "
+    "contain other tools' code. Neighbors are shown as signature and docstring only (no bodies). "
+    "If the source does not clearly support a distinction, say what it does plainly and DO NOT "
+    "invent a difference.\n\n"
+    "Target tool:\n"
+    "  Name: {name}\n"
+    "  Current description: {current}\n"
+    "  Input schema: {schema}\n\n"
+    "This tool's own source code (ONLY this tool's function — no other tools shown):\n"
+    "```python\n{scoped_source}\n```\n\n"
+    "Confusable neighbors (signature + docstring only — bodies not shown):\n"
+    "{neighbor_surfaces}\n\n"
+    "Write ONLY the new description text. No quotes, no preamble, no markdown."
+)
+
+_DESC_GENERATOR_GUARD_B_PROMPT = (
+    "You are improving an MCP tool's description to help AI agents use it correctly.\n"
+    "Write a clear, concise description (1-2 sentences) that:\n"
+    "- States what this tool does based on its own source code\n"
+    "- If this tool differs meaningfully from its neighbors, state that difference as a\n"
+    "  POSITIVE FACT ABOUT THIS TOOL ONLY, grounded in this tool's own body\n\n"
+    "CRITICAL — TARGET-GROUNDED PHRASING ONLY:\n"
+    "You may only state distinctions as facts about THIS tool derived from its own source.\n"
+    "You must NOT claim what any neighbor does — neighbor surfaces are shown only to indicate\n"
+    "which axes (return type, storage, permanence, channel, etc.) may be worth mentioning.\n\n"
+    "  GOOD (target-grounded):\n"
+    '    "Returns a count of matching entries and writes results to a 5-minute TTL cache."\n'
+    "  FORBIDDEN (comparative neighbor claim):\n"
+    '    "Unlike lookup_data, which returns full entries, this tool returns a count."\n\n'
+    "CRITICAL — NO FABRICATION: Only state a difference directly supported by this tool's own\n"
+    "source code. If the source does not clearly support a distinction, say what it does plainly\n"
+    "and DO NOT invent a difference.\n\n"
+    "Target tool:\n"
+    "  Name: {name}\n"
+    "  Current description: {current}\n"
+    "  Input schema: {schema}\n\n"
+    "This tool's own source code (ONLY this tool's function — no other tools shown):\n"
+    "```python\n{scoped_source}\n```\n\n"
+    "Confusable neighbors (signature + docstring included — to indicate which axes may discriminate):\n"
+    "{neighbor_surfaces}\n\n"
+    "Write ONLY the new description text. No quotes, no preamble, no markdown."
+)
+
 _SCHEMA_GENERATOR_PROMPT = (
     "You are improving MCP tool parameter metadata for AI agent usability.\n"
     "For the tool below, generate improved parameter metadata AND identify required parameters.\n\n"
@@ -209,6 +297,129 @@ _SCHEMA_GENERATOR_PROMPT = (
     '"required": ["x", "y"]}}\n\n'
     "Reply with ONLY the JSON object, no markdown fences, no other text."
 )
+
+
+def _contains_comparative_neighbor_claim(desc: str, neighbor_names: list[str]) -> bool:
+    """Return True if desc makes a comparative claim naming a specific neighbor.
+
+    Checks for patterns like "unlike <neighbor>", "whereas <neighbor>", "while <neighbor>",
+    or "compared to <neighbor>" (case-insensitive). Returns False when no neighbor names
+    are provided or when comparative connectors appear but do not name a known neighbor.
+
+    Used as a post-generation guard to detect Guard-B constraint violations before
+    a description is committed.
+    """
+    if not neighbor_names:
+        return False
+    comparative_re = re.compile(
+        r"\b(unlike|whereas|while|compared to)\s+",
+        re.IGNORECASE,
+    )
+    for m in comparative_re.finditer(desc):
+        after = desc[m.end() :]
+        for name in neighbor_names:
+            if re.match(re.escape(name), after, re.IGNORECASE):
+                return True
+    return False
+
+
+_NEIGHBOR_K: int = 6  # neighbors per tool; keeps prompt bounded at scale
+
+
+def _select_neighbors(
+    target: Tool,
+    catalog: list[Tool],
+    k: int = _NEIGHBOR_K,
+) -> list[Tool]:
+    """Select up to K lexically similar neighbors by name token Jaccard similarity.
+
+    Uses only Tool.name — never any external family/label dict. Works on any
+    unlabeled catalog. Ties broken alphabetically for determinism.
+    """
+    target_tokens = set(_tokenize_identifier(target.name))
+    scored: list[tuple[float, str, Tool]] = []
+    for tool in catalog:
+        if tool.name == target.name:
+            continue
+        other_tokens = set(_tokenize_identifier(tool.name))
+        union = target_tokens | other_tokens
+        score = len(target_tokens & other_tokens) / len(union) if union else 0.0
+        scored.append((-score, tool.name, tool))  # negate for descending sort
+    scored.sort(key=lambda x: (x[0], x[1]))
+    return [tool for _, _, tool in scored[:k]]
+
+
+def _extract_scoped_function(
+    source: str,
+    tool_name: str,
+    *,
+    handler_prefix: str = "_handle_",
+) -> str:
+    """Return ONLY the function def + body for the target tool.
+
+    Searches for `(async )?def {handler_prefix}{tool_name}(` and extracts
+    that function through its last body line (stops at the next top-level
+    def/async def or end of file). Returns empty string if not found.
+    """
+    pattern = re.compile(
+        rf"^(async\s+)?def\s+{re.escape(handler_prefix)}{re.escape(tool_name)}\s*\(",
+        re.MULTILINE,
+    )
+    m = pattern.search(source)
+    if not m:
+        return ""
+    start = m.start()
+    # Find the end: next top-level def/async def (same indent level = 0)
+    end_pattern = re.compile(r"^(async\s+)?def\s+", re.MULTILINE)
+    next_m = end_pattern.search(source, m.end())
+    end = next_m.start() if next_m else len(source)
+    return source[start:end].rstrip()
+
+
+def _extract_function_surface(
+    source: str,
+    tool_name: str,
+    *,
+    handler_prefix: str = "_handle_",
+) -> str:
+    """Return only the def line + docstring for the target tool (body stripped).
+
+    Extracts the full function via _extract_scoped_function, then keeps only:
+    - the `def`/`async def` line
+    - the first triple-quoted docstring if present immediately after the def
+    Strips all body lines after the docstring (or after the def if no docstring).
+    Returns empty string if the function is not found.
+    """
+    func_text = _extract_scoped_function(source, tool_name, handler_prefix=handler_prefix)
+    if not func_text:
+        return ""
+    lines = func_text.splitlines()
+    result: list[str] = []
+    # Always include def line (and any continuation lines for multi-line signatures)
+    i = 0
+    while i < len(lines):
+        result.append(lines[i])
+        # Check if we've finished the def signature (ends with ':')
+        stripped = lines[i].rstrip()
+        if stripped.endswith(":"):
+            i += 1
+            break
+        i += 1
+    # Now check for a docstring: skip blank lines, then look for triple-quote
+    while i < len(lines) and not lines[i].strip():
+        i += 1
+    if i < len(lines) and ('"""' in lines[i] or "'''" in lines[i]):
+        quote = '"""' if '"""' in lines[i] else "'''"
+        result.append(lines[i])
+        # Multi-line docstring: keep until closing triple-quote
+        if lines[i].count(quote) < 2:  # opening quote not also closed on same line
+            i += 1
+            while i < len(lines):
+                result.append(lines[i])
+                if quote in lines[i]:
+                    break
+                i += 1
+    return "\n".join(result)
 
 
 def assert_generator_ne_judge(generator_model: str, judge_model: str) -> None:
@@ -248,13 +459,72 @@ async def _judge_desc_trials(tool: Tool, provider: Provider, trials: int) -> lis
     return scores
 
 
-async def _generate_description(tool: Tool, generator: Provider) -> str:
-    """Generate an improved description for `tool` using the generator model."""
-    prompt = _DESC_GENERATOR_PROMPT.format(
-        name=tool.name,
-        current=tool.description or "(none)",
-        schema=tool.inputSchema,
-    )
+async def _generate_description(
+    tool: Tool,
+    generator: Provider,
+    *,
+    neighbors: list[Tool] | None = None,
+    source: str | None = None,
+    scoped_source: str | None = None,
+    neighbor_surfaces_text: str | None = None,
+    guard_b: bool = False,
+) -> str:
+    """Generate an improved description for `tool` using the generator model.
+
+    Priority (highest to lowest):
+    - scoped_source (non-empty) + guard_b=True: uses _DESC_GENERATOR_GUARD_B_PROMPT; neighbor
+      docstrings are kept in surfaces, comparative neighbor claims are forbidden.
+    - scoped_source (non-empty): uses _DESC_GENERATOR_SCOPED_SOURCE_PROMPT; composes with
+      neighbor_surfaces_text (breaks source-XOR-neighbors for this path only).
+    - source (non-empty): uses _DESC_GENERATOR_SOURCE_AWARE_PROMPT with no-fabrication guard
+    - neighbors (non-empty list): uses _DESC_GENERATOR_CATALOG_AWARE_PROMPT with no-fabrication guard
+    - otherwise: uses _DESC_GENERATOR_PROMPT (per-tool, name+schema only)
+
+    source and neighbors are mutually exclusive by convention — pass at most one.
+    scoped_source can be combined with neighbor_surfaces_text.
+    guard_b is only effective when scoped_source is non-empty; if scoped_source is absent,
+    guard_b is ignored and the existing priority chain is followed.
+    """
+    if scoped_source and guard_b:
+        prompt = _DESC_GENERATOR_GUARD_B_PROMPT.format(
+            name=tool.name,
+            current=tool.description or "(none)",
+            schema=tool.inputSchema,
+            scoped_source=scoped_source,
+            neighbor_surfaces=neighbor_surfaces_text or "(none)",
+        )
+    elif scoped_source:
+        prompt = _DESC_GENERATOR_SCOPED_SOURCE_PROMPT.format(
+            name=tool.name,
+            current=tool.description or "(none)",
+            schema=tool.inputSchema,
+            scoped_source=scoped_source,
+            neighbor_surfaces=neighbor_surfaces_text or "(none)",
+        )
+    elif source:
+        prompt = _DESC_GENERATOR_SOURCE_AWARE_PROMPT.format(
+            name=tool.name,
+            current=tool.description or "(none)",
+            schema=tool.inputSchema,
+            source=source,
+        )
+    elif neighbors:
+        neighbor_lines = [
+            f"  - {n.name}  schema: {n.inputSchema}  desc: {n.description or '(none)'}"
+            for n in neighbors
+        ]
+        prompt = _DESC_GENERATOR_CATALOG_AWARE_PROMPT.format(
+            name=tool.name,
+            current=tool.description or "(none)",
+            schema=tool.inputSchema,
+            neighbors="\n".join(neighbor_lines),
+        )
+    else:
+        prompt = _DESC_GENERATOR_PROMPT.format(
+            name=tool.name,
+            current=tool.description or "(none)",
+            schema=tool.inputSchema,
+        )
     resp = await generator.chat([Message(role="user", content=prompt)], seed=42)
     return resp.strip()
 
@@ -293,7 +563,14 @@ def _patch_source_description(source: str, tool_name: str, new_desc: str) -> str
 
     Finds the tool block by locating name="<tool_name>", then replaces the next
     description= line encountered. Returns source unchanged if no match is found.
+
+    The replacement uses repr(new_desc) so that any characters in the generated
+    description (double-quotes, backslashes, newlines, etc.) are properly escaped
+    as a Python string literal. Without this, a description containing a double-
+    quote would produce a SyntaxError in the patched file.
     """
+    # Pre-compute the safe replacement outside the lambda to avoid closure issues
+    _safe_literal = repr(new_desc)
     lines = source.splitlines(keepends=True)
     result_lines: list[str] = []
     found_tool = False
@@ -304,9 +581,11 @@ def _patch_source_description(source: str, tool_name: str, new_desc: str) -> str
             found_tool = True
             result_lines.append(line)
         elif found_tool and not replaced and "description=" in line:
+            # Lambda prevents re.sub from interpreting backslashes in the
+            # replacement string (e.g. \\n in repr output → literal \n, not newline).
             patched = re.sub(
                 r'description="[^"]*"',
-                f'description="{new_desc}"',
+                lambda _m, lit=_safe_literal: f"description={lit}",
                 line,
                 count=1,
             )
@@ -373,9 +652,11 @@ def _patch_source_schema_props(source: str, tool_name: str, new_props: dict[str,
     for prop_name, prop_meta in new_props.items():
         escaped_name = re.escape(prop_name)
         replacement_value = json.dumps(prop_meta)
+        # Lambda prevents re.sub from treating backslashes in replacement_value
+        # as escape sequences (json.dumps can emit \\n, \\t, etc.).
         block = re.sub(
             rf'"{escaped_name}":\s*\{{}}',
-            f'"{prop_name}": {replacement_value}',
+            lambda _m, k=prop_name, v=replacement_value: f'"{k}": {v}',
             block,
         )
 
@@ -460,6 +741,8 @@ async def run_fixer(
     trials: int = DEFAULT_TRIALS,
     min_delta: float = DEFAULT_MIN_DELTA,
     skip_above_band: float = DEFAULT_SKIP_ABOVE_BAND,
+    catalog_aware: bool = False,
+    neighbor_k: int = _NEIGHBOR_K,
 ) -> FixReport:
     """Run the auto-fix loop for the given tools and scoring dimensions.
 
@@ -513,7 +796,8 @@ async def run_fixer(
             # ── Generate candidate ────────────────────────────────────────────
             merged_required: list[str] = []
             if dim == "description_quality":
-                new_desc = await _generate_description(tool, generator)
+                nbrs = _select_neighbors(tool, tools, k=neighbor_k) if catalog_aware else None
+                new_desc = await _generate_description(tool, generator, neighbors=nbrs)
                 candidate_tool = Tool(
                     name=tool.name,
                     description=new_desc,
@@ -599,7 +883,9 @@ async def run_fixer(
                 accepted=accepted,
                 rejection_reason=rejection_reason,
                 new_description=new_desc,
+                old_description=tool.description or "",
                 new_schema_props=new_props,
+                old_schema_props=existing_props if dim == "schema_completeness" else {},
                 new_required=merged_required,
             )
 

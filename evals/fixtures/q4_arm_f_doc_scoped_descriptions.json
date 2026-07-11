@@ -1,0 +1,14 @@
+{
+  "store_item": "Stores the query in an in-memory TTL cache with 5-minute expiration and silent overwriting; differs from delete_record (permanent deletion) and persist_row (raises on existing keys) by using a temporary cache and allowing overwrites.",
+  "persist_row": "Inserts a new row into _db keyed by the query string, raising an error if the key already exists. Unlike delete_record, it does not remove existing entries; unlike find_entries/lookup_data, it does not search but instead inserts.",
+  "save_record": "save_record saves a record by creating or overwriting it silently, tracking if the key existed before, and returns the action result. It differs from persist_row by allowing overwrites without raising errors.",
+  "write_entry": "write_entry appends a structured entry to an immutable audit log with the query, timestamp, and sequence number. Unlike confusable tools, it retains entries permanently without deletion or modification, as evidenced by _audit_log.append() and the note that \"nothing in _audit_log is ever deleted or modified.\"",
+  "delete_record": "Permanently removes a record from _records using the query string as the key, with no recovery or tombstone. The query parameter specifies the record to delete.",
+  "archive_item": "archive_item marks a record as archived by setting the 'archived' flag to True in _records, keeping it intact for potential restoration, unlike delete_record which permanently removes records via del.",
+  "retire_data": "Marks a record as retired (retired=True) making it read-only and retained indefinitely. Differs from delete_record (which permanently removes) and archive_item (which can be restored).",
+  "remove_entry": "remove_entry hides an entry by setting its hidden flag to True, excluding it from queries while retaining it in _records for compliance. Unlike delete_record, it does not permanently remove the entry.",
+  "find_entries": "find_entries searches for entries with keys containing the query string and returns the count of matching results. It differs from lookup_data by returning a count instead of the actual entries, as evidenced by its use of _search_store and string formatting in the source code.",
+  "lookup_data": "lookup_data searches for entries with keys containing the query string and returns the count of matches. It differs from find_entries by returning a count instead of the actual entries.",
+  "book_slot": "book_slot reserves a calendar slot by setting the query key in _calendar to \"reserved\", using the query string as the key. It differs from plan_event by directly modifying the _calendar dictionary, while plan_event's implementation (not shown) may not.",
+  "plan_event": "plan_event reserves a calendar slot using the query parameter, modifying the _calendar dictionary. It differs from book_slot by directly altering the _calendar state, as evidenced by the source code's assignment of _calendar[query] = \"reserved\"."
+}

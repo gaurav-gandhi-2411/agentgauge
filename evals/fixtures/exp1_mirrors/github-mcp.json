@@ -1,0 +1,663 @@
+{
+  "server_id": "github-mcp",
+  "source_repo": "github/github-mcp-server",
+  "language": "go",
+  "stars": 0,
+  "stratum": "validation_anchor",
+  "notes": "Ported from evals/fixtures/rw1_github_catalog.py (RW1, already real, already hash-asserted vs pkg/github/*.go source). known_result=OUT-OF-REGIME (exp4_regime_map.md: Arm A 100% (21/21), no headroom).",
+  "tools": [
+    {
+      "name": "get_pull_request",
+      "docstring": "Get details of a specific pull request",
+      "source_hash": "d650e84e528c",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "owner",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "repo",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "pullNumber",
+          "annotation": "integer",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "get_pull_request_diff",
+      "docstring": "Get the diff of a pull request",
+      "source_hash": "5bd2b1c4c6a9",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "owner",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "repo",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "pullNumber",
+          "annotation": "integer",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "get_pull_request_files",
+      "docstring": "Get the list of files changed in a pull request",
+      "source_hash": "675aa3851f46",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "owner",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "repo",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "pullNumber",
+          "annotation": "integer",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "get_pull_request_reviews",
+      "docstring": "Get the reviews on a pull request",
+      "source_hash": "5a2a1781698a",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "owner",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "repo",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "pullNumber",
+          "annotation": "integer",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "get_pull_request_comments",
+      "docstring": "Get the review comments on a pull request",
+      "source_hash": "cf753bbf730e",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "owner",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "repo",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "pullNumber",
+          "annotation": "integer",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "merge_pull_request",
+      "docstring": "Merge a pull request",
+      "source_hash": "66d8d76bded2",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "owner",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "repo",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "pullNumber",
+          "annotation": "integer",
+          "default": null
+        },
+        {
+          "name": "commitTitle",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "commitMessage",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "mergeMethod",
+          "annotation": "string",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "search_repositories",
+      "docstring": "Search for GitHub repositories",
+      "source_hash": "adf4a039f440",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "query",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "page",
+          "annotation": "integer",
+          "default": null
+        },
+        {
+          "name": "perPage",
+          "annotation": "integer",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "search_code",
+      "docstring": "Search for code across GitHub repositories",
+      "source_hash": "c47330f5060c",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "query",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "page",
+          "annotation": "integer",
+          "default": null
+        },
+        {
+          "name": "perPage",
+          "annotation": "integer",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "search_issues",
+      "docstring": "Search for issues and pull requests across GitHub repositories",
+      "source_hash": "6b0eee260141",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "query",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "page",
+          "annotation": "integer",
+          "default": null
+        },
+        {
+          "name": "perPage",
+          "annotation": "integer",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "search_users",
+      "docstring": "Search for GitHub users",
+      "source_hash": "89d1a69aba0b",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "query",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "page",
+          "annotation": "integer",
+          "default": null
+        },
+        {
+          "name": "perPage",
+          "annotation": "integer",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "get_file_contents",
+      "docstring": "Get the contents of a file or directory from a GitHub repository",
+      "source_hash": "54de6216aa12",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "owner",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "repo",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "path",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "ref",
+          "annotation": "string",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "create_or_update_file",
+      "docstring": "Create or update a single file in a GitHub repository",
+      "source_hash": "10268460cbe6",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "owner",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "repo",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "path",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "message",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "content",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "sha",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "branch",
+          "annotation": "string",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "push_files",
+      "docstring": "Push multiple files to a GitHub repository in a single commit",
+      "source_hash": "0ea99ad23e44",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "owner",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "repo",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "branch",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "files",
+          "annotation": "array",
+          "default": null
+        },
+        {
+          "name": "message",
+          "annotation": "string",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "list_pull_requests",
+      "docstring": "List and filter repository pull requests",
+      "source_hash": "527c8cf6af2f",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "owner",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "repo",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "state",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "head",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "base",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "sort",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "direction",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "page",
+          "annotation": "integer",
+          "default": null
+        },
+        {
+          "name": "perPage",
+          "annotation": "integer",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "list_issues",
+      "docstring": "List issues in a GitHub repository with filtering options",
+      "source_hash": "21237fe6f686",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "owner",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "repo",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "state",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "labels",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "assignee",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "sort",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "direction",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "since",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "page",
+          "annotation": "integer",
+          "default": null
+        },
+        {
+          "name": "perPage",
+          "annotation": "integer",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "list_commits",
+      "docstring": "Get list of commits of a branch in a GitHub repository",
+      "source_hash": "1c0d03ab4c65",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "owner",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "repo",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "sha",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "path",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "author",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "page",
+          "annotation": "integer",
+          "default": null
+        },
+        {
+          "name": "perPage",
+          "annotation": "integer",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "list_branches",
+      "docstring": "List branches in a GitHub repository",
+      "source_hash": "8ce903bf8c15",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "owner",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "repo",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "protected",
+          "annotation": "boolean",
+          "default": null
+        },
+        {
+          "name": "page",
+          "annotation": "integer",
+          "default": null
+        },
+        {
+          "name": "perPage",
+          "annotation": "integer",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "get_repository",
+      "docstring": "Get details of a GitHub repository",
+      "source_hash": "9b9ed9e9584d",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "owner",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "repo",
+          "annotation": "string",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "list_repositories",
+      "docstring": "List repositories for a GitHub user",
+      "source_hash": "04e82f1e8968",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "username",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "type",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "sort",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "direction",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "page",
+          "annotation": "integer",
+          "default": null
+        },
+        {
+          "name": "perPage",
+          "annotation": "integer",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "create_repository",
+      "docstring": "Create a new GitHub repository",
+      "source_hash": "e9da72675dd3",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "name",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "description",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "private",
+          "annotation": "boolean",
+          "default": null
+        },
+        {
+          "name": "autoInit",
+          "annotation": "boolean",
+          "default": null
+        },
+        {
+          "name": "org",
+          "annotation": "string",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "fork_repository",
+      "docstring": "Fork a GitHub repository to your account or specified organization",
+      "source_hash": "b9c81712c56e",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "owner",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "repo",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "organization",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "name",
+          "annotation": "string",
+          "default": null
+        }
+      ]
+    }
+  ]
+}

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import inspect
 from pathlib import Path
 from typing import Any
 
@@ -19,12 +20,13 @@ from agentgauge.fixer import (
     _patch_source_description,
     _patch_source_required,
     _patch_source_schema_props,
+    _select_neighbors,
     assert_generator_ne_judge,
     deep_merge,
     is_low_grounding,
     run_fixer,
 )
-from agentgauge.providers import MockProvider
+from agentgauge.providers import Message, MockProvider
 
 # ── T9: Validation mode constants ─────────────────────────────────────────────
 
@@ -130,7 +132,8 @@ async def test_sigma_gate_used_for_judge_based(tmp_path: Path) -> None:
 def test_patch_source_description_replaces_correctly() -> None:
     source = 'types.Tool(\n    name="mystery",\n    description="",\n    inputSchema={},\n)'
     result = _patch_source_description(source, "mystery", "Improved description.")
-    assert 'description="Improved description."' in result
+    # repr("Improved description.") uses single quotes — check text present, not quote style
+    assert "Improved description." in result
     assert 'description=""' not in result
 
 
@@ -147,8 +150,59 @@ def test_patch_source_description_leaves_other_tools_intact() -> None:
     )
     result = _patch_source_description(source, "mystery", "Fixed.")
     assert 'name="echo"' in result
-    assert 'description="Echo it"' in result
-    assert 'description="Fixed."' in result
+    assert "Echo it" in result
+    assert "Fixed." in result
+
+
+# ── Regression: description with special chars must produce parseable source ──
+
+
+def test_patch_source_description_double_quote_produces_parseable_source() -> None:
+    """Generated descriptions containing double-quotes must not corrupt the file.
+
+    The old code used f'description="{new_desc}"' which produced a SyntaxError
+    when new_desc contained a double-quote. The fix uses repr(new_desc).
+    """
+    import ast
+
+    source = 'types.Tool(\n    name="mystery",\n    description="",\n    inputSchema={},\n)'
+    desc_with_quotes = 'Use "quotes" like this'
+    result = _patch_source_description(source, "mystery", desc_with_quotes)
+
+    # Must parse as valid Python — the old bug would fail here
+    tree = ast.parse(result)
+    assert tree is not None
+
+    # The description text must survive the round-trip
+    assert desc_with_quotes in result
+
+
+def test_patch_source_description_backslash_and_quote_round_trips() -> None:
+    """Both backslash and double-quote in the same description must round-trip."""
+    import ast
+
+    source = 'types.Tool(\n    name="mystery",\n    description="",\n    inputSchema={},\n)'
+    desc = r'path\to\file and "quoted" word'
+    result = _patch_source_description(source, "mystery", desc)
+
+    # Must be valid Python
+    ast.parse(result)
+
+    # Text must be present (repr preserves the value)
+    assert "quoted" in result
+    assert "path" in result
+
+
+def test_patch_source_description_newline_in_desc_produces_parseable_source() -> None:
+    """A newline character in the description must not produce a broken string literal."""
+    import ast
+
+    source = 'types.Tool(\n    name="mystery",\n    description="",\n    inputSchema={},\n)'
+    desc = "line one\nline two"
+    result = _patch_source_description(source, "mystery", desc)
+
+    # Must parse as valid Python
+    ast.parse(result)
 
 
 # ── T9: Source patcher — schema props ─────────────────────────────────────────
@@ -1231,3 +1285,210 @@ async def test_mixed_opaque_and_grounded_tools(tmp_path: Path) -> None:
     assert not any("transform_scale" in s for s in report.abstained)
     # Generator called for transform_scale only (idx=1)
     assert generator._idx == 1
+
+
+# ── Q2b: Neighbor selection ────────────────────────────────────────────────────
+
+
+def test_select_neighbors_deterministic() -> None:
+    """Same catalog → identical neighbor order on repeated calls."""
+    catalog = [
+        Tool(name="get_record", description="", inputSchema={}),
+        Tool(name="fetch_record", description="", inputSchema={}),
+        Tool(name="read_entry", description="", inputSchema={}),
+        Tool(name="save_record", description="", inputSchema={}),
+        Tool(name="store_item", description="", inputSchema={}),
+        Tool(name="delete_record", description="", inputSchema={}),
+        Tool(name="update_record", description="", inputSchema={}),
+    ]
+    target = Tool(name="get_record", description="", inputSchema={})
+    neighbors1 = _select_neighbors(target, catalog, k=4)
+    neighbors2 = _select_neighbors(target, catalog, k=4)
+    assert [n.name for n in neighbors1] == [n.name for n in neighbors2]
+
+
+def test_select_neighbors_excludes_target() -> None:
+    """Neighbors never include the target tool itself."""
+    catalog = [
+        Tool(name="get_record", description="", inputSchema={}),
+        Tool(name="fetch_record", description="", inputSchema={}),
+        Tool(name="save_record", description="", inputSchema={}),
+    ]
+    target = Tool(name="get_record", description="", inputSchema={})
+    neighbors = _select_neighbors(target, catalog, k=5)
+    assert all(n.name != "get_record" for n in neighbors)
+
+
+def test_select_neighbors_does_not_use_family_labels() -> None:
+    """_select_neighbors takes only list[Tool] — no family dict in signature."""
+    sig = inspect.signature(_select_neighbors)
+    params = list(sig.parameters.keys())
+    assert "family" not in params
+    assert "families" not in params
+    assert "family_map" not in params
+
+
+def test_select_neighbors_token_similarity_ranks_shared_token_first() -> None:
+    """fetch_record shares 'record' with get_record → ranks above unrelated tools."""
+    catalog = [
+        Tool(name="fetch_record", description="", inputSchema={}),
+        Tool(name="search_items", description="", inputSchema={}),
+        Tool(name="notify_user", description="", inputSchema={}),
+    ]
+    target = Tool(name="get_record", description="", inputSchema={})
+    neighbors = _select_neighbors(target, catalog, k=3)
+    assert neighbors[0].name == "fetch_record"
+
+
+def test_select_neighbors_respects_k() -> None:
+    """Returns at most k neighbors."""
+    catalog = [Tool(name=f"tool_{i}", description="", inputSchema={}) for i in range(20)]
+    target = Tool(name="tool_0", description="", inputSchema={})
+    neighbors = _select_neighbors(target, catalog, k=5)
+    assert len(neighbors) <= 5
+
+
+# ── Q2b: Catalog-aware prompt content ─────────────────────────────────────────
+
+
+async def test_catalog_aware_prompt_contains_no_fabrication_guard() -> None:
+    """Catalog-aware prompt includes the no-fabrication instruction."""
+    captured: list[str] = []
+
+    class CapturingProvider:
+        model_name = "mock"
+
+        async def chat(self, messages: list[Message], *, seed: int = 42) -> str:
+            captured.extend(m.content for m in messages)
+            return "Plain description."
+
+    target = Tool(name="store_item", description="", inputSchema={"type": "object"})
+    neighbor = Tool(name="save_record", description="", inputSchema={"type": "object"})
+    await _generate_description(target, CapturingProvider(), neighbors=[neighbor])
+
+    assert captured, "No prompt captured"
+    prompt = captured[0]
+    assert "NO FABRICATION" in prompt or "DO NOT invent" in prompt
+    assert "save_record" in prompt
+
+
+async def test_catalog_aware_prompt_contains_neighbor_names() -> None:
+    """Catalog-aware prompt contains all neighbor names and descriptions."""
+    captured: list[str] = []
+
+    class CapturingProvider:
+        model_name = "mock"
+
+        async def chat(self, messages: list[Message], *, seed: int = 42) -> str:
+            captured.extend(m.content for m in messages)
+            return "A distinguishing description."
+
+    target = Tool(name="get_record", description="", inputSchema={})
+    neighbors = [
+        Tool(name="fetch_record", description="Fetch via HTTP", inputSchema={}),
+        Tool(name="read_entry", description="Read from file", inputSchema={}),
+    ]
+    await _generate_description(target, CapturingProvider(), neighbors=neighbors)
+
+    prompt = captured[0]
+    assert "fetch_record" in prompt
+    assert "read_entry" in prompt
+    assert "Fetch via HTTP" in prompt
+
+
+async def test_generate_description_no_neighbors_omits_catalog_content() -> None:
+    """When neighbors=None, prompt does not contain catalog-aware content."""
+    captured: list[str] = []
+
+    class CapturingProvider:
+        model_name = "mock"
+
+        async def chat(self, messages: list[Message], *, seed: int = 42) -> str:
+            captured.extend(m.content for m in messages)
+            return "Simple description."
+
+    target = Tool(name="mystery", description="old", inputSchema={})
+    await _generate_description(target, CapturingProvider(), neighbors=None)
+
+    prompt = captured[0]
+    assert "Confusable neighbors" not in prompt
+    assert "NO FABRICATION" not in prompt
+
+
+async def test_generate_description_catalog_aware_real_difference_neighbor() -> None:
+    """MockProvider: real-schema-difference neighbor → distinguishing response returned."""
+    _SCHEMA_CACHE = {
+        "type": "object",
+        "properties": {"key": {"type": "string"}, "ttl": {"type": "integer"}},
+    }
+    _SCHEMA_DB = {
+        "type": "object",
+        "properties": {"key": {"type": "string"}, "value": {"type": "object"}},
+    }
+
+    target = Tool(name="store_item", description="", inputSchema=_SCHEMA_CACHE)
+    neighbors = [Tool(name="save_record", description="", inputSchema=_SCHEMA_DB)]
+
+    provider = MockProvider(
+        responses=["Store an item in cache with TTL; unlike save_record which persists to DB."]
+    )
+    result = await _generate_description(target, provider, neighbors=neighbors)
+    assert "Store an item in cache with TTL" in result
+
+
+async def test_generate_description_catalog_aware_identical_neighbor_plain() -> None:
+    """MockProvider: identical-schema neighbor → plain non-fabricated response returned."""
+    _SCHEMA = {"type": "object", "properties": {"query": {"type": "string"}}, "required": ["query"]}
+    target = Tool(name="find_entries", description="", inputSchema=_SCHEMA)
+    neighbors = [Tool(name="lookup_data", description="", inputSchema=_SCHEMA)]
+
+    provider = MockProvider(responses=["Retrieve entries matching the given query string."])
+    result = await _generate_description(target, provider, neighbors=neighbors)
+    assert result == "Retrieve entries matching the given query string."
+
+
+async def test_run_fixer_catalog_aware_prompt_references_neighbors(tmp_path: Path) -> None:
+    """run_fixer with catalog_aware=True sends catalog-aware prompt referencing neighbors."""
+    _SCHEMA = {"type": "object", "properties": {"query": {"type": "string"}}, "required": ["query"]}
+    captured_prompts: list[str] = []
+
+    class CapturingProvider:
+        model_name = "mock"
+        _idx: int = 0
+        _responses = ["1"] * 5 + ["Distinguishing description."] + ["9"] * 5
+
+        async def chat(self, messages: list[Message], *, seed: int = 42) -> str:
+            captured_prompts.extend(m.content for m in messages)
+            resp = self._responses[self._idx % len(self._responses)]
+            self._idx += 1
+            return resp
+
+    target = Tool(name="store_item", description="old", inputSchema=_SCHEMA)
+    neighbor = Tool(name="save_record", description="old2", inputSchema=_SCHEMA)
+
+    source = (
+        'types.Tool(\n    name="store_item",\n    description="old",\n    inputSchema={},\n)\n'
+        'types.Tool(\n    name="save_record",\n    description="old2",\n    inputSchema={},\n)'
+    )
+    src_file = tmp_path / "server.py"
+    src_file.write_text(source)
+
+    prov = CapturingProvider()
+    await run_fixer(
+        [target, neighbor],
+        prov,
+        prov,
+        src_file,
+        ["description_quality"],
+        trials=5,
+        min_delta=10.0,
+        catalog_aware=True,
+    )
+
+    gen_prompt = next(
+        (p for p in captured_prompts if "Confusable neighbors" in p),
+        None,
+    )
+    assert gen_prompt is not None, "Expected catalog-aware prompt with 'Confusable neighbors'"
+    assert "save_record" in gen_prompt
+    assert "NO FABRICATION" in gen_prompt or "DO NOT invent" in gen_prompt

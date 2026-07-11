@@ -29,18 +29,22 @@ pip install uv && uv sync
 ## Quickstart
 
 ```bash
-# Run against the bundled echo server with a mock LLM (no API key needed)
-agentgauge scan examples/echo_server.py --mock
+# Score your server and preview all suggested fixes — nothing is written
+agentgauge try path/to/your_server.py
 
-# Run against any MCP server script
+# Apply the fixes when you're ready
+agentgauge fix path/to/your_server.py --apply
+
+# Quick scan with a mock LLM (no Ollama needed)
 agentgauge scan path/to/your_server.py --mock
-
-# Use a local Ollama model (requires Ollama running)
-agentgauge scan path/to/your_server.py --model llama3.2
-
-# Connect to an HTTP/SSE MCP endpoint
-agentgauge scan http://localhost:8000/sse --mock
 ```
+
+`agentgauge try` is the recommended first command. It runs scan + fix-preview in one step,
+shows the score table and inline before/after for every suggested change, and ends with the
+exact `fix --apply` command to run when you're ready. It never writes any files.
+
+When `--apply` is used, a `.bak` file is written before the original is overwritten.
+If `.bak` already exists, it increments to `.bak.1`, `.bak.2`, etc.
 
 Example output (`agentgauge scan examples/echo_server.py --mock --trials 1`):
 

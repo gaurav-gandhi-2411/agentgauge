@@ -1,104 +1,91 @@
-# spec.md — Ty: Does description/schema reduce malformed CALLS? (call_correctness)
+# spec.md — PAPER REWRITE (Option B): maximize reach WITHOUT inflating any claim
 
-**Repo:** github.com/gaurav-gandhi-2411/agentgauge · **Base:** `main` @ 54f8593 ·
-**Branch:** `claude/ty-call-correctness`
-**Routing:** DRAFT PR (all PRs are DRAFT — conservative policy). Draft-forcing #2/#3 (real agent vs
-served server, measured deltas). **NOT condition #1** — adds a fixture + task set + an oracle A/B; no
-judge/scorer/rubric/calibration/generator changes.
+**File:** docs/paper/paper.md (branch claude/paper-evidence-prep, current HEAD 341419c).
+**Nature:** REFRAME + REPACKAGE + RESTRUCTURE only. NO new claims, NO new experiments, NO un-scoping.
+Every number and every caveat in the current draft STAYS. This is a readability/reach edit, not a
+scope edit.
 
-**This spec, committed at branch start, IS the pre-registration.** Fixture, gold calls, oracle
-schemas, headroom target, and analysis plan are fixed before the run and not edited after.
+## The razor (read before every edit)
+Option B increases readership by surfacing the TRUEST, most INTERESTING finding the paper already
+contains — the counterintuitive multi-objective inversion — and by giving readers an ADOPTABLE tool.
+It does NOT increase reach by making any claim broader than its evidence. If a reframed sentence reads
+as more general/sweeping than the current draft's version of the same claim, it is WRONG — revert it.
+The honesty (N=10, one density point, one non-frontier model, one-fixture retrieval result,
+lower-bound, false-negative asymmetry) is the paper's credibility and its ceiling; do not trade it for
+reach.
 
----
+## MOVE 1 — Elevate the multi-objective inversion to the CENTRAL thesis
+Currently buried in §4.4 (mechanism throughline) and §4.3.3 (retrieval). It is the paper's most
+interesting, most portable, most counterintuitive TRUE finding, and it is under-billed.
 
-## The question
+The finding, stated at its HONEST maximum: **tool-description quality is not a single "better/worse"
+axis. The precision that helps an agent disambiguate WITHIN a confusable family is a DIFFERENT
+property than what a context-rich agent needs (which it often gets from the task, not the
+description) or what a retrieval index rewards — and on the catalogs we tested, optimizing for one can
+NEUTRALIZE or HARM the others.** "Better descriptions are uniformly better" is the assumption; "description
+quality is multi-objective and the objectives can conflict" is the finding.
 
-Selection turned out to be description-insensitive for a capable agent (run #1, ObsStore, T17): the
-agent picks the right tool from the name. Ty tests the next behavioral stage: once the right tool is
-selected, does a good description/schema reduce MALFORMED CALLS (wrong enum, wrong format/units,
-missing/!wrong required args)? This is where description_quality + schema_completeness are most
-likely to actually bite. Oracle schema = upper bound of what any fix could achieve.
+SCOPE GUARD (mandatory — this is the least-evidenced, most-interesting half): the retrieval-harm
+result is ONE synthetic catalog, three retrievers (§4.3.3). The selection-help result is ONE density
+point (§4.2.1). So the inversion is presented as an OBSERVATION with a legible mechanism, tested on
+specific fixtures — NOT a proven general law. Frame: "we observe, on the fixtures tested, that these
+pull in opposite directions; the mechanism is legible [precision matches implementation-level detail,
+which helps within-family selection and hurts coarse-query retrieval]; we do not claim this
+generalizes beyond the fixtures (§8.1)." The interestingness comes from the counterintuitive
+DIRECTION + the legible mechanism, NOT from an over-broad claim.
 
-## The headroom wall (primary design constraint — read first)
+- Pull the inversion into the ABSTRACT's opening (it currently opens on "the assumption is widely
+  held"; open instead on the surprising multi-objective finding, THEN the boundary map).
+- Give it a named home in the body (promote §4.4 from "mechanism throughline" to a titled synthesis,
+  e.g. "§4.4 Description quality is multi-objective") — keep all its existing scope hedges.
 
-`call_correctness` saturated at 100% on EVERY prior fixture because gemma2:9b builds valid args from
-convention (op="mean", ISO dates, obvious types). A fixture where schema info CAN help must require
-information the agent CANNOT guess from convention or param names. Otherwise it aborts at the
-headroom gate exactly like T17 (which died at 81.2% selection). Design the calls to need:
-- **Arbitrary enums:** valid value is a non-semantic token set, e.g. mode in ["xR2","xR7","xR9"] —
-  NOT "fast"/"slow"/"mean" which the agent guesses.
-- **Non-standard units/formats:** e.g. timestamp in centiseconds-since-boot (not epoch/ISO); weight
-  in grams with a 0-1000 bound; an ID format like "Z-####-Q".
-- **Required fields with no conventional default:** a mandatory arg the agent won't supply unless told.
-- **Inferability check:** for each, confirm the value is genuinely NOT derivable from the param name,
-  the task text, or common API convention. If gemma can guess it, it doesn't create headroom.
+## MOVE 2 — Name + box the behavioral regime test as an ADOPTABLE diagnostic
+The paper's reusable artifact (its "thing you can build on," scoped honestly) is the behavioral
+regime definition (§5.1): before investing in description tooling, check (a) does the agent actually
+FAIL a contested task on current descriptions, AND (b) does an oracle/near-perfect description RECOVER
+it. Neither -> no headroom / unfixable -> description tooling won't help.
 
-Arm A (vague/empty schema) must therefore cause genuine call FAILURES; Arm B (oracle schema) supplies
-the non-guessable info.
+- Give it a NAME (propose 2-3 for GG; memorable, not cute; descriptive — e.g. "the headroom check,"
+  "the two-condition regime test"). 
+- Present it ONCE as a small boxed/numbered PROCEDURE a practitioner can run, in the Discussion (§7)
+  or a short dedicated subsection — the "what to do Monday morning" artifact.
+- SCOPE GUARD: present it as a decision procedure whose VALIDATION is this paper's own experiments —
+  NOT as a validated general tool. It is "here is the check we used and recommend," not "here is a
+  proven instrument." Do not let naming it imply more validation than N=10 supports.
 
-## Anti-tautology guard
+## MOVE 3 — Restructure the Introduction to lead with the hook
+Current intro leads with §1.1 "the assumption under test." Re-order so the FIRST thing a reader meets
+is the counterintuitive claim: you'd assume better descriptions uniformly help selection AND
+retrieval; we find description quality is multi-objective (the properties conflict), the regime where
+it helps selection at all is narrow, and you can't cheaply tell if you're in it. THEN the assumption,
+THEN the roadmap. Hook -> gap -> contributions. Keep §1.1's citations and the GitHub tension intact,
+just after the hook.
 
-Do NOT phrase the task so it states the enum value / format directly (that tests copying, not schema
-use). The agent must get the constraint from the SCHEMA, not the prompt. Tasks describe intent; the
-schema carries the machine-level requirement.
+## TITLE — propose 2-3 for GG (honest AND catchy)
+Current: "When Does Tool-Description Quality Improve Agent Behavior? A Regime Analysis."
+Candidates to draft (must be honest — helps/harms/doesn't-matter is the real triad):
+- "Better Tool Descriptions Aren't Uniformly Better: When Description Quality Helps, Harms, or Doesn't
+  Matter"
+- "Tool-Description Quality Is Multi-Objective: A Regime Analysis of Selection, Retrieval, and Harm"
+- keep current as the safe option.
+GG picks. The title may headline the inversion ONLY if the body's scope guards are intact.
 
----
+## HARD CONSTRAINTS — DO NOT CHANGE (diff-verify byte-identical after edit)
+The six credibility passages stay verbatim: abstract's caveats, §4.2.3 survival-not-growth-not-
+frontier, §5.4 seed-bug episode, §8.3.1 false-negative asymmetry, §1.1 GitHub/RW1 tension, §5.5
+lower-bound scope. Every number stays (grep-verify). EXP-1 stays 0/9. Retrieval stays one-fixture.
+No caveat becomes less prominent than it currently is. The appendices (A.6, A.7) stay.
 
-## Scope
+## Acceptance
+- The inversion is the abstract's opening hook and a titled body synthesis, WITH its one-fixture/
+  one-point scope stated in the same breath.
+- The regime test is named and boxed as an adoptable procedure, scoped as "the check we used," not a
+  validated instrument.
+- Intro leads with the hook.
+- 2-3 title options proposed.
+- ANTI-INFLATION AUDIT (required): after the rewrite, re-run the adversarial overclaim sweep
+  specifically checking that NO reframed sentence is broader than the current draft's equivalent.
+  Report any sentence where the reach-reframe outran the evidence, with the conservative revert.
+- Diff-verify the six protected passages byte-identical; grep-verify every number still present.
 
-**IN:** a call-correctness fixture (Arm A vague schema; Arm B oracle schema with correct
-enums/formats/units/required); a powered, stability-screened task set; the oracle A/B on
-`call_correctness` via the T15 harness.
-
-**OUT:** the fixer / generated schemas (downstream Q2, only if oracle is positive); `selection_accuracy`
-(answered — insensitive); rubric/scorer changes; other dimensions.
-
-## Fixture design
-
-- 6-10 tools, each with at least one call-critical constraint from the categories above. The CORRECT
-  selection must be easy (don't reintroduce the selection problem) — single obvious tool per task —
-  so the only variable measured is whether the CALL is well-formed.
-- Arm A: vague/empty parameter schemas (type only, or missing constraints) — realistic sloppy server.
-- Arm B: ORACLE schema — correct enum members, format/unit descriptions, required flags. Committed up front.
-- Gold call per task: the exact correct arguments (tool + arg values). call_correctness is scored
-  deterministically against this. Document, per tool, WHICH constraint is non-guessable and why.
-
-## Rigor (carry forward T17's lessons)
-
-- Headroom: target Arm A call_correctness ~40-70% (real room; not saturated). CONFIRM before
-  interpreting — this is the gate that killed T17; expect it to be the hard part here too.
-- STABILITY pre-screen: run Arm A twice; DROP tasks whose success flips by >1 trial; report count.
-  If too many drop -> fixture-quality failure, report, don't proceed.
-- Power: >= 30 surviving tasks. Analysis CLUSTERED BY TASK (sign test / Wilcoxon on task-level
-  deltas), NOT trial-level McNemar.
-- Manipulation check: Arm A vs Arm B schemas differ in the served listing (assert).
-- Agent = gemma2:9b, != judge (llama3.1:8b) != generator (qwen3:8b). call_correctness deterministic.
-- No post-hoc tuning of fixture, gold calls, or oracle after seeing results.
-
----
-
-## Acceptance criteria
-
-1. **CI (deterministic, seed 42, no network):** fixture loads; each task has exactly one gold call;
-   stability-screen drop logic works on a synthetic flaky case; manipulation check holds (Arm A vs B
-   schemas differ); an inferability unit test asserts at least one constraint is absent from both the
-   param name and the task text. No real model in committed tests.
-2. **Real-agent oracle A/B (manual, in PR description — the deliverable):**
-   - Pre-checks reported FIRST: Arm A ~40-70% call_correctness and stable (post-screen), N>=30
-     surviving, manipulation pass. If headroom is wrong or too many drop -> STOP and report
-     (fixture-quality), do not interpret.
-   - Task-clustered table: Arm A, Arm B(oracle), per-task delta, sign/Wilcoxon result.
-   - Honest verdict on the pre-registered branch:
-     - POSITIVE (oracle > A): schema info reduces malformed calls — description_quality/
-       schema_completeness have real behavioral headroom on CALLS. -> Tx-val / a fixer-realization
-       experiment should run on THIS fixture.
-     - NULL (oracle ~ A): gemma builds correct calls without the schema even when info is
-       non-guessable -> the dimensions are behaviorally inert on calls too; combined with the
-       selection finding, a foundational result about the score's construct validity.
-3. scorer.py / judge / rubrics / calibration / generator untouched; verify.sh green; coverage >= 60%.
-
-## Housekeeping
-
-- Promote Ty into TASKS.md TODO with this spec referenced (makes it the one eligible item if the
-  scheduled task fires — but it's draft-forcing, so it would force DRAFT, not auto-anything).
-- STATUS.md: record the measured Ty result (positive or null) precisely; claim nothing beyond it.
+Then GG reads the reframed abstract + intro + §4.4 + the boxed regime test + the anti-inflation audit.

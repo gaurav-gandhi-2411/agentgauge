@@ -8,7 +8,105 @@ Autonomous runs: pick the single top TODO, implement it, move to IN-REVIEW.
 
 ## TODO
 
-*(empty)*
+### EXP-3 — Pairwise confusability localizer (CONDITION #1 → DRAFT + escalate)
+
+**Paper role:** Positive methodological contribution on top of the score-validity-gap negative.
+**Sequence:** After EXP-4 merged; before EXP-1 (validates the regime classifier used in EXP-1).
+
+**Method:** For each tool pair within a family, ask the frozen judge (llama3.1:8b, seed=42):
+"Could a task intended for tool A plausibly select tool B (and vice versa) given their
+descriptions?" → a confusability MATRIX per catalog → localized output "tools X,Y confusable
+for task-type Z." Baseline = the single-score DISTINGUISH judge (flags ~nothing on real servers).
+
+**Validation:** Does the pairwise localizer flag the families where EXP-1's behavioral regime test
+finds the agent actually confused tools? Measure precision/recall of the localizer against the
+behavioral ground truth (Arm A miss-rate per family). Compare against the single-score baseline.
+
+**Acceptance criteria:**
+- Pairwise confusability matrix implemented for a catalog; output is per-pair scores, not a
+  single catalog number.
+- Tested on the T18 catalog AND at least one RW server (GitHub or AWS IAM).
+- Localizer precision/recall table vs behavioral ground truth (use T18 Arm A per-task misses
+  as ground truth for the 10-family catalog).
+- DISTINGUISH single-score baseline shown as comparison.
+- Pre-registration committed before any run.
+- Judge re-validated on a held-out set (condition #1 — DRAFT PR + GG escalation before running).
+
+**Do NOT auto-pick.** This is Condition #1 (judge-touching). Requires own spec committed to
+branch before any run. Open as DRAFT PR; escalate to GG for judge re-validation review.
+
+---
+
+### EXP-1 — Server-population prevalence (ESCALATE SAMPLING FRAME TO GG FIRST)
+
+**Paper role:** Headline empirical contribution — what fraction of real MCP servers are in the regime?
+**Sequence:** After EXP-3 (uses the pairwise localizer as part of the in-regime classifier).
+**BLOCKER:** Sampling frame must be ratified by GG before any scoring begins.
+
+**Operationalize "in-regime" BEHAVIORALLY (two-condition test, pre-registered):**
+1. Arm A = server's real shipped descriptions fails ≥ 1 contested task (agent selects wrong)
+2. Arm B = oracle description recovers it
+Both conditions must hold. "Thin descriptions" is an input property — only behavior-that-fix-
+repairs counts.
+
+**Sampling frame (to be pre-registered and ratified by GG):**
+- Source 1: Official MCP registry (top-N by stars/downloads) as of a fixed date
+- Source 2: Glama/PulseMCP directory (supplementary, deduplicated)
+- Fixed date: ratified at branch start (fixed in pre-registration commit)
+- Filter: source-available, locally runnable (stubs OK, live API keys NOT required)
+- Target: 20–50 servers
+- SCORE EVERY ONE; drop none post-hoc; log any exclusions + pre-stated reason
+- Pre-stated exclusion reasons: (a) no source, (b) un-runnable after mirroring, (c) duplicate
+
+**Method:** Local mirrors (verbatim docstrings, stub bodies). Identify confusable families
+(name/embedding clusters). Anti-tautological contested tasks. Run frozen protocol per family.
+
+**Report:** Fraction of servers (and families) in-regime; distribution; per-server table.
+**Pre-registered honest caveat:** public servers skew documented → this is a lower bound on
+the under-documented internal segment.
+
+**Acceptance criteria:**
+- Sampling frame committed to branch before any mirror is built or scored.
+- GG ratification of the frame received (escalation required — see above).
+- Every sampled server scored; exclusion log committed.
+- Per-server and aggregate in-regime fraction reported.
+- Frozen protocol used for all runs (llama3.1:8b judge, seed=42, gemma2:9b agent).
+
+**Do NOT auto-pick.** GG must ratify the sampling frame first. See escalation section in
+the PR for this task.
+
+---
+
+### EXP-2 — Capability-ladder curve (needs model set provisioned)
+
+**Paper role:** How does the description effect size vary with agent capability?
+**Sequence:** After EXP-1 (uses the same T18 fixture; ladder is the only variable).
+**BLOCKER:** Model set must be provisioned before running. Open-weight ladder is the core;
+frontier API (Claude/GPT) only if GG provisions a non-Anthropic key.
+
+**Design (apples-to-apples — critical):**
+- SAME model family at increasing sizes (e.g., Qwen-2.5: 7B / 32B / 72B, OR Llama: 8B / 70B)
+- Do NOT mix families — that reintroduces the gemma/Llama non-comparability
+- IDENTICAL fixture (T18), tasks, prompt template, frozen classifier, trials, seeds
+- Agent is the ONLY variable
+
+**Parse control (mandatory):**
+- Report parse_failed per model per arm (absolute)
+- Confirm effect on parse-success-only per model
+- A "no effect" result must be ruled out as a parsing artifact
+
+**Report:** Effect size (B−A, with CI) as a function of capability (the CURVE). Either shape
+is a finding: shrinks-with-capability or persists. Explicitly flag T18/gemma +34.5pp and
+FRONTIER-T18/Llama +40.8pp as NOT part of this controlled ladder (different harness).
+
+**Acceptance criteria:**
+- ≥ 3 sizes from the SAME family tested.
+- Parse control table per model.
+- Effect curve reported (not just individual points).
+- Pre-registration committed to branch before any run.
+- If a frontier API key is needed: GG provides it (never set ANTHROPIC_API_KEY).
+
+**Do NOT auto-pick.** Requires model provisioning decision from GG.
 
 ---
 
@@ -20,11 +118,56 @@ Autonomous runs: pick the single top TODO, implement it, move to IN-REVIEW.
 
 ## IN-REVIEW
 
-*(empty)*
+### EXP-4 — Regime map + frozen evaluation protocol (this PR)
+
+**PR:** claude/frozen-protocol-exp4 (DRAFT — awaiting GG review)
+**Scope:** Consolidation only — no new runs.
+
+**Deliverables:**
+- `docs/research/frozen_protocol.md` — locked protocol definition (ONE classifier, ONE judge/seed,
+  ONE generator family, effect measurement, sign test, required reporting, reproducibility).
+- `agentgauge/frozen_protocol.py` — codified constants + `EffectResult` dataclass +
+  `validate_effect_result()`.
+- `docs/research/exp4_regime_map.md` — WHERE-helps / WHERE-doesn't regime map synthesizing all
+  banked experiments (T18, FRONTIER-T18, Q2a/b, Q3–Q6, RW1, RW2, P2-A, F2).
+- `tests/test_frozen_protocol.py` — protocol invariant tests (8 tests).
+
+**Acceptance criteria:**
+- All 8 tests pass; verify.sh green.
+- Regime map covers all banked findings with correct N/p/effect values.
+- JUDGE_MODEL, JUDGE_SEED, GENERATOR_MODEL constants match CLAUDE.md calibration.
+- `validate_effect_result` catches the 5 pre-registered invariant violations.
+- PARSE_FAILED not in CLASSIFIER_OUTCOMES (structural independence asserted in tests).
 
 ---
 
 ## FUTURE / DEFERRED
+
+---
+
+### SCORE-FIX — Improve discoverability DISTINGUISH to capture prefix-collision confusability
+
+**Goal:** Fix the SCORE-VALIDITY GAP from RW1. The current DISTINGUISH metric scores every
+family flat at 70/100 on real naming (GitHub's historically-confusing PR-read family got the
+same score as a clean family). The metric must be updated to penalize shared-prefix naming
+patterns, not just description similarity.
+
+**Why this matters:** Until fixed, the discoverability score cannot be used as a meaningful
+"directory/gateway ranking signal" for real MCP servers. The synthetic-catalog ordering
+validity stands, but the real-world ranking use-case is blocked.
+
+**This is a CONDITION #1 / judge-touching fix.** Requires:
+- Updated rubric or heuristic that detects common-prefix tool families (e.g. 3+ tools sharing
+  a `get_pull_request_` prefix) and lowers the DISTINGUISH sub-score accordingly.
+- Re-calibration run against llama3.1:8b on a prefix-collision fixture.
+- CI: ordering guarantee must still hold (good catalog beats bad by ≥40 pts).
+- Validation: re-run RW1 Part 1 cross-check; DISTINGUISH should now flag pr_read_variants
+  and/or search_variants (the 0/2 overlap must improve).
+
+**Do NOT auto-pick.** Requires its own spec + judge re-validation; do NOT inherit RW1 fixtures
+unchanged.
+
+---
 
 ### Tx-val — Powered upside re-run (grounded-fixture significance)
 
@@ -78,6 +221,159 @@ test suite guarantees ordering + actionability gap regardless of which model is 
 ---
 
 ## DONE
+
+### UX1 — Presentation + safety pass (tracegauge-style first-touch flow)
+
+**Merged:** PR #51 — feat(ux1): non-destructive backup + inline before/after + agentgauge try verb
+
+`agentgauge try <server>`: one-command read-only scan + fix-preview + apply hint. Non-destructive
+`--apply`: backup written to `<file>.bak` (increments to `.bak.N`) before rewrite. Inline
+before/after in fix preview (colorized; `+/-` markers on non-TTY). Bug fixed: apply-path source
+patching now uses `repr()`/lambda-replace to escape generated descriptions — quotes/backslashes/
+newlines no longer corrupt the target file. 3 regression tests (`ast.parse`). 553 tests,
+93.74% coverage. Engine unchanged.
+
+---
+
+### RW2 — Real-world experiment: AWS IAM MCP server (the buyer segment)
+
+**Merged:** PR #49 — feat(rw2): AWS IAM real-world experiment — Guard-B on a 2nd production server
+
+29-tool mirror of the AWS IAM MCP server (real docstrings, stub bodies). 12 CONTESTED tools
+(Family A: attach/detach × user/group; Family C: list_* scope variants; Destructive pair:
+delete_user/role_policy). 14 THOROUGH tools. 3 DESTRUCTIVE_CONFUSABLE_PAIRS.
+Judge: llama3.1:8b. Generator: qwen3:8b. Agent: gemma2:9b. 5 trials per arm.
+
+**FINDING 1 — NO HEADROOM:** Arm A (real AWS IAM docstrings) = 100.0% on all 29 tasks including
+all 12 contested. Guard-B has nothing to recover. Buyer bound confirmed (2nd server): Guard-B
+value is in thin+name-colliding+context-poor servers, not GitHub-class or AWS IAM-class servers.
+
+**FINDING 2 — SCORE-VALIDITY GAP (confirmed, 2 servers):** Heuristic flags verb-antonym pairs
+(not the confusable principal-type families). Real judge gives 68.7 blended (NOT mock-70 — mock
+produces flat 70 regardless of catalog quality). Structurally cannot identify contested families.
+Requires per-pair confusability redesign — SCORE-FIX in FUTURE/DEFERRED.
+
+**FINDING 3 — DO-NO-HARM REGRESSION (corrected):** 2/14 thorough tools regressed in source-aware
+Guard-B path. Skip-above-band (90.0) does NOT protect get_user_policy (82.0) or get_group (82.0).
+Stub→artifact mechanism fires when scoped_source is a stub body. Base CLI path (name+schema only)
+is unaffected. Mirror over-exposes (uniform stubs); real-server regression rate unmeasured.
+Thin-body detection is a known gap, not fixed.
+
+---
+
+### RW1 — Real-world experiment: GitHub MCP server
+
+**Merged:** PR #48 — feat(rw1): GitHub MCP external validity + Guard-B value test (DONE)
+
+21-tool mirror of the 162-tool GitHub MCP server (real docstrings from `pkg/github/*.go`,
+real schemas, stub bodies, no live API). 5 confusable families, 21 anti-tautological tasks,
+4 DESTRUCTIVE_CONFUSABLE_PAIRS. Judge: llama3.1:8b. Agent: gemma2:9b. 5 trials.
+486 CI tests, 90.86% coverage — verify.sh green.
+
+**FINDING 1 — SCORE-VALIDITY GAP (most important):** discoverability DISTINGUISH scored every
+family flat at 70/100; overlap with GitHub's own hand-fixed families: 0/2 (pr_read_variants
+and search_variants both above the 60-pt flag threshold, neither flagged). The ranking-signal
+use-case on real prefix-sharing naming is blocked until SCORE-FIX (FUTURE/DEFERRED).
+
+**FINDING 2 — BUYER BOUND:** Arm A (real GitHub docstrings) = 100.0% accuracy, 0/21 contested
+tasks. Guard-B has nothing to recover. The buyer is the under-documented long tail (RW2),
+not GitHub-class servers. 3/21 Guard-B descriptions degraded to stub language (generator read
+stub body) — a real limitation on mirror/stub servers.
+
+**Caveats:** one server (best-documented in the ecosystem), one agent (gemma2:9b). "Score is
+invalid" and "Guard-B has no value" are over-generalizations — see STATUS.md for scoped claims.
+
+---
+
+### Q6 — Do-no-harm on already-passing tasks (is Guard-B safe to run BLANKET?)
+
+**Merged:** PR #47 — feat(q6): do-no-harm fixture + CI + run scripts — extended catalog with collision-prone pairs
+
+Four-arm A/B inverted gate (11 already-passing tasks + 6 structural contested, gemma2:9b, 5 trials,
+2026-06-08). Zero regressions on 11 already-passing tasks including all 3 collision-prone pairs
+(list_active_users/sessions, close_ticket/request, reset_pin/password). Contested recovery 6/6 (p=0.0312).
+Verdict: SAFE TO RUN BLANKET on documented servers where honest descriptions remain distinct.
+Key mechanism: harm-via-collapse was untested (qwen3:8b retained distinguishing tokens for every pair);
+not an unconditional safe claim.
+
+---
+
+### Q5 — Distinction guard (Guard B: target-grounded phrasing; docstrings safe)
+
+**Merged:** PR #46 — feat(q5): distinction guard (Guard B) — target-grounded phrasing; DOC-scoped with docstrings now safe
+
+Four-arm A/B (6 structural contested tasks, gemma2:9b, 5 trials, 2026-06-08). Guard B eliminated
+all 4 Q4-DOC-scoped fabrications (0/4 FABRICATED vs 4/4) and held 100% recovery (p=0.0313, n=6,
+non-regressing vs Q4-DOC). Verdict: SAFE+RECOVERS — the shippable config for source-aware fixing
+on documented servers. Documented source can now be used safely with the guard. Closes the Q4
+deployment question. Key finding: on ambiguous-equivalent tools, fabrication can inflate measured
+recovery (Q4-DOC scored 100% on control_search by inventing a false asymmetry; Q5 scored 0% by
+correctly refusing to invent one — an honest generator penalised for honesty on an arbitrary gold label).
+
+---
+
+### Q4 — Scoped-source description generation (safety inversion in the scoped regime)
+
+**Merged:** PR #45 — feat(q4): scoped-source description generation — Q4-BODY-scoped safe+fully-recovering; docstring-vs-body fabrication inversion in scoped regime
+
+Four-arm A/B (6 structural contested tasks, gemma2:9b, 5 trials, 2026-06-08). Both Q4 conditions
+fully recover (100%, p=0.0313 n=6) on the Arm-A-failure subset. Scoping eliminates Q3's _db
+cross-tool body misattribution in both conditions. Key finding: in the scoped regime, docstrings
+INCREASE fabrication risk (Q4-DOC-scoped: FABRICATED 4/4 controls via docstring-body inconsistency);
+BODY-scoped is safe (INCIDENTAL-BUT-TRUE 4/4). This reverses Q3's whole-file lesson where docstrings
+were safer. Q4-BODY-scoped is the first condition that is both fully-recovering and safe.
+
+---
+
+### Q3 — Source-aware description generation (DOC vs BODY)
+
+**Merged:** PR #44 — feat(q3): source-aware description generation — F-DOC RECOVERS (83.3%, marginal), F-BODY UNSAFE (cross-tool source misattribution)
+
+Four-arm A/B (6 genuine contested tasks, gemma2:9b, 5 trials, 2026-06-07). F-DOC: 83.3% recovery,
+p=0.0625 marginal, no-fabrication PASS. F-BODY: 83.3% recovery but FABRICATED on find_entries
+(cross-tool source misattribution — cited _db belonging to other tools as a distinction; grounded-sounding,
+harder to catch than prose fabrication). Source-aware fixing is safe and effective WITH docstrings;
+unsafe on undocumented servers. Docstrings are load-bearing for both recovery and safety.
+
+---
+
+### Q2b — Catalog-aware fixer (cross-tool context injection)
+
+**Merged:** PR #43 — feat(q2b): catalog-aware description generation — SAFETY PASS, RECOVERY information-theoretic limit confirmed
+
+Three-arm A/B on `selection_accuracy` (60-tool confusable catalog, 18 contested tasks, gemma2:9b, 5 trials).
+Arm A=0.0% / Arm F=11.1% / Arm O=88.9%. Recovery fraction (F−A)/(O−A)=0.125. F-vs-A p=0.50 (not significant).
+
+**SAFETY:** No-fabrication guard held under maximum fabrication pressure — 4/4 ambiguous tool pairs FAITHFUL;
+guard fired correctly on `compute_metric` (correct abstain). The generator stayed honest when it had the most
+license to lie.
+
+**RECOVERY limit (information-theoretic):** 12.5% recovery, confirmed across Q2a (per-tool) and Q2b
+(catalog-aware). The T18-decisive distinctions live in tool behavior, absent from both names and identical
+`{query: string}` schemas. No generator can recover what the interface does not contain. Closing the gap
+requires source-level context (docstrings/README), not prompt refinement.
+
+---
+
+### Q2a — Three-arm fixer recovery (does the current fixer recover the T18 gain?)
+
+**Merged:** PR #42 — feat(q2a): three-arm fixer recovery — LOW recovery (12.5%), all misses (i), Q2b warranted
+
+Three-arm A/B on `selection_accuracy` (60-tool confusable catalog, 18 contested tasks, gemma2:9b, 5 trials).
+Arm A=0.0% / Arm F=11.1% / Arm O=88.9%. Recovery fraction (F−A)/(O−A)=0.125. F-vs-A p=0.50 (not significant).
+All 14 misses classified (i): cross-tool distinction only. ≥2 tools received confidently wrong descriptions
+(store_item→"persistent", forward_record→"retrieval"). Per-tool fixer is net-negative on confusable catalogs;
+catalog-aware generation (Q2b) is the motivated next step.
+
+---
+
+### T18 — Discoverability at scale (confusable catalog oracle A/B)
+
+**Merged:** PR #41 — feat(t18): discoverability at scale — oracle A/B POSITIVE (+34.5pp discrimination, 60-tool confusable catalog)
+
+60-tool catalog (10 families × 6 near-neighbors), 40 pre-registered tasks, 5 trials per arm, gemma2:9b agent. GPU-exclusive run (watchdog-confirmed, 2026-06-07). **POSITIVE.** Within-family discrimination: +34.5 pp on parse-success calls (62.9% → 97.4%), 16/16 contested tasks improved, p=0.0000. Parse-stabilization separate finding: 12.5% → 2.5% malformed-call rate — catalog ambiguity destabilizes call formation at scale, not just selection. Effect is scale-gated (≥60-tool density required; T17 at 16 tools saturated Arm A at 81.2%). First located behavioral effect for a description-facing dimension.
+
+---
 
 ### Ty — H2 headroom fixture (call_correctness oracle A/B)
 

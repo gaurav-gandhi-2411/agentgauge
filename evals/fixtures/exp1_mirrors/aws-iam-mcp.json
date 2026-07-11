@@ -1,0 +1,647 @@
+{
+  "server_id": "aws-iam-mcp",
+  "source_repo": "awslabs/mcp (src/iam-mcp-server)",
+  "language": "python",
+  "stars": 0,
+  "stratum": "validation_anchor",
+  "notes": "Ported from evals/fixtures/rw2_aws_iam_catalog.py (RW2, already real, already asserted ARM_A_DESCRIPTIONS == AWS_IAM_DOCSTRINGS vs source). known_result=OUT-OF-REGIME (exp4_regime_map.md: Arm A 100% (29/29), no headroom).",
+  "tools": [
+    {
+      "name": "attach_user_policy",
+      "docstring": "Attach a managed policy to an IAM user.",
+      "source_hash": "bd72d2ff726e",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "user_name",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "policy_arn",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "confirmed",
+          "annotation": "boolean",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "attach_group_policy",
+      "docstring": "Attach a managed policy to an IAM group.",
+      "source_hash": "0d97b1485ec0",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "group_name",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "policy_arn",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "confirmed",
+          "annotation": "boolean",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "detach_user_policy",
+      "docstring": "Detach a managed policy from an IAM user.",
+      "source_hash": "d8b62575becb",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "user_name",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "policy_arn",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "confirmed",
+          "annotation": "boolean",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "detach_group_policy",
+      "docstring": "Detach a managed policy from an IAM group.",
+      "source_hash": "49cfaf94d8b9",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "group_name",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "policy_arn",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "confirmed",
+          "annotation": "boolean",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "list_policies",
+      "docstring": "List IAM policies in the account.",
+      "source_hash": "0e725beb6d85",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "scope",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "only_attached",
+          "annotation": "boolean",
+          "default": null
+        },
+        {
+          "name": "path_prefix",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "max_items",
+          "annotation": "integer",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "list_user_policies",
+      "docstring": "List all inline policies for an IAM user. This tool retrieves the names of all inline policies attached to the specified user.",
+      "source_hash": "a9e09ab21380",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "user_name",
+          "annotation": "string",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "list_role_policies",
+      "docstring": "List all inline policies for an IAM role. This tool retrieves the names of all inline policies attached to the specified role.",
+      "source_hash": "b82f2d05d5b4",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "role_name",
+          "annotation": "string",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "list_users",
+      "docstring": "List IAM users in the account. This tool retrieves a list of IAM users from your AWS account with optional filtering. Use this to get an overview of all users or find specific users by path prefix.",
+      "source_hash": "ea8e2166fef5",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "path_prefix",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "max_items",
+          "annotation": "integer",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "list_groups",
+      "docstring": "List IAM groups in the account. This tool retrieves a list of IAM groups from your AWS account with optional filtering.",
+      "source_hash": "daf21c4827cd",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "path_prefix",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "max_items",
+          "annotation": "integer",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "list_roles",
+      "docstring": "List IAM roles in the account.",
+      "source_hash": "17fce72c142a",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "path_prefix",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "max_items",
+          "annotation": "integer",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "delete_user_policy",
+      "docstring": "Delete an inline policy from an IAM user. This tool removes an inline policy from the specified user. The policy document will be permanently deleted and cannot be recovered.",
+      "source_hash": "aedd5aacd999",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "user_name",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "policy_name",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "confirmed",
+          "annotation": "boolean",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "delete_role_policy",
+      "docstring": "Delete an inline policy from an IAM role. This tool removes an inline policy from the specified role. The policy document will be permanently deleted and cannot be recovered.",
+      "source_hash": "8fcd25561138",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "role_name",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "policy_name",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "confirmed",
+          "annotation": "boolean",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "create_user",
+      "docstring": "Create a new IAM user. This tool creates a new IAM user in your AWS account. The user will be created without any permissions by default - you'll need to attach policies separately.",
+      "source_hash": "6ad0c3b0fb0c",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "user_name",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "path",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "permissions_boundary",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "confirmed",
+          "annotation": "boolean",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "get_user",
+      "docstring": "Get detailed information about a specific IAM user. This tool retrieves comprehensive information about an IAM user including attached policies, group memberships, and access keys.",
+      "source_hash": "79de6da371fd",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "user_name",
+          "annotation": "string",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "delete_user",
+      "docstring": "Delete an IAM user.",
+      "source_hash": "5df4d2f213a4",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "user_name",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "force",
+          "annotation": "boolean",
+          "default": null
+        },
+        {
+          "name": "confirmed",
+          "annotation": "boolean",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "create_role",
+      "docstring": "Create a new IAM role.",
+      "source_hash": "17fcff21b1b3",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "role_name",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "assume_role_policy_document",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "path",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "description",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "max_session_duration",
+          "annotation": "integer",
+          "default": null
+        },
+        {
+          "name": "permissions_boundary",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "confirmed",
+          "annotation": "boolean",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "get_managed_policy_document",
+      "docstring": "Retrieve the policy document for a managed policy. This tool retrieves the policy document for a specific managed policy version. Use this to examine the actual permissions and wildcards in managed policies.",
+      "source_hash": "2c74baf31ef7",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "policy_arn",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "version_id",
+          "annotation": "string",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "put_user_policy",
+      "docstring": "Create or update an inline policy for an IAM user. This tool creates a new inline policy or updates an existing one for the specified user. Inline policies are directly embedded in a single user, role, or group and have a one-to-one relationship with the identity.",
+      "source_hash": "ca36281119b8",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "user_name",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "policy_name",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "policy_document",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "confirmed",
+          "annotation": "boolean",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "get_user_policy",
+      "docstring": "Retrieve an inline policy for an IAM user. This tool retrieves the policy document for a specific inline policy attached to a user.",
+      "source_hash": "3662b135397c",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "user_name",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "policy_name",
+          "annotation": "string",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "put_role_policy",
+      "docstring": "Create or update an inline policy for an IAM role. This tool creates a new inline policy or updates an existing one for the specified role. Inline policies are directly embedded in a single user, role, or group and have a one-to-one relationship with the identity.",
+      "source_hash": "10de26e72303",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "role_name",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "policy_name",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "policy_document",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "confirmed",
+          "annotation": "boolean",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "get_role_policy",
+      "docstring": "Retrieve an inline policy for an IAM role. This tool retrieves the policy document for a specific inline policy attached to a role.",
+      "source_hash": "da0dca183e3e",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "role_name",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "policy_name",
+          "annotation": "string",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "create_group",
+      "docstring": "Create a new IAM group. This tool creates a new IAM group in your AWS account. The group will be created without any permissions by default - you'll need to attach policies separately.",
+      "source_hash": "db4998e476bd",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "group_name",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "path",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "confirmed",
+          "annotation": "boolean",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "get_group",
+      "docstring": "Get detailed information about a specific IAM group. This tool retrieves comprehensive information about an IAM group including group members, attached policies, and inline policies.",
+      "source_hash": "e95b0f953bc6",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "group_name",
+          "annotation": "string",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "add_user_to_group",
+      "docstring": "Add a user to an IAM group.",
+      "source_hash": "959d790f2838",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "group_name",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "user_name",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "confirmed",
+          "annotation": "boolean",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "remove_user_from_group",
+      "docstring": "Remove a user from an IAM group.",
+      "source_hash": "b2b70d498487",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "group_name",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "user_name",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "confirmed",
+          "annotation": "boolean",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "delete_group",
+      "docstring": "Delete an IAM group.",
+      "source_hash": "e93f0e8b4c22",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "group_name",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "force",
+          "annotation": "boolean",
+          "default": null
+        },
+        {
+          "name": "confirmed",
+          "annotation": "boolean",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "simulate_principal_policy",
+      "docstring": "Simulate IAM policy evaluation for a principal.",
+      "source_hash": "cc6a6acf3f97",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "policy_source_arn",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "action_names",
+          "annotation": "array",
+          "default": null
+        },
+        {
+          "name": "resource_arns",
+          "annotation": "array",
+          "default": null
+        },
+        {
+          "name": "context_entries",
+          "annotation": "object",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "create_access_key",
+      "docstring": "Create a new access key for an IAM user.",
+      "source_hash": "bed18ef69dac",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "user_name",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "confirmed",
+          "annotation": "boolean",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "delete_access_key",
+      "docstring": "Delete an access key for an IAM user.",
+      "source_hash": "78a7c1072c21",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "user_name",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "access_key_id",
+          "annotation": "string",
+          "default": null
+        },
+        {
+          "name": "confirmed",
+          "annotation": "boolean",
+          "default": null
+        }
+      ]
+    }
+  ]
+}

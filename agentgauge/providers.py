@@ -27,8 +27,9 @@ class OllamaProvider:
 
     BASE_URL = "http://localhost:11434"
 
-    def __init__(self, model: str = "llama3.2") -> None:
+    def __init__(self, model: str = "llama3.2", *, timeout: float = 180.0) -> None:
         self._model = model
+        self._timeout = timeout
 
     @property
     def model_name(self) -> str:
@@ -41,7 +42,7 @@ class OllamaProvider:
             "stream": False,
             "options": {"seed": seed},
         }
-        async with httpx.AsyncClient(timeout=180.0) as client:
+        async with httpx.AsyncClient(timeout=self._timeout) as client:
             resp = await client.post(f"{self.BASE_URL}/api/chat", json=payload)
             resp.raise_for_status()
             return resp.json()["message"]["content"]

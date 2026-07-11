@@ -1,0 +1,296 @@
+{
+  "server_id": "lucasastorian-llmwiki",
+  "family_id": "create_family",
+  "agent_model": "gemma2:9b",
+  "trials_per_task": 5,
+  "n_contested": 4,
+  "parse_failed_a": 0,
+  "arm_a_accuracy": 1.0,
+  "headroom_gated": false,
+  "aborted": true,
+  "abort_reason": "No headroom: Arm A accuracy=100.0% >= 85%",
+  "arm_a_outcomes": [
+    {
+      "task_id": "llmwiki_1",
+      "trial": 0,
+      "outcome": "SELECTED-CORRECT",
+      "selected_tool": "create_knowledge_base"
+    },
+    {
+      "task_id": "llmwiki_1",
+      "trial": 1,
+      "outcome": "SELECTED-CORRECT",
+      "selected_tool": "create_knowledge_base"
+    },
+    {
+      "task_id": "llmwiki_1",
+      "trial": 2,
+      "outcome": "SELECTED-CORRECT",
+      "selected_tool": "create_knowledge_base"
+    },
+    {
+      "task_id": "llmwiki_1",
+      "trial": 3,
+      "outcome": "SELECTED-CORRECT",
+      "selected_tool": "create_knowledge_base"
+    },
+    {
+      "task_id": "llmwiki_1",
+      "trial": 4,
+      "outcome": "SELECTED-CORRECT",
+      "selected_tool": "create_knowledge_base"
+    },
+    {
+      "task_id": "llmwiki_2",
+      "trial": 0,
+      "outcome": "SELECTED-CORRECT",
+      "selected_tool": "create"
+    },
+    {
+      "task_id": "llmwiki_2",
+      "trial": 1,
+      "outcome": "SELECTED-CORRECT",
+      "selected_tool": "create"
+    },
+    {
+      "task_id": "llmwiki_2",
+      "trial": 2,
+      "outcome": "SELECTED-CORRECT",
+      "selected_tool": "create"
+    },
+    {
+      "task_id": "llmwiki_2",
+      "trial": 3,
+      "outcome": "SELECTED-CORRECT",
+      "selected_tool": "create"
+    },
+    {
+      "task_id": "llmwiki_2",
+      "trial": 4,
+      "outcome": "SELECTED-CORRECT",
+      "selected_tool": "create"
+    },
+    {
+      "task_id": "llmwiki_3",
+      "trial": 0,
+      "outcome": "SELECTED-CORRECT",
+      "selected_tool": "create_knowledge_base"
+    },
+    {
+      "task_id": "llmwiki_3",
+      "trial": 1,
+      "outcome": "SELECTED-CORRECT",
+      "selected_tool": "create_knowledge_base"
+    },
+    {
+      "task_id": "llmwiki_3",
+      "trial": 2,
+      "outcome": "SELECTED-CORRECT",
+      "selected_tool": "create_knowledge_base"
+    },
+    {
+      "task_id": "llmwiki_3",
+      "trial": 3,
+      "outcome": "SELECTED-CORRECT",
+      "selected_tool": "create_knowledge_base"
+    },
+    {
+      "task_id": "llmwiki_3",
+      "trial": 4,
+      "outcome": "SELECTED-CORRECT",
+      "selected_tool": "create_knowledge_base"
+    },
+    {
+      "task_id": "llmwiki_4",
+      "trial": 0,
+      "outcome": "SELECTED-CORRECT",
+      "selected_tool": "create"
+    },
+    {
+      "task_id": "llmwiki_4",
+      "trial": 1,
+      "outcome": "SELECTED-CORRECT",
+      "selected_tool": "create"
+    },
+    {
+      "task_id": "llmwiki_4",
+      "trial": 2,
+      "outcome": "SELECTED-CORRECT",
+      "selected_tool": "create"
+    },
+    {
+      "task_id": "llmwiki_4",
+      "trial": 3,
+      "outcome": "SELECTED-CORRECT",
+      "selected_tool": "create"
+    },
+    {
+      "task_id": "llmwiki_4",
+      "trial": 4,
+      "outcome": "SELECTED-CORRECT",
+      "selected_tool": "create"
+    }
+  ],
+  "raw_log_a": [
+    {
+      "task_id": "llmwiki_1",
+      "trial": 0,
+      "raw_response": "create_knowledge_base",
+      "selected_tool": "create_knowledge_base",
+      "gold_tool": "create_knowledge_base",
+      "outcome": "SELECTED-CORRECT"
+    },
+    {
+      "task_id": "llmwiki_1",
+      "trial": 1,
+      "raw_response": "create_knowledge_base",
+      "selected_tool": "create_knowledge_base",
+      "gold_tool": "create_knowledge_base",
+      "outcome": "SELECTED-CORRECT"
+    },
+    {
+      "task_id": "llmwiki_1",
+      "trial": 2,
+      "raw_response": "create_knowledge_base",
+      "selected_tool": "create_knowledge_base",
+      "gold_tool": "create_knowledge_base",
+      "outcome": "SELECTED-CORRECT"
+    },
+    {
+      "task_id": "llmwiki_1",
+      "trial": 3,
+      "raw_response": "create_knowledge_base",
+      "selected_tool": "create_knowledge_base",
+      "gold_tool": "create_knowledge_base",
+      "outcome": "SELECTED-CORRECT"
+    },
+    {
+      "task_id": "llmwiki_1",
+      "trial": 4,
+      "raw_response": "create_knowledge_base",
+      "selected_tool": "create_knowledge_base",
+      "gold_tool": "create_knowledge_base",
+      "outcome": "SELECTED-CORRECT"
+    },
+    {
+      "task_id": "llmwiki_2",
+      "trial": 0,
+      "raw_response": "create",
+      "selected_tool": "create",
+      "gold_tool": "create",
+      "outcome": "SELECTED-CORRECT"
+    },
+    {
+      "task_id": "llmwiki_2",
+      "trial": 1,
+      "raw_response": "create",
+      "selected_tool": "create",
+      "gold_tool": "create",
+      "outcome": "SELECTED-CORRECT"
+    },
+    {
+      "task_id": "llmwiki_2",
+      "trial": 2,
+      "raw_response": "create",
+      "selected_tool": "create",
+      "gold_tool": "create",
+      "outcome": "SELECTED-CORRECT"
+    },
+    {
+      "task_id": "llmwiki_2",
+      "trial": 3,
+      "raw_response": "create",
+      "selected_tool": "create",
+      "gold_tool": "create",
+      "outcome": "SELECTED-CORRECT"
+    },
+    {
+      "task_id": "llmwiki_2",
+      "trial": 4,
+      "raw_response": "create",
+      "selected_tool": "create",
+      "gold_tool": "create",
+      "outcome": "SELECTED-CORRECT"
+    },
+    {
+      "task_id": "llmwiki_3",
+      "trial": 0,
+      "raw_response": "create_knowledge_base",
+      "selected_tool": "create_knowledge_base",
+      "gold_tool": "create_knowledge_base",
+      "outcome": "SELECTED-CORRECT"
+    },
+    {
+      "task_id": "llmwiki_3",
+      "trial": 1,
+      "raw_response": "create_knowledge_base",
+      "selected_tool": "create_knowledge_base",
+      "gold_tool": "create_knowledge_base",
+      "outcome": "SELECTED-CORRECT"
+    },
+    {
+      "task_id": "llmwiki_3",
+      "trial": 2,
+      "raw_response": "create_knowledge_base",
+      "selected_tool": "create_knowledge_base",
+      "gold_tool": "create_knowledge_base",
+      "outcome": "SELECTED-CORRECT"
+    },
+    {
+      "task_id": "llmwiki_3",
+      "trial": 3,
+      "raw_response": "create_knowledge_base",
+      "selected_tool": "create_knowledge_base",
+      "gold_tool": "create_knowledge_base",
+      "outcome": "SELECTED-CORRECT"
+    },
+    {
+      "task_id": "llmwiki_3",
+      "trial": 4,
+      "raw_response": "create_knowledge_base",
+      "selected_tool": "create_knowledge_base",
+      "gold_tool": "create_knowledge_base",
+      "outcome": "SELECTED-CORRECT"
+    },
+    {
+      "task_id": "llmwiki_4",
+      "trial": 0,
+      "raw_response": "create",
+      "selected_tool": "create",
+      "gold_tool": "create",
+      "outcome": "SELECTED-CORRECT"
+    },
+    {
+      "task_id": "llmwiki_4",
+      "trial": 1,
+      "raw_response": "create",
+      "selected_tool": "create",
+      "gold_tool": "create",
+      "outcome": "SELECTED-CORRECT"
+    },
+    {
+      "task_id": "llmwiki_4",
+      "trial": 2,
+      "raw_response": "create",
+      "selected_tool": "create",
+      "gold_tool": "create",
+      "outcome": "SELECTED-CORRECT"
+    },
+    {
+      "task_id": "llmwiki_4",
+      "trial": 3,
+      "raw_response": "create",
+      "selected_tool": "create",
+      "gold_tool": "create",
+      "outcome": "SELECTED-CORRECT"
+    },
+    {
+      "task_id": "llmwiki_4",
+      "trial": 4,
+      "raw_response": "create",
+      "selected_tool": "create",
+      "gold_tool": "create",
+      "outcome": "SELECTED-CORRECT"
+    }
+  ]
+}

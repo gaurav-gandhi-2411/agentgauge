@@ -1,0 +1,296 @@
+{
+  "experiment_id": "EXP-1",
+  "frame_version": "v5 -- Python-only, regex_best_effort dropped as unreliable (supersedes v4, commit b740919)",
+  "frame_status": "RATIFIED (2026-07-04, v5) -- N=10 fresh Python-only + 2 anchors; scope narrowed to Python MCP servers on GitHub",
+  "ratification_2026_07_04_v5": "RATIFIED. Proceed with N=10 trial. Batch-1 trial candidate: pick from near_empty tier (lucasastorian-llmwiki, mrexodia-ida-pro-mcp, datalayer-jupyter-mcp-server, all composite=80.0) -- selected lucasastorian-llmwiki, already directly source-verified twice this session with a known genuine confusable family (create vs create_knowledge_base).",
+  "frame_status_note": "A systematic audit (GG-directed, after 4 confirmed Python-extraction bugs and an implausibly clean v4 result) found the generic regex fallback used for ALL non-Python servers ('regex_best_effort' method) pulls in massive noise: template literal placeholders (e.g. '${tool.name}'), raw parameter names, MCP meta-concept labels ('List Tools', 'Read Resource'), HTTP header names ('X-Request-ID'), UI category labels ('E-commerce', 'Social Media'), and sample data unrelated to tool names (e.g. an org-chart generator's example 'CEO'/'CTO'/'Dev Manager' inputs), mixed indiscriminately with real tool names. This is a SYSTEMIC reliability problem with blind name/description-proximity regex matching over arbitrary non-Python source text -- not a fixable one-line patch like the 4 Python-specific bugs (those were narrow, well-defined gaps in a STRUCTURAL AST parser; this is the fundamental limit of an UNSTRUCTURED text-proximity heuristic). GG directed: drop ALL regex_best_effort-extracted servers from the scoreable frame rather than attempt further regex tightening (open-ended, uncertain payoff) or a full non-Python AST parser (large new engineering scope).",
+  "methodological_limitation": "This frame is now Python-only (all 10 scoreable servers use one of: 'ast' -- AST decorator/kwarg parsing, the most reliable method; 'tool_constructor_python' -- a precise Tool(name=..., description=...) constructor-call regex anchored on the literal 'Tool' identifier; 'regex_fallback_on_python' -- the same generic proximity regex, but scoped to .py files only and, for the one server using it (LycheeMem), independently verified clean against source this session). The pre-registration's sampling_frame.filters.languages explicitly states 'ALL languages included... Language is NOT an exclusion criterion' -- this frame now violates that criterion for RELIABILITY reasons, not an arbitrary choice, and must be disclosed as a further amendment (see exp1_pre_registration.json). Extending trustworthy mechanical extraction to TypeScript/JavaScript/Go/Rust would require real per-language AST parsers, not regex heuristics -- explicitly out of scope for this pass.",
+  "dropped_regex_best_effort": [
+    {
+      "server_id": "ChromeDevTools-chrome-devtools-mcp",
+      "source_repo": "ChromeDevTools/chrome-devtools-mcp",
+      "language": "TypeScript",
+      "prior_tier": null,
+      "prior_composite_score": 100.0
+    },
+    {
+      "server_id": "antvis-mcp-server-chart",
+      "source_repo": "antvis/mcp-server-chart",
+      "language": "TypeScript",
+      "prior_tier": null,
+      "prior_composite_score": 100.0
+    },
+    {
+      "server_id": "brightdata-brightdata-mcp",
+      "source_repo": "brightdata/brightdata-mcp",
+      "language": "JavaScript",
+      "prior_tier": null,
+      "prior_composite_score": 92.4
+    },
+    {
+      "server_id": "bvisible-mcp-ssh-manager",
+      "source_repo": "bvisible/mcp-ssh-manager",
+      "language": "JavaScript",
+      "prior_tier": null,
+      "prior_composite_score": 85.3
+    },
+    {
+      "server_id": "chrisryugj-korean-law-mcp",
+      "source_repo": "chrisryugj/korean-law-mcp",
+      "language": "TypeScript",
+      "prior_tier": null,
+      "prior_composite_score": 80.0
+    },
+    {
+      "server_id": "cjo4m06-mcp-shrimp-task-manager",
+      "source_repo": "cjo4m06/mcp-shrimp-task-manager",
+      "language": "JavaScript",
+      "prior_tier": null,
+      "prior_composite_score": 66.1
+    },
+    {
+      "server_id": "czlonkowski-n8n-mcp",
+      "source_repo": "czlonkowski/n8n-mcp",
+      "language": "TypeScript",
+      "prior_tier": null,
+      "prior_composite_score": 100.0
+    },
+    {
+      "server_id": "firecrawl-firecrawl-mcp-server",
+      "source_repo": "firecrawl/firecrawl-mcp-server",
+      "language": "JavaScript",
+      "prior_tier": null,
+      "prior_composite_score": 100.0
+    },
+    {
+      "server_id": "matlab-matlab-mcp-server",
+      "source_repo": "matlab/matlab-mcp-server",
+      "language": "Go",
+      "prior_tier": null,
+      "prior_composite_score": 97.9
+    },
+    {
+      "server_id": "mongodb-js-mongodb-mcp-server",
+      "source_repo": "mongodb-js/mongodb-mcp-server",
+      "language": "TypeScript",
+      "prior_tier": null,
+      "prior_composite_score": 86.5
+    },
+    {
+      "server_id": "yvgude-lean-ctx",
+      "source_repo": "yvgude/lean-ctx",
+      "language": "Rust",
+      "prior_tier": null,
+      "prior_composite_score": 82.9
+    }
+  ],
+  "pre_registration_ref": "evals/fixtures/exp1_pre_registration.json",
+  "predecessor_frame_note": "v4 (commit b740919) superseded -- kept for audit trail.",
+  "candidate_list_ref": "evals/fixtures/exp1_candidate_list.json",
+  "candidate_list_sha256": "956d3ebbb5becab2ab3c85376fe9e93bed587a8cdc450352f6500d394111a151",
+  "discovery_date": "2026-07-02",
+  "discovery_source": "GitHub topic:mcp-server, 500 repos fetched (unchanged from v1/v2 -- same 30 structurally-vetted candidates, re-scored not re-discovered)",
+  "vetting_method_note": "Each candidate was screened by an independent research pass against two criteria GG specified: (a) is_focused_mcp_server -- primary purpose is exposing a FIXED MCP tool catalog, not a general platform/framework/aggregator/gateway/SDK-for-building-servers with MCP as an incidental feature; (b) approx_tool_count >= 5, so a confusable family (2+ similarly-named/purposed tools) can plausibly exist. ~55 candidates were screened across the 500-repo discovery pool; 30 passed. A previously-unanticipated failure mode was found and excluded throughout: aggregators/gateways/proxies that dynamically route to OTHER MCP servers rather than exposing their own fixed catalog (e.g. metatool-ai/metamcp, tadata-org/fastapi_mcp) -- these have no stable docstring surface to mirror.",
+  "exclusion_log_ref": "evals/fixtures/exp1_exclusion_log.json",
+  "doc_density_methodology": {
+    "scorer": "agentgauge/exp1_doc_density.py compute_doc_density() -- 30% description length, 25% description presence, 25% non-echo descriptions, 20% param-description coverage",
+    "extractor": "agentgauge/exp1_tool_def_extractor.py -- deterministic, no LLM/agent: git clone --depth 1, static parsing (Python AST decorator + imperative add_tool() + JSON-literal fallback; regex proximity for other languages)",
+    "tiering": "assign_tiers() -- empirical terciles (p33/p67) of composite_score WITHIN the 23 successfully-scored fresh candidates. Tier names (well_documented/thin/near_empty) are RELATIVE to this sample, not absolute doc-quality bands -- see honest_caveat below."
+  },
+  "strata": {
+    "well_documented": [
+      {
+        "server_id": "Dataojitori-nocturne_memory",
+        "source_repo": "Dataojitori/nocturne_memory",
+        "language": "Python",
+        "star_stratum_v1": "low",
+        "stars": 1249,
+        "approx_tool_count_manual_vetting": 7,
+        "doc_quality_manual_vetting": "moderate",
+        "n_tools_extracted": 7,
+        "extraction_method": "ast",
+        "composite_score": 100.0,
+        "mean_description_length": 1320.0,
+        "pct_tools_with_description": 1.0,
+        "pct_name_echo_only": 0.0,
+        "param_description_coverage": 1.0
+      },
+      {
+        "server_id": "AminForou-mcp-gsc",
+        "source_repo": "AminForou/mcp-gsc",
+        "language": "Python",
+        "star_stratum_v1": "low",
+        "stars": 1098,
+        "approx_tool_count_manual_vetting": 20,
+        "doc_quality_manual_vetting": "polished",
+        "n_tools_extracted": 21,
+        "extraction_method": "ast",
+        "composite_score": 100.0,
+        "mean_description_length": 472.2,
+        "pct_tools_with_description": 1.0,
+        "pct_name_echo_only": 0.0,
+        "param_description_coverage": 1.0
+      },
+      {
+        "server_id": "LycheeMem-LycheeMem",
+        "source_repo": "LycheeMem/LycheeMem",
+        "language": "Python",
+        "star_stratum_v1": "low",
+        "stars": 1074,
+        "approx_tool_count_manual_vetting": 5,
+        "doc_quality_manual_vetting": "polished",
+        "n_tools_extracted": 4,
+        "extraction_method": "regex_fallback_on_python",
+        "composite_score": 100.0,
+        "mean_description_length": 66.0,
+        "pct_tools_with_description": 1.0,
+        "pct_name_echo_only": 0.0,
+        "param_description_coverage": 1.0
+      },
+      {
+        "server_id": "blazickjp-arxiv-mcp-server",
+        "source_repo": "blazickjp/arxiv-mcp-server",
+        "language": "Python",
+        "star_stratum_v1": "mid",
+        "stars": 2919,
+        "approx_tool_count_manual_vetting": 7,
+        "doc_quality_manual_vetting": "polished",
+        "n_tools_extracted": 8,
+        "extraction_method": "tool_constructor_python",
+        "composite_score": 100.0,
+        "mean_description_length": 608.2,
+        "pct_tools_with_description": 1.0,
+        "pct_name_echo_only": 0.0,
+        "param_description_coverage": 1.0
+      }
+    ],
+    "thin": [
+      {
+        "server_id": "stefanoamorelli-sec-edgar-mcp",
+        "source_repo": "stefanoamorelli/sec-edgar-mcp",
+        "language": "Python",
+        "star_stratum_v1": "low",
+        "stars": 328,
+        "approx_tool_count_manual_vetting": 18,
+        "doc_quality_manual_vetting": "polished",
+        "n_tools_extracted": 21,
+        "extraction_method": "ast",
+        "composite_score": 80.1,
+        "mean_description_length": 182.2,
+        "pct_tools_with_description": 0.571,
+        "pct_name_echo_only": 0.0,
+        "param_description_coverage": 0.538
+      },
+      {
+        "server_id": "stickerdaniel-linkedin-mcp-server",
+        "source_repo": "stickerdaniel/linkedin-mcp-server",
+        "language": "Python",
+        "star_stratum_v1": "mid",
+        "stars": 2610,
+        "approx_tool_count_manual_vetting": 15,
+        "doc_quality_manual_vetting": "polished",
+        "n_tools_extracted": 17,
+        "extraction_method": "ast",
+        "composite_score": 94.2,
+        "mean_description_length": 764.6,
+        "pct_tools_with_description": 1.0,
+        "pct_name_echo_only": 0.0,
+        "param_description_coverage": 0.709
+      },
+      {
+        "server_id": "taylorwilsdon-google_workspace_mcp",
+        "source_repo": "taylorwilsdon/google_workspace_mcp",
+        "language": "Python",
+        "star_stratum_v1": "mid",
+        "stars": 2778,
+        "approx_tool_count_manual_vetting": 100,
+        "doc_quality_manual_vetting": "polished",
+        "n_tools_extracted": 116,
+        "extraction_method": "ast",
+        "composite_score": 96.6,
+        "mean_description_length": 1020.1,
+        "pct_tools_with_description": 1.0,
+        "pct_name_echo_only": 0.0,
+        "param_description_coverage": 0.831
+      }
+    ],
+    "near_empty": [
+      {
+        "server_id": "lucasastorian-llmwiki",
+        "source_repo": "lucasastorian/llmwiki",
+        "language": "Python",
+        "star_stratum_v1": "low",
+        "stars": 1252,
+        "approx_tool_count_manual_vetting": 10,
+        "doc_quality_manual_vetting": "polished",
+        "n_tools_extracted": 12,
+        "extraction_method": "ast",
+        "composite_score": 80.0,
+        "mean_description_length": 426.8,
+        "pct_tools_with_description": 1.0,
+        "pct_name_echo_only": 0.0,
+        "param_description_coverage": 0.0
+      },
+      {
+        "server_id": "mrexodia-ida-pro-mcp",
+        "source_repo": "mrexodia/ida-pro-mcp",
+        "language": "Python",
+        "star_stratum_v1": "high",
+        "stars": 9818,
+        "approx_tool_count_manual_vetting": 40,
+        "doc_quality_manual_vetting": "polished",
+        "n_tools_extracted": 90,
+        "extraction_method": "ast",
+        "composite_score": 80.0,
+        "mean_description_length": 111.2,
+        "pct_tools_with_description": 1.0,
+        "pct_name_echo_only": 0.0,
+        "param_description_coverage": 0.0
+      },
+      {
+        "server_id": "datalayer-jupyter-mcp-server",
+        "source_repo": "datalayer/jupyter-mcp-server",
+        "language": "Python",
+        "star_stratum_v1": "low",
+        "stars": 1192,
+        "approx_tool_count_manual_vetting": 18,
+        "doc_quality_manual_vetting": "moderate",
+        "n_tools_extracted": 17,
+        "extraction_method": "ast",
+        "composite_score": 80.0,
+        "mean_description_length": 286.2,
+        "pct_tools_with_description": 1.0,
+        "pct_name_echo_only": 0.0,
+        "param_description_coverage": 0.0
+      }
+    ]
+  },
+  "n_fresh_scoreable": 10,
+  "n_fresh_excluded_extraction_failed": 9,
+  "n_fresh_excluded_unreliable_extraction_method": 11,
+  "validation_anchors": [
+    {
+      "server_id": "github-mcp",
+      "source_repo": "github/github-mcp-server",
+      "language": "go",
+      "known_result": "OUT-OF-REGIME",
+      "prior_experiment": "RW1",
+      "n_tools_extracted": 11,
+      "extraction_method": "regex_best_effort",
+      "composite_score": 77.2
+    },
+    {
+      "server_id": "aws-iam-mcp",
+      "source_repo": "awslabs/mcp",
+      "language": "python",
+      "source_subpath": "src/iam-mcp-server",
+      "known_result": "OUT-OF-REGIME",
+      "prior_experiment": "RW2",
+      "n_tools_extracted": 29,
+      "extraction_method": "ast",
+      "composite_score": 100.0
+    }
+  ],
+  "reportable_finding": "Across the 10 Python servers with trustworthy mechanical extraction, the minimum description coverage is 57.1% -- still a strong documented-skew signal, but on a much smaller, single-language sample than originally targeted. This should be reported as a LOWER-CONFIDENCE, narrower-scope finding (Python MCP servers on GitHub specifically) rather than the general 'public MCP servers' claim the pre-reg originally targeted, until non-Python extraction is made trustworthy.",
+  "next_step": "Awaiting GG ratification of this Python-only frame (N=10) before any contested-task authoring or Arm A/B trials. Given N=10 is far below the pre-registered target (28) and the sample is now single-language, GG should decide whether to proceed with EXP-1 at this reduced scope, invest in real non-Python AST parsers first, or reconsider the experiment's scope."
+}

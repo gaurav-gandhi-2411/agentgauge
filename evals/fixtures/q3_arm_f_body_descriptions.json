@@ -1,0 +1,14 @@
+{
+  "store_item": "Stores the query in a TTL cache (_ttl_store) with 5-minute expiration. Key parameter: query. Unlike persist_row/save_record, it uses a temporary cache rather than persistent storage.",
+  "persist_row": "persist_row inserts a new row into the _db using the query parameter, raising an error if the row already exists (unlike save_record which allows updates).",
+  "save_record": "save_record saves or updates a record in the _db dictionary, returning whether it was created or updated. Unlike persist_row, it allows updating existing entries instead of raising an error on duplicates.",
+  "write_entry": "The `write_entry` tool appends the provided query to the `_audit_log` with a timestamp and sequence number. Unlike other store_family tools that modify `_db` or `_ttl_store`, it exclusively logs entries for audit purposes.",
+  "delete_record": "The delete_record tool permanently deletes a record from the _records dictionary using the 'query' parameter. Unlike tools like archive_item or retire_data, it does not retain the record with a status flag but instead removes it entirely.",
+  "archive_item": "archive_item marks a record as archived by setting the \"archived\" flag to True in _records, retaining the record indefinitely. Unlike delete_record, retire_data, and remove_entry, it does not permanently delete, retire, or hide the record.",
+  "retire_data": "retire_data marks a record as retired by setting the 'retired' flag to True in the _records dictionary, retaining it indefinitely. Unlike delete_record which permanently deletes records, retire_data ensures data is not removed but flagged for retirement.",
+  "remove_entry": "The `remove_entry` tool marks an entry as hidden by setting a `\"hidden\": True` flag in the `_records` dictionary, retaining it for compliance while excluding it from active use. Unlike `delete_record`, it does not permanently remove the entry from the data structure.",
+  "find_entries": "find_entries searches the _search_store for entries matching the query string and returns the count of results. It differs from lookup_data by using the _search_store instead of the _db for search operations.",
+  "lookup_data": "Searches the _search_store for entries containing the query string and returns the count of matching results.",
+  "book_slot": "Reserves a slot in the calendar using the provided query string as the key.",
+  "plan_event": "Reserves a calendar slot using the query string. Equivalent to 'book_slot' in the control_sched family, both setting _calendar[query] = \"reserved\"."
+}
