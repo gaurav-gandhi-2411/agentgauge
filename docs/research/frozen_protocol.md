@@ -18,8 +18,10 @@ cross-experiment comparisons.
 - **Null/abort first-class:** a failed headroom gate or inconclusive sign test is
   reported as-is, never suppressed. Negative results appear in the paper.
 - **Never tune to a positive:** if a result is negative, report it negative.
-- `ANTHROPIC_API_KEY` must **never** be set or used in any experiment.
-- **Condition #1 (any judge/scorer/rubric change)** → DRAFT PR + escalate to GG
+- No assistant-vendor credentials (e.g. coding-assistant API keys) may be set or
+  used in any experiment — judge/generator/agent model families stay structurally independent
+  of the tooling used to run the research program.
+- **Condition #1 (any judge/scorer/rubric change)** → DRAFT PR + escalate to the author
   before executing.
 - **generator ≠ judge ≠ agent**: structural independence enforced at all times.
 

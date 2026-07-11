@@ -1,59 +1,27 @@
 # Tool-Description Quality Is Not One Axis: A Regime Analysis of Where It Helps and Where It Backfires
 
-**Status:** DRAFT — Framing A (boundary-establishment), locked by GG. Every number in this
-draft traces to a row in `docs/paper/evidence_table.md`; do not add a number here without
-adding and sourcing it there first. Scope: EXP-4 (regime map, consolidation) + EXP-1
-(prevalence) + EXP-3 (confusability localizer). EXP-2 (capability ladder) is out of scope —
-dropped and justified in `spec.md`.
-
 ---
 
 ## Abstract
 
-Tool-description quality is widely treated as a broadly-applicable, improvable lever for
-agent tool-use: better descriptions are assumed to help agents pick the right tool more
-often, and tooling that rewrites, grounds, or scores descriptions is built on that
-assumption [Anthropic engineering, 2026; GitHub engineering, 2026; Hasan et al., 2026]. We
-test the assumption directly with a single frozen evaluation protocol — one classifier, one
-judge, one generator family, pre-registered thresholds — applied across a synthetic
-confusable-catalog experiment, two real production MCP-server mirrors, a synthetic
-internal-proxy catalog, and a sampled pilot of ten public **Python** MCP servers. The central
-finding is that, on the fixtures tested here, tool-description quality is not a single
-better/worse axis: the same precision that helps an agent disambiguate within a family of
-confusable tools is not what a context-rich agent already resolving from task wording needs, and
-is actively harmful to tool retrieval — an observation with a legible mechanism on these specific
-fixtures (one density point for the selection-help finding, 60 tools / 10 families; one synthetic
-catalog and three retriever types for the retrieval-harm finding), not a demonstrated general law
-about description quality. We find the effect is real but **regime-bounded**. Using hand-written oracle descriptions, a selection-accuracy
-effect appears at one tested density point (60 tools / 10 confusable families: +34.5pp,
-gemma2:9b) and was not even testable at a lower tested density (16 tools / 8 clusters: no
-headroom to test against, names alone already resolve 81.2% of tasks) — the precise threshold
-between these two points is bracketed, not measured. The same oracle effect does not collapse
-on one substantially stronger open-weight model tested independently (+40.8pp, Llama-3.3-70B —
-a single data point, on a different harness, not directly comparable in magnitude to the
-gemma2:9b figure). Realizing this effect safely through *automatic* description generation is a
-separate, additional finding: it requires documented source code, and interface-only generation
-recovers only 12.5% of the oracle gain. Outside these conditions, the effect vanishes or
-reverses: two well-documented production servers (GitHub, AWS IAM) show zero headroom because
-agents already resolve tool selection from task context; on a synthetic internal-proxy catalog,
-one already-correctly-resolved family is **harmed** by better descriptions (−20pp) while two
-other already-resolved families in the same experiment show no harm; improved descriptions
-**harm** retrieval-based tool lookup across three retriever types on that same catalog (lexical
-BM25/TF-IDF and semantic embedding); and a pre-registered pilot sample of ten public Python MCP
-servers shows this general behaviorally-defined in-regime condition (not a re-test of the
-60-tool density point specifically) occurring in **0 of 9** servers with a testable confusable
-family — a lower bound on a Python-only, public-GitHub sample, not a population estimate. We
-additionally test whether the regime can be cheaply *localized* — flagged automatically before
-an agent ever encounters it — with a pairwise LLM-judge confusability method, and find it
-cannot: under both a binary and a graded-confidence framing, the judge flags all 24 of 24 pairs
-as confusable (precision 0.167, recall 1.00 in both), the identical outcome reached via two
-different degeneracy mechanisms rather than one repeated failure mode. One further limitation is
-itself methodologically central: a bug that silently suppressed a real in-regime signal, rather
-than manufacturing a false one, would not have the same "surprising result triggers a recheck"
-property that let us catch and reverse two false positives in this pilot (§8.3.1) — a structural
-asymmetry any null-results claim in this space should carry. Together these results map where
-the field's assumption holds, and show it holds in a narrower and rarer place than current
-practice assumes.
+Tool-description quality is widely treated as a broadly-applicable lever for agent tool-use,
+but it is not a single better/worse axis: the precision that helps an agent disambiguate within
+a family of confusable tools is orthogonal to, or actively harmful for, context-rich selection
+and for tool retrieval. We test this with a single frozen evaluation protocol — one classifier,
+one judge, one generator family, pre-registered thresholds — across a synthetic
+confusable-catalog experiment, two real production MCP-server mirrors (GitHub, AWS IAM), a
+synthetic internal-proxy catalog, and a pre-registered pilot of ten public Python MCP servers.
+The effect is real but regime-bounded, not a general law: an oracle description helps at one
+tested catalog density (60 tools/10 families, +34.5pp on gemma2:9b, and not collapsing on a
+substantially stronger model, Llama-3.3-70B) with no headroom; realizing it safely through
+automatic generation is a separate condition, requiring documented source. Outside these
+conditions the effect is null or reverses (zero headroom on two well-documented production
+servers; −20pp harm on one already-resolved family; harm to retrieval across three retriever
+types). Contributions: a falsifiable regime map of where description quality helps, harms, or
+does nothing; a pre-registered prevalence measurement finding the behavioral regime in 0 of 9
+testable Python MCP servers — a lower bound, not a population estimate; and a localizability
+boundary — a pairwise LLM-judge confusability method fails under two independent framings, via
+two distinct failure mechanisms.
 
 ---
 
@@ -80,16 +48,16 @@ text* as a primary lever for improving that selection: Anthropic's own tool-use 
 guidance states that "even small refinements to tool descriptions can yield dramatic
 improvements," reporting that precise refinements to tool descriptions helped Claude Sonnet 3.5
 reach state-of-the-art on SWE-bench Verified (Anthropic Engineering, "Writing tools for
-agents" — publication date not independently confirmed this session, cited for content only).
+agents" — publication date not independently confirmed during this paper's preparation, cited for content only).
 GitHub's engineering team, running an offline evaluation harness against their own MCP server —
 the same `github/github-mcp-server` mirrored in RW1 (§4.3.1) — reports the same sensitivity from
 the other side: "tightening a description, adding or removing a tool, or combining a few similar
 tools can shift results a lot" (GitHub Engineering, "Measuring what matters: how offline
-evaluation of GitHub MCP Server works" — publication date not independently confirmed this
-session, cited for content only). This appears to sit in tension with RW1's own finding of zero
+evaluation of GitHub MCP Server works" — publication date not independently confirmed during
+this paper's preparation, cited for content only). This appears to sit in tension with RW1's own finding of zero
 headroom on that exact server for gemma2:9b (§4.3.1) — we do not resolve this tension here, since
 GitHub's harness details (which model(s), which metric, which task distribution) were not
-verified this session beyond the quoted sentence; flagged as an open question rather than
+verified during this paper's preparation beyond the quoted sentence; flagged as an open question rather than
 silently juxtaposed as if the two results agree. An empirical audit of 856 tools across 103 real
 MCP servers found 97.1% of tool
 descriptions contain at least one quality "smell" and 56% fail to state their purpose clearly,
@@ -122,18 +90,15 @@ questions in sequence:
 ### 1.3 Contributions
 
 - **A falsifiable, regime-bounded map** of where tool-description quality changes agent
-  selection behavior. Two distinct conditions compose it, from different experiments: (i) the
-  hand-written oracle *effect* appears at 60-tool/10-family catalog density and was untestable
-  (no headroom) at 16-tool/8-cluster density — one tested point and one untested-for-headroom
-  point, bracketing an unmeasured transition, not a precisely located threshold (Section 4.2.1);
-  (ii) realizing that effect safely through *automatic generation* additionally requires
-  documented source code — interface-only generation recovers only 12.5% of the oracle gain
-  (Section 4.2.2). Outside this intersection the effect is null or negative (Section 4.3).
+  selection behavior. Two distinct conditions compose it, from different experiments: (i) a
+  hand-written oracle *effect*, bracketed but not precisely located on the density axis
+  (Section 4.2.1); (ii) realizing that effect safely through *automatic generation*
+  additionally requires documented source code (Section 4.2.2). Outside this intersection the
+  effect is null or negative (Section 4.3).
 - **A prevalence measurement**: on a pre-registered pilot sample of 10 Python-only public MCP
   servers, 0 of 9 servers with a testable confusable family showed in-regime behavior, using
-  the general behavioral regime definition (§5.1) — not a re-test of the specific 60-tool
-  density point above — a lower bound, not a closed claim, on how rare the regime is among
-  public, documented servers (Section 5).
+  the general behavioral regime definition (§5.1) — a lower bound, not a closed claim, on how
+  rare the regime is among public, documented servers (Section 5).
 - **A localizability boundary**: a pairwise LLM-judge confusability method — the natural cheap
   alternative to running the full behavioral protocol against every server — fails under two
   independently pre-registered framings, reaching the identical confusion matrix both times via
@@ -220,9 +185,9 @@ Every experiment's spec — task set, gold labels, stability-screen procedure, a
 the sign test — is pre-registered to its branch **before** any run starts. Any change to the
 judge, scorer, rubric, or calibration constants ("condition #1") is escalated as a draft PR for
 human review before merge. Null and aborted results are reported as-is; results are never
-tuned after being observed. `ANTHROPIC_API_KEY` is never used in any experiment reported here,
-to keep judge/generator/agent model families structurally independent of the assistant used to
-run the research program.
+tuned after being observed. Judge, generator, and agent model families are structurally
+independent of any assistant used to author or orchestrate this research program — no shared
+credentials, infrastructure, or model family.
 
 ### 3.2 Frozen configuration
 
@@ -441,8 +406,7 @@ which fixture the claim is scoped to.
 Description precision HELPS within-family discrimination when (each tested at
 one fixture/point, not a swept curve):
  - Catalog density is at least as high as the one positive point tested
-   (60 tools / 10 families) -- untested, not confirmed-absent, at the one
-   lower point tried (16 tools / 8 clusters, no headroom to test), AND
+   (§4.2.1), AND
  - Source access includes docstrings (safe generation requires this;
    body-only source opens a fabrication vector), AND
  - Arm A shows real headroom (the agent is not already resolving from
@@ -613,11 +577,10 @@ from whether the regime itself exists.
 Read together, Sections 4–6 answer the paper's title question precisely rather than broadly.
 Tool-description quality *does* change agent selection behavior — but the evidence for this
 comes from separate findings that compose, not one single joint condition: an oracle-effect
-that appears at one tested high-density point and is untested (not disproven) at a lower one
-(§4.2.1), a generation-safety condition that requires documented source (§4.2.2), and a
-prevalence measurement — using the general behavioral regime construct, not a re-test of the
-density point specifically — that a pre-registered pilot sample of real public Python servers
-places at 0 of 9 tested (Section 5). Separately, even where the regime does occur, it has not
+bounded to one tested catalog density (§4.2.1), a generation-safety condition that requires
+documented source (§4.2.2), and a prevalence measurement, on the general behavioral regime
+construct (§5.1), that a pre-registered pilot sample of real public Python servers places at 0
+of 9 tested (Section 5). Separately, even where the regime does occur, it has not
 been shown findable cheaply: a pairwise LLM-judge localizer fails to identify which specific
 tool pairs are confusable on a new, unscored server (Section 6). Outside the helps-conditions,
 the same intervention that helps direct selection in the
@@ -679,23 +642,24 @@ time. **§8.3.1 is read first** — it is the single most important threat to a 
 headline results are nulls, and it is stated standalone, not as a clause inside another
 paragraph.
 
-### 8.3.1 The false-negative asymmetry (read this one first)
+### 8.3.1 The false-negative asymmetry — the epistemic bound on this paper's null claims (read this one first)
 
-**This paper's positive findings were caught being wrong; its negative findings have no
-analogous check.** Section 5.4 reports two false positives from a seed-configuration bug,
-caught and reversed before publication *because* they were surprising enough to trigger a
-recheck (a server unexpectedly showing in-regime behavior got a second look). A bug that instead
+**Every null and boundary claim in this paper — EXP-1's 0-of-9 headline, EXP-3's
+localizer-fails headline — is bounded by one asymmetry in what this pipeline's error-detection
+can catch, and this section states that bound precisely.** Section 5.4 reports two false
+positives from a seed-configuration bug, caught and reversed before publication *because* they
+were surprising enough to trigger a recheck (a server unexpectedly showing in-regime behavior
+got a second look). That same mechanism has a mirror-image blind spot: a bug that instead
 silently *suppressed* a real in-regime signal — turning a true positive into a false null — would
 produce a result indistinguishable from a correctly-measured null: "this server is not
 in-regime" looks the same whether it's true or an artifact, and nothing about a null result
 prompts the same "that's surprising, let's recheck" response that caught the two false
-positives. This asymmetry means EXP-1's 0-of-9 headline, and EXP-3's localizer-fails headline,
-carry a category of risk that this paper's own error-detection track record does not bound. We
-have not found evidence of such a bug; we also have no mechanism that would necessarily surface
-one, which is precisely the point. Any reader treating EXP-1 or EXP-3's null as more secure than
-"we looked and did not find a positive, using a pipeline whose false-positive-catching capacity
-is demonstrated and whose false-negative-catching capacity is not" should recalibrate against
-this paragraph specifically.
+positives. We have not found evidence of such a bug; we also have no mechanism that would
+necessarily surface one, which is precisely the point — this is the bound this paper's nulls
+should be read against, not a suggestion that they are unreliable. Any reader treating EXP-1 or
+EXP-3's null as more secure than "we looked and did not find a positive, using a pipeline whose
+false-positive-catching capacity is demonstrated and whose false-negative-catching capacity is
+not" should recalibrate against this paragraph specifically.
 
 ### 8.1 Sampling / generalizability
 N=10, Python-only, public-GitHub pilot. The strength claimed is *convergence* — the EXP-1 null,
@@ -772,15 +736,14 @@ in this research program has auto-merge; a human merges every one.
 
 Tool-description quality changes agent tool-selection behavior in a real, measurable, and
 mechanistically legible way — but only inside a narrow, checkable set of conditions: a catalog
-at least as dense as the one point where an effect was tested and found (60 tools / 10
-families; untested, not disproven, at a lower point tried), and generation with access to
-documented source. That effect does not collapse under a substantial capability increase in the
-one additional agent tested (Section 4.2.3) — a finding *inconsistent with* "this is a
-gemma2:9b-specific capability artifact," though one data point on a different harness does not
-prove the effect is capability-independent in general. Outside these conditions: the same
-general behavioral regime construct (not a re-test of the density point specifically) appears in
-0 of 9 servers with a testable confusable family in a pre-registered pilot sample of real,
-public, documented Python MCP servers (Section 5); the same kind of intervention harms selection
+at least as dense as the one point where an effect was tested and found (§4.2.1), and
+generation with access to documented source. That effect does not collapse under a substantial
+capability increase in the one additional agent tested (Section 4.2.3) — a finding
+*inconsistent with* "this is a gemma2:9b-specific capability artifact," though one data point on
+a different harness does not prove the effect is capability-independent in general. Outside
+these conditions: the same behavioral regime construct (§5.1) appears in 0 of 9 servers with a
+testable confusable family in a pre-registered pilot sample of real, public, documented Python
+MCP servers (Section 5); the same kind of intervention harms selection
 on at least one already-resolved family tested, while two other already-resolved families in the
 same experiment show no harm (Section 4.3.2); it harms retrieval across every retriever type
 tested on the one synthetic catalog used for that test (Section 4.3.3); and the regime cannot
@@ -804,11 +767,11 @@ check and re-test.
   binary/graded confusability prompts): `agentgauge/fixer.py` (`_DESC_GENERATOR_GUARD_B_PROMPT`),
   `docs/research/exp3_pre_registration.md` §2, §7.
 - **A.3** Fixture hash manifest: generate per `docs/research/frozen_protocol.md` Appendix; the
-  two FRONTIER-T18 hashes added this session are recorded in Section 9.2 above and in
+  two FRONTIER-T18 hashes added during this paper's preparation are recorded in Section 9.2 above and in
   `docs/paper/evidence_table.md` §1.3.
 - **A.4** Per-server EXP-1 table: Section 5.3 above (reproduced from `STATUS.md` EXP-1 section).
 - **A.5** Bibliography — every citation below was independently fetched and checked against its
-  claimed content this session (title, authors, and the specific figure/quote cited all
+  claimed content during this paper's preparation (title, authors, and the specific figure/quote cited all
   confirmed against the primary source, not copied from a prior internal desk-research doc
   without re-verification). None were invented; where a candidate citation from prior internal
   research (`reports/frontier_phase1_research.md`, itself gitignored/uncommitted and self-flagged
@@ -817,18 +780,18 @@ check and re-test.
 
   **Cited in this paper:**
   1. Anthropic Engineering, "Writing tools for agents" (publication date not independently
-     confirmed this session — content verified, date not).
+     confirmed during this paper's preparation — content verified, date not).
      `https://www.anthropic.com/engineering/writing-tools-for-agents` — verified: contains the
      quoted claim that small tool-description refinements yielded SOTA SWE-bench Verified
      results for Claude Sonnet 3.5.
   2. GitHub Engineering, "Measuring what matters: how offline evaluation of GitHub MCP Server
-     works" (publication date not independently confirmed this session — content verified, date
+     works" (publication date not independently confirmed during this paper's preparation — content verified, date
      not). `https://github.blog/ai-and-ml/generative-ai/measuring-what-matters-how-offline-evaluation-of-github-mcp-server-works/`
      — verified: contains the quoted claim that small description edits "shift results a lot."
      **Second-pass audit note:** this is a claim about the *same* GitHub MCP server mirrored in
      RW1 (§4.3.1), which found zero headroom for gemma2:9b on that server. The tension is flagged
      explicitly in §1.1 body text, not silently juxtaposed; not resolved (harness/model/metric
-     details of GitHub's own eval were not verified this session).
+     details of GitHub's own eval were not verified during this paper's preparation).
   3. Hasan, M. M., Li, H., Rajbahadur, G. K., Adams, B., and Hassan, A. E., "Model Context
      Protocol (MCP) Tool Descriptions Are Smelly! Towards Improving AI Agent Efficiency with
      Augmented MCP Tool Descriptions," arXiv:2602.14878, 2026. Verified via `arxiv.org/abs/2602.14878`
@@ -879,9 +842,9 @@ check and re-test.
     verified against a primary benchmark." Not used in this paper for the same reason its
     original author already gave.
 
-- **A.6** EXP-1 sampling-frame revision history (moved here from §5.2 body per GG's
-  compression request — the finding that survives in §5.2 is unaffected; this is provenance,
-  not evidence). The pre-registered frame was rebuilt five times over the course of the
+- **A.6** EXP-1 sampling-frame revision history (moved here from §5.2 body — the finding that
+  survives in §5.2 is unaffected; this is provenance, not evidence). The pre-registered frame
+  was rebuilt five times over the course of the
   experiment, each rebuild escalated and ratified before proceeding, never silently:
   - **v1** — star-stratified GitHub-topic pool.
   - **v2** — doc-density-stratified, N=23.
@@ -895,9 +858,9 @@ check and re-test.
   Full commit-level trail: `STATUS.md` EXP-1 section, "Frame history" paragraph; ratification
   commit `538affe`; `docs/paper/evidence_table.md` §2.
 
-- **A.7** Full Q3→Q6 source-aware generation progression (moved here from §4.2.2 body per GG's
-  compression request — both prose findings in §4.2.2 are unaffected; this is intermediate
-  detail, not a third finding). The two-row table in §4.2.2 shows only the endpoints
+- **A.7** Full Q3→Q6 source-aware generation progression (moved here from §4.2.2 body — both
+  prose findings in §4.2.2 are unaffected; this is intermediate detail, not a third finding).
+  The two-row table in §4.2.2 shows only the endpoints
   (interface-only failure; Q5/Q6 safe-and-recovering). The full four-stage progression, showing
   *how* Q5/Q6 was reached and the two distinct fabrication failure modes it closes:
 

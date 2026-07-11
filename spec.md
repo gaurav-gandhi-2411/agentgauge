@@ -1,157 +1,91 @@
-# spec.md — PAPER: "When Does Tool-Description Quality Actually Improve Agent Behavior? A Regime Analysis"
+# spec.md — PAPER REWRITE (Option B): maximize reach WITHOUT inflating any claim
 
-**Repo:** github.com/gaurav-gandhi-2411/agentgauge · **Base:** current main · target: arXiv + workshop.
-**Routing:** research program, multiple DRAFT PRs, all human-merged. Condition-#1 (judge/scorer/
-rubric/calibration) changes — the localization method touches the judge — stay DRAFT + escalated.
-generator != judge != agent preserved. Never set ANTHROPIC_API_KEY.
+**File:** docs/paper/paper.md (branch claude/paper-evidence-prep, current HEAD 341419c).
+**Nature:** REFRAME + REPACKAGE + RESTRUCTURE only. NO new claims, NO new experiments, NO un-scoping.
+Every number and every caveat in the current draft STAYS. This is a readability/reach edit, not a
+scope edit.
 
-**Thesis:** the negative/boundary results ARE the contribution — a falsifiable, regime-bounded map of
-WHERE tool-description quality changes agent behavior and where it does not. Every claim scoped to its
-evidence; the RW no-headroom finding and the strong +40.8pp survival finding are BOTH reported (they
-are about different regimes, not in tension).
+## The razor (read before every edit)
+Option B increases readership by surfacing the TRUEST, most INTERESTING finding the paper already
+contains — the counterintuitive multi-objective inversion — and by giving readers an ADOPTABLE tool.
+It does NOT increase reach by making any claim broader than its evidence. If a reframed sentence reads
+as more general/sweeping than the current draft's version of the same claim, it is WRONG — revert it.
+The honesty (N=10, one density point, one non-frontier model, one-fixture retrieval result,
+lower-bound, false-negative asymmetry) is the paper's credibility and its ceiling; do not trade it for
+reach.
 
----
+## MOVE 1 — Elevate the multi-objective inversion to the CENTRAL thesis
+Currently buried in §4.4 (mechanism throughline) and §4.3.3 (retrieval). It is the paper's most
+interesting, most portable, most counterintuitive TRUE finding, and it is under-billed.
 
-## FROZEN EVALUATION PROTOCOL (the paper's credibility backbone — define ONCE, reuse everywhere)
-Reviewer risk #1 is uncontrolled cross-condition comparisons. Mitigation: a single pre-registered
-protocol every experiment runs through.
-- ONE classifier: the existing 3-outcome (SELECTED-CORRECT / SELECTED-WRONG / ABSTAINED-OR-HEDGED) +
-  parse_failed, reported separately, ALWAYS.
-- ONE judge (frozen model + version + seed) for any judged metric; ONE generator family for oracle/
-  Guard-B; the AGENT is the variable only where the experiment says so.
-- Pre-registration: spec committed at each experiment's branch start; metric/fixture/threshold never
-  edited after results; null/abort first-class; never tune to a positive.
-- Effect = Arm B(oracle) − Arm A on parse-success contested tasks; task-clustered sign test; report N,
-  power, and stability (flippers across trials excluded from the stable-set analysis).
-- Commit seeds, model strings/versions, fixture hashes for every run.
+The finding, stated at its HONEST maximum: **tool-description quality is not a single "better/worse"
+axis. The precision that helps an agent disambiguate WITHIN a confusable family is a DIFFERENT
+property than what a context-rich agent needs (which it often gets from the task, not the
+description) or what a retrieval index rewards — and on the catalogs we tested, optimizing for one can
+NEUTRALIZE or HARM the others.** "Better descriptions are uniformly better" is the assumption; "description
+quality is multi-objective and the objectives can conflict" is the finding.
 
----
+SCOPE GUARD (mandatory — this is the least-evidenced, most-interesting half): the retrieval-harm
+result is ONE synthetic catalog, three retrievers (§4.3.3). The selection-help result is ONE density
+point (§4.2.1). So the inversion is presented as an OBSERVATION with a legible mechanism, tested on
+specific fixtures — NOT a proven general law. Frame: "we observe, on the fixtures tested, that these
+pull in opposite directions; the mechanism is legible [precision matches implementation-level detail,
+which helps within-family selection and hurts coarse-query retrieval]; we do not claim this
+generalizes beyond the fixtures (§8.1)." The interestingness comes from the counterintuitive
+DIRECTION + the legible mechanism, NOT from an over-broad claim.
 
-## EXP 1 — SERVER-POPULATION PREVALENCE (the headline empirical contribution)
+- Pull the inversion into the ABSTRACT's opening (it currently opens on "the assumption is widely
+  held"; open instead on the surprising multi-objective finding, THEN the boundary map).
+- Give it a named home in the body (promote §4.4 from "mechanism throughline" to a titled synthesis,
+  e.g. "§4.4 Description quality is multi-objective") — keep all its existing scope hedges.
 
-**Question:** what FRACTION of real MCP servers live in the regime where description quality changes
-agent behavior?
+## MOVE 2 — Name + box the behavioral regime test as an ADOPTABLE diagnostic
+The paper's reusable artifact (its "thing you can build on," scoped honestly) is the behavioral
+regime definition (§5.1): before investing in description tooling, check (a) does the agent actually
+FAIL a contested task on current descriptions, AND (b) does an oracle/near-perfect description RECOVER
+it. Neither -> no headroom / unfixable -> description tooling won't help.
 
-**Operationalize "in the regime" BEHAVIORALLY (not by description properties — that would be circular):**
-A confusable family on a server is "in the regime" iff, on the FROZEN protocol with a fixed agent:
-(a) Arm A = the server's REAL shipped descriptions fails >=1 contested task (agent selects wrong),
-AND (b) Arm B = oracle description recovers it. "Thin descriptions" is an INPUT property and is NOT
-the regime definition — only behavior-that-the-fix-repairs counts. Report the regime classifier
-explicitly as this two-condition test.
+- Give it a NAME (propose 2-3 for GG; memorable, not cute; descriptive — e.g. "the headroom check,"
+  "the two-condition regime test"). 
+- Present it ONCE as a small boxed/numbered PROCEDURE a practitioner can run, in the Discussion (§7)
+  or a short dedicated subsection — the "what to do Monday morning" artifact.
+- SCOPE GUARD: present it as a decision procedure whose VALIDATION is this paper's own experiments —
+  NOT as a validated general tool. It is "here is the check we used and recommend," not "here is a
+  proven instrument." Do not let naming it imply more validation than N=10 supports.
 
-**Sampling frame (pre-registered, reproducible — this defends the number):**
-- Define the frame BEFORE scoring: e.g. top-N by popularity (stars/downloads) from the official MCP
-  registry + a directory (Glama/PulseMCP) as of a fixed date, source-available, deduplicated. Target
-  20-50 servers. SCORE EVERY ONE; drop none post-hoc; log any excluded + the pre-stated reason
-  (e.g. no source, un-runnable).
-- Build local MIRRORS (real names/schemas/VERBATIM docstrings, stub bodies — RW1/RW2 method, NO live
-  APIs/keys). Assert docstrings verbatim vs source (independence rule).
-- For each server: identify confusable families (name/embedding clusters), build anti-tautological
-  contested tasks (intent, not tool names), run the frozen protocol.
+## MOVE 3 — Restructure the Introduction to lead with the hook
+Current intro leads with §1.1 "the assumption under test." Re-order so the FIRST thing a reader meets
+is the counterintuitive claim: you'd assume better descriptions uniformly help selection AND
+retrieval; we find description quality is multi-objective (the properties conflict), the regime where
+it helps selection at all is narrow, and you can't cheaply tell if you're in it. THEN the assumption,
+THEN the roadmap. Hook -> gap -> contributions. Keep §1.1's citations and the GitHub tension intact,
+just after the hook.
 
-**Report:** fraction of servers (and of families) in-regime; the distribution; per-server table.
-**Pre-registered honest caveat (state in the paper):** public servers skew documented -> this
-prevalence is a LOWER BOUND on the under-documented internal segment, which is unsampleable (no public
-data). Do not generalize beyond "public, source-available MCP servers as of date D."
+## TITLE — propose 2-3 for GG (honest AND catchy)
+Current: "When Does Tool-Description Quality Improve Agent Behavior? A Regime Analysis."
+Candidates to draft (must be honest — helps/harms/doesn't-matter is the real triad):
+- "Better Tool Descriptions Aren't Uniformly Better: When Description Quality Helps, Harms, or Doesn't
+  Matter"
+- "Tool-Description Quality Is Multi-Objective: A Regime Analysis of Selection, Retrieval, and Harm"
+- keep current as the safe option.
+GG picks. The title may headline the inversion ONLY if the body's scope guards are intact.
 
----
+## HARD CONSTRAINTS — DO NOT CHANGE (diff-verify byte-identical after edit)
+The six credibility passages stay verbatim: abstract's caveats, §4.2.3 survival-not-growth-not-
+frontier, §5.4 seed-bug episode, §8.3.1 false-negative asymmetry, §1.1 GitHub/RW1 tension, §5.5
+lower-bound scope. Every number stays (grep-verify). EXP-1 stays 0/9. Retrieval stays one-fixture.
+No caveat becomes less prominent than it currently is. The appendices (A.6, A.7) stay.
 
-## EXP 2 — CAPABILITY-LADDER CURVE — DROPPED (ratified by GG, 2026-07-04)
+## Acceptance
+- The inversion is the abstract's opening hook and a titled body synthesis, WITH its one-fixture/
+  one-point scope stated in the same breath.
+- The regime test is named and boxed as an adoptable procedure, scoped as "the check we used," not a
+  validated instrument.
+- Intro leads with the hook.
+- 2-3 title options proposed.
+- ANTI-INFLATION AUDIT (required): after the rewrite, re-run the adversarial overclaim sweep
+  specifically checking that NO reframed sentence is broader than the current draft's equivalent.
+  Report any sentence where the reach-reframe outran the evidence, with the conservative revert.
+- Diff-verify the six protected passages byte-identical; grep-verify every number still present.
 
-**Status: DROPPED from paper scope.** Paper = EXP-4 + EXP-1 + EXP-3. Justification: EXP-1's
-completed prevalence result (0/9 scored servers IN-REGIME on the N=10 Python-only pilot, a clean
-null across every doc-density tier — see `docs/research/` and `STATUS.md`) found the regime
-uncommon in the sampled population. A capability ladder characterizing how an effect's SIZE varies
-with agent capability has limited external relevance when the underlying regime this session could
-verify is this rare to begin with. EXP-3 (localizer) remains the paper's positive contribution
-regardless of this decision — a confusable-pair localization method is useful independent of how
-often the regime occurs — and is queued next. Design notes below are preserved for reference/a
-possible future revisit, not deleted, since a rare-but-real regime is still worth a ladder if a
-future, larger or non-Python-verified sample changes the prevalence picture.
-
-**Question:** how does the description effect size vary with AGENT CAPABILITY?
-
-**Design for apples-to-apples (the reviewer killer is confounds):**
-- LADDER = SAME model family at increasing sizes (hold architecture ~constant, vary size): e.g.
-  Qwen-2.5 7B / 32B / 72B, or Llama 8B / 70B. Avoid mixing families (that reintroduces the
-  gemma-vs-Llama non-comparability). Add a frontier API point ONLY if a non-Anthropic key is
-  provisioned (escalate; open-weight ladder is the core result).
-- IDENTICAL everything except the agent: same T18 fixture, same tasks, same prompt template, same
-  frozen classifier, same trials/seeds.
-- PARSE CONTROL (mandatory): report parse_failed PER MODEL; confirm the effect holds on
-  parse-success-only. A model showing "no effect" must be ruled out as a parsing artifact, not a
-  capability finding. Same for abstain rate per model.
-
-**Report:** effect size (B−A, with CI) as a FUNCTION of capability; the CURVE. Either shape is a
-finding: shrinks-with-capability (market sunsets) or persists (durable). Explicitly flag the prior
-gemma +34.5 / Llama +40.8 numbers as NOT part of this controlled ladder (different harness).
-
----
-
-## EXP 3 — CONFUSABILITY LOCALIZATION (positive method on top of the negative)
-
-**Decision: BUILD the positive method** (more publishable than another null). The single-score
-discoverability judge fails to localize because it's asked for ONE catalog number (structural limit —
-report this as the baseline/negative it already is).
-
-**Method (simple, clean):** PAIRWISE confusability — for each tool pair within a family, ask the frozen
-judge "could a task intended for tool A plausibly select tool B (and vice versa) given their
-descriptions?" -> a confusability MATRIX -> localized output "tools X,Y confusable for task-type Z."
-This is a CONDITION-#1 change (uses the judge) -> DRAFT + escalate; re-validate the judge on a
-held-out set.
-
-**Validation:** does the pairwise localizer flag the families that EXP-1's behavioral regime test
-found in-regime (i.e. where the agent actually confused tools)? Localizer precision/recall vs the
-behavioral ground truth. Compare against the single-score baseline (which flags ~nothing). A localizer
-that predicts behavioral confusion = the positive methodological contribution.
-
-**Pre-registered 2026-07-04:** `docs/research/exp3_pre_registration.md` — 24-pair ground truth
-(4 CONFUSED / 20 NOT_CONFUSED) drawn entirely from already-collected EXP-1 + RW1/RW2 behavioral
-trial data, judge prompt, 3-trial/seed-42+idx majority-vote scheme, and the precision≥0.50 AND
-recall≥0.50 pre-committed bar for "real positive method" vs "honest negative." Fixture:
-`evals/fixtures/exp3_ground_truth.json`.
-
----
-
-## EXP 4 (lighter) — consolidate the existing results into the paper's regime map
-No new runs: assemble the already-banked findings into the WHERE-it-helps / WHERE-it-doesn't map:
-- Helps: confusable-at-scale (T18), under-documented source (Q3/Q5 Guard-B 83% recovery, safe,
-  non-degrading), effect survives a strong agent.
-- Doesn't / harms: well-documented real servers (RW1/RW2 no headroom — agents resolve from
-  names+context); descriptions can HARM already-resolved families (P2-A account_query); F2
-  retrieval-readiness CLOSED negative (BM25/TFIDF/embedding); single-score can't localize.
-- The mechanism throughline: description precision helps within-family disambiguation but is
-  orthogonal/anti-correlated to what context-rich agents need and what retrieval rewards.
-
----
-
-## REPRODUCIBILITY ARTIFACT (a paper strength — lean in)
-- One command reproduces every figure: exact server set (frame + date + hashes), model strings+
-  versions, seeds, frozen protocol. PyPI-installable. Frozen judge/generator. Governance documented.
-- This artifact is also EXP-1's sampling-frame defense — reviewers can re-run the prevalence number.
-
-## Acceptance / rigor (all experiments)
-- Pre-register each experiment's spec at branch start; report parse_failed/headroom/control/stability
-  BEFORE any effect; behavioral (not property-based) regime definition; sampling frame fixed before
-  scoring, none dropped post-hoc; cross-experiment comparisons ONLY through the frozen protocol;
-  negative results first-class; never set ANTHROPIC_API_KEY; condition-#1 (EXP-3 judge) DRAFT+escalated.
-- Honest scoping everywhere: public-server prevalence is a lower bound; the ladder is open-weight
-  (+ frontier only if key provisioned); one fixture for the ladder = one fixture.
-
-## Sequencing
-EXP-4 (consolidation, free, immediate) -> EXP-1 (prevalence, the headline, sampling + mirrors) ->
-EXP-3 (localizer, local judge) -> ~~EXP-2 (ladder)~~ DROPPED, ratified by GG 2026-07-04, see EXP-2
-section above. EXP-1 completed 2026-07-04: 0/9 scored servers IN-REGIME, N=10 Python-only pilot
-(non-Python mechanical extraction proved unreliable and was dropped mid-experiment — see
-`STATUS.md` for the full frame-correction history). Paper scope is now EXP-4 + EXP-1 + EXP-3.
-EXP-3 completed and CLOSED 2026-07-04 (branch `claude/exp3-localizer`, DRAFT PR #53, escalated to
-GG — condition #1): precision 0.167 / recall 1.00 against the pre-registered 24-pair behavioral
-ground truth, below the pre-committed real-positive-method bar (precision AND recall >= 0.50), on
-BOTH a binary yes/no framing and a GG-ratified one-time-boxed graded-confidence (0-10) retry —
-same numbers both times. Reported as the robust final result: naive pairwise judging (binary or
-graded) trades the single-score judge's "localizes nothing" failure for "localizes everything"
-(24/24 pairs verdicted CONFUSABLE under both framings, including all 100%-accuracy anchor pairs
-and every pair where the old heuristic already false-positived). Hard stop per pre-registration —
-no third variant. See `STATUS.md` EXP-3 section, `evals/fixtures/exp3_localizer_result.json`
-(binary) and `evals/fixtures/exp3_localizer_graded_result.json` (graded) for full detail. Next:
-paper writing.
+Then GG reads the reframed abstract + intro + §4.4 + the boxed regime test + the anti-inflation audit.

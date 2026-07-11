@@ -49,8 +49,8 @@ Limitations summary, not only in a body-section subordinate clause.
 
 - **One default agent (gemma2:9b) for the whole regime map, T18, Q-series, RW1/RW2, and P2-A.**
   EXP-2 (the controlled capability ladder that would test this directly) is DROPPED — ratified
-  by GG (`spec.md` EXP-2 section, `0c78f49`) — because the underlying regime this session could
-  verify is already rare; a ladder over an uncommon regime has limited external relevance.
+  (`spec.md` EXP-2 section, `0c78f49`) — because the underlying regime this paper's preparation
+  could verify is already rare; a ladder over an uncommon regime has limited external relevance.
   State the drop and its justification explicitly; do not silently omit EXP-2 from the paper's
   scope statement.
 - **FRONTIER-T18 (Llama-3.3-70B) is ONE model, ONE data point, and NOT apples-to-apples with

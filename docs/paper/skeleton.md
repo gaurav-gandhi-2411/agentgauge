@@ -6,7 +6,7 @@ either Framing A (boundary-establishment) or Framing B (cautionary/replication) 
 note says how; the section itself does not change.
 
 Scope: EXP-4 (regime map, consolidation) + EXP-1 (prevalence) + EXP-3 (localizer). EXP-2
-(capability ladder) is DROPPED — ratified by GG, see `spec.md`.
+(capability ladder) is DROPPED — ratified, see `spec.md`.
 
 ---
 
@@ -81,7 +81,7 @@ section. Framing B: reframe 4.3 as the lead ("here's what we tried and where it 
     from already-collected behavioral data).
 6.3 Binary result: precision 0.167 / recall 1.00 — fails the pre-committed bar; 24/24 pairs
     flagged (near-constant-YES failure mode).
-6.4 GG-ratified graded-confidence retry: identical confusion matrix under a materially
+6.4 Ratified graded-confidence retry: identical confusion matrix under a materially
     different question format — rules out a framing artifact.
 6.5 Conclusion: pairwise judging (binary or graded) with this frozen judge is not a usable
     per-pair confusability signal. Robust negative, hard stop per pre-registration.

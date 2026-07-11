@@ -4,7 +4,7 @@
 
 ---
 
-## EXP-3 — Pairwise confusability localizer (COMPLETE, DRAFT — condition #1, escalated to GG)
+## EXP-3 — Pairwise confusability localizer (COMPLETE, DRAFT — condition #1, escalated to the author)
 
 **Branch:** `claude/exp3-localizer`. **Pre-registered** (`docs/research/exp3_pre_registration.md`,
 commit `603bfb2`, before any judge run): a 24-pair behavioral ground truth (4 CONFUSED / 20
@@ -48,7 +48,7 @@ question elicits yes.**
 read_notebook/list_notebooks) cross mechanical prefix-family boundaries; a family-scoped
 generator would not have proposed them as candidates at all, independent of this result.
 
-**GG-ratified retry (graded confidence, one time-boxed attempt, pre-registered before any judge
+**Ratified retry (graded confidence, one time-boxed attempt, pre-registered before any judge
 call — `docs/research/exp3_pre_registration.md` Section 7):** same 24-pair ground truth, same
 precision≥0.50 AND recall≥0.50 bar. Method: 0–10 CONFUSABILITY score per pair (mirrors
 `scorer.py`'s existing `_judge_discoverability`/`_parse_distinguish_score` pattern), 3 trials at
@@ -64,7 +64,7 @@ scoring guide regardless of input — genuinely-confused pairs (e.g. GSC delete_
 manage_sitemaps) and 100%-resolved anchor pairs (e.g. AWS IAM list_user_policies/
 list_role_policies, GitHub search_repositories/search_code) score in the same narrow band.
 
-**FINAL EXP-3 RESULT (hard stop per GG's pre-registered instruction — no third variant):**
+**FINAL EXP-3 RESULT (hard stop per the author's pre-registered instruction — no third variant):**
 pairwise judging fails to localize behavioral confusability under both a binary and a graded
 framing, using the frozen `llama3.1:8b` judge. Not a framing artifact — the same near-uninformative
 output (precision 0.167, recall 1.00) survives a materially different question format. **The
@@ -74,8 +74,8 @@ graded 0–10 confidence score — localizes everything, indiscriminately. Neith
 tested, gives a usable per-pair confusability ranking signal." Full per-pair detail: binary —
 `evals/fixtures/exp3_localizer_result.json`; graded — `evals/fixtures/exp3_localizer_graded_result.json`.
 
-Condition #1 (new judge mechanism, both attempts) — DRAFT PR #53, escalated to GG for review
-before merge. EXP-3 is now CLOSED; next step is paper writing (EXP-4 + EXP-1 + EXP-3 scope).
+Condition #1 (new judge mechanism, both attempts) — DRAFT PR #53, escalated to the author
+for review before merge. EXP-3 is now CLOSED; next step is paper writing (EXP-4 + EXP-1 + EXP-3 scope).
 
 CI: 710 tests (24 binary + 16 graded, all in `tests/test_localizer.py`), 94.79% coverage, 100% on
 `localizer.py`. `verify.sh` PASSED (ruff, ruff format, mypy non-blocking, pytest).
@@ -87,10 +87,10 @@ CI: 710 tests (24 binary + 16 graded, all in `tests/test_localizer.py`), 94.79% 
 **Branch:** `claude/exp1-prevalence`. **Status:** frame ratified at N=10 (v5, commit `538affe`);
 all 10 servers processed (7 behaviorally scored + 3 with no testable confusable family), plus
 2 anchors cited from prior published work. **Headline: 0/9 scored servers (7 fresh + 2 anchors)
-show IN-REGIME behavior.** EXP-2 (capability ladder) held pending GG's scope decision — see
-scope-decision escalation below.
+show IN-REGIME behavior.** EXP-2 (capability ladder) held pending the author's scope
+decision — see scope-decision escalation below.
 
-**Frame history (5 rebuilds, each re-escalated to GG, none silent):** started as a 30-server
+**Frame history (5 rebuilds, each re-escalated to the author, none silent):** started as a 30-server
 GitHub-topic-search pool, star-stratified (v1) → corrected to doc-density-stratified (v2, N=23,
 2 excluded as extraction-failed) → 3 confirmed Python-AST-extractor bugs found and fixed while
 preparing the trial batch (v3, N=22 → protocol-handler false-positive, MCP Prompt/Tool conflation,
@@ -149,7 +149,7 @@ ambiguity — no description can fix a case where two tools can legitimately bot
 under a 116-tool catalog, not confident wrong-tool selection — a catalog-SIZE failure mode, orthogonal
 to the paper's description-QUALITY thesis, and correctly not fixed by an oracle description either.
 
-**Scope decision — RATIFIED by GG, 2026-07-04:** paper = EXP-4 + EXP-1 + EXP-3. EXP-2 (capability
+**Scope decision — RATIFIED, 2026-07-04:** paper = EXP-4 + EXP-1 + EXP-3. EXP-2 (capability
 ladder) is DROPPED, justification "regime uncommon in sampled population → capability-ladder
 external relevance limited" (see `spec.md` EXP-2 section, updated to record the decision and
 preserve the design notes for reference). EXP-3 (localizer) is next — a confusable-pair localization
@@ -224,7 +224,7 @@ gemma2:9b. Not blocking the interpretation below.
 
 ---
 
-**ESCALATION TO GG — F2 direction decision (do not execute unilaterally):**
+**ESCALATION TO THE AUTHOR — F2 direction decision (do not execute unilaterally):**
 
 The P2-A frequency-probe result is bearish on the direct-selection thesis as the primary value
 proposition. The finding that "agents already resolve the dangerous confusions from task context"
@@ -298,7 +298,7 @@ picture below.
 
 ---
 
-**CONSOLIDATED P2-A + F2 PICTURE FOR GG (direction escalation):**
+**CONSOLIDATED P2-A + F2 PICTURE FOR THE AUTHOR (direction escalation):**
 
 Three experiments, one proxy (synthetic internal-proxy, gemma2:9b, 31 contested tools):
 
@@ -328,7 +328,7 @@ improve direct tool selection on one low-stakes family (order_read) and degrade 
 that makes Guard-B descriptions good at direct-selection discrimination (encoding the behavioral axis
 precisely) is the same property that makes them poor retrieval targets for coarse intent queries.
 
-Bringing to GG as a consolidated direction escalation. No new thesis proposed unilaterally.
+Bringing to the author as a consolidated direction escalation. No new thesis proposed unilaterally.
 
 ---
 

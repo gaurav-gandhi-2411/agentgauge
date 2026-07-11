@@ -1,6 +1,6 @@
 # Paper Evidence Table — Sourced Numbers
 
-**Status:** PREP — framing-independent. Compiled while awaiting GG's Framing A vs B decision
+**Status:** PREP — framing-independent. Compiled while awaiting the Framing A vs B decision
 (`paper_framing_options.md`). Every number below is traced to a specific committed file and,
 where meaningful, a commit hash. **Ancestry column** states whether that commit is reachable
 from this branch's HEAD (`claude/exp3-localizer`, currently `8fadbe0`) — i.e. whether a fresh
@@ -65,7 +65,7 @@ Source docs: `docs/research/exp4_regime_map.md` §Regime 2, §Non-Regime 5; `STA
 | Sign test | n+=19, n−=0, ties=21, p≈0 (<0.0001); stable-set (excl. 5 Arm-A flippers) n+=14, n−=0, p<0.001 | `frontier_t18_step2_result.json` (`sign_test`); stable-set figure from `docs/research/frontier_t18_result.md` |
 | Parse-failed / abstained | 0/240 calls | re-derived from `frontier_t18_step2_raw_calls.json` (no `PARSE-FAILED`/`ABSTAINED-OR-HEDGED` outcomes in either arm) |
 
-**RESOLVED (this session, GG-directed).** Original flag: the commit that recorded these numbers
+**RESOLVED (during this paper's preparation).** Original flag: the commit that recorded these numbers
 in prose (`5269645`, on branch `claude/frontier-t18`, open **DRAFT PR #50**, unmerged) is not an
 ancestor of `HEAD` or of `main`; the fuller writeup (`reports/frontier_t18_pr_body.md`) was
 gitignored on every branch; no raw result JSON was committed anywhere.
@@ -105,7 +105,7 @@ and hash-verified; harness-code merge is a separate, still-pending repo action.
 | Fixtures | `evals/fixtures/exp1_*.json` (server frame, doc-density scores, trial batches, anchor validation) | — | `0da8199` and frame-history commits | ✓ |
 | `taylorwilsdon-google_workspace_mcp` catalog size | 116 tools (0%/0% catalog-overwhelm failure mode) — added, flagged missing in second-pass adversarial audit | `STATUS.md` EXP-1 section ("...malformed/hedged output under a 116-tool catalog") | `0da8199` | ✓ |
 
-**Precision note for drafting (FIXED, GG-directed):** the precise figure is **0 of 9 servers
+**Precision note for drafting (FIXED):** the precise figure is **0 of 9 servers
 with a testable confusable family** showed in-regime behavior (10 servers total in the frame;
 3 had no testable confusable family and were never scored either way). `paper_framing_options.md`'s
 original shorthand ("0/10 Python public servers in-regime") has been corrected in that file and
