@@ -2,8 +2,11 @@
 
 Post-#54-merge hygiene pass. Scope: safe-set actions (branch deletion for confirmed-merged
 lineage, closing one confirmed-stale status-snapshot PR), plus report-only triage for everything
-else. Nothing was merged to `main` in this pass; nothing under `evals/fixtures/` was touched;
-PR #50 and PR #37 were left open and untouched per explicit protection.
+else. §§1-6 below are the original report-and-recommend pass, in which nothing was merged to
+`main`. §7 records a follow-up pass that acted on three of those recommendations: merging PR
+#40 (its own direct merge), and a STATUS.md fix + CI sync guard (bundled into draft PR #57, not
+yet merged — held for review). Nothing under `evals/fixtures/` was touched in either pass; PR
+#50 and PR #37 were left open and untouched per explicit protection throughout.
 
 ---
 
@@ -226,3 +229,116 @@ PDF looks stale.
   it hand-mirrored continuously — trades "always in sync" for "sync only recomputed when it
   matters," at the cost of re-reviewing the pandoc output's fidelity to the hand-tuned LaTeX
   conventions each time.
+
+---
+
+## 7. Actions taken (follow-up pass, acting on §3's recommendations)
+
+Three of §3's recommendations were acted on. #37 and #50 were explicitly excluded from action
+(protected, per this pass's constraints) — only the STATUS.md *misrepresentation* of #37 was
+fixed, not a merge of its branch.
+
+### Action 1 — merged PR #40 (Ty2 clean-harness rerun)
+
+Read both PR #40 and PR #37's full body text first, per instruction, to avoid the naming
+collision the original triage flagged: PR #40's "Ty2 fixture" (`evals/fixtures/ty2_tasks.py`,
+33.3%) is PR #37's own table's "Ty Run 2" — a *different* experiment from PR #37 itself, which
+is the "Ty2-guessable" attempt at 36.7%. Kept these numbers separated throughout.
+
+**Conflict resolution:** the raw `git diff`/merge between the two branch tips was not usable
+directly — `claude/ty2-rerun` forked from `main` five weeks earlier, when `STATUS.md` was ~550
+lines; `main`'s `STATUS.md` is now 1145+ lines. A line-by-line conflict resolution across that
+much drift would have been unreliable. Instead: diffed PR #40's branch against **its own
+merge-base** (not against current `main`) to isolate the actual ~25-line delta it introduces,
+reset `STATUS.md` to current `main`'s version, and manually spliced in that isolated delta at
+the three matching anchor points. One piece of PR #40's own diff was deliberately **not**
+applied: a stale `Test suite: 268 tests, 89.61%` count — current `main` already read `432
+tests, 90%` at the time (now 710 after this session's changes), so applying the branch's old
+number would have been a regression, not a splice.
+
+`agentgauge/scripts/run_ty2_oracle_ab.py`: confirmed zero collisions before merging — the diff
+against `main`'s existing copy is purely additive (24 new lines, the `parse_failed` diagnostic
+blocks, nothing removed or changed).
+
+**Verification:** `./scripts/verify.sh` run locally post-resolution: **710 passed, 94.79%
+coverage, PASSED.** Pushed to `claude/ty2-rerun`, PR #40 marked ready for review, CI
+(`verify` + `hygiene`) watched to green on GitHub Actions, then merged (human-reviewed merge
+button via `gh pr merge --merge`, no auto-merge).
+
+**Merge commit: `694d09e8592913333e2343cf276a24182465a185`.**
+
+### Action 2 — fixed STATUS.md's misrepresentation of PR #37
+
+**Before** (`main`, pre-fix):
+```
+**Candidate explanations to test next:**
+- *(a) Guessable-but-error-prone constraints:* Use constraints the agent "knows" but
+  applies inconsistently — e.g., ISO date formats, HTTP status codes, standard SI units.
+  These should land in the 40–70% zone because the agent has partial exposure but not
+  perfect recall. Requires pre-registration and inferability guard.
+- *(b) Weaker runner agent:* ...
+...
+  Which fork to take (another Ty attempt via (a) vs. weaker-agent pivot (b) vs. write the
+  meta-finding as the deliverable) is a design decision — tracked as open in TASKS.md.
+```
+and, in the cross-experiment table:
+```
+| Ty (call construction) | calls | **inconclusive** — ABORTED all runs | unguessable tokens → tautological; format/unit constraints → floor |
+```
+
+**After:** bullet (a) rewritten in past tense as **TESTED, ABORTED (Ty2, PR #37, branch
+`claude/ty2-guessable-constraints`, 2026-06-05)**, recording: the constraint types tried
+(near-miss enums, RFC3339 formats, ms-magnitude units, required-field presence), the **36.7%**
+Arm A result against the 40% gate, the full three-attempt progression (Run 1: 0%, tautological;
+Run 2: 33.3%, floor, clean-harness-confirmed by #40 above; Ty2-guessable: 36.7%, floor), the
+closing conclusion (**the 40-70% partial-ability window is unreachable by fixture design on
+gemma2:9b for `call_correctness`**), and a citation to PR #37 + its branch as the source of
+record for the full fixture (`evals/fixtures/ty_guessable_tasks.py`) and CI detail (25 tests).
+The closing "which fork to take" sentence now reads: *"With (a) now closed..., the only
+remaining fork is (b) weaker-agent pivot vs. writing the meta-finding as the deliverable."* The
+cross-experiment table row now reads *"**inconclusive** — ABORTED all 3 runs | ...
+guessable-but-error-prone (Ty2, PR #37) → floor (36.7%) — partial-ability window unreachable by
+fixture design."*
+
+PR #37 and branch `claude/ty2-guessable-constraints`: confirmed still open, untouched — this
+was a documentation-only fix on `main`, not a merge.
+
+Commit: `cffd780` on branch `chore/status-fix-and-sync-guard` (draft PR #57, unmerged, held for
+review).
+
+### Action 3 — paper.md ↔ latex sync guard
+
+Added `scripts/check_paper_latex_sync.py`: walks each non-merge commit in a given range,
+flags any commit that touches `docs/paper/paper.md` without also touching something under
+`docs/paper/latex/`. Deliberately a git-diff-only check — no Markdown/LaTeX parsing, no
+content-equivalence claim, per the "lightweight" instruction.
+
+**Tested against real history before wiring into CI:**
+- `93d2efd..cfa95c4` → correctly **flagged** `65ac284` (the draft-banner-removal commit, which
+  predates the `latex/` mirror's existence) as a real violation.
+- `e3b9ec0..a4893a9` (the full abstract-precision-fix arc from this session) → **passed clean**,
+  confirming every `paper.md` edit in that arc was correctly co-committed with its `latex/`
+  counterpart.
+
+**CI wiring:** added as a new step inside the existing `hygiene` job in
+`.github/workflows/ci.yml`, reusing that job's already-computed commit range (`origin/main..HEAD`
+for PRs, `before..sha` for pushes to `main`) rather than recomputing it. Verified live on GitHub
+Actions via draft PR #57: both `verify` and `hygiene` (including the new sync-guard step) passed.
+
+**Docs:** one line added to `docs/paper/latex/README.md` pointing at the guard and what it
+enforces.
+
+Commit: `2fdf64f` on branch `chore/status-fix-and-sync-guard` (draft PR #57, unmerged, held for
+review — same PR as Action 2, per the task's bundling instruction).
+
+### Summary of state after this pass
+
+| Item | Status |
+|---|---|
+| PR #40 | **Merged to `main`** (`694d09e`) |
+| STATUS.md #37 fix | Committed on draft PR #57, **awaiting your review/merge** |
+| Sync guard (script + CI + README) | Committed on draft PR #57, **awaiting your review/merge** |
+| PR #37 (branch + PR) | Open, untouched |
+| PR #50 (branch + PR) | Open, untouched |
+| `evals/fixtures/*` | Untouched throughout |
+| `skeleton.md`, `paper_framing_options.md` | Not deleted, as instructed |
