@@ -1,10 +1,66 @@
 # AgentGauge
 
-**AgentGauge scores how well an AI agent can actually use an MCP server.**
+**AgentGauge scores how well an AI agent can actually use an MCP server — and is the research
+program behind ["Tool-Description Quality Is Not One Axis"](docs/paper/latex/main.pdf), a study
+of where fixing tool descriptions helps, does nothing, or backfires.**
 
 [![CI](https://github.com/gaurav-gandhi-2411/agentgauge/actions/workflows/ci.yml/badge.svg)](https://github.com/gaurav-gandhi-2411/agentgauge/actions/workflows/ci.yml)
 
 > **v1 complete.** All eight scoring dimensions are implemented. The core CLI scanner is functional.
+
+---
+
+## The paper
+
+**["Tool-Description Quality Is Not One Axis: A Regime Analysis of Where It Helps and Where It
+Backfires"](docs/paper/latex/main.pdf)** — arXiv:XXXX.XXXXX *(TO FILL after upload)*.
+
+Tool-description quality is widely treated as a broadly-applicable lever for agent tool-use —
+but it is not a single better/worse axis: the precision that helps an agent disambiguate within
+a family of confusable tools is orthogonal to, or actively harmful for, context-rich selection
+and for tool retrieval. The effect is real but **regime-bounded**, not a general law — the paper
+maps the exact boundary (catalog density, headroom, documented source) and finds it rare in a
+pilot sample of real servers.
+
+### The practitioner takeaway: the Two-Condition Regime Test
+
+Before investing in description tooling on a given MCP server, ask two questions:
+
+1. **Fail** — does the agent fail at least one contested task under the server's real, shipped
+   descriptions?
+2. **Recover** — if it fails, does a hand-written, ground-truth description recover it?
+
+If (1) is NO, the agent already resolves the task from context — there's nothing to fix. If (1)
+is YES but (2) is also NO, the failure isn't description-shaped (functional overlap, catalog
+overwhelm) — description tooling won't help either. Only if both are YES is the server inside
+the regime where better descriptions help. This is the same two-step check the paper's own
+results were produced with, not a separately validated general instrument.
+
+### Reproducibility
+
+Every experiment in the paper runs under a single frozen evaluation protocol — one classifier,
+one judge, one generator family, pre-registered thresholds:
+[`docs/research/frozen_protocol.md`](docs/research/frozen_protocol.md). Every figure in the
+paper traces to a committed, hash-verified fixture:
+[`docs/paper/evidence_table.md`](docs/paper/evidence_table.md). `./scripts/verify.sh` runs the
+same test suite (LLM always mocked, no network, no credentials) that gates every
+research-program pull request.
+
+### Building the PDF
+
+[`docs/paper/paper.md`](docs/paper/paper.md) is the canonical source; the LaTeX build in
+[`docs/paper/latex/`](docs/paper/latex/) is a maintained mirror (CI fails if a commit changes
+one without the other). To rebuild the PDF:
+
+```bash
+export PATH="$HOME/.local/tectonic:$PATH"
+cd docs/paper/latex
+tectonic main.tex
+```
+
+**Scope note:** this is a pilot-scale research artifact — synthetic fixtures, two real-server
+mirrors, and a 10-server pilot sample — not a validated product claim. The paper's own Section 8
+states plainly what is and isn't supported by the evidence.
 
 ---
 
