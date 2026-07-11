@@ -648,6 +648,14 @@ models — always record the model alongside any stored score.
   untested in a genuine partial-ability regime. A design with more conventional constraints
   (standard integer ranges, familiar enum terms) is the candidate path to a non-tautological
   partial-headroom test, but requires a fresh pre-registration.
+  **Ty2 clean-harness rerun (2026-06-06, post-#39, PR #40):** Re-ran the identical
+  pre-registered `ty2_tasks.py` fixture (Run 2's exotic-format/unit constraints) on the fixed
+  harness (`extract_json_object`, PR #39). parse_failed=0/180 (0.0%) across both stability
+  runs — the old harness was NOT silently coercing parse failures to empty dicts. Arm A
+  baseline unchanged at 33.3%. **The abort was NOT a harness artifact.** The 33.3% floor is
+  genuine model behavior: gemma2:9b truly cannot construct valid format-pattern and
+  non-standard-unit calls at the 40-70% partial-headroom threshold. The parse-failure-as-confound
+  hypothesis is eliminated.
 - **T17 (IN-REVIEW, branch `claude/t17-selection-limited`):** 8 confusable clusters (16 tools,
   32 pre-registered tasks). CI: 8 new tests pass (fixture integrity, stability-screen logic,
   manipulation check). Q1 oracle A/B (gemma2:9b, 2026-06-03): **ABORTED — fixture-quality,
@@ -691,7 +699,9 @@ models — always record the model alongside any stored score.
   - *Selection (T17):* Agent resolves tool selection at 81.2% from names alone on domain
     vocabulary → Arm A above the 70% ceiling; no headroom.
   - *Calls (Ty Run 2):* Agent succeeds at only 33.3% in Arm A on format/unit constraints →
-    below the 40% floor; still effectively a floor-effect regime.
+    below the 40% floor; still effectively a floor-effect regime. **Confirmed on clean
+    harness (2026-06-06, PR #40):** parse_failed=0/180; the 33.3% is not a measurement
+    artifact.
   Both dimensions landed outside the target window on the first attempt and require fixture
   redesign to test. The window exists in principle but is sensitive to the agent's prior
   knowledge about the specific vocabulary used.
@@ -705,9 +715,12 @@ models — always record the model alongside any stored score.
     vocabulary. A smaller model (e.g., gemma2:2b, phi3:mini) would have a lower knowledge
     floor and more constraint-sensitive behavior, potentially landing Arm A in range without
     fixture redesign. Trade-off: harder to generalize findings to production-grade agents.
+  - ~~*(c) Harness parse failures:*~~ **ELIMINATED (2026-06-06, PR #40).** parse_failed=0/180
+    on clean-harness rerun. The 33.3% floor is not caused by JSON formatting failures being
+    silently coerced to empty dicts. The floor is genuine model behavior.
 
-  Which fork to take (another Ty attempt vs. weaker-agent pivot vs. write the meta-finding
-  as the deliverable) is a design decision — tracked as open in TASKS.md.
+  Which fork to take (another Ty attempt via (a) vs. weaker-agent pivot (b) vs. write the
+  meta-finding as the deliverable) is a design decision — tracked as open in TASKS.md.
 
 - **T18 (IN-REVIEW, branch `claude/t18-discoverability-scale`):** Oracle A/B on `selection_accuracy`
   with a 60-tool confusable catalog (10 families × 6 near-neighbors). Arm A = empty descriptions;
