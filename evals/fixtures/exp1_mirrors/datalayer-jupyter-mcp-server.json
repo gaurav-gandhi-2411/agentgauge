@@ -1,0 +1,359 @@
+{
+  "server_id": "datalayer-jupyter-mcp-server",
+  "source_repo": "datalayer/jupyter-mcp-server",
+  "language": "Python",
+  "stars": 1192,
+  "stratum": "near_empty",
+  "notes": "commit=27b91e551d8bbca2da32c334f9f13267290ff815; extraction_method=ast; doc_density_composite=80.0; params are name-only placeholders (annotation='Any') -- EXP-1 classifier tests selection only, not call-correctness.",
+  "tools": [
+    {
+      "name": "list_files",
+      "docstring": "List all files and directories recursively in the Jupyter server's file system.\nUsed to explore the file system structure of the Jupyter server or to find specific files or directories.",
+      "source_hash": "99ad394c6dde",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "path",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "max_depth",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "start_index",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "limit",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "pattern",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "list_kernels",
+      "docstring": "List all available kernels in the Jupyter server.\n\nThis tool shows all running and available kernel sessions on the Jupyter server,\nincluding their IDs, names, states, connection information, and kernel specifications.\nUseful for monitoring kernel resources and identifying specific kernels for connection.",
+      "source_hash": "7579b3e20d4c",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "use_notebook",
+      "docstring": "Use a notebook and activate it for following cell operations.\nAll cell operations will be performed on the currently activated notebook.\nActivate new notebook will deactivate the previously activated notebook.\nReactivate previously activated notebook using same notebook_name and notebook_path.",
+      "source_hash": "62c8287f52d3",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "notebook_name",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "notebook_path",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "mode",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "kernel_id",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "list_notebooks",
+      "docstring": "List all notebooks that have been used via use_notebook tool",
+      "source_hash": "007b2a4cabae",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "restart_notebook",
+      "docstring": "Restart the kernel for a specific notebook.",
+      "source_hash": "c1b1997bda6b",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "notebook_name",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "unuse_notebook",
+      "docstring": "Unuse from a specific notebook and release its resources.",
+      "source_hash": "0dd264936042",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "notebook_name",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "read_notebook",
+      "docstring": "Read a notebook and return index, source content, type, execution count of each cell.\n\nUsing brief format to get a quick overview of the notebook structure and it's useful for locating specific cells for operations like delete or insert.\nUsing detailed format to get detailed information of the notebook and it's useful for debugging and analysis.\n\nIt is recommended to use brief format with larger limit to get a overview of the notebook structure, \nthen use detailed format with exact index and limit to get the detailed information of some specific cells.",
+      "source_hash": "493e3fd56c12",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "notebook_name",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "response_format",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "start_index",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "limit",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "insert_cell",
+      "docstring": "Insert a cell to specified position from the currently activated notebook.",
+      "source_hash": "7771fe721815",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "cell_index",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "cell_type",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "cell_source",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "overwrite_cell_source",
+      "docstring": "Replace the entire source of a cell in the currently activated notebook.\nReturns a diff showing the changes made.\n\nUse this when rewriting a cell completely. For small, targeted changes,\nprefer edit_cell_source instead — it is safer for partial edits.",
+      "source_hash": "79be8a6459f5",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "cell_index",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "cell_source",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "edit_cell_source",
+      "docstring": "Perform a surgical find-and-replace within a cell's source (like an editor's Edit tool).\nFinds `old_string` in the cell and replaces it with `new_string`. Matching is literal\n(not regex) and may span multiple lines. By default, `old_string` must appear exactly once;\nset `replace_all=True` for multiple occurrences. Returns a diff of the changes made.\n\nPrefer this over overwrite_cell_source for small, targeted edits — it is safer because\nunchanged parts of the cell are left untouched. Use read_cell first to see the current\nsource and construct an accurate old_string.",
+      "source_hash": "e4250d0376d2",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "cell_index",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "old_string",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "new_string",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "replace_all",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "execute_cell",
+      "docstring": "Execute a cell from the currently activated notebook with timeout and return it's outputs",
+      "source_hash": "d17d34f4190a",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "cell_index",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "timeout",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "stream",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "progress_interval",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "insert_execute_code_cell",
+      "docstring": "Insert a cell at specified index from the currently activated notebook and then execute it with timeout and return it's outputs\nIt is a shortcut tool for insert_cell and execute_cell tools, recommended to use if you want to insert a cell and execute it at the same time",
+      "source_hash": "5a1d149721b6",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "cell_index",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "cell_source",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "timeout",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "read_cell",
+      "docstring": "Read a specific cell from the currently activated notebook and return it's metadata (index, type, execution count), source and outputs (for code cells)",
+      "source_hash": "e6a644e077d1",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "cell_index",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "include_outputs",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "delete_cell",
+      "docstring": "Delete specific cells from the currently activated notebook and return the cell source of deleted cells (if include_source=True).",
+      "source_hash": "eb2a59e36b21",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "cell_indices",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "include_source",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "move_cell",
+      "docstring": "Move a cell from source_index to target_index within the currently activated notebook.\n\nThe cell is removed from source_index and placed at target_index. Cells in between shift\nto fill the gap. The cell's type, source, and outputs are preserved.\nExample: in a notebook [A, B, C, D], move_cell(1, 3) produces [A, C, D, B].\n\nUse this tool instead of manually deleting and re-inserting a cell — it is atomic and\npreserves cell metadata. Use read_notebook first to see cell indices if needed.",
+      "source_hash": "a3e046517f23",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "source_index",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "target_index",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "execute_code",
+      "docstring": "Execute code directly in a kernel (not saved to notebook).\n\nTargets the current activated notebook's kernel by default. Pass kernel_id\nto execute in a specific kernel directly — including raw kernels with no\nnotebook attached.\n\nRecommended to use in following cases:\n1. Execute Jupyter magic commands(e.g., `%timeit`, `%pip install xxx`)\n2. Performance profiling and debugging.\n3. View intermediate variable values(e.g., `print(xxx)`, `df.head()`)\n4. Temporary calculations and quick tests(e.g., `np.mean(df['xxx'])`)\n5. Execute Shell commands in Jupyter server(e.g., `!git xxx`)\n\nUnder no circumstances should you use this tool to:\n1. Import new modules or perform variable assignments that affect subsequent Notebook execution\n2. Execute dangerous code that may harm the Jupyter server or the user's data without permission",
+      "source_hash": "95da10aa2d5d",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "code",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "timeout",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "kernel_id",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "connect_to_jupyter",
+      "docstring": "Connect to a Jupyter server dynamically with URL and token.\n\nThis tool allows you to connect to different Jupyter servers without needing to \nrestart the MCP server or modify configuration files. Particularly useful when:\n- Working with multiple Jupyter servers with different ports/tokens\n- Jupyter server token changes dynamically\n- Need to switch between different Jupyter instances\n\nExample usage:\n- \"Connect to http://localhost:8888 with token abc123\"\n- \"Connect to http://localhost:8889 without authentication\"",
+      "source_hash": "a7be1bc8a0f2",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "jupyter_url",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "jupyter_token",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "provider",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    }
+  ]
+}

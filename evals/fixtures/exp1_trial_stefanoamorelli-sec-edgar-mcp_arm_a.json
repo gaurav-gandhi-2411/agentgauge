@@ -1,0 +1,296 @@
+{
+  "server_id": "stefanoamorelli-sec-edgar-mcp",
+  "family_id": "discover_family",
+  "agent_model": "gemma2:9b",
+  "trials_per_task": 5,
+  "n_contested": 4,
+  "parse_failed_a": 0,
+  "arm_a_accuracy": 1.0,
+  "headroom_gated": false,
+  "aborted": true,
+  "abort_reason": "No headroom: Arm A accuracy=100.0% >= 85%",
+  "arm_a_outcomes": [
+    {
+      "task_id": "secedgar_1",
+      "trial": 0,
+      "outcome": "SELECTED-CORRECT",
+      "selected_tool": "discover_company_metrics"
+    },
+    {
+      "task_id": "secedgar_1",
+      "trial": 1,
+      "outcome": "SELECTED-CORRECT",
+      "selected_tool": "discover_company_metrics"
+    },
+    {
+      "task_id": "secedgar_1",
+      "trial": 2,
+      "outcome": "SELECTED-CORRECT",
+      "selected_tool": "discover_company_metrics"
+    },
+    {
+      "task_id": "secedgar_1",
+      "trial": 3,
+      "outcome": "SELECTED-CORRECT",
+      "selected_tool": "discover_company_metrics"
+    },
+    {
+      "task_id": "secedgar_1",
+      "trial": 4,
+      "outcome": "SELECTED-CORRECT",
+      "selected_tool": "discover_company_metrics"
+    },
+    {
+      "task_id": "secedgar_2",
+      "trial": 0,
+      "outcome": "SELECTED-CORRECT",
+      "selected_tool": "discover_xbrl_concepts"
+    },
+    {
+      "task_id": "secedgar_2",
+      "trial": 1,
+      "outcome": "SELECTED-CORRECT",
+      "selected_tool": "discover_xbrl_concepts"
+    },
+    {
+      "task_id": "secedgar_2",
+      "trial": 2,
+      "outcome": "SELECTED-CORRECT",
+      "selected_tool": "discover_xbrl_concepts"
+    },
+    {
+      "task_id": "secedgar_2",
+      "trial": 3,
+      "outcome": "SELECTED-CORRECT",
+      "selected_tool": "discover_xbrl_concepts"
+    },
+    {
+      "task_id": "secedgar_2",
+      "trial": 4,
+      "outcome": "SELECTED-CORRECT",
+      "selected_tool": "discover_xbrl_concepts"
+    },
+    {
+      "task_id": "secedgar_3",
+      "trial": 0,
+      "outcome": "SELECTED-CORRECT",
+      "selected_tool": "discover_company_metrics"
+    },
+    {
+      "task_id": "secedgar_3",
+      "trial": 1,
+      "outcome": "SELECTED-CORRECT",
+      "selected_tool": "discover_company_metrics"
+    },
+    {
+      "task_id": "secedgar_3",
+      "trial": 2,
+      "outcome": "SELECTED-CORRECT",
+      "selected_tool": "discover_company_metrics"
+    },
+    {
+      "task_id": "secedgar_3",
+      "trial": 3,
+      "outcome": "SELECTED-CORRECT",
+      "selected_tool": "discover_company_metrics"
+    },
+    {
+      "task_id": "secedgar_3",
+      "trial": 4,
+      "outcome": "SELECTED-CORRECT",
+      "selected_tool": "discover_company_metrics"
+    },
+    {
+      "task_id": "secedgar_4",
+      "trial": 0,
+      "outcome": "SELECTED-CORRECT",
+      "selected_tool": "discover_xbrl_concepts"
+    },
+    {
+      "task_id": "secedgar_4",
+      "trial": 1,
+      "outcome": "SELECTED-CORRECT",
+      "selected_tool": "discover_xbrl_concepts"
+    },
+    {
+      "task_id": "secedgar_4",
+      "trial": 2,
+      "outcome": "SELECTED-CORRECT",
+      "selected_tool": "discover_xbrl_concepts"
+    },
+    {
+      "task_id": "secedgar_4",
+      "trial": 3,
+      "outcome": "SELECTED-CORRECT",
+      "selected_tool": "discover_xbrl_concepts"
+    },
+    {
+      "task_id": "secedgar_4",
+      "trial": 4,
+      "outcome": "SELECTED-CORRECT",
+      "selected_tool": "discover_xbrl_concepts"
+    }
+  ],
+  "raw_log_a": [
+    {
+      "task_id": "secedgar_1",
+      "trial": 0,
+      "raw_response": "discover_company_metrics",
+      "selected_tool": "discover_company_metrics",
+      "gold_tool": "discover_company_metrics",
+      "outcome": "SELECTED-CORRECT"
+    },
+    {
+      "task_id": "secedgar_1",
+      "trial": 1,
+      "raw_response": "discover_company_metrics",
+      "selected_tool": "discover_company_metrics",
+      "gold_tool": "discover_company_metrics",
+      "outcome": "SELECTED-CORRECT"
+    },
+    {
+      "task_id": "secedgar_1",
+      "trial": 2,
+      "raw_response": "discover_company_metrics",
+      "selected_tool": "discover_company_metrics",
+      "gold_tool": "discover_company_metrics",
+      "outcome": "SELECTED-CORRECT"
+    },
+    {
+      "task_id": "secedgar_1",
+      "trial": 3,
+      "raw_response": "discover_company_metrics",
+      "selected_tool": "discover_company_metrics",
+      "gold_tool": "discover_company_metrics",
+      "outcome": "SELECTED-CORRECT"
+    },
+    {
+      "task_id": "secedgar_1",
+      "trial": 4,
+      "raw_response": "discover_company_metrics",
+      "selected_tool": "discover_company_metrics",
+      "gold_tool": "discover_company_metrics",
+      "outcome": "SELECTED-CORRECT"
+    },
+    {
+      "task_id": "secedgar_2",
+      "trial": 0,
+      "raw_response": "discover_xbrl_concepts",
+      "selected_tool": "discover_xbrl_concepts",
+      "gold_tool": "discover_xbrl_concepts",
+      "outcome": "SELECTED-CORRECT"
+    },
+    {
+      "task_id": "secedgar_2",
+      "trial": 1,
+      "raw_response": "discover_xbrl_concepts",
+      "selected_tool": "discover_xbrl_concepts",
+      "gold_tool": "discover_xbrl_concepts",
+      "outcome": "SELECTED-CORRECT"
+    },
+    {
+      "task_id": "secedgar_2",
+      "trial": 2,
+      "raw_response": "discover_xbrl_concepts",
+      "selected_tool": "discover_xbrl_concepts",
+      "gold_tool": "discover_xbrl_concepts",
+      "outcome": "SELECTED-CORRECT"
+    },
+    {
+      "task_id": "secedgar_2",
+      "trial": 3,
+      "raw_response": "discover_xbrl_concepts",
+      "selected_tool": "discover_xbrl_concepts",
+      "gold_tool": "discover_xbrl_concepts",
+      "outcome": "SELECTED-CORRECT"
+    },
+    {
+      "task_id": "secedgar_2",
+      "trial": 4,
+      "raw_response": "discover_xbrl_concepts",
+      "selected_tool": "discover_xbrl_concepts",
+      "gold_tool": "discover_xbrl_concepts",
+      "outcome": "SELECTED-CORRECT"
+    },
+    {
+      "task_id": "secedgar_3",
+      "trial": 0,
+      "raw_response": "discover_company_metrics",
+      "selected_tool": "discover_company_metrics",
+      "gold_tool": "discover_company_metrics",
+      "outcome": "SELECTED-CORRECT"
+    },
+    {
+      "task_id": "secedgar_3",
+      "trial": 1,
+      "raw_response": "discover_company_metrics",
+      "selected_tool": "discover_company_metrics",
+      "gold_tool": "discover_company_metrics",
+      "outcome": "SELECTED-CORRECT"
+    },
+    {
+      "task_id": "secedgar_3",
+      "trial": 2,
+      "raw_response": "discover_company_metrics",
+      "selected_tool": "discover_company_metrics",
+      "gold_tool": "discover_company_metrics",
+      "outcome": "SELECTED-CORRECT"
+    },
+    {
+      "task_id": "secedgar_3",
+      "trial": 3,
+      "raw_response": "discover_company_metrics",
+      "selected_tool": "discover_company_metrics",
+      "gold_tool": "discover_company_metrics",
+      "outcome": "SELECTED-CORRECT"
+    },
+    {
+      "task_id": "secedgar_3",
+      "trial": 4,
+      "raw_response": "discover_company_metrics",
+      "selected_tool": "discover_company_metrics",
+      "gold_tool": "discover_company_metrics",
+      "outcome": "SELECTED-CORRECT"
+    },
+    {
+      "task_id": "secedgar_4",
+      "trial": 0,
+      "raw_response": "discover_xbrl_concepts",
+      "selected_tool": "discover_xbrl_concepts",
+      "gold_tool": "discover_xbrl_concepts",
+      "outcome": "SELECTED-CORRECT"
+    },
+    {
+      "task_id": "secedgar_4",
+      "trial": 1,
+      "raw_response": "discover_xbrl_concepts",
+      "selected_tool": "discover_xbrl_concepts",
+      "gold_tool": "discover_xbrl_concepts",
+      "outcome": "SELECTED-CORRECT"
+    },
+    {
+      "task_id": "secedgar_4",
+      "trial": 2,
+      "raw_response": "discover_xbrl_concepts",
+      "selected_tool": "discover_xbrl_concepts",
+      "gold_tool": "discover_xbrl_concepts",
+      "outcome": "SELECTED-CORRECT"
+    },
+    {
+      "task_id": "secedgar_4",
+      "trial": 3,
+      "raw_response": "discover_xbrl_concepts",
+      "selected_tool": "discover_xbrl_concepts",
+      "gold_tool": "discover_xbrl_concepts",
+      "outcome": "SELECTED-CORRECT"
+    },
+    {
+      "task_id": "secedgar_4",
+      "trial": 4,
+      "raw_response": "discover_xbrl_concepts",
+      "selected_tool": "discover_xbrl_concepts",
+      "gold_tool": "discover_xbrl_concepts",
+      "outcome": "SELECTED-CORRECT"
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "spec_version": "1.0",
+  "description": "P2-A F2 retrieval-readiness pre-registration. Queries are underspecified — they describe the general capability WITHOUT encoding the within-family distinguishing axis (return-shape, write-scope, permanence, query-mechanism, channel, side-effects, timing). This models real retrieval where description is the only disambiguation signal and the user does not yet know which variant they need.",
+  "retrieval_setup": {
+    "corpus": "all 48 tools in the P2-A catalog (31 contested + 17 thorough)",
+    "indexed_field": "description only (not name); name is constant across arms and excluded to isolate description signal",
+    "arms": ["thin", "guardb", "oracle"],
+    "retrievers": ["BM25 (k1=1.5, b=0.75)", "embedding cosine-sim (nomic-embed-text via Ollama, optional)"],
+    "metrics": ["MRR (mean reciprocal rank)", "Rank@1 fraction", "mean rank"],
+    "tie_handling": "fractional ranking — tied documents share the average of their rank positions"
+  },
+  "pre_committed_interpretation": {
+    "f2_supported": "Guard-B beats thin on underspecified queries per-family for order_read (the family with demonstrated selection headroom) AND does NOT inherit the account_query selection harm (retrieval improves or is neutral on account_query even though selection regressed). This would confirm retrieval-readiness as an orthogonal durable value path: the 'task context resolves danger' finding that undercuts direct-selection does not apply to retrieval.",
+    "tautological_risk": "Guard-B only outperforms thin when queries contain enough context to match description content. Rich-task queries (the original P2-A tasks) would trivially favour Guard-B because they describe exactly the distinguishing axis. The underspecified-query design guards against this: improvement here is genuine retrieval signal, not query-description co-occurrence.",
+    "f2_inherits_selection_harm": "Guard-B descriptions harm retrieval on account_query (same family that was harmed in direct selection at -20pp). This means the description-induced disambiguation noise that caused selection regression also degrades retrieval ranking on that family. F2 does not provide an orthogonal path for account_query.",
+    "f2_partial": "Guard-B improves retrieval on order_read (and possibly other families) but also harms account_query retrieval, mirroring the selection result. Value is real but inherits the same constraint as direct-selection: apply targeted per-family, not blanket."
+  },
+  "embedding_pre_committed_interpretation": {
+    "committed_after": "BM25+TFIDF result (thin wins lexical, 2026-06-15). Committed before embedding scores are computed.",
+    "f2_survives_embedding": "Guard-B beats thin on embedding MRR for order_read (the family with selection headroom) AND is neutral-or-better on account_query. Verdict: F2 survives BUT only for semantic-retrieval deployments. Report as narrow, diminished thesis — note it competes with existing description-expansion methods (Tool-DE) that solve the same problem. Escalate to GG, do not self-promote.",
+    "f2_closed": "Guard-B neutral-or-loses on embedding retrieval too (order_read not improved). Verdict: F2 is CLOSED across all retriever types tested (BM25, TFIDF, embedding). Descriptions do not improve tool retrieval on this proxy regardless of retriever. Do NOT propose another retriever. Bring consolidated picture to GG."
+  },
+  "queries_per_tool": {
+    "_note": "Queries must NOT encode the within-family distinguishing axis. Axis terms forbidden per family: order_read=(summary, full record, cached, calculated, line items, timestamps); invoice_write=(partial, full replacement, JSON Patch, RFC 6902, supersede, overwrite all); ticket_lifecycle=(permanently, irreversible, recover, soft delete, archive store, status flag, visible); account_query=(full-text, SQL, WHERE clause, external reference, primary key, structured filter); notification=(email, push, SMS, in-app, preferred channel); order_status=(payment, warehouse, inventory, confirmation email, operations team); invoice_schedule=(async, background worker, staged, approval, DRAFT state, future datetime).",
+    "get_order":        ["get an order", "read order data", "order lookup"],
+    "fetch_order":      ["get an order", "retrieve order information", "access order data"],
+    "load_order":       ["get an order", "fetch order data", "read an order"],
+    "retrieve_order":   ["get an order", "look up an order", "order details"],
+    "update_invoice":   ["update an invoice", "change invoice data", "modify an invoice"],
+    "upsert_invoice":   ["update an invoice", "write to invoice", "save invoice changes"],
+    "patch_invoice":    ["update an invoice", "edit an invoice", "modify invoice data"],
+    "replace_invoice":  ["update an invoice", "overwrite invoice data", "rewrite an invoice"],
+    "amend_invoice":    ["update an invoice", "change an invoice", "alter invoice data"],
+    "delete_ticket":    ["remove a ticket", "delete a ticket", "end a ticket"],
+    "archive_ticket":   ["remove a ticket", "close out a ticket", "put ticket away"],
+    "purge_ticket":     ["remove a ticket", "delete a ticket", "clear a ticket"],
+    "expire_ticket":    ["close a ticket", "end a ticket", "finish a ticket"],
+    "search_accounts":  ["find accounts", "get accounts", "look up accounts"],
+    "filter_accounts":  ["find accounts", "narrow down accounts", "select accounts"],
+    "query_accounts":   ["find accounts", "get matching accounts", "look up accounts"],
+    "find_account":     ["find an account", "get a specific account", "look up an account"],
+    "lookup_account":   ["look up an account", "get an account", "find a specific account"],
+    "notify_customer":  ["notify a customer", "contact a customer", "send a customer notification"],
+    "push_update":      ["notify a customer", "send an update to a customer", "alert a customer"],
+    "dispatch_sms":     ["contact a customer", "send a message to a customer", "notify a customer"],
+    "message_customer": ["send a message to a customer", "notify a customer", "reach a customer"],
+    "contact_customer": ["contact a customer", "reach a customer", "notify a customer"],
+    "confirm_order":    ["advance an order", "update order status", "move an order forward"],
+    "approve_order":    ["advance an order", "update order status", "mark an order as approved"],
+    "fulfill_order":    ["advance an order", "complete an order", "move order to next stage"],
+    "process_order":    ["process an order", "advance an order", "run an order through the system"],
+    "schedule_invoice": ["create an invoice", "set up an invoice", "prepare an invoice"],
+    "queue_invoice":    ["create an invoice", "submit an invoice", "send an invoice"],
+    "stage_invoice":    ["create an invoice", "prepare an invoice", "set up an invoice"],
+    "draft_invoice":    ["create an invoice", "start an invoice", "new invoice"]
+  }
+}

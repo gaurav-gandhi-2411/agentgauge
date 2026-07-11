@@ -1,0 +1,936 @@
+{
+  "experiment_id": "EXP-1",
+  "step": "STEP 2 -- family identification, MECHANICAL COMPONENT ONLY (prefix clustering)",
+  "method_note": "Prefix clustering (pre-reg criterion a) only. Embedding similarity (b) and manual domain review (c) have NOT been run -- these are CANDIDATE families, not the final pre-registered set. No contested tasks should be authored from this file alone.",
+  "n_servers": 25,
+  "n_servers_with_candidate_family": 20,
+  "n_servers_with_no_candidate_family": 5,
+  "servers": {
+    "matlab-matlab-mcp-server": {
+      "stratum": "well_documented",
+      "n_tools": 12,
+      "n_candidate_families": 1,
+      "n_tools_in_candidate_family": 2,
+      "candidate_families": {
+        "run_family": [
+          "run_matlab_file",
+          "run_matlab_test_file"
+        ]
+      }
+    },
+    "ChromeDevTools-chrome-devtools-mcp": {
+      "stratum": "well_documented",
+      "n_tools": 128,
+      "n_candidate_families": 18,
+      "n_tools_in_candidate_family": 53,
+      "candidate_families": {
+        "include_family": [
+          "includeSnapshot",
+          "includePreservedMessages",
+          "includePreservedRequests"
+        ],
+        "page_family": [
+          "pageId",
+          "pageIdx",
+          "pageSize"
+        ],
+        "max_family": [
+          "maxDepth",
+          "maxNodes",
+          "maxSiblings"
+        ],
+        "type_family": [
+          "type",
+          "type_text"
+        ],
+        "handle_family": [
+          "handleBeforeUnload",
+          "handle_dialog"
+        ],
+        "insight_family": [
+          "insightSetId",
+          "insightName"
+        ],
+        "reload_family": [
+          "reload",
+          "reload_extension"
+        ],
+        "get_family": [
+          "get_console_message",
+          "get_heapsnapshot_summary",
+          "get_heapsnapshot_details",
+          "get_heapsnapshot_class_nodes",
+          "get_heapsnapshot_retainers",
+          "get_heapsnapshot_retaining_paths",
+          "get_heapsnapshot_edges",
+          "get_heapsnapshot_dominators",
+          "get_heapsnapshot_duplicate_strings",
+          "get_network_request",
+          "get_tab_id"
+        ],
+        "list_family": [
+          "list_extensions",
+          "list_network_requests",
+          "list_pages",
+          "list_3p_developer_tools",
+          "list_webmcp_tools"
+        ],
+        "click_family": [
+          "click",
+          "click_at"
+        ],
+        "fill_family": [
+          "fill",
+          "fill_form"
+        ],
+        "take_family": [
+          "take_heapsnapshot",
+          "take_screenshot",
+          "take_snapshot"
+        ],
+        "close_family": [
+          "close_heapsnapshot",
+          "close_page"
+        ],
+        "navigate_family": [
+          "navigate_page",
+          "navigate"
+        ],
+        "performance_family": [
+          "performance_start_trace",
+          "performance_stop_trace",
+          "performance_analyze_insight"
+        ],
+        "screencast_family": [
+          "screencast_start",
+          "screencast_stop"
+        ],
+        "evaluate_family": [
+          "evaluate_script",
+          "evaluate"
+        ],
+        "execute_family": [
+          "execute_3p_developer_tool",
+          "execute_webmcp_tool"
+        ]
+      }
+    },
+    "czlonkowski-n8n-mcp": {
+      "stratum": "well_documented",
+      "n_tools": 68,
+      "n_candidate_families": 9,
+      "n_tools_in_candidate_family": 41,
+      "candidate_families": {
+        "n8n_family": [
+          "n8n-mcp",
+          "n8n Documentation MCP Server",
+          "n8n_create_workflow",
+          "n8n_get_workflow",
+          "n8n_update_full_workflow",
+          "n8n_update_partial_workflow",
+          "n8n_delete_workflow",
+          "n8n_list_workflows",
+          "n8n_validate_workflow",
+          "n8n_autofix_workflow",
+          "n8n_test_workflow",
+          "n8n_executions",
+          "n8n_health_check",
+          "n8n_workflow_versions",
+          "n8n_deploy_template",
+          "n8n_manage_datatable",
+          "n8n_manage_credentials",
+          "n8n_audit_instance",
+          "n8n skill (main)",
+          "n8n skill (supporting file)",
+          "n8n_diagnostic",
+          "n8n_list_available_tools"
+        ],
+        "search_family": [
+          "search_nodes",
+          "search_templates"
+        ],
+        "get_family": [
+          "get_node",
+          "get_template",
+          "Get Prompt"
+        ],
+        "validate_family": [
+          "validate_node",
+          "validate_workflow"
+        ],
+        "mcp_family": [
+          "mcpApi",
+          "mcp"
+        ],
+        "list_family": [
+          "List Tools",
+          "List Resources",
+          "List Prompts"
+        ],
+        "tool_family": [
+          "toolName",
+          "toolArguments",
+          "toolDescription"
+        ],
+        "prompt_family": [
+          "promptName",
+          "promptArguments"
+        ],
+        "research_family": [
+          "Research Specialist",
+          "research_agent"
+        ]
+      }
+    },
+    "firecrawl-firecrawl-mcp-server": {
+      "stratum": "well_documented",
+      "n_tools": 2,
+      "n_candidate_families": 1,
+      "n_tools_in_candidate_family": 2,
+      "candidate_families": {
+        "firecrawl_family": [
+          "firecrawl_search_feedback",
+          "firecrawl_monitor_get"
+        ]
+      }
+    },
+    "antvis-mcp-server-chart": {
+      "stratum": "well_documented",
+      "n_tools": 30,
+      "n_candidate_families": 1,
+      "n_tools_in_candidate_family": 27,
+      "candidate_families": {
+        "generate_family": [
+          "generate_area_chart",
+          "generate_bar_chart",
+          "generate_boxplot_chart",
+          "generate_column_chart",
+          "generate_district_map",
+          "generate_dual_axes_chart",
+          "generate_fishbone_diagram",
+          "generate_flow_diagram",
+          "generate_funnel_chart",
+          "generate_histogram_chart",
+          "generate_line_chart",
+          "generate_liquid_chart",
+          "generate_mind_map",
+          "generate_network_graph",
+          "generate_organization_chart",
+          "generate_path_map",
+          "generate_pie_chart",
+          "generate_pin_map",
+          "generate_radar_chart",
+          "generate_sankey_chart",
+          "generate_scatter_chart",
+          "generate_spreadsheet",
+          "generate_treemap_chart",
+          "generate_venn_chart",
+          "generate_violin_chart",
+          "generate_waterfall_chart",
+          "generate_word_cloud_chart"
+        ]
+      }
+    },
+    "Dataojitori-nocturne_memory": {
+      "stratum": "well_documented",
+      "n_tools": 7,
+      "n_candidate_families": 0,
+      "n_tools_in_candidate_family": 0,
+      "candidate_families": {}
+    },
+    "AminForou-mcp-gsc": {
+      "stratum": "well_documented",
+      "n_tools": 21,
+      "n_candidate_families": 3,
+      "n_tools_in_candidate_family": 13,
+      "candidate_families": {
+        "get_family": [
+          "get_capabilities",
+          "get_search_analytics",
+          "get_site_details",
+          "get_sitemaps",
+          "get_performance_overview",
+          "get_advanced_search_analytics",
+          "get_search_by_page_query",
+          "get_sitemap_details",
+          "get_creator_info"
+        ],
+        "list_family": [
+          "list_properties",
+          "list_sitemaps_enhanced"
+        ],
+        "delete_family": [
+          "delete_site",
+          "delete_sitemap"
+        ]
+      }
+    },
+    "LycheeMem-LycheeMem": {
+      "stratum": "well_documented",
+      "n_tools": 4,
+      "n_candidate_families": 1,
+      "n_tools_in_candidate_family": 4,
+      "candidate_families": {
+        "lycheemem_family": [
+          "lycheemem_health",
+          "lycheemem_append_turn",
+          "lycheemem_consolidate",
+          "lycheemem"
+        ]
+      }
+    },
+    "stefanoamorelli-sec-edgar-mcp": {
+      "stratum": "thin",
+      "n_tools": 21,
+      "n_candidate_families": 3,
+      "n_tools_in_candidate_family": 19,
+      "candidate_families": {
+        "get_family": [
+          "get_company_facts",
+          "get_key_metrics",
+          "get_insider_summary",
+          "get_filing_content",
+          "get_cik_by_ticker",
+          "get_financials",
+          "get_segment_data",
+          "get_form4_details",
+          "get_recent_filings",
+          "get_insider_transactions",
+          "get_filing_sections",
+          "get_xbrl_concepts",
+          "get_company_info",
+          "get_recommended_tools"
+        ],
+        "discover_family": [
+          "discover_xbrl_concepts",
+          "discover_company_metrics"
+        ],
+        "analyze_family": [
+          "analyze_form4_transactions",
+          "analyze_8k",
+          "analyze_insider_sentiment"
+        ]
+      }
+    },
+    "yvgude-lean-ctx": {
+      "stratum": "thin",
+      "n_tools": 82,
+      "n_candidate_families": 9,
+      "n_tools_in_candidate_family": 25,
+      "candidate_families": {
+        "test_family": [
+          "test-workflow",
+          "test-pkg",
+          "test-plugin",
+          "test"
+        ],
+        "lean_family": [
+          "lean-ctx",
+          "lean_ctx"
+        ],
+        "acme_family": [
+          "acme",
+          "acme-internal",
+          "acme-gateway",
+          "acme-floor"
+        ],
+        "weather_family": [
+          "weather_lookup",
+          "weather"
+        ],
+        "demo_family": [
+          "demo",
+          "demo_tool"
+        ],
+        "{name}_family": [
+          "{name}",
+          "{name}_lookup"
+        ],
+        "plugin_family": [
+          "plugin-a",
+          "plugin-b"
+        ],
+        "bad_family": [
+          "bad-budget",
+          "bad-pattern"
+        ],
+        "ctx_family": [
+          "ctx_shell",
+          "ctx_read",
+          "ctx_ls",
+          "ctx_find",
+          "ctx_grep"
+        ]
+      }
+    },
+    "bvisible-mcp-ssh-manager": {
+      "stratum": "thin",
+      "n_tools": 3,
+      "n_candidate_families": 1,
+      "n_tools_in_candidate_family": 2,
+      "candidate_families": {
+        "log_family": [
+          "log-error",
+          "log-key-change"
+        ]
+      }
+    },
+    "mongodb-js-mongodb-mcp-server": {
+      "stratum": "thin",
+      "n_tools": 5,
+      "n_candidate_families": 0,
+      "n_tools_in_candidate_family": 0,
+      "candidate_families": {}
+    },
+    "brightdata-brightdata-mcp": {
+      "stratum": "thin",
+      "n_tools": 31,
+      "n_candidate_families": 3,
+      "n_tools_in_candidate_family": 13,
+      "candidate_families": {
+        "scraping_family": [
+          "scraping_browser_navigate",
+          "scraping_browser_go_back",
+          "scraping_browser_go_forward",
+          "scraping_browser_screenshot",
+          "scraping_browser_get_html",
+          "scraping_browser_get_text",
+          "scraping_browser_scroll"
+        ],
+        "search_family": [
+          "search_engine",
+          "search_engine_batch",
+          "search_dataset"
+        ],
+        "scrape_family": [
+          "scrape_as_markdown",
+          "scrape_batch",
+          "scrape_as_html"
+        ]
+      }
+    },
+    "stickerdaniel-linkedin-mcp-server": {
+      "stratum": "thin",
+      "n_tools": 18,
+      "n_candidate_families": 2,
+      "n_tools_in_candidate_family": 14,
+      "candidate_families": {
+        "get_family": [
+          "get_company_profile",
+          "get_company_posts",
+          "get_company_employees",
+          "get_feed",
+          "get_job_details",
+          "get_inbox",
+          "get_conversation",
+          "get_person_profile",
+          "get_sidebar_profiles",
+          "get_my_profile"
+        ],
+        "search_family": [
+          "search_companies",
+          "search_jobs",
+          "search_conversations",
+          "search_people"
+        ]
+      }
+    },
+    "taylorwilsdon-google_workspace_mcp": {
+      "stratum": "thin",
+      "n_tools": 118,
+      "n_candidate_families": 13,
+      "n_tools_in_candidate_family": 100,
+      "candidate_families": {
+        "get_family": [
+          "get_session_time",
+          "get_script_project",
+          "get_script_content",
+          "get_version",
+          "get_script_metrics",
+          "get_events",
+          "get_messages",
+          "get_contact",
+          "get_contact_group",
+          "get_doc_content",
+          "get_doc_as_markdown",
+          "get_drive_file_content",
+          "get_drive_file_download_url",
+          "get_drive_file_permissions",
+          "get_drive_shareable_link",
+          "get_form",
+          "get_form_response",
+          "get_gmail_message_content",
+          "get_gmail_messages_content_batch",
+          "get_gmail_attachment_content",
+          "get_gmail_thread_content",
+          "get_gmail_threads_content_batch",
+          "get_search_engine_info",
+          "get_spreadsheet_info",
+          "get_presentation",
+          "get_page",
+          "get_page_thumbnail",
+          "get_task_list",
+          "get_task"
+        ],
+        "list_family": [
+          "list_script_projects",
+          "list_deployments",
+          "list_script_processes",
+          "list_versions",
+          "list_calendars",
+          "list_spaces",
+          "list_contacts",
+          "list_contact_groups",
+          "list_docs_in_folder",
+          "list_drive_items",
+          "list_form_responses",
+          "list_gmail_labels",
+          "list_gmail_filters",
+          "list_spreadsheets",
+          "list_sheet_tables",
+          "list_task_lists",
+          "list_tasks"
+        ],
+        "create_family": [
+          "create_script_project",
+          "create_version",
+          "create_calendar",
+          "create_reaction",
+          "create_doc",
+          "create_table_with_data",
+          "create_drive_folder",
+          "create_drive_file",
+          "create_form",
+          "create_spreadsheet",
+          "create_sheet",
+          "create_presentation"
+        ],
+        "update_family": [
+          "update_script_content",
+          "update_doc_headers_footers",
+          "update_paragraph_style",
+          "update_drive_file"
+        ],
+        "manage_family": [
+          "manage_deployment",
+          "manage_event",
+          "manage_out_of_office",
+          "manage_focus_time",
+          "manage_contact",
+          "manage_contacts_batch",
+          "manage_contact_group",
+          "manage_doc_tab",
+          "manage_drive_access",
+          "manage_gmail_label",
+          "manage_gmail_filter",
+          "manage_conditional_formatting",
+          "manage_task_list",
+          "manage_task"
+        ],
+        "send_family": [
+          "send_message",
+          "send_gmail_message"
+        ],
+        "search_family": [
+          "search_messages",
+          "search_contacts",
+          "search_docs",
+          "search_drive_files",
+          "search_gmail_messages",
+          "search_custom"
+        ],
+        "modify_family": [
+          "modify_doc_text",
+          "modify_gmail_message_labels",
+          "modify_sheet_values"
+        ],
+        "insert_family": [
+          "insert_doc_elements",
+          "insert_doc_image"
+        ],
+        "batch_family": [
+          "batch_update_doc",
+          "batch_update_form",
+          "batch_modify_gmail_message_labels",
+          "batch_update_presentation"
+        ],
+        "debug_family": [
+          "debug_docs_runtime_info",
+          "debug_table_structure"
+        ],
+        "import_family": [
+          "import_to_google_doc",
+          "import_to_google_slides",
+          "import_to_google_sheets"
+        ],
+        "set_family": [
+          "set_drive_file_permissions",
+          "set_publish_settings"
+        ]
+      }
+    },
+    "vitali87-code-graph-rag": {
+      "stratum": "near_empty",
+      "n_tools": 2,
+      "n_candidate_families": 0,
+      "n_tools_in_candidate_family": 0,
+      "candidate_families": {}
+    },
+    "lucasastorian-llmwiki": {
+      "stratum": "near_empty",
+      "n_tools": 13,
+      "n_candidate_families": 1,
+      "n_tools_in_candidate_family": 2,
+      "candidate_families": {
+        "create_family": [
+          "create_knowledge_base",
+          "create"
+        ]
+      }
+    },
+    "oraios-serena": {
+      "stratum": "near_empty",
+      "n_tools": 9,
+      "n_candidate_families": 1,
+      "n_tools_in_candidate_family": 2,
+      "candidate_families": {
+        "get_family": [
+          "get_tool_names",
+          "get_tool_stats_route"
+        ]
+      }
+    },
+    "cjo4m06-mcp-shrimp-task-manager": {
+      "stratum": "near_empty",
+      "n_tools": 7,
+      "n_candidate_families": 0,
+      "n_tools_in_candidate_family": 0,
+      "candidate_families": {}
+    },
+    "blazickjp-arxiv-mcp-server": {
+      "stratum": "near_empty",
+      "n_tools": 2,
+      "n_candidate_families": 0,
+      "n_tools_in_candidate_family": 0,
+      "candidate_families": {}
+    },
+    "mrexodia-ida-pro-mcp": {
+      "stratum": "near_empty",
+      "n_tools": 92,
+      "n_candidate_families": 16,
+      "n_tools_in_candidate_family": 62,
+      "candidate_families": {
+        "idb_family": [
+          "idb_open",
+          "idb_list",
+          "idb_save"
+        ],
+        "func_family": [
+          "func_profile",
+          "func_query"
+        ],
+        "analyze_family": [
+          "analyze_batch",
+          "analyze_function",
+          "analyze_component"
+        ],
+        "xrefs_family": [
+          "xrefs_to",
+          "xrefs_to_field"
+        ],
+        "find_family": [
+          "find_bytes",
+          "find",
+          "find_regex",
+          "find_xref_signatures"
+        ],
+        "list_family": [
+          "list_funcs",
+          "list_globals"
+        ],
+        "imports_family": [
+          "imports",
+          "imports_query"
+        ],
+        "search_family": [
+          "search_text",
+          "search_structs"
+        ],
+        "dbg_family": [
+          "dbg_start",
+          "dbg_status",
+          "dbg_exit",
+          "dbg_continue",
+          "dbg_run_to",
+          "dbg_step_into",
+          "dbg_step_over",
+          "dbg_bps",
+          "dbg_add_bp",
+          "dbg_delete_bp",
+          "dbg_toggle_bp",
+          "dbg_set_bp_condition",
+          "dbg_regs_all",
+          "dbg_regs_remote",
+          "dbg_regs",
+          "dbg_gpregs_remote",
+          "dbg_gpregs",
+          "dbg_regs_named_remote",
+          "dbg_regs_named",
+          "dbg_stacktrace",
+          "dbg_read",
+          "dbg_write"
+        ],
+        "get_family": [
+          "get_bytes",
+          "get_int",
+          "get_string",
+          "get_global_value"
+        ],
+        "patch_family": [
+          "patch",
+          "patch_asm"
+        ],
+        "set_family": [
+          "set_comments",
+          "set_op_type",
+          "set_type"
+        ],
+        "define_family": [
+          "define_func",
+          "define_code"
+        ],
+        "make_family": [
+          "make_data",
+          "make_signature",
+          "make_signature_for_function",
+          "make_signature_for_range"
+        ],
+        "declare_family": [
+          "declare_stack",
+          "declare_type"
+        ],
+        "type_family": [
+          "type_query",
+          "type_inspect",
+          "type_apply_batch"
+        ]
+      }
+    },
+    "chrisryugj-korean-law-mcp": {
+      "stratum": "near_empty",
+      "n_tools": 115,
+      "n_candidate_families": 7,
+      "n_tools_in_candidate_family": 87,
+      "candidate_families": {
+        "search_family": [
+          "search_law",
+          "search_all",
+          "search_admin_rule",
+          "search_ordinance",
+          "search_historical_law",
+          "search_precedents",
+          "search_interpretations",
+          "search_tax_tribunal_decisions",
+          "search_customs_interpretations",
+          "search_constitutional_decisions",
+          "search_admin_appeals",
+          "search_ftc_decisions",
+          "search_pipc_decisions",
+          "search_nlrc_decisions",
+          "search_acr_decisions",
+          "search_school_rules",
+          "search_public_corp_rules",
+          "search_public_institution_rules",
+          "search_appeal_review_decisions",
+          "search_acr_special_appeals",
+          "search_treaties",
+          "search_english_law",
+          "search_legal_terms",
+          "search_ai_law",
+          "search_decisions"
+        ],
+        "get_family": [
+          "get_law_text",
+          "get_article_detail",
+          "get_admin_rule",
+          "get_ordinance",
+          "get_linked_ordinances",
+          "get_linked_ordinance_articles",
+          "get_delegated_laws",
+          "get_linked_laws_from_ordinance",
+          "get_three_tier",
+          "get_annexes",
+          "get_law_tree",
+          "get_law_system_tree",
+          "get_law_statistics",
+          "get_external_links",
+          "get_article_history",
+          "get_law_history",
+          "get_historical_law",
+          "get_precedent_text",
+          "get_interpretation_text",
+          "get_tax_tribunal_decision_text",
+          "get_customs_interpretation_text",
+          "get_constitutional_decision_text",
+          "get_admin_appeal_text",
+          "get_ftc_decision_text",
+          "get_pipc_decision_text",
+          "get_nlrc_decision_text",
+          "get_acr_decision_text",
+          "get_school_rule_text",
+          "get_public_corp_rule_text",
+          "get_public_institution_rule_text",
+          "get_appeal_review_decision_text",
+          "get_acr_special_appeal_text",
+          "get_treaty_text",
+          "get_english_law_text",
+          "get_legal_term_kb",
+          "get_legal_term_detail",
+          "get_daily_term",
+          "get_daily_to_legal",
+          "get_legal_to_daily",
+          "get_term_articles",
+          "get_related_laws",
+          "get_law_abbreviations",
+          "get_batch_articles",
+          "get_article_with_precedents",
+          "get_decision_text"
+        ],
+        "compare_family": [
+          "compare_admin_rule_old_new",
+          "compare_old_new",
+          "compare_articles"
+        ],
+        "parse_family": [
+          "parse_article_links",
+          "parse_jo_code"
+        ],
+        "legal_family": [
+          "legal_research",
+          "legal_analysis"
+        ],
+        "chain_family": [
+          "chain_law_system",
+          "chain_action_basis",
+          "chain_dispute_prep",
+          "chain_amendment_track",
+          "chain_ordinance_compare",
+          "chain_full_research",
+          "chain_procedure_detail",
+          "chain_document_review"
+        ],
+        "일방적_family": [
+          "일방적 조건 변경",
+          "일방적 설계변경"
+        ]
+      }
+    },
+    "datalayer-jupyter-mcp-server": {
+      "stratum": "near_empty",
+      "n_tools": 17,
+      "n_candidate_families": 4,
+      "n_tools_in_candidate_family": 9,
+      "candidate_families": {
+        "list_family": [
+          "list_files",
+          "list_kernels",
+          "list_notebooks"
+        ],
+        "read_family": [
+          "read_notebook",
+          "read_cell"
+        ],
+        "insert_family": [
+          "insert_cell",
+          "insert_execute_code_cell"
+        ],
+        "execute_family": [
+          "execute_cell",
+          "execute_code"
+        ]
+      }
+    },
+    "github-mcp": {
+      "stratum": "validation_anchor",
+      "n_tools": 21,
+      "n_candidate_families": 4,
+      "n_tools_in_candidate_family": 18,
+      "candidate_families": {
+        "get_family": [
+          "get_pull_request",
+          "get_pull_request_diff",
+          "get_pull_request_files",
+          "get_pull_request_reviews",
+          "get_pull_request_comments",
+          "get_file_contents",
+          "get_repository"
+        ],
+        "search_family": [
+          "search_repositories",
+          "search_code",
+          "search_issues",
+          "search_users"
+        ],
+        "create_family": [
+          "create_or_update_file",
+          "create_repository"
+        ],
+        "list_family": [
+          "list_pull_requests",
+          "list_issues",
+          "list_commits",
+          "list_branches",
+          "list_repositories"
+        ]
+      }
+    },
+    "aws-iam-mcp": {
+      "stratum": "validation_anchor",
+      "n_tools": 29,
+      "n_candidate_families": 7,
+      "n_tools_in_candidate_family": 26,
+      "candidate_families": {
+        "attach_family": [
+          "attach_user_policy",
+          "attach_group_policy"
+        ],
+        "detach_family": [
+          "detach_user_policy",
+          "detach_group_policy"
+        ],
+        "list_family": [
+          "list_policies",
+          "list_user_policies",
+          "list_role_policies",
+          "list_users",
+          "list_groups",
+          "list_roles"
+        ],
+        "delete_family": [
+          "delete_user_policy",
+          "delete_role_policy",
+          "delete_user",
+          "delete_group",
+          "delete_access_key"
+        ],
+        "create_family": [
+          "create_user",
+          "create_role",
+          "create_group",
+          "create_access_key"
+        ],
+        "get_family": [
+          "get_user",
+          "get_managed_policy_document",
+          "get_user_policy",
+          "get_role_policy",
+          "get_group"
+        ],
+        "put_family": [
+          "put_user_policy",
+          "put_role_policy"
+        ]
+      }
+    }
+  }
+}

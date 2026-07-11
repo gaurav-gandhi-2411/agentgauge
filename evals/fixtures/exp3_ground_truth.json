@@ -1,0 +1,272 @@
+{
+  "experiment_id": "EXP-3",
+  "purpose": "Pre-registered behavioral ground truth for the pairwise confusability localizer. All labels derived from already-collected EXP-1/RW1/RW2 trial data -- no new agent runs in this file.",
+  "n_confused": 4,
+  "n_not_confused": 20,
+  "pairs": [
+    {
+      "pair_id": 1,
+      "server_id": "AminForou-mcp-gsc",
+      "tool_a": "delete_sitemap",
+      "tool_b": "manage_sitemaps",
+      "label": "CONFUSED",
+      "evidence": "gsc_2: 5/5 trials wrong (selected manage_sitemaps, gold delete_sitemap). Cross-family. Real functional overlap: manage_sitemaps has a delete action.",
+      "adversarial": true,
+      "docstring_a": "Delete (unsubmit) a sitemap from Google Search Console.\n\nArgs:\n    site_url: Exact GSC property URL from list_properties (e.g. \"https://example.com/\" or\n              \"sc-domain:example.com\"). Domain properties cover all subdomains — use the\n              domain property as site_url and filter by page to analyze a specific subdomain.\n    sitemap_url: The full URL of the sitemap to delete",
+      "docstring_b": "All-in-one tool to manage sitemaps (list, get details, submit, delete).\n\nArgs:\n    site_url: Exact GSC property URL from list_properties (e.g. \"https://example.com/\" or\n              \"sc-domain:example.com\"). Domain properties cover all subdomains — use the\n              domain property as site_url and filter by page to analyze a specific subdomain.\n    action: The action to perform (list, details, submit, delete)\n    sitemap_url: The full URL of the sitemap (required for details, submit, delete)\n    sitemap_index: Optional sitemap index URL for listing child sitemaps (only used with 'list' action)"
+    },
+    {
+      "pair_id": 2,
+      "server_id": "AminForou-mcp-gsc",
+      "tool_a": "delete_site",
+      "tool_b": "delete_sitemap",
+      "label": "NOT_CONFUSED",
+      "evidence": "gsc_1+gsc_3 (delete_site, 10/10 correct), gsc_4 (delete_sitemap, 5/5 correct); 0/20 cross-selection.",
+      "adversarial": false,
+      "docstring_a": "Remove a site from your Search Console properties.\n\nArgs:\n    site_url: The URL of the site to remove (must be exact match e.g. https://example.com, or https://www.example.com, or https://subdomain.example.com/path/, for domain properties use format: sc-domain:example.com)",
+      "docstring_b": "Delete (unsubmit) a sitemap from Google Search Console.\n\nArgs:\n    site_url: Exact GSC property URL from list_properties (e.g. \"https://example.com/\" or\n              \"sc-domain:example.com\"). Domain properties cover all subdomains — use the\n              domain property as site_url and filter by page to analyze a specific subdomain.\n    sitemap_url: The full URL of the sitemap to delete"
+    },
+    {
+      "pair_id": 3,
+      "server_id": "datalayer-jupyter-mcp-server",
+      "tool_a": "read_notebook",
+      "tool_b": "list_notebooks",
+      "label": "CONFUSED",
+      "evidence": "jupyter_1 (1/5) + jupyter_3 (5/5) wrong: selected list_notebooks, gold read_notebook. Cross-family.",
+      "adversarial": true,
+      "docstring_a": "Read a notebook and return index, source content, type, execution count of each cell.\n\nUsing brief format to get a quick overview of the notebook structure and it's useful for locating specific cells for operations like delete or insert.\nUsing detailed format to get detailed information of the notebook and it's useful for debugging and analysis.\n\nIt is recommended to use brief format with larger limit to get a overview of the notebook structure, \nthen use detailed format with exact index and limit to get the detailed information of some specific cells.",
+      "docstring_b": "List all notebooks that have been used via use_notebook tool"
+    },
+    {
+      "pair_id": 4,
+      "server_id": "datalayer-jupyter-mcp-server",
+      "tool_a": "read_notebook",
+      "tool_b": "read_cell",
+      "label": "NOT_CONFUSED",
+      "evidence": "jupyter_2+jupyter_4 (read_cell, 10/10 correct); zero cross-selection observed.",
+      "adversarial": false,
+      "docstring_a": "Read a notebook and return index, source content, type, execution count of each cell.\n\nUsing brief format to get a quick overview of the notebook structure and it's useful for locating specific cells for operations like delete or insert.\nUsing detailed format to get detailed information of the notebook and it's useful for debugging and analysis.\n\nIt is recommended to use brief format with larger limit to get a overview of the notebook structure, \nthen use detailed format with exact index and limit to get the detailed information of some specific cells.",
+      "docstring_b": "Read a specific cell from the currently activated notebook and return it's metadata (index, type, execution count), source and outputs (for code cells)"
+    },
+    {
+      "pair_id": 5,
+      "server_id": "mrexodia-ida-pro-mcp",
+      "tool_a": "xrefs_to",
+      "tool_b": "xrefs_to_field",
+      "label": "CONFUSED",
+      "evidence": "ida_3 trial 0: gold=xrefs_to, selected=xrefs_to_field (1/5 wrong). Family aborted at server level (90%>=85% ceiling).",
+      "adversarial": false,
+      "docstring_a": "Return xrefs to address(es) or named symbols, capped per target with truncation flag.",
+      "docstring_b": "Get cross-references to structure fields"
+    },
+    {
+      "pair_id": 6,
+      "server_id": "mrexodia-ida-pro-mcp",
+      "tool_a": "xrefs_to_field",
+      "tool_b": "entity_query",
+      "label": "CONFUSED",
+      "evidence": "ida_4 trial 0: gold=xrefs_to_field, selected=entity_query (1/5 wrong). Cross-family.",
+      "adversarial": true,
+      "docstring_a": "Get cross-references to structure fields",
+      "docstring_b": "Query IDB entities with typed filters, projection, and pagination."
+    },
+    {
+      "pair_id": 7,
+      "server_id": "stefanoamorelli-sec-edgar-mcp",
+      "tool_a": "discover_xbrl_concepts",
+      "tool_b": "discover_company_metrics",
+      "label": "NOT_CONFUSED",
+      "evidence": "secedgar_1-4, 20/20 correct, 0 cross-selection.",
+      "adversarial": false,
+      "docstring_a": "Discover all XBRL concepts available in a filing.\n\n<tip>Use this to explore available data before extracting specific concepts.</tip>\n\nArgs:\n    identifier: Company ticker symbol or CIK number\n    accession_number: Specific filing accession number (optional)\n    form_type: Form type if no accession number provided (default: \"10-K\")\n    namespace_filter: Filter by namespace (e.g., \"us-gaap\")\n\nReturns:\n    All discovered concepts, namespaces, and sample values.",
+      "docstring_b": "Discover what financial metrics are available for a company.\n\n<tip>Use this tool to find available XBRL concepts before using get_key_metrics.</tip>\n\nArgs:\n    identifier: Company ticker symbol or CIK number\n    search_term: Filter metrics by name (optional)\n\nReturns:\n    List of available XBRL concepts with data counts."
+    },
+    {
+      "pair_id": 8,
+      "server_id": "stickerdaniel-linkedin-mcp-server",
+      "tool_a": "search_companies",
+      "tool_b": "search_jobs",
+      "label": "NOT_CONFUSED",
+      "evidence": "100% both tasks, 0 cross-selection.",
+      "adversarial": false,
+      "docstring_a": "Search for companies on LinkedIn.\n\nArgs:\n    keywords: Search keywords (e.g., \"fintech\", \"anthropic\", \"electric vehicles\")\n    ctx: FastMCP context for progress reporting\n\nReturns:\n    Dict with url, sections (search_results -> raw text), and optional references.\n    The LLM should parse the raw text to extract individual companies and their pages.",
+      "docstring_b": "Search for jobs on LinkedIn.\n\nReturns job_ids that can be passed to get_job_details for full info.\n\nArgs:\n    keywords: Search keywords (e.g., \"software engineer\", \"data scientist\")\n    ctx: FastMCP context for progress reporting\n    location: Optional location filter (e.g., \"San Francisco\", \"Remote\")\n    max_pages: Maximum number of result pages to load (1-10, default 3)\n    date_posted: Filter by posting date (past_hour, past_24_hours, past_week, past_month)\n    job_type: Filter by job type, comma-separated (full_time, part_time, contract, temporary, volunteer, internship, other)\n    experience_level: Filter by experience level, comma-separated (internship, entry, associate, mid_senior, director, executive)\n    work_type: Filter by work type, comma-separated (on_site, remote, hybrid)\n    easy_apply: Only show Easy Apply jobs (default false)\n    sort_by: Sort results (date, relevance)\n\nReturns:\n    Dict with url, sections (name -> raw text), job_ids (list of\n    numeric job ID strings usable with get_job_details), and optional references."
+    },
+    {
+      "pair_id": 9,
+      "server_id": "stickerdaniel-linkedin-mcp-server",
+      "tool_a": "search_companies",
+      "tool_b": "search_people",
+      "label": "NOT_CONFUSED",
+      "evidence": "100% both tasks, 0 cross-selection.",
+      "adversarial": false,
+      "docstring_a": "Search for companies on LinkedIn.\n\nArgs:\n    keywords: Search keywords (e.g., \"fintech\", \"anthropic\", \"electric vehicles\")\n    ctx: FastMCP context for progress reporting\n\nReturns:\n    Dict with url, sections (search_results -> raw text), and optional references.\n    The LLM should parse the raw text to extract individual companies and their pages.",
+      "docstring_b": "Search for people on LinkedIn.\n\nArgs:\n    keywords: Search keywords (e.g., \"software engineer\", \"recruiter at Google\")\n    ctx: FastMCP context for progress reporting\n    location: Optional location filter (e.g., \"New York\", \"Remote\")\n    network: Optional connection-degree filter. Each element is one of\n        \"F\" (1st-degree), \"S\" (2nd-degree), \"O\" (3rd-degree and beyond).\n        Example: [\"F\"] to only return 1st-degree connections.\n    current_company: Optional current-employer filter. LinkedIn's\n        currentCompany facet only filters on the numeric company URN id\n        (e.g. \"1115\" for SAP); plain company names are accepted by the\n        URL but ignored by LinkedIn and return the unfiltered result\n        set. Look up a company's URN via get_company_profile -- it is\n        exposed under references[\"about\"]. For company-wide employee\n        demographics (location/education/function breakdown) plus a\n        slug-based lookup, use get_company_employees instead.\n\nReturns:\n    Dict with url, sections (name -> raw text), and optional references.\n    The LLM should parse the raw text to extract individual people and their profiles."
+    },
+    {
+      "pair_id": 10,
+      "server_id": "stickerdaniel-linkedin-mcp-server",
+      "tool_a": "search_companies",
+      "tool_b": "search_conversations",
+      "label": "NOT_CONFUSED",
+      "evidence": "100% both tasks, 0 cross-selection.",
+      "adversarial": false,
+      "docstring_a": "Search for companies on LinkedIn.\n\nArgs:\n    keywords: Search keywords (e.g., \"fintech\", \"anthropic\", \"electric vehicles\")\n    ctx: FastMCP context for progress reporting\n\nReturns:\n    Dict with url, sections (search_results -> raw text), and optional references.\n    The LLM should parse the raw text to extract individual companies and their pages.",
+      "docstring_b": "Search messages by keyword.\n\nArgs:\n    keywords: Search keywords to filter conversations\n    ctx: FastMCP context for progress reporting\n    limit: Maximum number of search-result rows to enumerate as\n        conversation references (1-50, default 20). Each enumeration\n        selects the row in LinkedIn's UI and may mark it as read, so\n        a low cap is preferable for noisy queries.\n\nReturns:\n    Dict with url, sections (search_results -> raw text), and optional references."
+    },
+    {
+      "pair_id": 11,
+      "server_id": "stickerdaniel-linkedin-mcp-server",
+      "tool_a": "search_jobs",
+      "tool_b": "search_people",
+      "label": "NOT_CONFUSED",
+      "evidence": "100% both tasks, 0 cross-selection.",
+      "adversarial": false,
+      "docstring_a": "Search for jobs on LinkedIn.\n\nReturns job_ids that can be passed to get_job_details for full info.\n\nArgs:\n    keywords: Search keywords (e.g., \"software engineer\", \"data scientist\")\n    ctx: FastMCP context for progress reporting\n    location: Optional location filter (e.g., \"San Francisco\", \"Remote\")\n    max_pages: Maximum number of result pages to load (1-10, default 3)\n    date_posted: Filter by posting date (past_hour, past_24_hours, past_week, past_month)\n    job_type: Filter by job type, comma-separated (full_time, part_time, contract, temporary, volunteer, internship, other)\n    experience_level: Filter by experience level, comma-separated (internship, entry, associate, mid_senior, director, executive)\n    work_type: Filter by work type, comma-separated (on_site, remote, hybrid)\n    easy_apply: Only show Easy Apply jobs (default false)\n    sort_by: Sort results (date, relevance)\n\nReturns:\n    Dict with url, sections (name -> raw text), job_ids (list of\n    numeric job ID strings usable with get_job_details), and optional references.",
+      "docstring_b": "Search for people on LinkedIn.\n\nArgs:\n    keywords: Search keywords (e.g., \"software engineer\", \"recruiter at Google\")\n    ctx: FastMCP context for progress reporting\n    location: Optional location filter (e.g., \"New York\", \"Remote\")\n    network: Optional connection-degree filter. Each element is one of\n        \"F\" (1st-degree), \"S\" (2nd-degree), \"O\" (3rd-degree and beyond).\n        Example: [\"F\"] to only return 1st-degree connections.\n    current_company: Optional current-employer filter. LinkedIn's\n        currentCompany facet only filters on the numeric company URN id\n        (e.g. \"1115\" for SAP); plain company names are accepted by the\n        URL but ignored by LinkedIn and return the unfiltered result\n        set. Look up a company's URN via get_company_profile -- it is\n        exposed under references[\"about\"]. For company-wide employee\n        demographics (location/education/function breakdown) plus a\n        slug-based lookup, use get_company_employees instead.\n\nReturns:\n    Dict with url, sections (name -> raw text), and optional references.\n    The LLM should parse the raw text to extract individual people and their profiles."
+    },
+    {
+      "pair_id": 12,
+      "server_id": "stickerdaniel-linkedin-mcp-server",
+      "tool_a": "search_jobs",
+      "tool_b": "search_conversations",
+      "label": "NOT_CONFUSED",
+      "evidence": "100% both tasks, 0 cross-selection.",
+      "adversarial": false,
+      "docstring_a": "Search for jobs on LinkedIn.\n\nReturns job_ids that can be passed to get_job_details for full info.\n\nArgs:\n    keywords: Search keywords (e.g., \"software engineer\", \"data scientist\")\n    ctx: FastMCP context for progress reporting\n    location: Optional location filter (e.g., \"San Francisco\", \"Remote\")\n    max_pages: Maximum number of result pages to load (1-10, default 3)\n    date_posted: Filter by posting date (past_hour, past_24_hours, past_week, past_month)\n    job_type: Filter by job type, comma-separated (full_time, part_time, contract, temporary, volunteer, internship, other)\n    experience_level: Filter by experience level, comma-separated (internship, entry, associate, mid_senior, director, executive)\n    work_type: Filter by work type, comma-separated (on_site, remote, hybrid)\n    easy_apply: Only show Easy Apply jobs (default false)\n    sort_by: Sort results (date, relevance)\n\nReturns:\n    Dict with url, sections (name -> raw text), job_ids (list of\n    numeric job ID strings usable with get_job_details), and optional references.",
+      "docstring_b": "Search messages by keyword.\n\nArgs:\n    keywords: Search keywords to filter conversations\n    ctx: FastMCP context for progress reporting\n    limit: Maximum number of search-result rows to enumerate as\n        conversation references (1-50, default 20). Each enumeration\n        selects the row in LinkedIn's UI and may mark it as read, so\n        a low cap is preferable for noisy queries.\n\nReturns:\n    Dict with url, sections (search_results -> raw text), and optional references."
+    },
+    {
+      "pair_id": 13,
+      "server_id": "stickerdaniel-linkedin-mcp-server",
+      "tool_a": "search_people",
+      "tool_b": "search_conversations",
+      "label": "NOT_CONFUSED",
+      "evidence": "100% both tasks, 0 cross-selection.",
+      "adversarial": false,
+      "docstring_a": "Search for people on LinkedIn.\n\nArgs:\n    keywords: Search keywords (e.g., \"software engineer\", \"recruiter at Google\")\n    ctx: FastMCP context for progress reporting\n    location: Optional location filter (e.g., \"New York\", \"Remote\")\n    network: Optional connection-degree filter. Each element is one of\n        \"F\" (1st-degree), \"S\" (2nd-degree), \"O\" (3rd-degree and beyond).\n        Example: [\"F\"] to only return 1st-degree connections.\n    current_company: Optional current-employer filter. LinkedIn's\n        currentCompany facet only filters on the numeric company URN id\n        (e.g. \"1115\" for SAP); plain company names are accepted by the\n        URL but ignored by LinkedIn and return the unfiltered result\n        set. Look up a company's URN via get_company_profile -- it is\n        exposed under references[\"about\"]. For company-wide employee\n        demographics (location/education/function breakdown) plus a\n        slug-based lookup, use get_company_employees instead.\n\nReturns:\n    Dict with url, sections (name -> raw text), and optional references.\n    The LLM should parse the raw text to extract individual people and their profiles.",
+      "docstring_b": "Search messages by keyword.\n\nArgs:\n    keywords: Search keywords to filter conversations\n    ctx: FastMCP context for progress reporting\n    limit: Maximum number of search-result rows to enumerate as\n        conversation references (1-50, default 20). Each enumeration\n        selects the row in LinkedIn's UI and may mark it as read, so\n        a low cap is preferable for noisy queries.\n\nReturns:\n    Dict with url, sections (search_results -> raw text), and optional references."
+    },
+    {
+      "pair_id": 14,
+      "server_id": "lucasastorian-llmwiki",
+      "tool_a": "create_knowledge_base",
+      "tool_b": "create",
+      "label": "NOT_CONFUSED",
+      "evidence": "20/20 correct, 0 cross-selection despite generic name 'create'.",
+      "adversarial": false,
+      "docstring_a": "Create a new knowledge base and scaffold starter overview/log pages.\n\nSet kind='course' to create a course instead of a wiki — same structure, but the app renders lesson progress (mark-complete, current/locked lessons). Default 'wiki'.\n\nIn hosted mode this creates a separate knowledge base with a unique slug. In local MCP mode there is one workspace per server, so this returns the existing workspace if it has already been initialized.",
+      "docstring_b": "Create a new wiki page, note, or asset in the knowledge vault.\n\nWiki pages should be created under `/wiki/` and should cite their sources using markdown footnotes (e.g. `[^1]: paper.pdf, p.3`). If markdown wiki content does not include YAML frontmatter, this tool adds it from `title`, `tags`, and `date_str`.\n\nYou can also create SVG diagrams and CSV data files as wiki assets:\n- `create(path=\"/wiki/\", title=\"architecture-diagram.svg\", content=\"<svg>...</svg>\", tags=[\"diagram\"])`\n- `create(path=\"/wiki/\", title=\"data-table.csv\", content=\"col1,col2\\nval1,val2\", tags=[\"data\"])`\nSVGs and other assets can be embedded in wiki pages via `![Architecture](architecture-diagram.svg)`\n\nRejects if the page already exists — use `overwrite=true` to replace, or use the `edit` tool to modify."
+    },
+    {
+      "pair_id": 15,
+      "server_id": "github-mcp",
+      "tool_a": "get_pull_request_diff",
+      "tool_b": "get_pull_request_files",
+      "label": "NOT_CONFUSED",
+      "evidence": "RW1 anchor: 21/21 (100%). ADVERSARIAL: old Levenshtein heuristic flagged this pair at 85.0 collision score (false positive by the prior method).",
+      "adversarial": true,
+      "docstring_a": "Get the diff of a pull request",
+      "docstring_b": "Get the list of files changed in a pull request"
+    },
+    {
+      "pair_id": 16,
+      "server_id": "github-mcp",
+      "tool_a": "get_pull_request",
+      "tool_b": "get_pull_request_reviews",
+      "label": "NOT_CONFUSED",
+      "evidence": "RW1 anchor: 100%.",
+      "adversarial": false,
+      "docstring_a": "Get details of a specific pull request",
+      "docstring_b": "Get the reviews on a pull request"
+    },
+    {
+      "pair_id": 17,
+      "server_id": "github-mcp",
+      "tool_a": "search_repositories",
+      "tool_b": "search_code",
+      "label": "NOT_CONFUSED",
+      "evidence": "RW1 anchor: 100%.",
+      "adversarial": false,
+      "docstring_a": "Search for GitHub repositories",
+      "docstring_b": "Search for code across GitHub repositories"
+    },
+    {
+      "pair_id": 18,
+      "server_id": "github-mcp",
+      "tool_a": "list_pull_requests",
+      "tool_b": "list_issues",
+      "label": "NOT_CONFUSED",
+      "evidence": "RW1 anchor: 100%.",
+      "adversarial": false,
+      "docstring_a": "List and filter repository pull requests",
+      "docstring_b": "List issues in a GitHub repository with filtering options"
+    },
+    {
+      "pair_id": 19,
+      "server_id": "github-mcp",
+      "tool_a": "get_repository",
+      "tool_b": "list_repositories",
+      "label": "NOT_CONFUSED",
+      "evidence": "RW1 anchor: 100%.",
+      "adversarial": false,
+      "docstring_a": "Get details of a GitHub repository",
+      "docstring_b": "List repositories for a GitHub user"
+    },
+    {
+      "pair_id": 20,
+      "server_id": "aws-iam-mcp",
+      "tool_a": "attach_user_policy",
+      "tool_b": "detach_user_policy",
+      "label": "NOT_CONFUSED",
+      "evidence": "RW2 anchor: 100%. ADVERSARIAL: old heuristic flagged this verb-antonym pair as a collision.",
+      "adversarial": true,
+      "docstring_a": "Attach a managed policy to an IAM user.",
+      "docstring_b": "Detach a managed policy from an IAM user."
+    },
+    {
+      "pair_id": 21,
+      "server_id": "aws-iam-mcp",
+      "tool_a": "attach_user_policy",
+      "tool_b": "attach_group_policy",
+      "label": "NOT_CONFUSED",
+      "evidence": "RW2 anchor: 100%. RW2's real 'Family A' cross-principal-type contested pair, missed by the old heuristic, resolved 100% behaviorally from task context.",
+      "adversarial": true,
+      "docstring_a": "Attach a managed policy to an IAM user.",
+      "docstring_b": "Attach a managed policy to an IAM group."
+    },
+    {
+      "pair_id": 22,
+      "server_id": "aws-iam-mcp",
+      "tool_a": "put_user_policy",
+      "tool_b": "get_user_policy",
+      "label": "NOT_CONFUSED",
+      "evidence": "RW2 anchor: 100%. ADVERSARIAL: 2nd old-heuristic-flagged verb-antonym pair.",
+      "adversarial": true,
+      "docstring_a": "Create or update an inline policy for an IAM user. This tool creates a new inline policy or updates an existing one for the specified user. Inline policies are directly embedded in a single user, role, or group and have a one-to-one relationship with the identity.",
+      "docstring_b": "Retrieve an inline policy for an IAM user. This tool retrieves the policy document for a specific inline policy attached to a user."
+    },
+    {
+      "pair_id": 23,
+      "server_id": "aws-iam-mcp",
+      "tool_a": "list_user_policies",
+      "tool_b": "list_role_policies",
+      "label": "NOT_CONFUSED",
+      "evidence": "RW2 anchor: 100%. RW2's real 'Family C' scope-variant pair, missed by the heuristic.",
+      "adversarial": true,
+      "docstring_a": "List all inline policies for an IAM user. This tool retrieves the names of all inline policies attached to the specified user.",
+      "docstring_b": "List all inline policies for an IAM role. This tool retrieves the names of all inline policies attached to the specified role."
+    },
+    {
+      "pair_id": 24,
+      "server_id": "aws-iam-mcp",
+      "tool_a": "delete_user_policy",
+      "tool_b": "delete_role_policy",
+      "label": "NOT_CONFUSED",
+      "evidence": "RW2 anchor: 100%. RW2's destructive contested pair.",
+      "adversarial": false,
+      "docstring_a": "Delete an inline policy from an IAM user. This tool removes an inline policy from the specified user. The policy document will be permanently deleted and cannot be recovered.",
+      "docstring_b": "Delete an inline policy from an IAM role. This tool removes an inline policy from the specified role. The policy document will be permanently deleted and cannot be recovered."
+    }
+  ]
+}

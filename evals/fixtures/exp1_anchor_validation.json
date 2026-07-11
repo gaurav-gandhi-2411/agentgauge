@@ -1,0 +1,96 @@
+{
+  "experiment_id": "EXP-1",
+  "purpose": "Validation-anchor check per pre-reg: confirm the classifier reproduces the known OUT-OF-REGIME result.",
+  "method_disclosure": "NOT a fresh model run. TrialOutcome data is a faithful re-encoding of the already-published RW1/RW2 aggregate result (docs/research/exp4_regime_map.md), run through the real agentgauge.exp1_classifier code to validate the CODE, not to claim new agent/judge inference was spent this session.",
+  "anchors": [
+    {
+      "server_id": "github-mcp",
+      "known_result": "OUT-OF-REGIME",
+      "reproduced": true,
+      "n_families_tested": 5,
+      "n_in_regime": 0,
+      "n_out_regime": 0,
+      "n_aborted_no_headroom": 5,
+      "classifier_verdict": "OUT-OF-REGIME",
+      "families": [
+        {
+          "family_id": "pr_read_family",
+          "n_contested": 6,
+          "arm_a_accuracy": 1.0,
+          "headroom_gated": false,
+          "aborted": true,
+          "abort_reason": "No headroom: Arm A accuracy=100.0% >= 85%"
+        },
+        {
+          "family_id": "search_family",
+          "n_contested": 4,
+          "arm_a_accuracy": 1.0,
+          "headroom_gated": false,
+          "aborted": true,
+          "abort_reason": "No headroom: Arm A accuracy=100.0% >= 85%"
+        },
+        {
+          "family_id": "file_ops_family",
+          "n_contested": 3,
+          "arm_a_accuracy": 1.0,
+          "headroom_gated": false,
+          "aborted": true,
+          "abort_reason": "No headroom: Arm A accuracy=100.0% >= 85%"
+        },
+        {
+          "family_id": "list_family",
+          "n_contested": 4,
+          "arm_a_accuracy": 1.0,
+          "headroom_gated": false,
+          "aborted": true,
+          "abort_reason": "No headroom: Arm A accuracy=100.0% >= 85%"
+        },
+        {
+          "family_id": "repo_ops_family",
+          "n_contested": 4,
+          "arm_a_accuracy": 1.0,
+          "headroom_gated": false,
+          "aborted": true,
+          "abort_reason": "No headroom: Arm A accuracy=100.0% >= 85%"
+        }
+      ]
+    },
+    {
+      "server_id": "aws-iam-mcp",
+      "known_result": "OUT-OF-REGIME",
+      "reproduced": true,
+      "n_families_tested": 3,
+      "n_in_regime": 0,
+      "n_out_regime": 0,
+      "n_aborted_no_headroom": 3,
+      "classifier_verdict": "OUT-OF-REGIME",
+      "families": [
+        {
+          "family_id": "attach_detach_family",
+          "n_contested": 4,
+          "arm_a_accuracy": 1.0,
+          "headroom_gated": false,
+          "aborted": true,
+          "abort_reason": "No headroom: Arm A accuracy=100.0% >= 85%"
+        },
+        {
+          "family_id": "list_policies_family",
+          "n_contested": 6,
+          "arm_a_accuracy": 1.0,
+          "headroom_gated": false,
+          "aborted": true,
+          "abort_reason": "No headroom: Arm A accuracy=100.0% >= 85%"
+        },
+        {
+          "family_id": "destructive_pair",
+          "n_contested": 2,
+          "arm_a_accuracy": 1.0,
+          "headroom_gated": false,
+          "aborted": true,
+          "abort_reason": "No headroom: Arm A accuracy=100.0% >= 85%"
+        }
+      ]
+    }
+  ],
+  "all_anchors_reproduced": true
+}

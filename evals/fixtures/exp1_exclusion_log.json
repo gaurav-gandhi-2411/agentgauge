@@ -1,0 +1,177 @@
+{
+  "experiment_id": "EXP-1",
+  "purpose": "Pre-reg-required exclusion log (exclusion_log_path in exp1_pre_registration.json). Logs servers dropped from the doc-density-stratified frame post-vetting, with the pre-stated reason. score_every_one=true / drop_post_hoc=false from the pre-reg is honored at the VETTING stage (all 30 structurally-valid candidates were passed to the mechanical extraction script, none pre-filtered); this log covers exclusions discovered AT the mechanical-scoring stage.",
+  "new_exclusion_reason_added": {
+    "id": "extraction_failed",
+    "definition": "Mechanical tool-definition extraction (agentgauge/exp1_tool_def_extractor.py) returned zero tools for a server known, from the manual structural-validity vetting pass (approx_tool_count field, exp1_server_frame.json v1), to have >=5 tools. This is a MISSING-DATA outcome from an extraction-method gap (unsupported source pattern), NOT evidence the server is genuinely near-empty on documentation. Scoring these as composite_score=0.0 and tiering them 'near_empty' would inject false signal into the doc-density stratification -- excluded instead.",
+    "not_in_original_pre_registration": true,
+    "note": "The original pre-reg's valid_exclusion_reasons (no_source / unrunnable / duplicate) did not anticipate a mechanical-extraction-method gap distinct from 'unrunnable'. This is a genuine amendment, flagged here and in exp1_pre_registration.json's amendments log, not silently absorbed into 'unrunnable' (the stub server was never built -- extraction failed before that step)."
+  },
+  "second_new_exclusion_reason_added": {
+    "id": "unreliable_extraction_method",
+    "definition": "ADDED 2026-07-04 (v5). Mechanical extraction returned n_tools > 0, but via the 'regex_best_effort' method -- a generic name/description text-proximity regex applied to non-Python source with NO structural (AST) understanding. A systematic audit (prompted by an implausibly clean v4 result, after 4 confirmed Python-specific extraction bugs) found this method pulls in massive false-positive noise: template literal placeholders, raw parameter names, MCP meta-concept labels, HTTP header names, UI category labels, and unrelated example data, mixed indiscriminately with real tool names. This is DIFFERENT from extraction_failed (which means 0 tools, missing data) -- these servers produced NON-ZERO but UNTRUSTWORTHY tool lists and composite scores. Excluded rather than scored, since the false-positive rate is high and not bounded.",
+    "not_in_original_pre_registration": true,
+    "note": "This is a SYSTEMIC method limitation (blind text-proximity regex has no way to distinguish a tool-registration call from an unrelated name/description-shaped string elsewhere in the file), not a fixable one-line bug like the 4 Python AST-parser gaps found earlier this session. Fixing it properly would require real per-language AST parsers (TypeScript/JavaScript/Go/Rust), out of scope for this pass. This exclusion reason, and dropping ALL regex_best_effort-extracted servers rather than attempting further regex tightening, was a GG-directed decision after the systemic pattern was surfaced -- not resolved unilaterally."
+  },
+  "excluded": [
+    {
+      "server_id": "DeusData-codebase-memory-mcp",
+      "source_repo": "DeusData/codebase-memory-mcp",
+      "language": "C",
+      "reason": "extraction_failed",
+      "detail": "0 tools extracted via regex_best_effort; vetting recorded approx_tool_count=14, doc_quality=polished. No C-language tool-registration pattern is implemented in the extractor (regex patterns cover MCP TS SDK, mark3labs/mcp-go, and generic JS/JSON object literals only)."
+    },
+    {
+      "server_id": "xpzouying-xiaohongshu-mcp",
+      "source_repo": "xpzouying/xiaohongshu-mcp",
+      "language": "Go",
+      "reason": "extraction_failed",
+      "detail": "0 tools extracted via regex_best_effort; vetting recorded approx_tool_count=13, doc_quality=polished. Go pattern in the extractor targets mark3labs/mcp-go's mcp.NewTool(...)/mcp.WithDescription(...) idiom specifically (confirmed working on matlab-mcp-server and github-mcp-server, both Go); this repo evidently uses a different Go MCP SDK or registration style not covered."
+    },
+    {
+      "server_id": "BrowserMCP-mcp",
+      "source_repo": "BrowserMCP/mcp",
+      "language": "TypeScript",
+      "reason": "extraction_failed",
+      "detail": "0 tools extracted via regex_best_effort; vetting recorded approx_tool_count=13. Manually flagged doc_quality=thin during vetting -- genuinely low description density is plausible here, but 0/13 is inconsistent with 'thin' (thin implies short descriptions exist, not zero extractable schema) and no verbatim inspection was done to confirm vs. an extraction miss. Excluded as extraction_failed rather than assumed near_empty -- would need a source read to resolve, out of scope for this pass."
+    },
+    {
+      "server_id": "getsentry-XcodeBuildMCP",
+      "source_repo": "getsentry/XcodeBuildMCP",
+      "language": "TypeScript",
+      "reason": "extraction_failed",
+      "detail": "0 tools extracted; vetting recorded approx_tool_count=82. CONFIRMED via direct inspection (git ls-tree): tools are declared as YAML manifest files under manifests/tools/*.yaml, not in TS source at all -- a genuinely different, repo-specific tool-declaration architecture. Not a generalizable extractor gap; explicitly out of scope (would require a bespoke YAML-manifest parser for this one repo's convention)."
+    },
+    {
+      "server_id": "bethington-ghidra-mcp",
+      "source_repo": "bethington/ghidra-mcp",
+      "language": "Java",
+      "reason": "extraction_failed",
+      "detail": "0 tools extracted; vetting recorded approx_tool_count=225, doc_quality=moderate. No Java tool-registration pattern is implemented in the extractor at all (Java MCP servers likely use annotation-based registration, e.g. Spring AI-style @Tool, not covered by any existing regex)."
+    },
+    {
+      "server_id": "zinja-coder-jadx-ai-mcp",
+      "source_repo": "zinja-coder/jadx-ai-mcp",
+      "language": "Java",
+      "reason": "extraction_failed",
+      "detail": "0 tools extracted; vetting recorded approx_tool_count=25, doc_quality=polished. Same Java coverage gap as bethington-ghidra-mcp."
+    },
+    {
+      "server_id": "irinabuht12-oss-google-meta-ads-ga4-mcp",
+      "source_repo": "irinabuht12-oss/google-meta-ads-ga4-mcp",
+      "language": "unknown",
+      "reason": "extraction_failed",
+      "detail": "0 tools extracted; vetting recorded approx_tool_count=250, doc_quality=polished. Language was never determined during discovery (recorded 'unknown'); extractor fell through to the generic non-Python regex path, which did not match this repo's convention."
+    },
+    {
+      "server_id": "vitali87-code-graph-rag",
+      "source_repo": "vitali87/code-graph-rag",
+      "language": "Python",
+      "reason": "extraction_failed",
+      "detail": "ADDED 2026-07-04 (v3 correction): initially scored composite=25.0 on 2 tools ('list_tools', 'call_tool') that were NEVER real domain tools -- they are the low-level MCP SDK's own @server.list_tools()/@server.call_tool() protocol-handler registration methods, false-positived by _has_tool_decorator's substring-'tool' check (fixed, see agentgauge/exp1_mirror.py). CONFIRMED via direct source inspection: this server's real ~10-tool catalog is returned dynamically by tools.get_tool_schemas(), which aggregates from a runtime registry (self._tools dict populated elsewhere) -- not itself AST-extractable without deep, repo-specific call-graph tracing. Excluded as extraction_failed, not scored as a 2-tool near-empty server."
+    },
+    {
+      "server_id": "oraios-serena",
+      "source_repo": "oraios/serena",
+      "language": "Python",
+      "reason": "extraction_failed",
+      "detail": "ADDED 2026-07-04 (v4 correction): initially scored composite=37.3 on 9 tools, several of which were phantom (e.g. 'get_tool_stats_route', a Flask dashboard route; 'start_mcp_server', a CLI entry point) -- false-positived because _has_tool_decorator matched the substring 'tool' anywhere in a decorator's full unparsed text, including STRING ARGUMENTS like the route path '/get_tool_stats' or the CLI flag '--tool-timeout' (fixed: now checks only the decorator's called name). Post-fix, extraction found only 1 phantom tool via the lowest-confidence generic regex fallback (composite=86.5) -- CONFIRMED via source inspection that serena's real ~22-tool catalog uses CLASS-BASED registration (class ExecuteShellCommandTool(Tool, ...): ...), a third major MCP-Python registration paradigm not supported by this extractor at all. Excluded as extraction_failed rather than scored on either untrustworthy value."
+    }
+  ],
+  "excluded_unreliable_extraction_method": [
+    {
+      "server_id": "ChromeDevTools-chrome-devtools-mcp",
+      "source_repo": "ChromeDevTools/chrome-devtools-mcp",
+      "language": "TypeScript",
+      "reason": "unreliable_extraction_method",
+      "detail": "128 'tools' extracted via regex_best_effort included '${tool.name}' (a template literal placeholder) and dozens of raw parameter names ('uid', 'x', 'y', 'filePath') alongside real tool names."
+    },
+    {
+      "server_id": "czlonkowski-n8n-mcp",
+      "source_repo": "czlonkowski/n8n-mcp",
+      "language": "TypeScript",
+      "reason": "unreliable_extraction_method",
+      "detail": "68 'tools' extracted via regex_best_effort included '${toolName}', '{{ $json.name }}' (template expressions), 'List Tools'/'Read Resource' (MCP meta-concept labels, not tools), 'X-Request-ID' (an HTTP header), and unrelated example content ('Calculate Shipping', 'Research Specialist')."
+    },
+    {
+      "server_id": "antvis-mcp-server-chart",
+      "source_repo": "antvis/mcp-server-chart",
+      "language": "TypeScript",
+      "reason": "unreliable_extraction_method",
+      "detail": "30 'tools' extracted via regex_best_effort included real generate_*_chart tool names mixed with 'CEO'/'CTO'/'Dev Manager' -- sample input data for an org-chart-generation tool, not tool names."
+    },
+    {
+      "server_id": "brightdata-brightdata-mcp",
+      "source_repo": "brightdata/brightdata-mcp",
+      "language": "JavaScript",
+      "reason": "unreliable_extraction_method",
+      "detail": "31 'tools' extracted via regex_best_effort included real scraping_* tool names mixed with category/taxonomy labels ('E-commerce', 'Social Media', 'Travel', 'Custom') used to organize tools in documentation, not tool names themselves."
+    },
+    {
+      "server_id": "bvisible-mcp-ssh-manager",
+      "source_repo": "bvisible/mcp-ssh-manager",
+      "language": "JavaScript",
+      "reason": "unreliable_extraction_method",
+      "detail": "Extracted via regex_best_effort -- excluded as part of the systemic fix; not individually source-verified, but the method itself is confirmed unreliable across the sample checked."
+    },
+    {
+      "server_id": "chrisryugj-korean-law-mcp",
+      "source_repo": "chrisryugj/korean-law-mcp",
+      "language": "TypeScript",
+      "reason": "unreliable_extraction_method",
+      "detail": "115 'tools' extracted via regex_best_effort -- suspiciously high count relative to manual vetting's approx_tool_count=9; excluded as part of the systemic fix."
+    },
+    {
+      "server_id": "cjo4m06-mcp-shrimp-task-manager",
+      "source_repo": "cjo4m06/mcp-shrimp-task-manager",
+      "language": "JavaScript",
+      "reason": "unreliable_extraction_method",
+      "detail": "Extracted via regex_best_effort -- excluded as part of the systemic fix."
+    },
+    {
+      "server_id": "firecrawl-firecrawl-mcp-server",
+      "source_repo": "firecrawl/firecrawl-mcp-server",
+      "language": "JavaScript",
+      "reason": "unreliable_extraction_method",
+      "detail": "Extracted via regex_best_effort -- excluded as part of the systemic fix."
+    },
+    {
+      "server_id": "matlab-matlab-mcp-server",
+      "source_repo": "matlab/matlab-mcp-server",
+      "language": "Go",
+      "reason": "unreliable_extraction_method",
+      "detail": "Extracted via regex_best_effort -- excluded as part of the systemic fix, despite this specific server having matched the intended mark3labs/mcp-go pattern cleanly in earlier spot checks; dropped for consistency since the METHOD is unreliable in general, not because this specific server was individually confirmed bad."
+    },
+    {
+      "server_id": "mongodb-js-mongodb-mcp-server",
+      "source_repo": "mongodb-js/mongodb-mcp-server",
+      "language": "TypeScript",
+      "reason": "unreliable_extraction_method",
+      "detail": "Extracted via regex_best_effort -- excluded as part of the systemic fix."
+    },
+    {
+      "server_id": "yvgude-lean-ctx",
+      "source_repo": "yvgude/lean-ctx",
+      "language": "Rust",
+      "reason": "unreliable_extraction_method",
+      "detail": "Extracted via regex_best_effort -- excluded as part of the systemic fix."
+    }
+  ],
+  "not_excluded_diagnostic_fixes_applied": [
+    "sec-edgar-mcp (Python): initially 0 tools -- AST decorator extraction found nothing because this repo registers tools imperatively (mcp.add_tool(fn) over a plain function list, no decorator). Fixed by extending agentgauge/exp1_tool_def_extractor.py to also resolve this idiom; recovered 21 tools, composite=80.1.",
+    "LycheeMem (Python): initially 0 tools -- tools are declared as a module-level TOOLS_SCHEMA = [{'name':..., 'description':...}] dict literal, not decorators. Fixed by falling back to the existing JSON-literal regex (already used for non-Python sources) when Python AST finds nothing; recovered 4 tools, composite=100.0.",
+    "aws-iam-mcp anchor (Python, awslabs/mcp monorepo): initially 0 tools -- the anchor loader hardcoded language='unknown' for both validation anchors regardless of actual language, and scored the ENTIRE monorepo rather than the pre-registered src/iam-mcp-server subpath. Fixed: anchors now carry explicit language + source_subpath fields; recovered 29 tools, composite=100.0.",
+    "blazickjp-arxiv-mcp-server (Python): ADDED 2026-07-04 (v3) -- initially 71.8/2-tools, computed on phantom tools bled in from mcp.types.Prompt(...)/PromptArgument(...) definitions (a DIFFERENT MCP primitive, same name/description shape as a real Tool()). Fixed by adding a precise Tool(name=..., description=...) constructor-call pattern anchored on the literal 'Tool' identifier, tried before the generic fallback. Recovered 8 real tools, composite=100.0 (near_empty -> well_documented).",
+    "lucasastorian-llmwiki (Python): ADDED 2026-07-04 (v3) -- initially 25.0/0%-described, because agentgauge.exp1_mirror.extract_python_tools read ONLY the function's own docstring, never a decorator keyword argument like @mcp.tool(name=..., description=...) -- FastMCP's own officially-documented kwarg style, and this repo's actual convention for all 13 tools. Fixed: decorator kwarg now takes precedence over docstring (matching FastMCP's runtime behavior). Real: 92.3% described, composite=78.1 -- this server was NOT genuinely near-empty; it was a measurement artifact."
+  ],
+  "summary": {
+    "fresh_candidates_total": 30,
+    "fresh_excluded_extraction_failed": 9,
+    "fresh_excluded_unreliable_extraction_method": 11,
+    "fresh_scoreable": 10,
+    "shortfall_vs_pre_registered_freshly_sampled_count": "28 - 10 = 18 short; escalated to GG as an open decision (see exp1_pre_registration.json amendments), not silently resolved.",
+    "v3_correction_note": "vitali87-code-graph-rag moved from 'scoreable/near_empty' to 'excluded/extraction_failed' on 2026-07-04, after 3 confirmed extraction bugs were found and fixed (see exp1_server_frame.json bug_fixes_this_version). Two other scoreable servers had composite scores corrected in place (see not_excluded_diagnostic_fixes_applied): blazickjp-arxiv-mcp-server and lucasastorian-llmwiki.",
+    "v4_correction_note": "oraios-serena moved from 'scoreable/near_empty' to 'excluded/extraction_failed' on 2026-07-04, after a 4th extraction bug was found and fixed. Immediately after, GG directed a systematic audit rather than picking another trial candidate reactively.",
+    "v5_correction_note": "The systematic audit found the 'regex_best_effort' extraction method (used for ALL non-Python servers) pulls in massive false-positive noise -- a SYSTEMIC reliability problem, not a fixable bug. GG directed dropping all 11 regex_best_effort-extracted servers from the scoreable frame. The frame is now Python-only, N=10, far below the pre-registered target of 28. This is the authoritative, GG-ratification-pending state as of 2026-07-04."
+  }
+}

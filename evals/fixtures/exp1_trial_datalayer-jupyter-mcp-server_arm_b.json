@@ -1,0 +1,182 @@
+{
+  "server_id": "datalayer-jupyter-mcp-server",
+  "family_id": "read_family",
+  "agent_model": "gemma2:9b",
+  "trials_per_task": 5,
+  "n_contested": 4,
+  "parse_failed_a": 0,
+  "parse_failed_b": 0,
+  "arm_a_accuracy": 0.7,
+  "arm_b_accuracy": 0.55,
+  "effect_pp": -14.999999999999991,
+  "headroom_gated": true,
+  "in_regime": false,
+  "aborted": false,
+  "abort_reason": "",
+  "oracle_descriptions": {
+    "read_notebook": "Read the full cell-by-cell content and structure of ONE specific notebook you already have open.",
+    "list_notebooks": "Enumerate the names of MULTIPLE notebooks that have been used; does not show any notebook's content."
+  },
+  "raw_log_b": [
+    {
+      "task_id": "jupyter_1",
+      "trial": 0,
+      "raw_response": "read_notebook",
+      "selected_tool": "read_notebook",
+      "gold_tool": "read_notebook",
+      "outcome": "SELECTED-CORRECT"
+    },
+    {
+      "task_id": "jupyter_1",
+      "trial": 1,
+      "raw_response": "list_notebooks",
+      "selected_tool": "list_notebooks",
+      "gold_tool": "read_notebook",
+      "outcome": "SELECTED-WRONG"
+    },
+    {
+      "task_id": "jupyter_1",
+      "trial": 2,
+      "raw_response": "list_notebooks",
+      "selected_tool": "list_notebooks",
+      "gold_tool": "read_notebook",
+      "outcome": "SELECTED-WRONG"
+    },
+    {
+      "task_id": "jupyter_1",
+      "trial": 3,
+      "raw_response": "list_notebooks",
+      "selected_tool": "list_notebooks",
+      "gold_tool": "read_notebook",
+      "outcome": "SELECTED-WRONG"
+    },
+    {
+      "task_id": "jupyter_1",
+      "trial": 4,
+      "raw_response": "list_notebooks",
+      "selected_tool": "list_notebooks",
+      "gold_tool": "read_notebook",
+      "outcome": "SELECTED-WRONG"
+    },
+    {
+      "task_id": "jupyter_2",
+      "trial": 0,
+      "raw_response": "read_cell",
+      "selected_tool": "read_cell",
+      "gold_tool": "read_cell",
+      "outcome": "SELECTED-CORRECT"
+    },
+    {
+      "task_id": "jupyter_2",
+      "trial": 1,
+      "raw_response": "read_cell",
+      "selected_tool": "read_cell",
+      "gold_tool": "read_cell",
+      "outcome": "SELECTED-CORRECT"
+    },
+    {
+      "task_id": "jupyter_2",
+      "trial": 2,
+      "raw_response": "read_cell",
+      "selected_tool": "read_cell",
+      "gold_tool": "read_cell",
+      "outcome": "SELECTED-CORRECT"
+    },
+    {
+      "task_id": "jupyter_2",
+      "trial": 3,
+      "raw_response": "read_cell",
+      "selected_tool": "read_cell",
+      "gold_tool": "read_cell",
+      "outcome": "SELECTED-CORRECT"
+    },
+    {
+      "task_id": "jupyter_2",
+      "trial": 4,
+      "raw_response": "read_cell",
+      "selected_tool": "read_cell",
+      "gold_tool": "read_cell",
+      "outcome": "SELECTED-CORRECT"
+    },
+    {
+      "task_id": "jupyter_3",
+      "trial": 0,
+      "raw_response": "list_notebooks",
+      "selected_tool": "list_notebooks",
+      "gold_tool": "read_notebook",
+      "outcome": "SELECTED-WRONG"
+    },
+    {
+      "task_id": "jupyter_3",
+      "trial": 1,
+      "raw_response": "list_notebooks",
+      "selected_tool": "list_notebooks",
+      "gold_tool": "read_notebook",
+      "outcome": "SELECTED-WRONG"
+    },
+    {
+      "task_id": "jupyter_3",
+      "trial": 2,
+      "raw_response": "list_notebooks",
+      "selected_tool": "list_notebooks",
+      "gold_tool": "read_notebook",
+      "outcome": "SELECTED-WRONG"
+    },
+    {
+      "task_id": "jupyter_3",
+      "trial": 3,
+      "raw_response": "list_notebooks",
+      "selected_tool": "list_notebooks",
+      "gold_tool": "read_notebook",
+      "outcome": "SELECTED-WRONG"
+    },
+    {
+      "task_id": "jupyter_3",
+      "trial": 4,
+      "raw_response": "list_notebooks",
+      "selected_tool": "list_notebooks",
+      "gold_tool": "read_notebook",
+      "outcome": "SELECTED-WRONG"
+    },
+    {
+      "task_id": "jupyter_4",
+      "trial": 0,
+      "raw_response": "read_cell",
+      "selected_tool": "read_cell",
+      "gold_tool": "read_cell",
+      "outcome": "SELECTED-CORRECT"
+    },
+    {
+      "task_id": "jupyter_4",
+      "trial": 1,
+      "raw_response": "read_cell",
+      "selected_tool": "read_cell",
+      "gold_tool": "read_cell",
+      "outcome": "SELECTED-CORRECT"
+    },
+    {
+      "task_id": "jupyter_4",
+      "trial": 2,
+      "raw_response": "read_cell",
+      "selected_tool": "read_cell",
+      "gold_tool": "read_cell",
+      "outcome": "SELECTED-CORRECT"
+    },
+    {
+      "task_id": "jupyter_4",
+      "trial": 3,
+      "raw_response": "read_cell",
+      "selected_tool": "read_cell",
+      "gold_tool": "read_cell",
+      "outcome": "SELECTED-CORRECT"
+    },
+    {
+      "task_id": "jupyter_4",
+      "trial": 4,
+      "raw_response": "read_cell",
+      "selected_tool": "read_cell",
+      "gold_tool": "read_cell",
+      "outcome": "SELECTED-CORRECT"
+    }
+  ]
+}
