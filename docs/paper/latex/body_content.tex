@@ -31,7 +31,7 @@ refinements to tool descriptions can yield dramatic improvements,''
 reporting that precise refinements to tool descriptions helped Claude
 Sonnet 3.5 reach state-of-the-art on SWE-bench Verified (Anthropic
 Engineering, ``Writing tools for agents'' --- publication date not
-independently confirmed this session, cited for content
+independently confirmed during this paper's preparation, cited for content
 only) \nocite{anthropic2026tools}. GitHub's
 engineering team, running an offline evaluation harness against their
 own MCP server --- the same \url{github/github-mcp-server} mirrored
@@ -39,12 +39,12 @@ in RW1 (§4.3.1) --- reports the same sensitivity from the other side:
 ``tightening a description, adding or removing a tool, or combining a
 few similar tools can shift results a lot'' (GitHub Engineering,
 ``Measuring what matters: how offline evaluation of GitHub MCP Server
-works'' --- publication date not independently confirmed this session,
+works'' --- publication date not independently confirmed during this paper's preparation,
 cited for content only) \nocite{github2026measuring}. This appears to sit in tension with RW1's own
 finding of zero headroom on that exact server for gemma2:9b (§4.3.1) ---
 we do not resolve this tension here, since GitHub's harness details
 (which model(s), which metric, which task distribution) were not
-verified this session beyond the quoted sentence; flagged as an open
+verified during this paper's preparation beyond the quoted sentence; flagged as an open
 question rather than silently juxtaposed as if the two results agree. An
 empirical audit of 856 tools across 103 real MCP servers found 97.1\% of
 tool descriptions contain at least one quality ``smell'' and 56\% fail
@@ -99,11 +99,9 @@ questions in sequence:
 \item
   \textbf{A falsifiable, regime-bounded map} of where tool-description
   quality changes agent selection behavior. Two distinct conditions
-  compose it, from different experiments: (i) the hand-written oracle
-  \emph{effect} appears at 60-tool/10-family catalog density and was
-  untestable (no headroom) at 16-tool/8-cluster density --- one tested
-  point and one untested-for-headroom point, bracketing an unmeasured
-  transition, not a precisely located threshold (Section 4.2.1);
+  compose it, from different experiments: (i) a hand-written oracle
+  \emph{effect}, bracketed but not precisely located on the density axis
+  (Section 4.2.1);
 
   \begin{enumerate}
   \def\labelenumi{(\roman{enumi})}
@@ -111,8 +109,7 @@ questions in sequence:
   \tightlist
   \item
     realizing that effect safely through \emph{automatic generation}
-    additionally requires documented source code --- interface-only
-    generation recovers only 12.5\% of the oracle gain (Section 4.2.2).
+    additionally requires documented source code (Section 4.2.2).
     Outside this intersection the effect is null or negative (Section
     4.3).
   \end{enumerate}
@@ -120,9 +117,9 @@ questions in sequence:
   \textbf{A prevalence measurement}: on a pre-registered pilot sample of
   10 Python-only public MCP servers, 0 of 9 servers with a testable
   confusable family showed in-regime behavior, using the general
-  behavioral regime definition (§5.1) --- not a re-test of the specific
-  60-tool density point above --- a lower bound, not a closed claim, on
-  how rare the regime is among public, documented servers (Section 5).
+  behavioral regime definition (§5.1) --- a lower bound, not a closed
+  claim, on how rare the regime is among public, documented servers
+  (Section 5).
 \item
   \textbf{A localizability boundary}: a pairwise LLM-judge confusability
   method --- the natural cheap alternative to running the full
@@ -248,9 +245,9 @@ branch \textbf{before} any run starts. Any change to the judge, scorer,
 rubric, or calibration constants (``condition \#1'') is escalated as a
 draft PR for human review before merge. Null and aborted results are
 reported as-is; results are never tuned after being observed.
-\url{ANTHROPIC_API_KEY} is never used in any experiment reported
-here, to keep judge/generator/agent model families structurally
-independent of the assistant used to run the research program.
+Judge, generator, and agent model families are structurally independent
+of any assistant used to author or orchestrate this research
+program --- no shared credentials, infrastructure, or model family.
 
 \hypertarget{frozen-configuration}{%
 \subsection{3.2 Frozen configuration}\label{frozen-configuration}}
@@ -594,8 +591,7 @@ claim is scoped to.
 Description precision HELPS within-family discrimination when (each tested at
 one fixture/point, not a swept curve):
  - Catalog density is at least as high as the one positive point tested
-   (60 tools / 10 families) -- untested, not confirmed-absent, at the one
-   lower point tried (16 tools / 8 clusters, no headroom to test), AND
+   (§4.2.1), AND
  - Source access includes docstrings (safe generation requires this;
    body-only source opens a fabrication vector), AND
  - Arm A shows real headroom (the agent is not already resolving from
@@ -835,12 +831,11 @@ Read together, Sections 4--6 answer the paper's title question precisely
 rather than broadly. Tool-description quality \emph{does} change agent
 selection behavior --- but the evidence for this comes from separate
 findings that compose, not one single joint condition: an oracle-effect
-that appears at one tested high-density point and is untested (not
-disproven) at a lower one (§4.2.1), a generation-safety condition that
-requires documented source (§4.2.2), and a prevalence measurement ---
-using the general behavioral regime construct, not a re-test of the
-density point specifically --- that a pre-registered pilot sample of
-real public Python servers places at 0 of 9 tested (Section 5).
+bounded to one tested catalog density (§4.2.1), a generation-safety
+condition that requires documented source (§4.2.2), and a prevalence
+measurement, on the general behavioral regime construct (§5.1), that a
+pre-registered pilot sample of real public Python servers places at 0 of
+9 tested (Section 5).
 Separately, even where the regime does occur, it has not been shown
 findable cheaply: a pairwise LLM-judge localizer fails to identify which
 specific tool pairs are confusable on a new, unscored server (Section
@@ -937,27 +932,30 @@ to a paper whose headline results are nulls, and it is stated
 standalone, not as a clause inside another paragraph.
 
 \hypertarget{the-false-negative-asymmetry-read-this-one-first}{%
-\subsection{The false-negative asymmetry (read this one
+\subsection{The false-negative asymmetry --- the epistemic bound on this
+paper's null claims (read this one
 first)}\label{the-false-negative-asymmetry-read-this-one-first}}
 
-\textbf{This paper's positive findings were caught being wrong; its
-negative findings have no analogous check.} Section 5.4 reports two
+\textbf{Every null and boundary claim in this paper --- EXP-1's 0-of-9
+headline, EXP-3's localizer-fails headline --- is bounded by one
+asymmetry in what this pipeline's error-detection can catch, and this
+section states that bound precisely.} Section 5.4 reports two
 false positives from a seed-configuration bug, caught and reversed
 before publication \emph{because} they were surprising enough to trigger
 a recheck (a server unexpectedly showing in-regime behavior got a second
-look). A bug that instead silently \emph{suppressed} a real in-regime
+look). That same mechanism has a mirror-image blind spot: a bug that
+instead silently \emph{suppressed} a real in-regime
 signal --- turning a true positive into a false null --- would produce a
 result indistinguishable from a correctly-measured null: ``this server
 is not in-regime'' looks the same whether it's true or an artifact, and
 nothing about a null result prompts the same ``that's surprising, let's
-recheck'' response that caught the two false positives. This asymmetry
-means EXP-1's 0-of-9 headline, and EXP-3's localizer-fails headline,
-carry a category of risk that this paper's own error-detection track
-record does not bound. We have not found evidence of such a bug; we also
-have no mechanism that would necessarily surface one, which is precisely
-the point. Any reader treating EXP-1 or EXP-3's null as more secure than
-``we looked and did not find a positive, using a pipeline whose
-false-positive-catching capacity is demonstrated and whose
+recheck'' response that caught the two false positives. We have not
+found evidence of such a bug; we also have no mechanism that would
+necessarily surface one, which is precisely the point --- this is the
+bound this paper's nulls should be read against, not a suggestion that
+they are unreliable. Any reader treating EXP-1 or EXP-3's null as more
+secure than ``we looked and did not find a positive, using a pipeline
+whose false-positive-catching capacity is demonstrated and whose
 false-negative-catching capacity is not'' should recalibrate against
 this paragraph specifically.
 
@@ -1077,18 +1075,17 @@ has auto-merge; a human merges every one.
 Tool-description quality changes agent tool-selection behavior in a
 real, measurable, and mechanistically legible way --- but only inside a
 narrow, checkable set of conditions: a catalog at least as dense as the
-one point where an effect was tested and found (60 tools / 10 families;
-untested, not disproven, at a lower point tried), and generation with
-access to documented source. That effect does not collapse under a
+one point where an effect was tested and found (§4.2.1), and generation
+with access to documented source. That effect does not collapse under a
 substantial capability increase in the one additional agent tested
 (Section 4.2.3) --- a finding \emph{inconsistent with} ``this is a
 gemma2:9b-specific capability artifact,'' though one data point on a
 different harness does not prove the effect is capability-independent in
-general. Outside these conditions: the same general behavioral regime
-construct (not a re-test of the density point specifically) appears in 0
-of 9 servers with a testable confusable family in a pre-registered pilot
-sample of real, public, documented Python MCP servers (Section 5); the
-same kind of intervention harms selection on at least one
+general. Outside these conditions: the same behavioral regime construct
+(§5.1) appears in 0 of 9 servers with a testable confusable family in a
+pre-registered pilot sample of real, public, documented Python MCP
+servers (Section 5); the same kind of intervention harms selection on at
+least one
 already-resolved family tested, while two other already-resolved
 families in the same experiment show no harm (Section 4.3.2); it harms
 retrieval across every retriever type tested on the one synthetic
@@ -1124,14 +1121,14 @@ boundary that makes ``broadly'' precise enough to check and re-test.
 \item
   \textbf{A.3} Fixture hash manifest: generate per
   \url{docs/research/frozen_protocol.md} Appendix; the two
-  FRONTIER-T18 hashes added this session are recorded in Section 9.2
+  FRONTIER-T18 hashes added during this paper's preparation are recorded in Section 9.2
   above and in \url{docs/paper/evidence_table.md} §1.3.
 \item
   \textbf{A.4} Per-server EXP-1 table: Section 5.3 above (reproduced
   from \texttt{STATUS.md} EXP-1 section).
 \item
   \textbf{A.5} Bibliography --- every citation below was independently
-  fetched and checked against its claimed content this session (title,
+  fetched and checked against its claimed content during this paper's preparation (title,
   authors, and the specific figure/quote cited all confirmed against the
   primary source, not copied from a prior internal desk-research doc
   without re-verification). None were invented; where a candidate
@@ -1149,7 +1146,7 @@ boundary that makes ``broadly'' precise enough to check and re-test.
   \tightlist
   \item
     Anthropic Engineering, ``Writing tools for agents'' (publication
-    date not independently confirmed this session --- content verified,
+    date not independently confirmed during this paper's preparation --- content verified,
     date not).
     \url{https://www.anthropic.com/engineering/writing-tools-for-agents}
     --- verified: contains the quoted claim that small tool-description
@@ -1158,7 +1155,7 @@ boundary that makes ``broadly'' precise enough to check and re-test.
   \item
     GitHub Engineering, ``Measuring what matters: how offline evaluation
     of GitHub MCP Server works'' (publication date not independently
-    confirmed this session --- content verified, date not).
+    confirmed during this paper's preparation --- content verified, date not).
     \url{https://github.blog/ai-and-ml/generative-ai/measuring-what-matters-how-offline-evaluation-of-github-mcp-server-works/}
     --- verified: contains the quoted claim that small description edits
     ``shift results a lot.'' \textbf{Second-pass audit note:} this is a
@@ -1166,7 +1163,7 @@ boundary that makes ``broadly'' precise enough to check and re-test.
     (§4.3.1), which found zero headroom for gemma2:9b on that server.
     The tension is flagged explicitly in §1.1 body text, not silently
     juxtaposed; not resolved (harness/model/metric details of GitHub's
-    own eval were not verified this session). \nocite{github2026measuring}
+    own eval were not verified during this paper's preparation). \nocite{github2026measuring}
   \item
     Hasan, M. M., Li, H., Rajbahadur, G. K., Adams, B., and Hassan, A.
     E., ``Model Context Protocol (MCP) Tool Descriptions Are Smelly!
@@ -1251,7 +1248,7 @@ boundary that makes ``broadly'' precise enough to check and re-test.
   \end{itemize}
 \item
   \textbf{A.6} EXP-1 sampling-frame revision history (moved here from
-  §5.2 body per GG's compression request --- the finding that survives
+  §5.2 body --- the finding that survives
   in §5.2 is unaffected; this is provenance, not evidence). The
   pre-registered frame was rebuilt five times over the course of the
   experiment, each rebuild escalated and ratified before proceeding,
@@ -1281,7 +1278,7 @@ boundary that makes ``broadly'' precise enough to check and re-test.
   \end{itemize}
 \item
   \textbf{A.7} Full Q3→Q6 source-aware generation progression (moved
-  here from §4.2.2 body per GG's compression request --- both prose
+  here from §4.2.2 body --- both prose
   findings in §4.2.2 are unaffected; this is intermediate detail, not a
   third finding). The two-row table in §4.2.2 shows only the endpoints
   (interface-only failure; Q5/Q6 safe-and-recovering). The full
