@@ -77,3 +77,11 @@ scripts/tx_breakdown_analysis.py
 ollama_conn_monitor.*
 t18_watchdog.ps1
 ty_t18_watchdog.txt
+
+# LaTeX build artifacts (docs/paper/latex/main.pdf is committed deliberately)
+docs/paper/latex/*.aux
+docs/paper/latex/*.bbl
+docs/paper/latex/*.log
+docs/paper/latex/*.out
+docs/paper/latex/*.blg
+docs/paper/latex/*.toc
