@@ -1,6 +1,47 @@
 # AgentGauge — Project Status
 
-> Current as of 2026-07-04. Update this file when significant milestones land.
+> Current as of 2026-07-12. Update this file when significant milestones land.
+
+---
+
+## FRONTIER-T18 — Does the T18 effect survive a frontier agent? (DONE, PR #50)
+
+**Goal:** Re-run the T18 oracle A/B (60-tool confusable catalog) with a stronger agent than
+gemma2:9b. Decides whether the description-fixer's value is DURABLE or weak-agent-only.
+
+**Setup:** `ApiAgentProvider`/`OpenAICompatibleProvider` (key from an explicitly-passed env var,
+never `ANTHROPIC_API_KEY`; cost-ceiling abort). 3-outcome classifier: SELECTED-CORRECT /
+SELECTED-WRONG / ABSTAINED-OR-HEDGED. Pre-registered 85% headroom gate, 3 trials, verdict rule.
+Reuses the T18 fixture and oracle descriptions unchanged (one in-flight fixture fix — see below).
+Agent: **Llama-3.3-70B (open model, NOT Claude/GPT)** — stronger than gemma2:9b but not a true
+frontier model. STEP 1 ran on Groq; STEP 2 ran single-host on OpenRouter (Groq's free tier
+request-burst throttle made it non-viable for the 240-call run).
+
+**Headroom gate (STEP 1):** Arm A (empty descriptions), 1 trial × 40 contested tasks:
+SELECTED-CORRECT 26/40 = 65.0% < 85% gate → headroom confirmed, full matrix warranted.
+
+**Full A/B (STEP 2, 3 trials × 40 tasks × 2 arms):** Arm A (empty) 71/120 = 59.2%
+SELECTED-CORRECT → Arm B (oracle) 120/120 = 100.0%. Effect **B−A = +40.8pp**, task-clustered sign
+test p<0.0001 (stable-set p<0.001). All 19 Arm-A misses recovered by the oracle; 0 abstentions in
+either arm. Spend $0.89 (conservative pricing), under the $2 cap.
+
+**Fixture fix:** `plan_event`'s task wording described `book_slot`'s niche, leaving it
+oracle-unresolvable — a mislabel, not a model failure. Reworded to `plan_event`'s actual
+distinction (gold unchanged); documented in `evals/fixtures/t18_catalog.py`.
+
+**Verdict: effect SURVIVES at full strength** on a substantially stronger agent — does not
+collapse at a much higher capability tier than gemma2:9b. Not apples-to-apples vs the gemma
++34.5pp figure (different harness/host); the defensible claim is *survives / does not collapse*,
+not "grew with capability."
+
+**Caveat:** Llama-3.3-70B is a strong *open* model, not a true Claude/GPT-class frontier model —
+this does not close the frontier question. One model = one datapoint.
+
+**Full write-up:** `docs/research/frontier_t18_result.md`. Banked into the EXP-4 regime map
+(Regime 3 — strong-agent survival).
+
+**CI:** verify.sh green; harness fully deterministic/mocked in CI (no live API calls). The
+frontier run itself was a manual, separately-billed, cost-ceilinged execution outside CI.
 
 ---
 
