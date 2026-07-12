@@ -15,6 +15,7 @@ from agentgauge.fixer import (
     DEFAULT_SKIP_ABOVE_BAND,
     DEFAULT_TRIALS,
     JUDGE_MODEL_DEFAULT,
+    FixCandidate,
     assert_generator_ne_judge,
     run_fixer,
 )
@@ -38,6 +39,59 @@ def _version_callback(value: bool) -> None:
     if value:
         typer.echo(f"agentgauge {__version__}")
         raise typer.Exit()
+
+
+def _bak_path(source: Path) -> Path:
+    """Return a backup path that does not already exist.
+
+    Tries <file>.bak first; if that exists, tries .bak.1, .bak.2, etc.
+    """
+    candidate = Path(str(source) + ".bak")
+    if not candidate.exists():
+        return candidate
+    n = 1
+    while True:
+        candidate = Path(str(source) + f".bak.{n}")
+        if not candidate.exists():
+            return candidate
+        n += 1
+
+
+def _render_fix_inline(candidate: FixCandidate, console: Console) -> None:
+    """Print a compact before→after block for one accepted fix."""
+    is_tty = console.is_terminal
+    label = f"{candidate.tool_name}:{candidate.dim} (+{candidate.delta:.1f})"
+
+    if candidate.dim == "description_quality":
+        old_text = candidate.old_description or "(none)"
+        new_text = candidate.new_description or "(none)"
+        if is_tty:
+            console.print(f"  [bold]{label}[/bold]")
+            console.print(f"  [red]- {old_text}[/red]")
+            console.print(f"  [green]+ {new_text}[/green]")
+        else:
+            console.print(f"  {label}")
+            console.print(f"  - {old_text}")
+            console.print(f"  + {new_text}")
+    elif candidate.dim == "schema_completeness" and candidate.new_schema_props:
+        if is_tty:
+            console.print(f"  [bold]{label}[/bold]")
+            for param, meta in candidate.new_schema_props.items():
+                old_meta = candidate.old_schema_props.get(param, {})
+                old_str = str(old_meta) if old_meta else "(no metadata)"
+                new_str = str(meta)
+                console.print(f"  [dim]{param}:[/dim]")
+                console.print(f"    [red]- {old_str}[/red]")
+                console.print(f"    [green]+ {new_str}[/green]")
+        else:
+            console.print(f"  {label}")
+            for param, meta in candidate.new_schema_props.items():
+                old_meta = candidate.old_schema_props.get(param, {})
+                old_str = str(old_meta) if old_meta else "(no metadata)"
+                new_str = str(meta)
+                console.print(f"  {param}:")
+                console.print(f"    - {old_str}")
+                console.print(f"    + {new_str}")
 
 
 @app.callback()
@@ -199,9 +253,10 @@ async def _fix_async(
     out_diff: Path | None,
     apply: bool,
     mock: bool,
+    _console: Console | None = None,
 ) -> None:
     """Async implementation of the fix subcommand."""
-    console = Console()
+    console = _console or Console()
 
     # Startup assertion: generator != judge (skip for mock — both models are "mock")
     if not mock:
@@ -237,14 +292,13 @@ async def _fix_async(
             skip_above_band=skip_above_band,
         )
 
-        # Print results
+        # Print accepted fixes with inline before/after
         for c in report.accepted:
             console.print(
                 f"[green]ACCEPTED[/green] {c.tool_name}:{c.dim} — "
                 f"delta={c.delta:+.1f} (threshold={c.threshold:.1f})"
             )
-            if c.dim == "description_quality":
-                console.print(f"  New description: {c.new_description[:80]!r}")
+            _render_fix_inline(c, console)
 
         for c in report.rejected:
             console.print(f"[yellow]REJECTED[/yellow] {c.tool_name}:{c.dim} — {c.rejection_reason}")
@@ -265,6 +319,9 @@ async def _fix_async(
             console.print(f"[dim]Diff written to {out_diff}[/dim]")
 
         if apply and report.accepted and report.patched_source:
+            bak = _bak_path(source_path)
+            bak.write_text(source_path.read_text(encoding="utf-8"), encoding="utf-8")
+            console.print(f"[dim]Backup written to {bak}[/dim]")
             source_path.write_text(report.patched_source, encoding="utf-8")
             console.print(f"[green]Applied {len(report.accepted)} fix(es) to {source_path}[/green]")
         elif apply and not report.accepted:
@@ -305,3 +362,73 @@ def ci(
     overall = asyncio.run(_scan_async(target, model=model, trials=trials, out=None, mock=mock))
     if overall < min_score:
         raise typer.Exit(1)
+
+
+@app.command(name="try")
+def try_cmd(
+    target: Annotated[str, typer.Argument(help="Path to MCP server script, or HTTP/SSE URL")],
+    model: Annotated[
+        str,
+        typer.Option(
+            "--model",
+            "-m",
+            help=f"Ollama judge model (default: '{CALIBRATED_JUDGE_MODEL}')",
+        ),
+    ] = CALIBRATED_JUDGE_MODEL,
+    generator_model: Annotated[
+        str,
+        typer.Option("--generator-model", help="Model for generating fix previews"),
+    ] = "qwen3:8b",
+    judge_model: Annotated[
+        str,
+        typer.Option("--judge-model", help="Pinned judge model for fix validation"),
+    ] = JUDGE_MODEL_DEFAULT,
+    trials: Annotated[int, typer.Option("--trials", "-t", help="LLM trials per dimension")] = 1,
+    mock: Annotated[
+        bool, typer.Option("--mock", help="Use mock LLM provider (no network needed)")
+    ] = False,
+) -> None:
+    """Scan + preview fixes in one read-only command. Writes nothing."""
+    asyncio.run(
+        _try_async(
+            target,
+            model=model,
+            generator_model=generator_model,
+            judge_model=judge_model,
+            trials=trials,
+            mock=mock,
+        )
+    )
+
+
+async def _try_async(
+    target: str,
+    *,
+    model: str,
+    generator_model: str,
+    judge_model: str,
+    trials: int,
+    mock: bool,
+) -> None:
+    console = Console()
+
+    # Step (a): scan
+    await _scan_async(target, model=model, trials=trials, out=None, mock=mock)
+
+    # Step (b): fix preview — read-only, no --apply
+    await _fix_async(
+        target,
+        dims="description_quality,schema_completeness",
+        generator_model=generator_model,
+        judge_model=judge_model,
+        trials=DEFAULT_TRIALS,
+        min_delta=DEFAULT_MIN_DELTA,
+        skip_above_band=DEFAULT_SKIP_ABOVE_BAND,
+        out_diff=None,
+        apply=False,
+        mock=mock,
+        _console=console,
+    )
+
+    # Step (c): apply hint
+    console.print(f"\nRun `agentgauge fix {target} --apply` to apply these fixes.")

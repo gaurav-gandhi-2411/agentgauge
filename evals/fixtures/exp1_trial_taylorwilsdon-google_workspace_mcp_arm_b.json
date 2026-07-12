@@ -1,0 +1,182 @@
+{
+  "server_id": "taylorwilsdon-google_workspace_mcp",
+  "family_id": "send_family",
+  "agent_model": "gemma2:9b",
+  "trials_per_task": 5,
+  "n_contested": 4,
+  "parse_failed_a": 0,
+  "parse_failed_b": 0,
+  "arm_a_accuracy": 0.0,
+  "arm_b_accuracy": 0.0,
+  "effect_pp": 0.0,
+  "headroom_gated": true,
+  "in_regime": false,
+  "aborted": false,
+  "abort_reason": "",
+  "oracle_descriptions": {
+    "send_message": "Posts a message into an internal team Google Chat space, not an email.",
+    "send_gmail_message": "Sends an email via Gmail to an email address, not a chat space."
+  },
+  "raw_log_b": [
+    {
+      "task_id": "gws_1",
+      "trial": 0,
+      "raw_response": "GoogleChat",
+      "selected_tool": "GoogleChat",
+      "gold_tool": "send_message",
+      "outcome": "ABSTAINED-OR-HEDGED"
+    },
+    {
+      "task_id": "gws_1",
+      "trial": 1,
+      "raw_response": "google_chat",
+      "selected_tool": "google_chat",
+      "gold_tool": "send_message",
+      "outcome": "ABSTAINED-OR-HEDGED"
+    },
+    {
+      "task_id": "gws_1",
+      "trial": 2,
+      "raw_response": "google_chat",
+      "selected_tool": "google_chat",
+      "gold_tool": "send_message",
+      "outcome": "ABSTAINED-OR-HEDGED"
+    },
+    {
+      "task_id": "gws_1",
+      "trial": 3,
+      "raw_response": "Available_message",
+      "selected_tool": "Available_message",
+      "gold_tool": "send_message",
+      "outcome": "ABSTAINED-OR-HEDGED"
+    },
+    {
+      "task_id": "gws_1",
+      "trial": 4,
+      "raw_response": "Available_message",
+      "selected_tool": "Available_message",
+      "gold_tool": "send_message",
+      "outcome": "ABSTAINED-OR-HEDGED"
+    },
+    {
+      "task_id": "gws_2",
+      "trial": 0,
+      "raw_response": "draft_gmail_message",
+      "selected_tool": "draft_gmail_message",
+      "gold_tool": "send_gmail_message",
+      "outcome": "SELECTED-WRONG"
+    },
+    {
+      "task_id": "gws_2",
+      "trial": 1,
+      "raw_response": "draft_gmail_message",
+      "selected_tool": "draft_gmail_message",
+      "gold_tool": "send_gmail_message",
+      "outcome": "SELECTED-WRONG"
+    },
+    {
+      "task_id": "gws_2",
+      "trial": 2,
+      "raw_response": "draft_gmail_message",
+      "selected_tool": "draft_gmail_message",
+      "gold_tool": "send_gmail_message",
+      "outcome": "SELECTED-WRONG"
+    },
+    {
+      "task_id": "gws_2",
+      "trial": 3,
+      "raw_response": "draft_gmail_message",
+      "selected_tool": "draft_gmail_message",
+      "gold_tool": "send_gmail_message",
+      "outcome": "SELECTED-WRONG"
+    },
+    {
+      "task_id": "gws_2",
+      "trial": 4,
+      "raw_response": "draft_gmail_message",
+      "selected_tool": "draft_gmail_message",
+      "gold_tool": "send_gmail_message",
+      "outcome": "SELECTED-WRONG"
+    },
+    {
+      "task_id": "gws_3",
+      "trial": 0,
+      "raw_response": "Availabledraft_gmail_message",
+      "selected_tool": "Availabledraft_gmail_message",
+      "gold_tool": "send_gmail_message",
+      "outcome": "ABSTAINED-OR-HEDGED"
+    },
+    {
+      "task_id": "gws_3",
+      "trial": 1,
+      "raw_response": "Availabledraft_gmail_message",
+      "selected_tool": "Availabledraft_gmail_message",
+      "gold_tool": "send_gmail_message",
+      "outcome": "ABSTAINED-OR-HEDGED"
+    },
+    {
+      "task_id": "gws_3",
+      "trial": 2,
+      "raw_response": "availabledraft_gmail_message",
+      "selected_tool": "availabledraft_gmail_message",
+      "gold_tool": "send_gmail_message",
+      "outcome": "ABSTAINED-OR-HEDGED"
+    },
+    {
+      "task_id": "gws_3",
+      "trial": 3,
+      "raw_response": "availabledraft_gmail_message",
+      "selected_tool": "availabledraft_gmail_message",
+      "gold_tool": "send_gmail_message",
+      "outcome": "ABSTAINED-OR-HEDGED"
+    },
+    {
+      "task_id": "gws_3",
+      "trial": 4,
+      "raw_response": "availabledraft_gmail_message",
+      "selected_tool": "availabledraft_gmail_message",
+      "gold_tool": "send_gmail_message",
+      "outcome": "ABSTAINED-OR-HEDGED"
+    },
+    {
+      "task_id": "gws_4",
+      "trial": 0,
+      "raw_response": "Availablemessage",
+      "selected_tool": "Availablemessage",
+      "gold_tool": "send_message",
+      "outcome": "ABSTAINED-OR-HEDGED"
+    },
+    {
+      "task_id": "gws_4",
+      "trial": 1,
+      "raw_response": "Slack",
+      "selected_tool": "Slack",
+      "gold_tool": "send_message",
+      "outcome": "ABSTAINED-OR-HEDGED"
+    },
+    {
+      "task_id": "gws_4",
+      "trial": 2,
+      "raw_response": "Chat",
+      "selected_tool": "Chat",
+      "gold_tool": "send_message",
+      "outcome": "ABSTAINED-OR-HEDGED"
+    },
+    {
+      "task_id": "gws_4",
+      "trial": 3,
+      "raw_response": "Chat",
+      "selected_tool": "Chat",
+      "gold_tool": "send_message",
+      "outcome": "ABSTAINED-OR-HEDGED"
+    },
+    {
+      "task_id": "gws_4",
+      "trial": 4,
+      "raw_response": "slack",
+      "selected_tool": "slack",
+      "gold_tool": "send_message",
+      "outcome": "ABSTAINED-OR-HEDGED"
+    }
+  ]
+}

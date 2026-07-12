@@ -1,0 +1,296 @@
+{
+  "server_id": "datalayer-jupyter-mcp-server",
+  "family_id": "read_family",
+  "agent_model": "gemma2:9b",
+  "trials_per_task": 5,
+  "n_contested": 4,
+  "parse_failed_a": 0,
+  "arm_a_accuracy": 0.7,
+  "headroom_gated": true,
+  "aborted": false,
+  "abort_reason": "",
+  "arm_a_outcomes": [
+    {
+      "task_id": "jupyter_1",
+      "trial": 0,
+      "outcome": "SELECTED-WRONG",
+      "selected_tool": "list_notebooks"
+    },
+    {
+      "task_id": "jupyter_1",
+      "trial": 1,
+      "outcome": "SELECTED-CORRECT",
+      "selected_tool": "read_notebook"
+    },
+    {
+      "task_id": "jupyter_1",
+      "trial": 2,
+      "outcome": "SELECTED-CORRECT",
+      "selected_tool": "read_notebook"
+    },
+    {
+      "task_id": "jupyter_1",
+      "trial": 3,
+      "outcome": "SELECTED-CORRECT",
+      "selected_tool": "read_notebook"
+    },
+    {
+      "task_id": "jupyter_1",
+      "trial": 4,
+      "outcome": "SELECTED-CORRECT",
+      "selected_tool": "read_notebook"
+    },
+    {
+      "task_id": "jupyter_2",
+      "trial": 0,
+      "outcome": "SELECTED-CORRECT",
+      "selected_tool": "read_cell"
+    },
+    {
+      "task_id": "jupyter_2",
+      "trial": 1,
+      "outcome": "SELECTED-CORRECT",
+      "selected_tool": "read_cell"
+    },
+    {
+      "task_id": "jupyter_2",
+      "trial": 2,
+      "outcome": "SELECTED-CORRECT",
+      "selected_tool": "read_cell"
+    },
+    {
+      "task_id": "jupyter_2",
+      "trial": 3,
+      "outcome": "SELECTED-CORRECT",
+      "selected_tool": "read_cell"
+    },
+    {
+      "task_id": "jupyter_2",
+      "trial": 4,
+      "outcome": "SELECTED-CORRECT",
+      "selected_tool": "read_cell"
+    },
+    {
+      "task_id": "jupyter_3",
+      "trial": 0,
+      "outcome": "SELECTED-WRONG",
+      "selected_tool": "list_notebooks"
+    },
+    {
+      "task_id": "jupyter_3",
+      "trial": 1,
+      "outcome": "SELECTED-WRONG",
+      "selected_tool": "list_notebooks"
+    },
+    {
+      "task_id": "jupyter_3",
+      "trial": 2,
+      "outcome": "SELECTED-WRONG",
+      "selected_tool": "list_notebooks"
+    },
+    {
+      "task_id": "jupyter_3",
+      "trial": 3,
+      "outcome": "SELECTED-WRONG",
+      "selected_tool": "list_notebooks"
+    },
+    {
+      "task_id": "jupyter_3",
+      "trial": 4,
+      "outcome": "SELECTED-WRONG",
+      "selected_tool": "list_notebooks"
+    },
+    {
+      "task_id": "jupyter_4",
+      "trial": 0,
+      "outcome": "SELECTED-CORRECT",
+      "selected_tool": "read_cell"
+    },
+    {
+      "task_id": "jupyter_4",
+      "trial": 1,
+      "outcome": "SELECTED-CORRECT",
+      "selected_tool": "read_cell"
+    },
+    {
+      "task_id": "jupyter_4",
+      "trial": 2,
+      "outcome": "SELECTED-CORRECT",
+      "selected_tool": "read_cell"
+    },
+    {
+      "task_id": "jupyter_4",
+      "trial": 3,
+      "outcome": "SELECTED-CORRECT",
+      "selected_tool": "read_cell"
+    },
+    {
+      "task_id": "jupyter_4",
+      "trial": 4,
+      "outcome": "SELECTED-CORRECT",
+      "selected_tool": "read_cell"
+    }
+  ],
+  "raw_log_a": [
+    {
+      "task_id": "jupyter_1",
+      "trial": 0,
+      "raw_response": "list_notebooks \nread_notebook",
+      "selected_tool": "list_notebooks",
+      "gold_tool": "read_notebook",
+      "outcome": "SELECTED-WRONG"
+    },
+    {
+      "task_id": "jupyter_1",
+      "trial": 1,
+      "raw_response": "read_notebook",
+      "selected_tool": "read_notebook",
+      "gold_tool": "read_notebook",
+      "outcome": "SELECTED-CORRECT"
+    },
+    {
+      "task_id": "jupyter_1",
+      "trial": 2,
+      "raw_response": "read_notebook",
+      "selected_tool": "read_notebook",
+      "gold_tool": "read_notebook",
+      "outcome": "SELECTED-CORRECT"
+    },
+    {
+      "task_id": "jupyter_1",
+      "trial": 3,
+      "raw_response": "read_notebook",
+      "selected_tool": "read_notebook",
+      "gold_tool": "read_notebook",
+      "outcome": "SELECTED-CORRECT"
+    },
+    {
+      "task_id": "jupyter_1",
+      "trial": 4,
+      "raw_response": "read_notebook",
+      "selected_tool": "read_notebook",
+      "gold_tool": "read_notebook",
+      "outcome": "SELECTED-CORRECT"
+    },
+    {
+      "task_id": "jupyter_2",
+      "trial": 0,
+      "raw_response": "read_cell",
+      "selected_tool": "read_cell",
+      "gold_tool": "read_cell",
+      "outcome": "SELECTED-CORRECT"
+    },
+    {
+      "task_id": "jupyter_2",
+      "trial": 1,
+      "raw_response": "read_cell",
+      "selected_tool": "read_cell",
+      "gold_tool": "read_cell",
+      "outcome": "SELECTED-CORRECT"
+    },
+    {
+      "task_id": "jupyter_2",
+      "trial": 2,
+      "raw_response": "read_cell",
+      "selected_tool": "read_cell",
+      "gold_tool": "read_cell",
+      "outcome": "SELECTED-CORRECT"
+    },
+    {
+      "task_id": "jupyter_2",
+      "trial": 3,
+      "raw_response": "read_cell",
+      "selected_tool": "read_cell",
+      "gold_tool": "read_cell",
+      "outcome": "SELECTED-CORRECT"
+    },
+    {
+      "task_id": "jupyter_2",
+      "trial": 4,
+      "raw_response": "read_cell",
+      "selected_tool": "read_cell",
+      "gold_tool": "read_cell",
+      "outcome": "SELECTED-CORRECT"
+    },
+    {
+      "task_id": "jupyter_3",
+      "trial": 0,
+      "raw_response": "list_notebooks",
+      "selected_tool": "list_notebooks",
+      "gold_tool": "read_notebook",
+      "outcome": "SELECTED-WRONG"
+    },
+    {
+      "task_id": "jupyter_3",
+      "trial": 1,
+      "raw_response": "list_notebooks",
+      "selected_tool": "list_notebooks",
+      "gold_tool": "read_notebook",
+      "outcome": "SELECTED-WRONG"
+    },
+    {
+      "task_id": "jupyter_3",
+      "trial": 2,
+      "raw_response": "list_notebooks",
+      "selected_tool": "list_notebooks",
+      "gold_tool": "read_notebook",
+      "outcome": "SELECTED-WRONG"
+    },
+    {
+      "task_id": "jupyter_3",
+      "trial": 3,
+      "raw_response": "list_notebooks",
+      "selected_tool": "list_notebooks",
+      "gold_tool": "read_notebook",
+      "outcome": "SELECTED-WRONG"
+    },
+    {
+      "task_id": "jupyter_3",
+      "trial": 4,
+      "raw_response": "list_notebooks",
+      "selected_tool": "list_notebooks",
+      "gold_tool": "read_notebook",
+      "outcome": "SELECTED-WRONG"
+    },
+    {
+      "task_id": "jupyter_4",
+      "trial": 0,
+      "raw_response": "read_cell",
+      "selected_tool": "read_cell",
+      "gold_tool": "read_cell",
+      "outcome": "SELECTED-CORRECT"
+    },
+    {
+      "task_id": "jupyter_4",
+      "trial": 1,
+      "raw_response": "read_cell",
+      "selected_tool": "read_cell",
+      "gold_tool": "read_cell",
+      "outcome": "SELECTED-CORRECT"
+    },
+    {
+      "task_id": "jupyter_4",
+      "trial": 2,
+      "raw_response": "read_cell",
+      "selected_tool": "read_cell",
+      "gold_tool": "read_cell",
+      "outcome": "SELECTED-CORRECT"
+    },
+    {
+      "task_id": "jupyter_4",
+      "trial": 3,
+      "raw_response": "read_cell",
+      "selected_tool": "read_cell",
+      "gold_tool": "read_cell",
+      "outcome": "SELECTED-CORRECT"
+    },
+    {
+      "task_id": "jupyter_4",
+      "trial": 4,
+      "raw_response": "read_cell",
+      "selected_tool": "read_cell",
+      "gold_tool": "read_cell",
+      "outcome": "SELECTED-CORRECT"
+    }
+  ]
+}

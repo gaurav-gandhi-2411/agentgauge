@@ -1,0 +1,182 @@
+{
+  "server_id": "AminForou-mcp-gsc",
+  "family_id": "delete_family",
+  "agent_model": "gemma2:9b",
+  "trials_per_task": 5,
+  "n_contested": 4,
+  "parse_failed_a": 0,
+  "parse_failed_b": 0,
+  "arm_a_accuracy": 0.75,
+  "arm_b_accuracy": 0.75,
+  "effect_pp": 0.0,
+  "headroom_gated": true,
+  "in_regime": false,
+  "aborted": false,
+  "abort_reason": "",
+  "oracle_descriptions": {
+    "delete_sitemap": "Immediately delete one specific sitemap from a property; does not list, inspect, or submit sitemaps.",
+    "manage_sitemaps": "General-purpose sitemap tool for listing, inspecting, or submitting sitemaps; the dedicated delete tool is preferred for a straightforward single-sitemap removal."
+  },
+  "raw_log_b": [
+    {
+      "task_id": "gsc_1",
+      "trial": 0,
+      "raw_response": "delete_site",
+      "selected_tool": "delete_site",
+      "gold_tool": "delete_site",
+      "outcome": "SELECTED-CORRECT"
+    },
+    {
+      "task_id": "gsc_1",
+      "trial": 1,
+      "raw_response": "delete_site",
+      "selected_tool": "delete_site",
+      "gold_tool": "delete_site",
+      "outcome": "SELECTED-CORRECT"
+    },
+    {
+      "task_id": "gsc_1",
+      "trial": 2,
+      "raw_response": "delete_site",
+      "selected_tool": "delete_site",
+      "gold_tool": "delete_site",
+      "outcome": "SELECTED-CORRECT"
+    },
+    {
+      "task_id": "gsc_1",
+      "trial": 3,
+      "raw_response": "delete_site",
+      "selected_tool": "delete_site",
+      "gold_tool": "delete_site",
+      "outcome": "SELECTED-CORRECT"
+    },
+    {
+      "task_id": "gsc_1",
+      "trial": 4,
+      "raw_response": "delete_site",
+      "selected_tool": "delete_site",
+      "gold_tool": "delete_site",
+      "outcome": "SELECTED-CORRECT"
+    },
+    {
+      "task_id": "gsc_2",
+      "trial": 0,
+      "raw_response": "manage_sitemaps",
+      "selected_tool": "manage_sitemaps",
+      "gold_tool": "delete_sitemap",
+      "outcome": "SELECTED-WRONG"
+    },
+    {
+      "task_id": "gsc_2",
+      "trial": 1,
+      "raw_response": "manage_sitemaps",
+      "selected_tool": "manage_sitemaps",
+      "gold_tool": "delete_sitemap",
+      "outcome": "SELECTED-WRONG"
+    },
+    {
+      "task_id": "gsc_2",
+      "trial": 2,
+      "raw_response": "manage_sitemaps",
+      "selected_tool": "manage_sitemaps",
+      "gold_tool": "delete_sitemap",
+      "outcome": "SELECTED-WRONG"
+    },
+    {
+      "task_id": "gsc_2",
+      "trial": 3,
+      "raw_response": "manage_sitemaps",
+      "selected_tool": "manage_sitemaps",
+      "gold_tool": "delete_sitemap",
+      "outcome": "SELECTED-WRONG"
+    },
+    {
+      "task_id": "gsc_2",
+      "trial": 4,
+      "raw_response": "manage_sitemaps",
+      "selected_tool": "manage_sitemaps",
+      "gold_tool": "delete_sitemap",
+      "outcome": "SELECTED-WRONG"
+    },
+    {
+      "task_id": "gsc_3",
+      "trial": 0,
+      "raw_response": "delete_site",
+      "selected_tool": "delete_site",
+      "gold_tool": "delete_site",
+      "outcome": "SELECTED-CORRECT"
+    },
+    {
+      "task_id": "gsc_3",
+      "trial": 1,
+      "raw_response": "delete_site",
+      "selected_tool": "delete_site",
+      "gold_tool": "delete_site",
+      "outcome": "SELECTED-CORRECT"
+    },
+    {
+      "task_id": "gsc_3",
+      "trial": 2,
+      "raw_response": "delete_site",
+      "selected_tool": "delete_site",
+      "gold_tool": "delete_site",
+      "outcome": "SELECTED-CORRECT"
+    },
+    {
+      "task_id": "gsc_3",
+      "trial": 3,
+      "raw_response": "delete_site",
+      "selected_tool": "delete_site",
+      "gold_tool": "delete_site",
+      "outcome": "SELECTED-CORRECT"
+    },
+    {
+      "task_id": "gsc_3",
+      "trial": 4,
+      "raw_response": "delete_site",
+      "selected_tool": "delete_site",
+      "gold_tool": "delete_site",
+      "outcome": "SELECTED-CORRECT"
+    },
+    {
+      "task_id": "gsc_4",
+      "trial": 0,
+      "raw_response": "delete_sitemap",
+      "selected_tool": "delete_sitemap",
+      "gold_tool": "delete_sitemap",
+      "outcome": "SELECTED-CORRECT"
+    },
+    {
+      "task_id": "gsc_4",
+      "trial": 1,
+      "raw_response": "delete_sitemap",
+      "selected_tool": "delete_sitemap",
+      "gold_tool": "delete_sitemap",
+      "outcome": "SELECTED-CORRECT"
+    },
+    {
+      "task_id": "gsc_4",
+      "trial": 2,
+      "raw_response": "delete_sitemap",
+      "selected_tool": "delete_sitemap",
+      "gold_tool": "delete_sitemap",
+      "outcome": "SELECTED-CORRECT"
+    },
+    {
+      "task_id": "gsc_4",
+      "trial": 3,
+      "raw_response": "delete_sitemap",
+      "selected_tool": "delete_sitemap",
+      "gold_tool": "delete_sitemap",
+      "outcome": "SELECTED-CORRECT"
+    },
+    {
+      "task_id": "gsc_4",
+      "trial": 4,
+      "raw_response": "delete_sitemap",
+      "selected_tool": "delete_sitemap",
+      "gold_tool": "delete_sitemap",
+      "outcome": "SELECTED-CORRECT"
+    }
+  ]
+}

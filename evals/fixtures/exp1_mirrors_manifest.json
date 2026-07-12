@@ -1,0 +1,118 @@
+{
+  "experiment_id": "EXP-1",
+  "step": "STEP 1 -- mirroring (pre-reg per_server_procedure)",
+  "frame_ref": "evals/fixtures/exp1_server_frame.json (v2, RATIFIED 2026-07-04)",
+  "n_targets": 12,
+  "n_mirrored_ok": 12,
+  "n_failed": 0,
+  "framing_locks": [
+    "Only 2/23 fresh servers are absolutely near-empty (0% description coverage) -- public-server under-documentation is RARE. This reproduces RW1/RW2 + the pre-registered 'public skews documented' caveat as the DOMINANT effect, not a sampling problem. A mostly-OUT-OF-REGIME result is the finding.",
+    "doc_density_tier labels (well_documented/thin/near_empty) are RELATIVE to this 23-server sample, not absolute bands. 'near_empty tier' = the least-documented third of a well-documented pool, NOT the under-documented segment. State this wherever per-tier prevalence is reported."
+  ],
+  "results": [
+    {
+      "server_id": "Dataojitori-nocturne_memory",
+      "mirrored_ok": true,
+      "n_tools": 7,
+      "commit_sha": "15930e09982d8349902af9032aeb6ff5d6994cdb",
+      "extraction_method": "ast",
+      "doc_density_tier": "well_documented",
+      "composite_score": 100.0
+    },
+    {
+      "server_id": "AminForou-mcp-gsc",
+      "mirrored_ok": true,
+      "n_tools": 21,
+      "commit_sha": "daab327277e28f8efcc83d9964fb1466a91a1d68",
+      "extraction_method": "ast",
+      "doc_density_tier": "well_documented",
+      "composite_score": 100.0
+    },
+    {
+      "server_id": "LycheeMem-LycheeMem",
+      "mirrored_ok": true,
+      "n_tools": 4,
+      "commit_sha": "3973b2f9627643615d9f222cde48f4db5d09f64a",
+      "extraction_method": "regex_fallback_on_python",
+      "doc_density_tier": "well_documented",
+      "composite_score": 100.0
+    },
+    {
+      "server_id": "blazickjp-arxiv-mcp-server",
+      "mirrored_ok": true,
+      "n_tools": 8,
+      "commit_sha": "d58901760d7ede4adb162eaba1725209a933f100",
+      "extraction_method": "tool_constructor_python",
+      "doc_density_tier": "well_documented",
+      "composite_score": 100.0
+    },
+    {
+      "server_id": "stefanoamorelli-sec-edgar-mcp",
+      "mirrored_ok": true,
+      "n_tools": 21,
+      "commit_sha": "c9726addaecec76f8a225f54e77d4ab955f8ddfb",
+      "extraction_method": "ast",
+      "doc_density_tier": "thin",
+      "composite_score": 80.1
+    },
+    {
+      "server_id": "stickerdaniel-linkedin-mcp-server",
+      "mirrored_ok": true,
+      "n_tools": 17,
+      "commit_sha": "a8ca5df79ded1b454bf734f010485c815a6b315a",
+      "extraction_method": "ast",
+      "doc_density_tier": "thin",
+      "composite_score": 94.2
+    },
+    {
+      "server_id": "taylorwilsdon-google_workspace_mcp",
+      "mirrored_ok": true,
+      "n_tools": 116,
+      "commit_sha": "6e1d1457746777f8512f52d40fb195b2a40bad36",
+      "extraction_method": "ast",
+      "doc_density_tier": "thin",
+      "composite_score": 96.6
+    },
+    {
+      "server_id": "lucasastorian-llmwiki",
+      "mirrored_ok": true,
+      "n_tools": 12,
+      "commit_sha": "2f190303f8c978400f422b90ae666262ce5d8dc4",
+      "extraction_method": "ast",
+      "doc_density_tier": "near_empty",
+      "composite_score": 80.0
+    },
+    {
+      "server_id": "mrexodia-ida-pro-mcp",
+      "mirrored_ok": true,
+      "n_tools": 90,
+      "commit_sha": "abb2732ad0d759d750c2e38b616f7f3e949ed2f9",
+      "extraction_method": "ast",
+      "doc_density_tier": "near_empty",
+      "composite_score": 80.0
+    },
+    {
+      "server_id": "datalayer-jupyter-mcp-server",
+      "mirrored_ok": true,
+      "n_tools": 17,
+      "commit_sha": "27b91e551d8bbca2da32c334f9f13267290ff815",
+      "extraction_method": "ast",
+      "doc_density_tier": "near_empty",
+      "composite_score": 80.0
+    },
+    {
+      "server_id": "github-mcp",
+      "mirrored_ok": true,
+      "n_tools": 21,
+      "source": "ported from RW1 catalog",
+      "doc_density_tier": "validation_anchor"
+    },
+    {
+      "server_id": "aws-iam-mcp",
+      "mirrored_ok": true,
+      "n_tools": 29,
+      "source": "ported from RW2 catalog",
+      "doc_density_tier": "validation_anchor"
+    }
+  ]
+}

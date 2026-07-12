@@ -1,65 +1,419 @@
 # AgentGauge — Project Status
 
-> Current as of 2026-06-12. Update this file when significant milestones land.
+> Current as of 2026-07-12. Update this file when significant milestones land.
 
 ---
 
-## FRONTIER-T18 — Does the T18 effect survive a frontier agent? (IN-REVIEW, draft PR)
+## FRONTIER-T18 — Does the T18 effect survive a frontier agent? (DONE, PR #50)
 
-**Goal:** Re-run T18 oracle A/B (60-tool confusable catalog) with a frontier API agent
-(Claude/GPT-class). Decides whether the description-fixer's value is DURABLE or weak-agent-only.
+**Goal:** Re-run the T18 oracle A/B (60-tool confusable catalog) with a stronger agent than
+gemma2:9b. Decides whether the description-fixer's value is DURABLE or weak-agent-only.
 
-**Setup:** `ApiAgentProvider` (Anthropic Messages API; key from `FRONTIER_API_KEY` env var;
-cost-ceiling abort). 3-outcome classifier: SELECTED-CORRECT / SELECTED-WRONG / ABSTAINED-OR-HEDGED.
-Pre-registered headroom gate (85%), trial count (3), and verdict rule. Reuses T18 fixture + oracle
-descriptions unchanged.
+**Setup:** `ApiAgentProvider`/`OpenAICompatibleProvider` (key from an explicitly-passed env var,
+never `ANTHROPIC_API_KEY`; cost-ceiling abort). 3-outcome classifier: SELECTED-CORRECT /
+SELECTED-WRONG / ABSTAINED-OR-HEDGED. Pre-registered 85% headroom gate, 3 trials, verdict rule.
+Reuses the T18 fixture and oracle descriptions unchanged (one in-flight fixture fix — see below).
+Agent: **Llama-3.3-70B (open model, NOT Claude/GPT)** — stronger than gemma2:9b but not a true
+frontier model. STEP 1 ran on Groq; STEP 2 ran single-host on OpenRouter (Groq's free tier
+request-burst throttle made it non-viable for the 240-call run).
 
-**Agent host note:** Agent = **Llama-3.3-70B (open model), NOT Claude/GPT** — a *stronger* open agent
-than gemma2:9b, not a true frontier (Claude/GPT-class) model. No ANTHROPIC_API_KEY used anywhere.
-STEP 1 (headroom gate) ran on Groq (`llama-3.3-70b-versatile`). STEP 2 (full A/B) ran on **OpenRouter**
-(`meta-llama/llama-3.3-70b-instruct`) after GG regenerated the key + loaded balance (2026-06-14): Groq
-free tier proved non-viable for the 240-call run (request-burst throttle — 429s with the token bucket
-full and request quota unspent; diagnosed, not a code bug). STEP 2 is single-host (all 240 on
-OpenRouter) for host-consistent A-vs-B.
+**Headroom gate (STEP 1):** Arm A (empty descriptions), 1 trial × 40 contested tasks:
+SELECTED-CORRECT 26/40 = 65.0% < 85% gate → headroom confirmed, full matrix warranted.
 
-**Headroom gate result (STEP 1, factual — 2026-06-13):** Arm A (empty descriptions), 1 trial × 40
-contested tasks, Groq/llama-3.3-70b-versatile. SELECTED-CORRECT **26/40 = 65.0%**; SELECTED-WRONG 14/40;
-ABSTAINED-OR-HEDGED 0/40. Spend **$0.09** (29,387 in / 123 out tok; conservative fallback pricing).
-65.0% < 85% gate → **HEADROOM CONFIRMED** — not the ceiling/collapse trap; the oracle A/B matrix is a
-meaningful test. (Single-trial draw, no variance estimate; STEP 2 uses 3 trials.) *Neutral data point;
-durability verdict deferred to STEP 2 + recoverability/variance check.*
+**Full A/B (STEP 2, 3 trials × 40 tasks × 2 arms):** Arm A (empty) 71/120 = 59.2%
+SELECTED-CORRECT → Arm B (oracle) 120/120 = 100.0%. Effect **B−A = +40.8pp**, task-clustered sign
+test p<0.0001 (stable-set p<0.001). All 19 Arm-A misses recovered by the oracle; 0 abstentions in
+either arm. Spend $0.89 (conservative pricing), under the $2 cap.
 
-**Full A/B result (STEP 2, factual — 2026-06-14, OpenRouter/llama-3.3-70b-instruct, 3 trials × 40 tasks × 2
-arms; includes the `plan_event` gold-label fix + targeted re-run):**
-- Arm A (empty): SELECTED-CORRECT **71/120 = 59.2%**; WRONG 40.8%; ABSTAINED 0.0%.
-- Arm B (oracle): SELECTED-CORRECT **120/120 = 100.0%**; WRONG 0.0%; ABSTAINED 0.0%.
-- Effect **B−A = +40.8pp**.
-- Task-clustered sign test: n+=19 (B>A), n−=0, ties=21, **p<0.0001**. On the stable set (excl. 5 Arm-A
-  flippers, all of which were B>A recoveries): n+=14, n−=0 → still p<0.001.
-- Per-trial stability: Arm A 5 flippers (`read_entry`, `load_item`, `send_report`, `notify_user`,
-  `send_notification`); Arm B 0 flippers (oracle fully stable). 0 abstentions either arm.
-- Recoverability of the 19 Arm-A miss tasks: **19/19 recovered** by oracle. Within-family misses 14,
-  cross-family 4, mixed 1 — all recovered. The oracle disambiguates BOTH within- and cross-family
-  confusions; there is **no oracle-resistant floor** in this fixture after the `plan_event` fix. This
-  refutes the a-priori "cross-family miss = Ty-style unfixable noise" hypothesis for this fixture.
-- `plan_event` fix: original task wording ("Reserve the … slot") described `book_slot`'s niche, leaving
-  gold=plan_event unresolvable even with the oracle (a mislabel, not a model failure). Reworded to
-  plan_event's actual distinction; gold unchanged; documented in fixture. After fix: A=0/3 (picks
-  `insert_document`) → B=3/3. Pre-registration intact (documented fixture bug fix, not an experiment re-run).
-- Spend: $0.89 (conservative $3/$15-per-M fallback estimate; real OpenRouter cost ≈10× less). Under $2 cap.
-  (Includes ~6 double-counted tokens from the surgical plan_event re-run — negligible.)
+**Fixture fix:** `plan_event`'s task wording described `book_slot`'s niche, leaving it
+oracle-unresolvable — a mislabel, not a model failure. Reworded to `plan_event`'s actual
+distinction (gold unchanged); documented in `evals/fixtures/t18_catalog.py`.
 
-**Verdict (finding — external/commercial framing pending GG ratification):** Effect **SURVIVES at full
-strength** on a substantially stronger agent (Llama-3.3-70B): oracle descriptions move confusable-catalog
-selection by **+40.8pp, p<0.0001** (stable-set p<0.001), Arm B perfect at 100%. The effect does **not
-collapse** at a much higher capability tier than the original gemma2:9b result. **Numbers discipline:** the
-gemma +34.5pp figure is a DIFFERENT experiment (different harness/classifier/host) — NOT apples-to-apples;
-do NOT claim the effect "grew with capability." The defensible claim is *survives / does not collapse*.
-**Caveat:** Llama-3.3-70B is a strong *open* model, NOT a true Claude/GPT frontier — this does not yet
-close the frontier question; a Claude/GPT-class run remains the stronger, still-unrun test.
+**Verdict: effect SURVIVES at full strength** on a substantially stronger agent — does not
+collapse at a much higher capability tier than gemma2:9b. Not apples-to-apples vs the gemma
++34.5pp figure (different harness/host); the defensible claim is *survives / does not collapse*,
+not "grew with capability."
 
-**Scope note:** One model = one datapoint. Do not over-generalize beyond the T18 fixture and Llama-3.3-70B.
-A true Claude/GPT-class frontier run remains the stronger (unrun) test.
+**Caveat:** Llama-3.3-70B is a strong *open* model, not a true Claude/GPT-class frontier model —
+this does not close the frontier question. One model = one datapoint.
+
+**Full write-up:** `docs/research/frontier_t18_result.md`. Banked into the EXP-4 regime map
+(Regime 3 — strong-agent survival).
+
+**CI:** verify.sh green; harness fully deterministic/mocked in CI (no live API calls). The
+frontier run itself was a manual, separately-billed, cost-ceilinged execution outside CI.
+
+---
+
+## EXP-3 — Pairwise confusability localizer (COMPLETE, DRAFT — condition #1, escalated to the author)
+
+**Branch:** `claude/exp3-localizer`. **Pre-registered** (`docs/research/exp3_pre_registration.md`,
+commit `603bfb2`, before any judge run): a 24-pair behavioral ground truth (4 CONFUSED / 20
+NOT_CONFUSED) built entirely from already-collected EXP-1 `raw_log_a` trials + the RW1/RW2
+validation anchors — no new agent runs. Judge design frozen before any call: `llama3.1:8b`,
+3 trials/pair at `seed=42+trial_idx`, majority vote, parse-failed reported separately, and a
+pre-committed bar (precision ≥ 0.50 AND recall ≥ 0.50 = "real positive method", else "honest
+negative") fixed before results were in hand.
+
+**Method:** `agentgauge/localizer.py` — for each candidate pair (A, B), one judge prompt asking
+whether a task for A could plausibly select B and vice versa, given both descriptions. This
+directly targets Non-Regime 4's structural limit (the single-score `discoverability` judge
+returns one number per catalog and cannot name which pair is confusable).
+
+**Result (real judge, `llama3.1:8b` — VRAM confirmed free, no residency conflict):**
+
+Confusion matrix: TP=4, FP=20, FN=0, TN=0, undetermined=0. **Precision = 4/24 = 0.167, Recall =
+4/4 = 1.00.** Per the pre-committed bar: **honest negative** (recall clears the bar; precision
+does not).
+
+**24/24 pairs were verdicted CONFUSABLE** — including both fully-resolved 100%-accuracy anchor
+servers (RW1 GitHub, RW2 AWS IAM) in every one of their 9 sampled pairs, and both adversarial
+pairs where the OLD Levenshtein heuristic already produced a false positive (RW1
+`get_pull_request_diff`/`get_pull_request_files`; RW2 `attach_user_policy`/`detach_user_policy`,
+`put_user_policy`/`get_user_policy`). The judge caught every real behavioral confusion (perfect
+recall) but did so by flagging almost everything — a direct yes/no confusability question to
+`llama3.1:8b` is close to a constant-YES predictor on this fixture, not a discriminating signal.
+
+**This is a different failure mode than the single-score baseline, not a better one.** The
+single-score judge structurally localizes nothing (0/24, by construction — one number per
+catalog). The pairwise judge *does* localize (it outputs a verdict per pair), but with precision
+indistinguishable from chance-at-base-rate on this class-imbalanced fixture (4/24 = 16.7%
+positive rate; the judge's un-discriminating positive rate is 24/24 = 100%). Neither construction
+is a usable ranking signal as built. **Pairwise localization is not automatically better just
+because it asks a pair-level question — asking a binary judge to answer a leading yes/no
+question elicits yes.**
+
+**Scope-bound, pre-declared (not discovered after the fact):** this experiment validates the
+*judging* step only, given a candidate pair — not an automatic candidate-*generation* mechanism.
+2 of the 4 real confusions (`AminForou-mcp-gsc` delete_sitemap/manage_sitemaps; `datalayer`
+read_notebook/list_notebooks) cross mechanical prefix-family boundaries; a family-scoped
+generator would not have proposed them as candidates at all, independent of this result.
+
+**Ratified retry (graded confidence, one time-boxed attempt, pre-registered before any judge
+call — `docs/research/exp3_pre_registration.md` Section 7):** same 24-pair ground truth, same
+precision≥0.50 AND recall≥0.50 bar. Method: 0–10 CONFUSABILITY score per pair (mirrors
+`scorer.py`'s existing `_judge_discoverability`/`_parse_distinguish_score` pattern), 3 trials at
+seed=42+idx, mean-aggregated, threshold ≥5.0 (scale midpoint, fixed before any result).
+
+**Graded result (real judge, `llama3.1:8b`):** every one of the 24 pairs' mean score landed in a
+**5.00–5.67 band** (raw per-trial scores clustered at 4, 5, 6) — **24/24 verdicted CONFUSABLE**,
+identical confusion matrix to the binary run: TP=4, FP=20, FN=0, TN=0. **Precision = 0.167,
+Recall = 1.00 — fails the bar, same numbers as the binary attempt.** This is a *different*
+degenerate failure than the binary run's uniform-YES: the judge is not refusing to discriminate
+by defaulting to one categorical answer, it is anchoring near the midpoint of its own 0–10
+scoring guide regardless of input — genuinely-confused pairs (e.g. GSC delete_sitemap/
+manage_sitemaps) and 100%-resolved anchor pairs (e.g. AWS IAM list_user_policies/
+list_role_policies, GitHub search_repositories/search_code) score in the same narrow band.
+
+**FINAL EXP-3 RESULT (hard stop per the author's pre-registered instruction — no third variant):**
+pairwise judging fails to localize behavioral confusability under both a binary and a graded
+framing, using the frozen `llama3.1:8b` judge. Not a framing artifact — the same near-uninformative
+output (precision 0.167, recall 1.00) survives a materially different question format. **The
+robust paper claim:** "the single-score discoverability judge localizes nothing (structural, one
+number per catalog); asking the same frozen judge pairwise — whether as a binary yes/no or a
+graded 0–10 confidence score — localizes everything, indiscriminately. Neither construction, as
+tested, gives a usable per-pair confusability ranking signal." Full per-pair detail: binary —
+`evals/fixtures/exp3_localizer_result.json`; graded — `evals/fixtures/exp3_localizer_graded_result.json`.
+
+Condition #1 (new judge mechanism, both attempts) — DRAFT PR #53, escalated to the author
+for review before merge. EXP-3 is now CLOSED; next step is paper writing (EXP-4 + EXP-1 + EXP-3 scope).
+
+CI: 710 tests (24 binary + 16 graded, all in `tests/test_localizer.py`), 94.79% coverage, 100% on
+`localizer.py`. `verify.sh` PASSED (ruff, ruff format, mypy non-blocking, pytest).
+
+---
+
+## EXP-1 — Server-population prevalence (COMPLETE — 0/9 scored servers IN-REGIME)
+
+**Branch:** `claude/exp1-prevalence`. **Status:** frame ratified at N=10 (v5, commit `538affe`);
+all 10 servers processed (7 behaviorally scored + 3 with no testable confusable family), plus
+2 anchors cited from prior published work. **Headline: 0/9 scored servers (7 fresh + 2 anchors)
+show IN-REGIME behavior.** EXP-2 (capability ladder) held pending the author's scope
+decision — see scope-decision escalation below.
+
+**Frame history (5 rebuilds, each re-escalated to the author, none silent):** started as a 30-server
+GitHub-topic-search pool, star-stratified (v1) → corrected to doc-density-stratified (v2, N=23,
+2 excluded as extraction-failed) → 3 confirmed Python-AST-extractor bugs found and fixed while
+preparing the trial batch (v3, N=22 → protocol-handler false-positive, MCP Prompt/Tool conflation,
+decorator-kwarg-vs-docstring blind spot) → a 4th bug found investigating the next candidate (v4, N=21
+→ decorator string-argument false-positive; oraios-serena additionally excluded, real architecture is
+class-based `Tool` subclasses, unsupported) → a systematic audit found the generic regex fallback used
+for ALL non-Python servers pulls in systemic noise (template literals, parameter names, category
+labels, unrelated example data) — not a fixable bug, a capability limit of blind text-proximity
+matching. **All 11 non-Python (regex_best_effort) servers dropped** (v5, ratified, commit `538affe`).
+
+**SCOPE, state explicitly wherever this number appears:** the frame is now **N=10, PYTHON-ONLY**.
+The pre-reg's "ALL languages included" criterion is violated for reliability reasons, not choice.
+The headline claim is **"Python MCP servers on GitHub, N=10 pilot"** — NOT a general public-MCP-server
+population estimate. Extending trustworthy mechanical extraction to TypeScript/JavaScript/Go/Rust
+would require real per-language AST parsers, not regex heuristics — out of scope for this pass.
+
+**Final result (7 fresh scored + 3 no-family + 2 anchors cited):**
+
+| Server | Tier | Family | Arm A | Arm B | Effect | Verdict |
+|---|---|---|---|---|---|---|
+| github-mcp (RW1 anchor) | anchor | 5 families, 21 tasks | 100% (21/21) | — | n/a | OUT-OF-REGIME (cited) |
+| aws-iam-mcp (RW2 anchor) | anchor | 3 families, 12 tasks | 100% (29/29 incl. 12 contested) | — | n/a | OUT-OF-REGIME (cited) |
+| lucasastorian-llmwiki | near_empty | create vs create_knowledge_base | 100% | — | n/a | OUT-OF-REGIME |
+| stefanoamorelli-sec-edgar-mcp | thin | discover_xbrl_concepts vs discover_company_metrics | 100% | — | n/a | OUT-OF-REGIME |
+| stickerdaniel-linkedin-mcp-server | thin | search_companies/jobs/people/conversations | 100% | — | n/a | OUT-OF-REGIME |
+| mrexodia-ida-pro-mcp | near_empty | xrefs_to vs xrefs_to_field | 90% | — | n/a | OUT-OF-REGIME |
+| AminForou-mcp-gsc | well_documented | delete_site vs delete_sitemap | 75% | 75% | +0pp | OUT-OF-REGIME (real functional overlap — manage_sitemaps can also delete; no description fixes that) |
+| taylorwilsdon-google_workspace_mcp | thin | send_message vs send_gmail_message | 0% | 0% | +0pp | OUT-OF-REGIME (catalog-overwhelm failure mode — 116-tool listing produces malformed/hedged output, not confident wrong-tool picks; oracle description can't fix a different failure mode) |
+| datalayer-jupyter-mcp-server | near_empty | read_notebook vs read_cell | 70% | 55% | −15pp | OUT-OF-REGIME (HARM — oracle description made selection WORSE, replicating P2-A's account_query HARM pattern in a fresh real-world server) |
+| Dataojitori-nocturne_memory | well_documented | none found | — | — | — | no testable family |
+| blazickjp-arxiv-mcp-server | well_documented | none found | — | — | — | no testable family |
+| LycheeMem-LycheeMem | well_documented | candidate rejected on review (not genuinely confusable) | — | — | — | no testable family |
+
+**Headline: 0/9 scored servers (7 fresh + 2 anchors) show IN-REGIME behavior.** 0/7 testable fresh
+families recover under oracle descriptions; 3/10 fresh servers have no genuinely confusable family
+at all (mechanical prefix clustering found none, or the candidate was rejected on manual review).
+Per-tier (fresh only): well_documented 0/1 testable, thin 0/3, near_empty 0/3 — a clean null across
+every tier of this N=10 pilot, consistent with the relative-tercile caveat (tier names are
+within-sample rank, not absolute doc-quality bands).
+
+**Methodological note — a seed bug was caught and fixed before reporting:** the first trial run
+passed a fixed `seed=42` to every one of the 5 trial repetitions per task, instead of the codebase's
+established `seed=42+trial_idx` convention (`agentgauge/scorer.py`, `agentgauge/fixer.py`) — meaning
+the first run sampled ZERO real trial-to-trial variance. That buggy run showed 2 servers as
+IN-REGIME (`mrexodia-ida-pro-mcp` +50pp, `datalayer-jupyter-mcp-server` +25pp). Fixing the seed and
+re-running **completely reversed both findings**: ida-pro's real Arm A accuracy is 90% (not 50%,
+correctly aborts with no headroom), and jupyter's Arm B is a genuine HARM (−15pp, not +25pp
+recovery). Both "IN-REGIME" results were seed artifacts, not real effects — caught before being
+reported as findings. Real per-trial variance matters; a fixed seed across nominal "trials" silently
+converts a 5-trial design into 5 identical repeats.
+
+**Two genuinely interesting non-recovery negatives (real, seed-confirmed):** (1) AminForou-mcp-gsc's
+`delete_sitemap`/`manage_sitemaps` confusion reflects real overlapping tool CAPABILITY, not a wording
+ambiguity — no description can fix a case where two tools can legitimately both do the same thing.
+(2) taylorwilsdon-google_workspace_mcp's 0%/0% result is driven by malformed/hedged model output
+under a 116-tool catalog, not confident wrong-tool selection — a catalog-SIZE failure mode, orthogonal
+to the paper's description-QUALITY thesis, and correctly not fixed by an oracle description either.
+
+**Scope decision — RATIFIED, 2026-07-04:** paper = EXP-4 + EXP-1 + EXP-3. EXP-2 (capability
+ladder) is DROPPED, justification "regime uncommon in sampled population → capability-ladder
+external relevance limited" (see `spec.md` EXP-2 section, updated to record the decision and
+preserve the design notes for reference). EXP-3 (localizer) is next — a confusable-pair localization
+method is valuable independent of how often the regime occurs.
+
+---
+
+## P2-A — Synthetic internal-proxy experiment (gemma2:9b complete; 70B pending)
+
+**Branch:** `claude/p2a-internal-proxy`. **Status:** gemma2:9b arm complete. 70B confirmatory arm
+parked (Groq daily quota; run `python scripts/p2a_frontier_gate.py --trials 1 --mode ab` when it
+resets — not blocking).
+
+**Setup:** 48-tool synthetic internal-proxy catalog. 7 verb-collision families. 31 contested tools
+(identical schemas, name-only disambiguation within family). 17 thorough tools (controls). Three arms:
+A (thin descriptions — "Get the order."), Guard-B (qwen3:8b generated from mirror handler docstrings,
+target-grounded only), Oracle (hand-crafted from mirror handler docstrings, encodes behavioral axis per
+family). Agent: gemma2:9b, 3 trials. Gate: contested-set accuracy < 85% required for headroom.
+Gate bug fixed (06122dd: was gating on overall 85.4%, would have false-aborted; contested = 77.4%,
+correctly passes).
+
+**Per-family results:**
+
+| Family | n | A% | GB% | O% | GB-A | O-A | Flag |
+|---|---|---|---|---|---|---|---|
+| order_read_family | 4 | 0.0% | 100.0% | 100.0% | +100pp | +100pp | RECOVERED |
+| invoice_write_family | 5 | 100.0% | 100.0% | 100.0% | +0pp | +0pp | — |
+| ticket_lifecycle_family | 4 | 100.0% | 100.0% | 100.0% | +0pp | +0pp | — |
+| account_query_family | 5 | 100.0% | 80.0% | 80.0% | −20pp | −20pp | HARM |
+| notification_family | 5 | 60.0% | 100.0% | 80.0% | +40pp | +20pp | — |
+| order_status_family | 4 | 75.0% | 100.0% | 100.0% | +25pp | +25pp | — |
+| invoice_schedule_family | 4 | 100.0% | 100.0% | 100.0% | +0pp | +0pp | — |
+
+Aggregate: A=77.4%, Guard-B=96.8%, Oracle=93.5%. Sign tests: GuardB vs A p=0.07, Oracle vs A p=0.125
+(N=31; neither significant at α=0.05). Thorough-set do-no-harm: 0/17 regressions (PASS).
+
+**Finding 1 — order_read [RECOVERED, both Guard-B and Oracle]:**
+`order_read` is the one family with complete thin-description failure (A=0/4). Both Guard-B (+100pp)
+and Oracle (+100pp) fully recover it. Return-shape disambiguation (summary vs full-record vs cached vs
+computed) is description-fixable. **Fixer has a real, consistent job here.** Scope: read-shape
+confusion is not a destructive outcome — the agent picks the wrong data shape, not the wrong action
+class.
+
+**Finding 2 — high-stakes families [CONFIRMED CONTROLS, 0pp delta all arms]:**
+`ticket_lifecycle` (delete/purge/archive/expire — permanence axis) and `invoice_write`
+(update/upsert/patch/replace/amend — mutation-scope axis): A=100%, Guard-B=100%, Oracle=100% across all
+arms. Gemma resolves these from task context alone — task descriptions contain signals like "this cannot
+be undone" and "leave all other fields exactly as they are." Good descriptions provide no incremental
+accuracy on the dangerous confusions. **The destructive-confusion (painkiller) framing is not supported
+by this proxy.** Context resolves danger; descriptions add no safety lift.
+
+**Finding 3 — account_query [HARM, both Guard-B and Oracle]:**
+`account_query` was 5/5 correct under thin descriptions — the SQL-like WHERE-clause syntax in the task
+("Get all accounts where status='TRIAL' AND created_at > '2026-01-01'") maps heuristically to
+`query_accounts` by name. Under oracle descriptions ("Executes a parameterized SQL-like WHERE clause"),
+detailed phrasing creates disambiguation noise among the five account tools; gemma makes one wrong call
+per arm. The harm reproduces at the same −20pp magnitude under both Guard-B and Oracle — not noise.
+**More precise descriptions can regress families where thin descriptions already work via name-task
+heuristic alignment.** This argues against blanket fixing and for targeted per-family application.
+
+**Stats note:** Do not report "96.8% / 120% recovery" as headlines. The 96.8% vs 93.5% aggregate gap
+and the >100% recovery fraction are artefacts of the account_query HARM dragging Oracle below Guard-B
+(notification_family also shows Guard-B > Oracle on one task). The N=31 contested tasks produce a
+sign test p=0.07 — directional, underpowered, not significant. Effect size is real at the per-family
+level for order_read; aggregate numbers obscure more than they reveal.
+
+**Scope caveat:** Synthetic proxy, gemma2:9b, one trial-set (3 trials per arm per task). 70B
+(Llama-3.3-70B via Groq) gate arm confirmed headroom exists at 70B (77.4% contested). 70B A-vs-Oracle
+per-family pending — will confirm whether the per-family pattern (order_read recovered, account_query
+harmed, high-stakes at ceiling) is regime-shaped (consistent across model tiers) or specific to
+gemma2:9b. Not blocking the interpretation below.
+
+---
+
+**ESCALATION TO THE AUTHOR — F2 direction decision (do not execute unilaterally):**
+
+The P2-A frequency-probe result is bearish on the direct-selection thesis as the primary value
+proposition. The finding that "agents already resolve the dangerous confusions from task context"
+is actually good news for a different thesis: **retrieval-readiness**. A retrieval index (BM25 or
+embedding-based tool lookup) ranks tools on description text alone — with no task context, no tool
+name, no agent prior. This is the regime where thin descriptions most clearly fail and where
+Guard-B's behavioral axis encoding directly adds signal. The "task context saves you" finding that
+sinks the direct-selection painkiller explicitly does NOT apply to a retrieval index.
+
+**F2 retrieval test RUN — result: NOT SUPPORTED (BM25 + TFIDF, underspecified queries):**
+
+Pre-registered spec committed before scoring: `evals/fixtures/p2a_f2_retrieval_spec.json`.
+Script: `scripts/p2a_f2_retrieval.py` (BM25 + TFIDF cosine-sim, description-only indexing, 93
+queries across 31 contested tools × 3 queries each).
+
+Aggregate MRR (all 31 contested tools, 93 queries):
+
+| Arm | BM25 MRR | TFIDF MRR |
+|---|---|---|
+| thin | **0.304** | **0.317** |
+| guardb | 0.225 | 0.204 |
+| oracle | 0.234 | 0.228 |
+
+Thin descriptions outperform Guard-B on underspecified queries across both lexical retrievers
+and across 5 of 7 families. **F2 (retrieval-readiness) is NOT supported for BM25/TFIDF.**
+
+**Mechanism (explains the direction):** Thin descriptions are compact verb-noun patterns ("Delete a
+ticket.", "Notify the customer.", "Get the order.") that keyword-match natural-language queries
+("remove a ticket", "notify a customer", "get an order") directly. Guard-B descriptions are richer
+prose ("Permanently removes the ticket from all stores. IRREVERSIBLE...") that reduces keyword overlap
+with underspecified queries. Lexical retrieval rewards term overlap; thin descriptions have more of it.
+
+**Per-family notable findings:**
+- order_read: thin=0.229, Guard-B=0.183 BM25 (NEUTRAL) / 0.116 TFIDF (HARM). Guard-B does NOT
+  improve retrieval on the family it fully recovered in selection — opposite of F2 prediction.
+- ticket_lifecycle + notification: largest Guard-B harms (−0.192 and −0.258 BM25). Thin descriptions
+  for these families align tightly with the query vocabulary.
+- account_query: thin=0.453, Guard-B=0.425 (NEUTRAL, −0.029). The selection harm (−20pp) does NOT
+  propagate to retrieval here — descriptions are neutral, not harmful, on this family for retrieval.
+  This is a small supporting signal for F2 (no inherited harm) but swamped by the overall result.
+- order_status + invoice_schedule: only families where Guard-B improves over thin (+0.016/+0.051).
+  Thin descriptions ("Confirm an order.", "Schedule an invoice.") are less keyword-aligned with
+  queries like "advance an order" / "create an invoice" than Guard-B prose.
+
+**Embedding arm RUN — nomic-embed-text, same 93 queries:**
+
+| Arm | embed MRR | embed R@1 | embed MeanRk |
+|---|---|---|---|
+| thin | **0.510** | **0.269** | 3.0 |
+| guardb | 0.286 | 0.129 | 6.3 |
+| oracle | 0.362 | 0.161 | 5.2 |
+
+Guard-B harms **all 7 families** in embedding retrieval (−0.037 to −0.389 vs thin). No family
+improves. Oracle harms 5 of 7. Pre-committed interpretation `f2_closed` applies:
+
+**F2 is CLOSED across all three retriever types (BM25, TFIDF, embedding).**
+
+The result is stronger in embedding than lexical: thin outperforms Guard-B by 0.224 MRR in semantic
+search vs 0.079 in BM25. **Mechanism:** thin descriptions ("Get the order.", "Notify the customer.")
+match queries at the intent level; Guard-B descriptions ("Returns order summary fields including
+status, total, item count...") match at the implementation level. Underspecified queries operate at
+the intent level — precision-optimized descriptions are a semantic mismatch regardless of retriever
+type. This is a genuine, non-obvious finding: a description system designed to discriminate
+within-family variants hurts retrieval when queries are coarse and intent-level.
+
+The account_query BM25-neutral (−0.029) also does NOT hold in embedding (−0.148 HARM). No partial
+F2 signal survives the full three-retriever picture.
+
+Pre-committed interpretation applied: `f2_closed`. No further retriever testing. See consolidated
+picture below.
+
+---
+
+**CONSOLIDATED P2-A + F2 PICTURE FOR THE AUTHOR (direction escalation):**
+
+Three experiments, one proxy (synthetic internal-proxy, gemma2:9b, 31 contested tools):
+
+**1. Direct selection (P2-A Phase 2A):**
+- Fixer value is REAL but NARROW + LOW-STAKES: order_read 0%→100% (Guard-B and Oracle both).
+  Return-shape disambiguation is description-fixable.
+- High-stakes families (ticket_lifecycle permanence, invoice_write mutation-scope): 100% all arms.
+  Task context resolves danger. Painkiller framing NOT supported.
+- account_query HARM (−20pp, both Guard-B and Oracle): descriptions regress a family that thin
+  descriptions already handled via name-task heuristic alignment.
+- Stats: p=0.07 (underpowered, N=31). Directional, not confirmed.
+
+**2. F2 retrieval — lexical (BM25 + TFIDF):**
+- Thin descriptions outperform Guard-B on underspecified queries across both retrievers (5/7 families
+  harmed). Mechanism: thin verb-noun patterns keyword-match short generic queries directly.
+- NOT SUPPORTED.
+
+**3. F2 retrieval — semantic (nomic-embed-text embedding):**
+- Thin descriptions outperform Guard-B on ALL 7 families. Margin larger than lexical.
+  Guard-B descriptions optimized for within-family discrimination are a semantic mismatch against
+  intent-level queries.
+- NOT SUPPORTED. F2 CLOSED.
+
+**What the data says (factual, no positioning):** On this synthetic proxy, Guard-B descriptions
+improve direct tool selection on one low-stakes family (order_read) and degrade it on one family
+(account_query). They do not improve tool retrieval under any retriever type tested. The property
+that makes Guard-B descriptions good at direct-selection discrimination (encoding the behavioral axis
+precisely) is the same property that makes them poor retrieval targets for coarse intent queries.
+
+Bringing to the author as a consolidated direction escalation. No new thesis proposed unilaterally.
+
+---
+
+## UX1 — Presentation + safety pass (DONE, PR #51)
+
+**Scope:** CLI/UX changes only — engine (scoring/judge/generator/rubric/calibration) unchanged.
+Not condition #1. Presentation and safety layer over the existing scan/fix engine.
+
+**`agentgauge try <server>` — one-command first-touch flow:**
+Run scan + fix-preview in a single read-only command. Prints the score table, prioritized fix
+list, and an inline before→after for every accepted fix (colorized on TTY; `+/-` markers
+otherwise). Ends with the exact `agentgauge fix <server> --apply` command. Never writes any
+files. Verified by smoke: echo_server.py rendered score + inline diff for mystery/greet, git
+status clean after.
+
+**Non-destructive default — backup-before-write:**
+`fix --apply` now ALWAYS writes `<file>.bak` before rewriting the target in place. If `.bak`
+already exists, increments to `.bak.1`, `.bak.2`, etc. (never stomps). Backup path printed.
+Eliminates the silent-clobber footgun. Smoke-verified: `.bak` checksum = original; second
+`--apply` produced `.bak.1` with the first `.bak` intact.
+
+**Inline before/after replaces the patch-file step:**
+Each accepted fix renders old (red/`-`) → new (green/`+`) text inline in the console.
+Degrades to plain `+/-` markers on non-TTY. `--out-diff` remains optional.
+
+**Bug fixed (was pre-existing on main — apply-path source corruption):**
+`_patch_source_description` used raw string splicing (`f'description="{new_desc}"'`) — a
+generated description containing a double-quote (e.g. the smoke's `'The "mystery" tool...'`)
+produced a `SyntaxError` in the patched file on `--apply`. Fixed: `repr(new_desc)` as the
+replacement literal; lambda passed to `re.sub` so backslashes in the output are never
+re-interpreted as escape sequences. Same lambda guard applied to `_patch_source_schema_props`
+(where `json.dumps` can emit `\\n`/`\\t` that `re.sub` would misread as newlines). Three
+regression tests added (`ast.parse` confirms the patched file parses for `"`, `\`, `\n` in
+generated descriptions).
+
+**Known limitation (not fixed — acceptable for common case):**
+`_patch_source_schema_props` matches only empty `{}` parameter entries. A second `--apply`
+will not re-refine already-filled schema props (`{"default": "Hello"}` is not empty, so the
+regex skips it). The apply path is not idempotent for schema fixes. Fine for the primary use
+case (one-shot improvement on a fresh server file).
+
+**CI:** 553 tests, 93.74% coverage, ruff + mypy clean. Tests in `tests/test_ux1.py` (16) and
+`tests/test_fixer.py` (+3 regression). No scoring/judge/rubric/calibration changes; all
+550 prior tests pass unchanged.
 
 ---
 
@@ -335,6 +689,14 @@ models — always record the model alongside any stored score.
   untested in a genuine partial-ability regime. A design with more conventional constraints
   (standard integer ranges, familiar enum terms) is the candidate path to a non-tautological
   partial-headroom test, but requires a fresh pre-registration.
+  **Ty2 clean-harness rerun (2026-06-06, post-#39, PR #40):** Re-ran the identical
+  pre-registered `ty2_tasks.py` fixture (Run 2's exotic-format/unit constraints) on the fixed
+  harness (`extract_json_object`, PR #39). parse_failed=0/180 (0.0%) across both stability
+  runs — the old harness was NOT silently coercing parse failures to empty dicts. Arm A
+  baseline unchanged at 33.3%. **The abort was NOT a harness artifact.** The 33.3% floor is
+  genuine model behavior: gemma2:9b truly cannot construct valid format-pattern and
+  non-standard-unit calls at the 40-70% partial-headroom threshold. The parse-failure-as-confound
+  hypothesis is eliminated.
 - **T17 (IN-REVIEW, branch `claude/t17-selection-limited`):** 8 confusable clusters (16 tools,
   32 pre-registered tasks). CI: 8 new tests pass (fixture integrity, stability-screen logic,
   manipulation check). Q1 oracle A/B (gemma2:9b, 2026-06-03): **ABORTED — fixture-quality,
@@ -378,23 +740,39 @@ models — always record the model alongside any stored score.
   - *Selection (T17):* Agent resolves tool selection at 81.2% from names alone on domain
     vocabulary → Arm A above the 70% ceiling; no headroom.
   - *Calls (Ty Run 2):* Agent succeeds at only 33.3% in Arm A on format/unit constraints →
-    below the 40% floor; still effectively a floor-effect regime.
-  Both dimensions landed outside the target window on the first attempt and require fixture
-  redesign to test. The window exists in principle but is sensitive to the agent's prior
-  knowledge about the specific vocabulary used.
+    below the 40% floor; still effectively a floor-effect regime. **Confirmed on clean
+    harness (2026-06-06, PR #40):** parse_failed=0/180; the 33.3% is not a measurement
+    artifact.
+  Both dimensions landed outside the target window on the first attempt and resisted every
+  fixture redesign tried (see (a) below). The window exists in principle but is sensitive to
+  the agent's prior knowledge about the specific vocabulary used.
 
-  **Candidate explanations to test next:**
-  - *(a) Guessable-but-error-prone constraints:* Use constraints the agent "knows" but
-    applies inconsistently — e.g., ISO date formats, HTTP status codes, standard SI units.
-    These should land in the 40–70% zone because the agent has partial exposure but not
-    perfect recall. Requires pre-registration and inferability guard.
+  **Candidate explanations tested / next:**
+  - *(a) Guessable-but-error-prone constraints — TESTED, ABORTED (Ty2, PR #37, branch
+    `claude/ty2-guessable-constraints`, 2026-06-05):* near-miss enums (e.g.
+    settled/voided/disputed vs. completed/cancelled), RFC3339+offset date formats,
+    ms-magnitude unit ranges, and required-field presence (`idempotency_key`) — constraints
+    the agent "knows" but applies inconsistently. Arm A baseline **36.7%**, still below the
+    40% headroom gate → **ABORT, no A/B run**. Across all three attempts on gemma2:9b for
+    `call_correctness` — Run 1 (arbitrary enum codes, 0%, tautological), Run 2 (exotic
+    formats/units, 33.3%, floor — clean-harness-confirmed above), and Ty2-guessable (36.7%,
+    floor) — **the 40-70% partial-ability window is unreachable by fixture design on
+    gemma2:9b for `call_correctness`.** Full fixture (30 tasks,
+    `evals/fixtures/ty_guessable_tasks.py`) and CI detail (25 new tests,
+    `tests/test_ty_guessable_fixture.py`, `verify.sh` green at merge time) recorded in PR #37
+    — open, not merged; this entry records the finding for provenance, the branch
+    `claude/ty2-guessable-constraints` remains the source of record for the full artifact.
   - *(b) Weaker runner agent:* gemma2:9b may simply be too capable for 9B-class schema
     vocabulary. A smaller model (e.g., gemma2:2b, phi3:mini) would have a lower knowledge
     floor and more constraint-sensitive behavior, potentially landing Arm A in range without
     fixture redesign. Trade-off: harder to generalize findings to production-grade agents.
+  - ~~*(c) Harness parse failures:*~~ **ELIMINATED (2026-06-06, PR #40).** parse_failed=0/180
+    on clean-harness rerun. The 33.3% floor is not caused by JSON formatting failures being
+    silently coerced to empty dicts. The floor is genuine model behavior.
 
-  Which fork to take (another Ty attempt vs. weaker-agent pivot vs. write the meta-finding
-  as the deliverable) is a design decision — tracked as open in TASKS.md.
+  With (a) now closed (ABORT, all three constraint bands tried), the only remaining fork is
+  (b) weaker-agent pivot vs. writing the meta-finding as the deliverable — tracked as open in
+  TASKS.md.
 
 - **T18 (IN-REVIEW, branch `claude/t18-discoverability-scale`):** Oracle A/B on `selection_accuracy`
   with a 60-tool confusable catalog (10 families × 6 near-neighbors). Arm A = empty descriptions;
@@ -433,7 +811,7 @@ models — always record the model alongside any stored score.
   | Experiment | Dimension | Verdict | Why |
   |------------|-----------|---------|-----|
   | T17 (16 tools, 8 clusters) | selection | **inert** — ABORTED above ceiling | names saturated Arm A at 81.2%; descriptions never tested |
-  | Ty (call construction) | calls | **inconclusive** — ABORTED all runs | unguessable tokens → tautological; format/unit constraints → floor |
+  | Ty (call construction) | calls | **inconclusive** — ABORTED all 3 runs | unguessable tokens → tautological; format/unit constraints → floor (33.3%, clean-harness-confirmed); guessable-but-error-prone (Ty2, PR #37) → floor (36.7%) — partial-ability window unreachable by fixture design |
   | T18 (60 tools, 10 families) | selection | **POSITIVE** | density created the confusable regime; discrimination +34.5 pp |
 
   Effect is **scale-gated**: the confusable regime required 60-tool density. At T17's scale,

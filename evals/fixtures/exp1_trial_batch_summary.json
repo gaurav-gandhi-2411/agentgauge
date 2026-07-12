@@ -1,0 +1,62 @@
+{
+  "Dataojitori-nocturne_memory": {
+    "no_family": true,
+    "reason": "No mechanical prefix-clustering candidate at all (7 tools, all distinct leading verbs: read/create/update/delete/add/manage/search)."
+  },
+  "blazickjp-arxiv-mcp-server": {
+    "no_family": true,
+    "reason": "No mechanical prefix-clustering candidate at all (8 tools, all distinct leading verbs/nouns: check/citation/download/get/list/read/search/reindex)."
+  },
+  "LycheeMem-LycheeMem": {
+    "no_family": true,
+    "reason": "Mechanical candidate found (lycheemem_family: health/append_turn/consolidate/lycheemem) but rejected on review -- these are a health-check, a turn-append, a consolidation trigger, and a status/dispatch tool; genuinely different operations with no real selection ambiguity, not a confusable pair despite the shared prefix."
+  },
+  "AminForou-mcp-gsc": {
+    "family_id": "delete_family",
+    "arm_a_accuracy": 0.75,
+    "arm_b_accuracy": 0.75,
+    "headroom_gated": true,
+    "aborted": false,
+    "verdict": "OUT-OF-REGIME (no recovery)"
+  },
+  "stefanoamorelli-sec-edgar-mcp": {
+    "family_id": "discover_family",
+    "arm_a_accuracy": 1.0,
+    "arm_b_accuracy": null,
+    "headroom_gated": false,
+    "aborted": true,
+    "verdict": "OUT-OF-REGIME"
+  },
+  "stickerdaniel-linkedin-mcp-server": {
+    "family_id": "search_family",
+    "arm_a_accuracy": 1.0,
+    "arm_b_accuracy": null,
+    "headroom_gated": false,
+    "aborted": true,
+    "verdict": "OUT-OF-REGIME"
+  },
+  "taylorwilsdon-google_workspace_mcp": {
+    "family_id": "send_family",
+    "arm_a_accuracy": 0.0,
+    "arm_b_accuracy": 0.0,
+    "headroom_gated": true,
+    "aborted": false,
+    "verdict": "OUT-OF-REGIME (no recovery)"
+  },
+  "mrexodia-ida-pro-mcp": {
+    "family_id": "xrefs_family",
+    "arm_a_accuracy": 0.9,
+    "arm_b_accuracy": null,
+    "headroom_gated": false,
+    "aborted": true,
+    "verdict": "OUT-OF-REGIME"
+  },
+  "datalayer-jupyter-mcp-server": {
+    "family_id": "read_family",
+    "arm_a_accuracy": 0.7,
+    "arm_b_accuracy": 0.55,
+    "headroom_gated": true,
+    "aborted": false,
+    "verdict": "OUT-OF-REGIME (no recovery)"
+  }
+}

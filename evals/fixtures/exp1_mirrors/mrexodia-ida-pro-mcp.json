@@ -1,0 +1,1367 @@
+{
+  "server_id": "mrexodia-ida-pro-mcp",
+  "source_repo": "mrexodia/ida-pro-mcp",
+  "language": "Python",
+  "stars": 9818,
+  "stratum": "near_empty",
+  "notes": "commit=abb2732ad0d759d750c2e38b616f7f3e949ed2f9; extraction_method=ast; doc_density_composite=80.0; params are name-only placeholders (annotation='Any') -- EXP-1 classifier tests selection only, not call-correctness.",
+  "tools": [
+    {
+      "name": "idb_open",
+      "docstring": "Open a binary, activate it, and warm up subsystems in one call.",
+      "source_hash": "46ff6b665376",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "input_path",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "run_auto_analysis",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "build_caches",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "init_hexrays",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "idle_ttl_sec",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "preferred_session_id",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "idb_list",
+      "docstring": "List open IDA sessions.",
+      "source_hash": "2c77238686e3",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "decompile",
+      "docstring": "Decompile function(s) at address(es); returns pseudocode and per-item errors.",
+      "source_hash": "59f420089ece",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "addr",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "include_addresses",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "disasm",
+      "docstring": "Disassemble function with offset/max_instructions pagination and optional total count.",
+      "source_hash": "1d5c74182883",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "addr",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "max_instructions",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "offset",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "include_total",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "func_profile",
+      "docstring": "Profile functions with summary metrics and optional sampled details.",
+      "source_hash": "d425bb1bb880",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "queries",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "analyze_batch",
+      "docstring": "Run comprehensive analysis over one or more target functions.",
+      "source_hash": "a01634749db5",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "queries",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "xrefs_to",
+      "docstring": "Return xrefs to address(es) or named symbols, capped per target with truncation flag.",
+      "source_hash": "05fc571b9501",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "addrs",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "limit",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "xref_query",
+      "docstring": "Query xrefs with direction/type filters and pagination.",
+      "source_hash": "7addac145c9b",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "queries",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "xrefs_to_field",
+      "docstring": "Get cross-references to structure fields",
+      "source_hash": "52a4129eb6b5",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "queries",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "callees",
+      "docstring": "Return unique callees per function, capped by limit.",
+      "source_hash": "7ee23c2614ef",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "addrs",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "limit",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "find_bytes",
+      "docstring": "Search byte patterns (supports ??) with offset/limit pagination.",
+      "source_hash": "7a8d3abe9c8b",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "patterns",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "limit",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "offset",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "basic_blocks",
+      "docstring": "Return function CFG blocks with offset/max_blocks pagination.",
+      "source_hash": "a92f29186a86",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "addrs",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "max_blocks",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "offset",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "find",
+      "docstring": "Search strings/immediates/refs for targets with offset/limit pagination.",
+      "source_hash": "2e4411d3eb32",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "type",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "targets",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "limit",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "offset",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "insn_query",
+      "docstring": "Query instructions with mnemonic/operand filters and scoped scans.",
+      "source_hash": "b37af2b1ff8d",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "queries",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "export_funcs",
+      "docstring": "Export function data for addresses in json/c_header/prototypes formats.",
+      "source_hash": "48cae6a30bd4",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "addrs",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "format",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "callgraph",
+      "docstring": "Build bounded callgraph from roots with depth/node/edge limits.",
+      "source_hash": "88841ae76088",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "roots",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "max_depth",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "max_nodes",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "max_edges",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "max_edges_per_func",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "analyze_function",
+      "docstring": "Compact single-function analysis: pseudocode, strings, constants, callers, callees, xrefs, blocks.",
+      "source_hash": "58af9a91d284",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "addr",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "include_asm",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "analyze_component",
+      "docstring": "Analyze related functions as a group: per-function summaries, internal call graph, shared data.",
+      "source_hash": "487b4eefcef6",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "addrs",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "diff_before_after",
+      "docstring": "Rename a function, set its type, or add a comment, and immediately see the\nbefore/after decompilation side by side. Use this instead of calling rename\nthen decompile separately when you want to verify that a rename or type change\nactually improved readability. Actions: 'rename_func' (action_args: {name: str}),\n'set_type' (action_args: {type: str}), 'set_comment' (action_args: {comment: str}).\nReturns {before, after, action_applied, changes_detected}. Especially useful\nduring batch renaming to confirm each change had the intended effect.",
+      "source_hash": "b174fdc5d1a3",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "addr",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "action",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "action_args",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "trace_data_flow",
+      "docstring": "Follow cross-references from or to an address, automatically traversing\nmultiple hops. Use 'forward' to see where data flows TO (xrefs-from), or\n'backward' to see where data flows FROM (xrefs-to). At each node in the\ntraversal, returns the function name, instruction, and whether it's code or\ndata. Use this when you find an interesting string, constant, or global and\nwant to understand every code path that touches it without manually chaining\nxrefs_to calls. Do not use for call graph traversal — use callgraph for that.\nmax_depth controls how many hops to follow (default 5, max 20).",
+      "source_hash": "9a934353ef0d",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "addr",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "direction",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "max_depth",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "server_health",
+      "docstring": "Health/ready probe for MCP server and current IDB state.",
+      "source_hash": "da6d1c65ccf8",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "lookup_funcs",
+      "docstring": "Get functions by address or name (auto-detects)",
+      "source_hash": "4e145450a4f5",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "queries",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "int_convert",
+      "docstring": "Convert numbers to different formats",
+      "source_hash": "90e018e580b9",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "inputs",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "list_funcs",
+      "docstring": "List functions with optional filtering and offset/count pagination.",
+      "source_hash": "77697e87a841",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "queries",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "func_query",
+      "docstring": "Query functions with richer filtering than list_funcs.",
+      "source_hash": "8845df2ec43c",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "queries",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "list_globals",
+      "docstring": "List globals with optional filtering and offset/count pagination.",
+      "source_hash": "f12a7fa3dc23",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "queries",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "entity_query",
+      "docstring": "Query IDB entities with typed filters, projection, and pagination.",
+      "source_hash": "bf66019dd8b5",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "queries",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "imports",
+      "docstring": "List imports with module names using offset/count pagination.",
+      "source_hash": "f2e700c0412b",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "offset",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "count",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "imports_query",
+      "docstring": "Query imports with richer filtering than imports(offset,count).",
+      "source_hash": "272560430064",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "queries",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "idb_save",
+      "docstring": "Save active IDB to disk, optionally to a provided path.\n\nIn the GUI (idaq) the open database is backed by loose working files\n(.id0/.id1/.id2/.nam/.til) that IDA actively manages; packing+killing them\nout from under the running GUI corrupts the database on the next reopen\n(issue #446). So in GUI mode this uses IDA's native in-place save\n(equivalent to Ctrl+W / save_database(None, 0)), and for an explicit\ndifferent destination writes a compressed copy WITHOUT killing the live\nworking files.\n\nOnly headless idalib — which has no live loose files to clobber — packs into\na single compressed .i64/.idb, removing the loose working files.",
+      "source_hash": "381dc07347d7",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "path",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "find_regex",
+      "docstring": "Search strings by case-insensitive regex with offset/limit pagination.",
+      "source_hash": "27793bdfd9b9",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "pattern",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "limit",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "offset",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "search_text",
+      "docstring": "Search the rendered listing for `pattern` over [start, end).\n\nIterates `idautils.Heads()` in pure Python and renders each via\n`ida_lines.generate_disassembly()`. Per-head iteration is cheap and\nyields between heads, so the per-tool deadline (sync_wrapper) and the\nUI Cancel button both interrupt the walk reliably — unlike the C-level\n`ida_search.find_text()` it replaced, which on huge .text segments\ncould run for minutes without polling `user_cancelled()`.\n\nUse `start`/`end` to scope the work for predictable performance on\nlarge binaries; without them the scan covers the whole image.",
+      "source_hash": "7ff1845e5618",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "pattern",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "limit",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "start",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "end",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "regex",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "case_sensitive",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "include",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "code_only",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "dbg_start",
+      "docstring": "Start debugger session for current target.\n\nRequires the user to have selected a debugger (Debugger -> Select debugger)\nand configured the target (executable path, arguments, attach process,\nremote host, etc.). If this call fails, do not retry repeatedly. Stop,\nexplain to the user that debugging is not yet configured, and ask them\nto set up the debugger and dismiss any IDA dialogs (e.g. \"matching\nexecutable names\") before trying again.",
+      "source_hash": "2a827e8741b8",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "dbg_status",
+      "docstring": "Return debugger lifecycle state and current IP if suspended.",
+      "source_hash": "cb9d6e65f448",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "dbg_exit",
+      "docstring": "Terminate active debugger session.",
+      "source_hash": "b869800f366b",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "dbg_continue",
+      "docstring": "Resume execution in active debugger session.",
+      "source_hash": "d3f26c90a0cf",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "dbg_run_to",
+      "docstring": "Run debuggee until target address is reached.",
+      "source_hash": "b81213b0769c",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "addr",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "dbg_step_into",
+      "docstring": "Execute one instruction, stepping into calls.",
+      "source_hash": "18504c0d9f89",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "dbg_step_over",
+      "docstring": "Execute one instruction, stepping over calls.",
+      "source_hash": "21f35ae5b181",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "dbg_bps",
+      "docstring": "List breakpoints with address, enabled status, condition, and language.",
+      "source_hash": "efdf033c1d09",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "dbg_add_bp",
+      "docstring": "Add breakpoints at one or more addresses.",
+      "source_hash": "bc00372e9d04",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "addrs",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "dbg_delete_bp",
+      "docstring": "Delete breakpoints at one or more addresses.",
+      "source_hash": "a634cfaed7ca",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "addrs",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "dbg_toggle_bp",
+      "docstring": "Enable or disable existing breakpoints in batch.",
+      "source_hash": "ee4c09def09d",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "items",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "dbg_set_bp_condition",
+      "docstring": "Set or clear breakpoint conditions in batch.",
+      "source_hash": "f32bbf27cf7c",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "items",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "dbg_regs_all",
+      "docstring": "Return full register sets for all debugger threads.",
+      "source_hash": "4c0258e4b0bf",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "dbg_regs_remote",
+      "docstring": "Return full register sets for specified thread IDs.",
+      "source_hash": "83863ba032cb",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "tids",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "dbg_regs",
+      "docstring": "Return full registers for current debugger thread.",
+      "source_hash": "4a5f8069357f",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "dbg_gpregs_remote",
+      "docstring": "Get GP registers for threads",
+      "source_hash": "57c0bc19198d",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "tids",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "dbg_gpregs",
+      "docstring": "Get current thread GP registers",
+      "source_hash": "dc3464f81c0e",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "dbg_regs_named_remote",
+      "docstring": "Return selected registers for a specific thread ID.",
+      "source_hash": "76bef8372218",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "thread_id",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "register_names",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "dbg_regs_named",
+      "docstring": "Get specific current thread registers",
+      "source_hash": "50ddaa35c7c8",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "register_names",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "dbg_stacktrace",
+      "docstring": "Return current call stack with module and symbol context.",
+      "source_hash": "db7caa1f42f2",
+      "return_annotation": "None",
+      "params": []
+    },
+    {
+      "name": "dbg_read",
+      "docstring": "Read debuggee memory from one or more regions.",
+      "source_hash": "525536cbfc4d",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "regions",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "dbg_write",
+      "docstring": "Write bytes to debuggee memory regions.",
+      "source_hash": "68bb4186b19f",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "regions",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "get_bytes",
+      "docstring": "Read bytes from memory addresses",
+      "source_hash": "39b7a73a59ce",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "regions",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "get_int",
+      "docstring": "Read integer values from memory addresses",
+      "source_hash": "6dd1e16784a5",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "queries",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "get_string",
+      "docstring": "Read strings from memory addresses",
+      "source_hash": "401affebb68d",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "addrs",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "get_global_value",
+      "docstring": "Read global variable values by address or symbol name.",
+      "source_hash": "8d9d43c7c1ca",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "queries",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "patch",
+      "docstring": "Patch bytes at memory addresses with hex data",
+      "source_hash": "9659e0f4dea7",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "patches",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "put_int",
+      "docstring": "Write integer values to memory addresses",
+      "source_hash": "03c674fa3ded",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "items",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "add_bookmark",
+      "docstring": "Add or replace the IDA bookmark at an address. Set prefix=\"\" for no prefix.",
+      "source_hash": "7b4717db8dee",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "addr",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "name",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "prefix",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "set_comments",
+      "docstring": "Set comments at addresses (both disassembly and decompiler views)",
+      "source_hash": "e221b43ebb77",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "items",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "append_comments",
+      "docstring": "Append comments at addresses, deduping exact text by default.",
+      "source_hash": "161435911054",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "items",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "patch_asm",
+      "docstring": "Patch assembly instructions at addresses",
+      "source_hash": "e84873dce28d",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "items",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "rename",
+      "docstring": "Batch-rename funcs/globals/locals/stack vars with dry-run options.",
+      "source_hash": "d3a14148f253",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "batch",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "define_func",
+      "docstring": "Define functions; IDA infers bounds unless end is provided.",
+      "source_hash": "8b01ec586a87",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "items",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "define_code",
+      "docstring": "Convert bytes to code instruction(s) at address(es).",
+      "source_hash": "85d29a8d4072",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "items",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "undefine",
+      "docstring": "Undefine item(s) at address(es), converting back to raw bytes.",
+      "source_hash": "a84bf3ce967f",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "items",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "force_recompile",
+      "docstring": "Invalidate the Hex-Rays decompile cache for one or more functions.\n\nUse after `set_type`, `rename` (especially of locals), `set_op_type`, or\n`make_data` so the next `decompile` call regenerates fresh pseudocode\ninstead of returning a cached, stale view.",
+      "source_hash": "1b70de49f21e",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "items",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "set_op_type",
+      "docstring": "Set the type of an instruction operand. GUI 'Y' / 'O' / '#' equivalent.\n\nTags an operand at a specific instruction with a desired interpretation.\nUseful when the decompiler picks an awkward expression form (e.g., the\n\"earlier-named-symbol + offset\" form for contiguous globals).\n\n`kind` values:\n- `\"stroff\"`: struct-offset reference. Requires `struct`, optional `delta`.\n- `\"offset\"`: absolute offset / pointer. Optional `target_addr`.\n- `\"hex\" | \"dec\" | \"char\" | \"binary\" | \"octal\"`: numeric format.\n- `\"stkvar\"`: stack-variable reference (function-local).",
+      "source_hash": "5ba2284d8326",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "items",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "make_data",
+      "docstring": "Create a typed data symbol at an address, replacing any prior items.\n\nUse this to harden a symbol boundary that the decompiler is currently\nexpressing through a neighboring global plus offset. `set_type` alone\nleaves the underlying byte items unchanged; this tool deletes them\nfirst, then re-creates them at the right size with the right type, then\noptionally renames.\n\nThe `type` field is a full C declaration with a placeholder name, e.g.\n`\"ISP_SNS_STATE_S * g_pastImx290[4]\"` — IDA parses it via SetType.",
+      "source_hash": "e09dcfc5cf10",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "items",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "py_eval",
+      "docstring": "Execute Python in IDA context and return result/stdout/stderr.",
+      "source_hash": "e36319b1bb23",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "code",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "py_exec_file",
+      "docstring": "Execute a Python script file in IDA context and return stdout/stderr.\n\nUnlike py_eval, this runs the entire file with exec() using a single shared\nglobals dict (no locals split), so top-level definitions are visible to all\ncode in the script. Handles large scripts that would be unwieldy as inline code.",
+      "source_hash": "b97817ee4764",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "file_path",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "make_signature",
+      "docstring": "Create unique byte signatures for addresses. Generates the shortest\nunique signature starting at each address by walking instructions and\nwildcarding operands. Useful for finding stable patterns that survive\nrecompilation.",
+      "source_hash": "d6f541acdbc4",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "addrs",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "format",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "wildcard_operands",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "max_length",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "make_signature_for_function",
+      "docstring": "Create unique byte signatures for function entry points. Resolves each\nname/address to a function, then generates the shortest unique signature\nstarting at the function start.",
+      "source_hash": "fb1ba96b6f2f",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "addrs",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "format",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "wildcard_operands",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "max_length",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "make_signature_for_range",
+      "docstring": "Create a byte signature for a specific address range (e.g. a selected\nregion). Unlike make_signature, this does NOT guarantee uniqueness — it\nsimply encodes the bytes in the range with optional operand wildcarding.",
+      "source_hash": "6542d55ca0e9",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "start",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "end",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "format",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "wildcard_operands",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "find_xref_signatures",
+      "docstring": "Find signatures for code locations that reference an address. For each\ninput address, finds all code cross-references TO it, generates a unique\nsignature at each xref site, and returns the shortest ones. Ideal for\ncreating signatures for data addresses, vtable entries, or string\nreferences that can't be signatured directly.",
+      "source_hash": "b9b8c25a5855",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "addrs",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "format",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "top",
+          "annotation": "Any",
+          "default": null
+        },
+        {
+          "name": "max_length",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "stack_frame",
+      "docstring": "Return stack variables for function address(es).",
+      "source_hash": "6d9925d5f89f",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "addrs",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "declare_stack",
+      "docstring": "Create stack variables from typed stack declarations.",
+      "source_hash": "60bbe59dafc5",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "items",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "delete_stack",
+      "docstring": "Delete stack variables by name or offset.",
+      "source_hash": "bbe29f27c650",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "items",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "survey_binary",
+      "docstring": "Get a compact overview of the binary in one call. Returns file metadata,\nsegment layout, entry points, statistics, top 15 strings and functions ranked\nby xref count (functions include classification: thunk/wrapper/leaf/dispatcher/\ncomplex), imports by category, and call graph summary. Use this as your FIRST\ntool call when starting analysis. Do not call list_funcs, imports, or find_regex\nseparately for triage — this returns all of that. Use detail_level='minimal'\nfor binaries with >10k functions.",
+      "source_hash": "6af206f248e6",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "detail_level",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "declare_type",
+      "docstring": "Declare C type definitions in local type library.",
+      "source_hash": "0f884f5b3866",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "decls",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "enum_upsert",
+      "docstring": "Create or extend local enums in an idempotent way.",
+      "source_hash": "8cc0e43e890e",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "queries",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "read_struct",
+      "docstring": "Read struct fields from memory at address; auto-detect type when possible.",
+      "source_hash": "916d3e62ceb5",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "queries",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "search_structs",
+      "docstring": "Search local structs/unions by name pattern.",
+      "source_hash": "680d2f36753a",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "filter",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "type_query",
+      "docstring": "Query local types with structured filters/projection-friendly output.",
+      "source_hash": "58516c28a028",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "queries",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "type_inspect",
+      "docstring": "Inspect named types (size/kind/declaration/members).",
+      "source_hash": "cfacbbea975a",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "queries",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "set_type",
+      "docstring": "Apply types (function/global/local/stack)",
+      "source_hash": "ef69488f571b",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "edits",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "type_apply_batch",
+      "docstring": "Apply multiple type edits and return aggregate status.",
+      "source_hash": "8efefb8a7df4",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "batch",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    },
+    {
+      "name": "infer_types",
+      "docstring": "Infer and apply likely types at target addresses.",
+      "source_hash": "090fc93c2a04",
+      "return_annotation": "None",
+      "params": [
+        {
+          "name": "addrs",
+          "annotation": "Any",
+          "default": null
+        }
+      ]
+    }
+  ]
+}

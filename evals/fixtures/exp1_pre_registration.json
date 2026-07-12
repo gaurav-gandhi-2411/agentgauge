@@ -1,0 +1,169 @@
+{
+  "experiment_id": "EXP-1",
+  "protocol_version": "1.0",
+  "date_committed": "2026-06-22",
+  "frozen_protocol_ref": "agentgauge/frozen_protocol.py",
+  "title": "Server-population prevalence: what fraction of real MCP servers are in the description-quality regime?",
+
+  "_note": "This pre-registration fixes the METHODOLOGY. The specific 30-server list (exp1_server_frame.json) is a second pre-registration committed after GG ratifies the list and before any scoring begins.",
+
+  "amendments": [
+    {
+      "date": "2026-07-02",
+      "id": "single_source_discovery",
+      "amends": "sampling_frame.sources",
+      "change": "Only 'GitHub topic:mcp-server search' was used, not all 5 pre-registered sources.",
+      "reason": "mcp.so returned HTTP 403 (blocked). PulseMCP's API requires an emailed key request (human step, not completed). Glama's pagination is a non-trivial Remix turbo-stream endpoint, not a plain query param, and was not decoded. The official MCP registry WAS evaluated as a second source (scripts/exp1_discover_registry.py, commit e2f24e0): 767 unique candidates fetched, but a sample screening pass found only ~11% passed the same structural-validity bar used for the GitHub pool (dead repos, remote-proxy-only servers, sub-5-tool servers, marketplace aggregators) -- high cost, low yield, dropped rather than diluting the frame with a much noisier source.",
+      "disclosure": "Report this as a single-source limitation in the paper, not silently as if all 5 sources had contributed."
+    },
+    {
+      "date": "2026-07-02",
+      "id": "doc_density_stratification_not_star",
+      "amends": "sampling_frame.strategy",
+      "change": "Stratification axis changed from GitHub stars (popularity/maturity proxy) to MECHANICAL doc-density (agentgauge/exp1_doc_density.py composite_score, computed from real extracted tool definitions), in empirical terciles via assign_tiers().",
+      "reason": "GG's correction: star-stratification held documentation quality roughly constant across strata (popularity correlates with polish) -- the star-stratified frame (05db7ca) came back 29/30 servers rated moderate-or-polished doc quality, meaning the sample did not actually vary on the axis the paper's thesis is about (documented vs under-documented). Doc-density is now the explicit stratification variable; star-band membership is retained per-server as star_stratum_v1 for reference/comparison only, not used for sampling.",
+      "disclosure": "The regime classifier itself remains BEHAVIORAL per the original pre-reg (unchanged) -- only the INPUT sampling axis changed. See exp1_server_frame.json (v2) for the resulting strata and an honest caveat that even under this stricter measure, the tier boundaries are relative to this sample, not absolute (documented in the frame's open_decisions_applied_by_default)."
+    },
+    {
+      "date": "2026-07-02",
+      "id": "freshly_sampled_count_shortfall",
+      "amends": "sampling_frame.freshly_sampled_count / reporting.pooled_prevalence denominator",
+      "change": "Actual N is 23 fresh (scored) + 2 anchors, not the pre-registered 28 + 2.",
+      "reason": "Mechanical extraction failed for 7 of the 30 structurally-vetted candidates (confirmed extraction-method gaps -- Java annotation-based registration, one YAML-manifest architecture, and other unmodeled patterns -- NOT genuinely empty catalogs; all 7 have >=13 tools per manual vetting). Full detail in evals/fixtures/exp1_exclusion_log.json. Backfilling to 28 requires a fresh manual vetting pass on the already-fetched but unvetted backup pool -- judgment work, deferred pending GG ratification rather than done unilaterally under time pressure (the exact failure mode this whole rebuild is correcting for).",
+      "disclosure": "RATIFIED by GG 2026-07-04: proceed with N=23, no backfill. SUPERSEDED by the v3 correction below (N=22).",
+      "status": "RATIFIED_THEN_SUPERSEDED_BY_v3_correction"
+    },
+    {
+      "date": "2026-07-04",
+      "id": "v3_correction_three_extraction_bugs",
+      "amends": "exp1_server_frame.json (v2 -> v3), sampling_frame.freshly_sampled_count denominator, exp1_exclusion_log.json",
+      "change": "N corrected from 23 fresh (v2, ratified) to 22 fresh + 1 additional exclusion (vitali87-code-graph-rag). Two other servers' composite scores/tiers corrected in place: blazickjp-arxiv-mcp-server (71.8 near_empty -> 100.0 well_documented), lucasastorian-llmwiki (25.0 near_empty -> 78.1 near_empty, i.e. still bottom-tercile but no longer absolutely near-empty -- 92.3% description coverage, not 0%).",
+      "reason": "3 confirmed mechanical-extraction bugs found while preparing the GG-approved batch-1 trial (see exp1_server_frame.json bug_fixes_this_version for full detail): (1) a protocol-handler false-positive (@server.list_tools()/@server.call_tool() mistaken for domain-tool decorators), (2) MCP Prompt/Tool primitive conflation in the generic regex fallback, (3) a blind spot in the core AST extractor that read ONLY function docstrings, never a decorator's own description= keyword argument (FastMCP's officially-documented style). All 3 fixed in agentgauge/exp1_mirror.py and agentgauge/exp1_tool_def_extractor.py with regression tests; blast radius re-verified via the authoritative pipeline after each fix (confirmed exactly these 3 servers affected, no others -- an earlier ad-hoc verification script incorrectly suggested 5 more had changed due to a bug in the VERIFICATION script itself, caught and discarded before being reported).",
+      "disclosure": "RATIFIED by GG 2026-07-04: N=22, corrected tiers, and the strengthened near-empty finding (0/22 absolutely near-empty) accepted. Batch-1 trial target redirected to oraios-serena. SUPERSEDED by the v4 correction below.",
+      "status": "RATIFIED_THEN_SUPERSEDED_BY_v4_correction"
+    },
+    {
+      "date": "2026-07-04",
+      "id": "v4_correction_fourth_extraction_bug_pause",
+      "amends": "exp1_server_frame.json (v3 -> v4), sampling_frame.freshly_sampled_count denominator, exp1_exclusion_log.json",
+      "change": "N corrected from 22 fresh (v3, ratified) to 21 fresh + 1 additional exclusion (oraios-serena, the GG-redirected batch-1 trial target). No other server's composite score materially changed (4 servers shifted by <=1.9 points from a minor blast-radius effect of the same fix, no tier changes).",
+      "reason": "A 4th confirmed mechanical-extraction bug was found while investigating oraios-serena for the batch-1 trial: _has_tool_decorator matched the substring 'tool' anywhere in a decorator's FULL unparsed text, including string literal ARGUMENTS (a Flask route path '/get_tool_stats', a Click CLI flag '--tool-timeout'), not just the decorator's own called name. Fixed with a regression test. Investigating oraios-serena further (its extraction dropped from 9 phantom tools to 1 phantom tool post-fix) revealed its real tool catalog uses CLASS-BASED registration (class FooTool(Tool, ...): ...) -- a third major MCP-Python registration paradigm this extractor does not support at all. Excluded as extraction_failed.",
+      "disclosure": "PAUSED, not silently resolved. After this correction, the 21-server scoreable pool shows NO server below 57.1% description coverage -- an extremely strong, arguably implausibly strong result (thin/name-only tool descriptions are a widely reported real-world MCP pain point) surfaced only after 4 confirmed extraction bugs were found in one session, each ONLY discovered by deep-diving the specific server selected next for the trial batch. This is the 2nd consecutive invalidated trial-batch target. GG directed a systematic audit before any further trial selection. SUPERSEDED by the v5 correction below.",
+      "status": "RATIFIED_THEN_SUPERSEDED_BY_v5_correction"
+    },
+    {
+      "date": "2026-07-04",
+      "id": "v5_correction_regex_best_effort_dropped_python_only",
+      "amends": "exp1_server_frame.json (v4 -> v5), sampling_frame.freshly_sampled_count denominator, sampling_frame.filters.languages, exp1_exclusion_log.json",
+      "change": "N corrected from 21 fresh (v4) to 10 fresh, ALL Python. All 11 servers extracted via the 'regex_best_effort' method (every non-Python server in the pool -- TypeScript, JavaScript, Go, Rust) are dropped as unreliable_extraction_method, a new exclusion category distinct from extraction_failed (these produced non-zero but untrustworthy tool lists, not zero tools).",
+      "reason": "The GG-directed systematic audit (in response to the v4 pause) found, within its FIRST step (reading extracted tool names, before even cloning for deep verification), that the generic regex fallback used for all non-Python sources pulls in massive false-positive noise: template literal placeholders (e.g. '${tool.name}'), raw parameter names, MCP meta-concept labels ('List Tools', 'Read Resource'), HTTP header names ('X-Request-ID'), UI category/taxonomy labels ('E-commerce', 'Social Media'), and unrelated example data (an org-chart tool's sample 'CEO'/'CTO' inputs) -- all mixed indiscriminately with real tool names, across MULTIPLE servers (ChromeDevTools-chrome-devtools-mcp, czlonkowski-n8n-mcp, antvis-mcp-server-chart, brightdata-brightdata-mcp confirmed by direct inspection; the remaining 7 regex_best_effort servers dropped for consistency, not all individually re-verified). This is a SYSTEMIC limitation of blind text-proximity regex matching over unstructured non-Python source, categorically different from the 4 earlier Python-specific bugs (those were narrow, well-defined gaps in a STRUCTURAL AST parser and were each fixed with a targeted, generalizable patch). GG explicitly chose to drop these servers rather than invest in tightening the regex further (open-ended, uncertain payoff) or building real per-language AST parsers (large new engineering scope, out of this pass).",
+      "disclosure": "RATIFIED by GG 2026-07-04: proceed with N=10, Python-only scope. Paper claim to be scoped as 'Python MCP servers on GitHub specifically,' not the general 'public MCP servers' claim originally targeted. Batch-1 trial candidate selected: lucasastorian-llmwiki.",
+      "status": "RATIFIED"
+    }
+  ],
+
+  "regime_classifier": {
+    "definition": "A confusable family on a server is IN-REGIME iff, on the frozen protocol with a fixed agent: (a) Arm A = the server's real shipped descriptions FAILS >=1 contested task (SELECTED-WRONG or ABSTAINED-OR-HEDGED on >=1 task across trials), AND (b) Arm B = oracle description RECOVERS it (SELECTED-CORRECT on previously-failed tasks). BEHAVIORAL only — 'thin descriptions' is an INPUT property and NOT the regime definition.",
+    "contested_task_definition": "Anti-tautological: task text describes user intent without naming the tool or quoting its description keywords. Tasks must be resolvable from at least one tool's purpose; the correct tool must NOT be identifiable from the task phrasing alone.",
+    "headroom_gate": "Arm A contested-set accuracy < 0.85 required to proceed to Arm B. If >= 0.85, abort = OUT-OF-REGIME (no headroom). Reported as abort, not skip.",
+    "arm_a": "Server's verbatim shipped descriptions, asserted identical to source via docstring_hash.",
+    "arm_b": "Oracle: human-authored per family, targeting the within-family distinguishing dimension. NOT generated; NOT tool-named."
+  },
+
+  "sampling_frame": {
+    "sources": [
+      "modelcontextprotocol.io official registry",
+      "mcp.so",
+      "Glama (glama.ai/mcp/servers)",
+      "PulseMCP (pulsemcp.com)",
+      "GitHub topic:mcp-server search"
+    ],
+    "fixed_date": "2026-06-22",
+    "target_count": 30,
+    "freshly_sampled_count": 28,
+    "validation_anchor_count": 2,
+
+    "strategy": "STRATIFIED by popularity/maturity proxy (GitHub stars as primary signal). Three strata of ~10 each: high / mid / low. Star bands are determined EMPIRICALLY from the discovery run and fixed before any specific server is selected. The per-stratum distribution is reported as a FINDING (the documentation-quality gradient is the mechanistic signal), not just a sampling detail.",
+
+    "strata": {
+      "high":  {"target_count": 10, "description": "high-star / mature servers; bands fixed from discovery"},
+      "mid":   {"target_count": 10, "description": "mid-tier servers; bands fixed from discovery"},
+      "low":   {"target_count": 10, "description": "low-star / newer servers; bands fixed from discovery"}
+    },
+    "strata_bands_note": "Exact star cutoffs are committed in exp1_server_frame.json after the discovery run. Bands are fixed from the empirical distribution before individual servers are selected — not tuned post-hoc to include/exclude specific servers.",
+
+    "filters": {
+      "source_available": "Public repository (GitHub or equivalent). Closed-source excluded.",
+      "locally_runnable": "Runnable without live API keys. Stub bodies are acceptable; the mirror does not call live APIs.",
+      "deduplicated": "One entry per unique server project. Forks of the same server count as one.",
+      "languages": "ALL languages included (Python, TypeScript, Go, others). Language is NOT an exclusion criterion."
+    },
+
+    "valid_exclusion_reasons": [
+      "no_source: No public source repository found.",
+      "unrunnable: Import or dependency failure prevents stub server from starting after mirroring.",
+      "duplicate: Exact duplicate (fork or copy) of an already-included server."
+    ],
+
+    "exclusion_log_path": "evals/fixtures/exp1_exclusion_log.json",
+    "score_every_one": true,
+    "drop_post_hoc": false,
+    "report_format": "28 freshly sampled + 2 validation anchors (reported separately)"
+  },
+
+  "validation_anchors": {
+    "purpose": "Confirm the behavioral regime classifier reproduces the known OUT-OF-REGIME result for previously characterized servers. Disclosed in paper. NOT silently included in the prevalence denominator — reported as 'N freshly sampled + 2 validation anchors' separately.",
+    "servers": [
+      {
+        "id": "github-mcp",
+        "repo": "github/github-mcp-server",
+        "known_result": "OUT-OF-REGIME",
+        "prior_experiment": "RW1",
+        "expectation": "Classifier must reproduce OUT-OF-REGIME. If it does not, investigate before proceeding."
+      },
+      {
+        "id": "aws-iam-mcp",
+        "repo": "awslabs/mcp (src/iam-mcp-server)",
+        "known_result": "OUT-OF-REGIME",
+        "prior_experiment": "RW2",
+        "expectation": "Classifier must reproduce OUT-OF-REGIME. If it does not, investigate before proceeding."
+      }
+    ]
+  },
+
+  "per_server_procedure": [
+    "STEP 1 — MIRROR: Extract verbatim docstrings from source. Build a Python MCP stub server: tool names/schemas/docstrings identical to source; bodies return {stub: true, tool_name: name}. Assert docstring_hash matches source hash for every tool (independence rule: no paraphrase, no cleanup).",
+    "STEP 2 — FAMILY IDENTIFICATION: Identify confusable tool families using (a) prefix clustering (>=2 tools sharing >=3-char common prefix), (b) embedding similarity (nomic-embed-text cosine >= 0.85 between description pairs), (c) manual domain review. Families must have >= 2 tools. Families are pre-registered before contested tasks are written.",
+    "STEP 3 — CONTESTED TASKS: Write >= 3 anti-tautological contested tasks per family. LLM-assisted generation with mandatory human review. Each task: describes user intent only; does not name a tool; does not quote tool-description keywords. Tasks committed before Arm A is run.",
+    "STEP 4 — ARM A (HEADROOM GATE): Run Arm A (real docstrings) on contested tasks per family, frozen protocol (llama3.1:8b, seed=42, gemma2:9b, 5 trials). Report parse_failed per family. If contested-set accuracy >= 0.85: abort = OUT-OF-REGIME (no headroom). Do NOT run Arm B.",
+    "STEP 5 — ORACLE (for families with headroom): Human-author oracle descriptions targeting the within-family distinguishing dimension. Oracle written by a human who has read the server source. Committed before Arm B is run.",
+    "STEP 6 — ARM B: Run Arm B (oracle descriptions) on same contested tasks. Classify: IN-REGIME iff Arm A fails >=1 contested task AND Arm B recovers it (SELECTED-CORRECT on previously-failed tasks)."
+  ],
+
+  "frozen_protocol": {
+    "judge_model": "llama3.1:8b",
+    "judge_seed": 42,
+    "generator_model": "qwen3:8b",
+    "agent_model": "gemma2:9b",
+    "trials_per_arm": 5,
+    "headroom_ceiling": 0.85,
+    "classifier_outcomes": ["SELECTED-CORRECT", "SELECTED-WRONG", "ABSTAINED-OR-HEDGED"],
+    "parse_failed": "PARSE-FAILED (reported separately, never aggregated)"
+  },
+
+  "reproducibility": {
+    "server_frame": "evals/fixtures/exp1_server_frame.json (committed with source hashes before scoring)",
+    "fixture_hashes": "SHA-256[:12] of each mirror fixture file, committed in the server frame",
+    "model_versions": "committed per run (Ollama manifest digest or API model slug)",
+    "seeds": {"python_random": 42, "numpy": 42}
+  },
+
+  "reporting": {
+    "per_stratum_prevalence": true,
+    "per_stratum_gradient": "the documentation-quality gradient across strata is a FINDING, not a sampling detail",
+    "pooled_prevalence": "denominator = 28 freshly sampled (validation anchors reported separately)",
+    "per_server_table": true,
+    "exclusion_log": true,
+    "honest_caveat": "Public servers skew documented. This prevalence is a LOWER BOUND on the under-documented internal segment (internal/custom servers), which is unsampleable from public data. Do not generalize beyond 'public, source-available MCP servers as of 2026-06-22'."
+  }
+}

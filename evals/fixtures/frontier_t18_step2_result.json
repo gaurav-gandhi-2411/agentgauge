@@ -1,0 +1,1486 @@
+{
+  "host": "openrouter",
+  "model": "meta-llama/llama-3.3-70b-instruct",
+  "trials": 3,
+  "rate_a": 0.5916666666666667,
+  "rate_b": 1.0,
+  "effect_pp": 40.833333333333336,
+  "sign_test": {
+    "n_plus": 19,
+    "n_minus": 0,
+    "ties": 21,
+    "p": 0.0
+  },
+  "counts_a": {
+    "SELECTED-CORRECT": 71,
+    "SELECTED-WRONG": 49,
+    "ABSTAINED-OR-HEDGED": 0
+  },
+  "counts_b": {
+    "SELECTED-CORRECT": 120,
+    "SELECTED-WRONG": 0,
+    "ABSTAINED-OR-HEDGED": 0
+  },
+  "spend_usd": 0.8919060000000001,
+  "tokens_in": 293572,
+  "tokens_out": 746,
+  "records": [
+    {
+      "idx": 0,
+      "gold": "get_record",
+      "family": "data_fetch",
+      "intent": "The inventory service needs the warehouse product with item_id=9812 from the primary database.",
+      "a_correct": 0,
+      "b_correct": 3,
+      "a_outcomes": [
+        "SELECTED-WRONG",
+        "SELECTED-WRONG",
+        "SELECTED-WRONG"
+      ],
+      "b_outcomes": [
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT"
+      ],
+      "a_picks": [
+        "fetch_record",
+        "fetch_record",
+        "fetch_record"
+      ],
+      "b_picks": [
+        "get_record",
+        "get_record",
+        "get_record"
+      ],
+      "wrong_picks": [
+        "fetch_record",
+        "fetch_record",
+        "fetch_record"
+      ],
+      "within_family_wrong": [
+        "fetch_record",
+        "fetch_record",
+        "fetch_record"
+      ],
+      "cross_family_wrong": [],
+      "a_flips": false,
+      "b_flips": false
+    },
+    {
+      "idx": 1,
+      "gold": "fetch_record",
+      "family": "data_fetch",
+      "intent": "Retrieve order status for #TX-991 by calling the fulfilment partner's external HTTP endpoint.",
+      "a_correct": 0,
+      "b_correct": 3,
+      "a_outcomes": [
+        "SELECTED-WRONG",
+        "SELECTED-WRONG",
+        "SELECTED-WRONG"
+      ],
+      "b_outcomes": [
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT"
+      ],
+      "a_picks": [
+        "load_item",
+        "load_item",
+        "query_records"
+      ],
+      "b_picks": [
+        "fetch_record",
+        "fetch_record",
+        "fetch_record"
+      ],
+      "wrong_picks": [
+        "load_item",
+        "load_item",
+        "query_records"
+      ],
+      "within_family_wrong": [
+        "load_item",
+        "load_item"
+      ],
+      "cross_family_wrong": [
+        "query_records"
+      ],
+      "a_flips": false,
+      "b_flips": false
+    },
+    {
+      "idx": 2,
+      "gold": "read_entry",
+      "family": "data_fetch",
+      "intent": "The startup routine needs the server's settings from disk at /etc/app/settings.ini.",
+      "a_correct": 1,
+      "b_correct": 3,
+      "a_outcomes": [
+        "SELECTED-WRONG",
+        "SELECTED-WRONG",
+        "SELECTED-CORRECT"
+      ],
+      "b_outcomes": [
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT"
+      ],
+      "a_picks": [
+        "load_item",
+        "pull_document",
+        "read_entry"
+      ],
+      "b_picks": [
+        "read_entry",
+        "read_entry",
+        "read_entry"
+      ],
+      "wrong_picks": [
+        "load_item",
+        "pull_document"
+      ],
+      "within_family_wrong": [
+        "load_item",
+        "pull_document"
+      ],
+      "cross_family_wrong": [],
+      "a_flips": true,
+      "b_flips": false
+    },
+    {
+      "idx": 3,
+      "gold": "load_item",
+      "family": "data_fetch",
+      "intent": "The checkout flow needs the cart contents for the active session without touching the database.",
+      "a_correct": 1,
+      "b_correct": 3,
+      "a_outcomes": [
+        "SELECTED-WRONG",
+        "SELECTED-WRONG",
+        "SELECTED-CORRECT"
+      ],
+      "b_outcomes": [
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT"
+      ],
+      "a_picks": [
+        "retrieve_row",
+        "retrieve_row",
+        "load_item"
+      ],
+      "b_picks": [
+        "load_item",
+        "load_item",
+        "load_item"
+      ],
+      "wrong_picks": [
+        "retrieve_row",
+        "retrieve_row"
+      ],
+      "within_family_wrong": [
+        "retrieve_row",
+        "retrieve_row"
+      ],
+      "cross_family_wrong": [],
+      "a_flips": true,
+      "b_flips": false
+    },
+    {
+      "idx": 4,
+      "gold": "save_record",
+      "family": "data_write",
+      "intent": "Upsert a customer profile: create it if new, overwrite it if found by key.",
+      "a_correct": 0,
+      "b_correct": 3,
+      "a_outcomes": [
+        "SELECTED-WRONG",
+        "SELECTED-WRONG",
+        "SELECTED-WRONG"
+      ],
+      "b_outcomes": [
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT"
+      ],
+      "a_picks": [
+        "update_record",
+        "update_record",
+        "update_record"
+      ],
+      "b_picks": [
+        "save_record",
+        "save_record",
+        "save_record"
+      ],
+      "wrong_picks": [
+        "update_record",
+        "update_record",
+        "update_record"
+      ],
+      "within_family_wrong": [],
+      "cross_family_wrong": [
+        "update_record",
+        "update_record",
+        "update_record"
+      ],
+      "a_flips": false,
+      "b_flips": false
+    },
+    {
+      "idx": 5,
+      "gold": "write_entry",
+      "family": "data_write",
+      "intent": "Record the user login event in the application audit trail.",
+      "a_correct": 3,
+      "b_correct": 3,
+      "a_outcomes": [
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT"
+      ],
+      "b_outcomes": [
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT"
+      ],
+      "a_picks": [
+        "write_entry",
+        "write_entry",
+        "write_entry"
+      ],
+      "b_picks": [
+        "write_entry",
+        "write_entry",
+        "write_entry"
+      ],
+      "wrong_picks": [],
+      "within_family_wrong": [],
+      "cross_family_wrong": [],
+      "a_flips": false,
+      "b_flips": false
+    },
+    {
+      "idx": 6,
+      "gold": "store_item",
+      "family": "data_write",
+      "intent": "Hold the API response for this user in fast temporary storage for 5 minutes.",
+      "a_correct": 3,
+      "b_correct": 3,
+      "a_outcomes": [
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT"
+      ],
+      "b_outcomes": [
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT"
+      ],
+      "a_picks": [
+        "store_item",
+        "store_item",
+        "store_item"
+      ],
+      "b_picks": [
+        "store_item",
+        "store_item",
+        "store_item"
+      ],
+      "wrong_picks": [],
+      "within_family_wrong": [],
+      "cross_family_wrong": [],
+      "a_flips": false,
+      "b_flips": false
+    },
+    {
+      "idx": 7,
+      "gold": "persist_row",
+      "family": "data_write",
+      "intent": "Add a new invoice line item to the orders table as a brand-new row.",
+      "a_correct": 0,
+      "b_correct": 3,
+      "a_outcomes": [
+        "SELECTED-WRONG",
+        "SELECTED-WRONG",
+        "SELECTED-WRONG"
+      ],
+      "b_outcomes": [
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT"
+      ],
+      "a_picks": [
+        "insert_document",
+        "insert_document",
+        "insert_document"
+      ],
+      "b_picks": [
+        "persist_row",
+        "persist_row",
+        "persist_row"
+      ],
+      "wrong_picks": [
+        "insert_document",
+        "insert_document",
+        "insert_document"
+      ],
+      "within_family_wrong": [
+        "insert_document",
+        "insert_document",
+        "insert_document"
+      ],
+      "cross_family_wrong": [],
+      "a_flips": false,
+      "b_flips": false
+    },
+    {
+      "idx": 8,
+      "gold": "update_record",
+      "family": "data_update",
+      "intent": "Overwrite every field of the customer record for account_id=4492 with the new payload.",
+      "a_correct": 3,
+      "b_correct": 3,
+      "a_outcomes": [
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT"
+      ],
+      "b_outcomes": [
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT"
+      ],
+      "a_picks": [
+        "update_record",
+        "update_record",
+        "update_record"
+      ],
+      "b_picks": [
+        "update_record",
+        "update_record",
+        "update_record"
+      ],
+      "wrong_picks": [],
+      "within_family_wrong": [],
+      "cross_family_wrong": [],
+      "a_flips": false,
+      "b_flips": false
+    },
+    {
+      "idx": 9,
+      "gold": "modify_entry",
+      "family": "data_update",
+      "intent": "Correct only the severity field in the most recent log line, leaving all other fields intact.",
+      "a_correct": 0,
+      "b_correct": 3,
+      "a_outcomes": [
+        "SELECTED-WRONG",
+        "SELECTED-WRONG",
+        "SELECTED-WRONG"
+      ],
+      "b_outcomes": [
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT"
+      ],
+      "a_picks": [
+        "patch_item",
+        "patch_item",
+        "patch_item"
+      ],
+      "b_picks": [
+        "modify_entry",
+        "modify_entry",
+        "modify_entry"
+      ],
+      "wrong_picks": [
+        "patch_item",
+        "patch_item",
+        "patch_item"
+      ],
+      "within_family_wrong": [
+        "patch_item",
+        "patch_item",
+        "patch_item"
+      ],
+      "cross_family_wrong": [],
+      "a_flips": false,
+      "b_flips": false
+    },
+    {
+      "idx": 10,
+      "gold": "patch_item",
+      "family": "data_update",
+      "intent": "Update only the TTL on the cached session object without replacing the session payload.",
+      "a_correct": 3,
+      "b_correct": 3,
+      "a_outcomes": [
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT"
+      ],
+      "b_outcomes": [
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT"
+      ],
+      "a_picks": [
+        "patch_item",
+        "patch_item",
+        "patch_item"
+      ],
+      "b_picks": [
+        "patch_item",
+        "patch_item",
+        "patch_item"
+      ],
+      "wrong_picks": [],
+      "within_family_wrong": [],
+      "cross_family_wrong": [],
+      "a_flips": false,
+      "b_flips": false
+    },
+    {
+      "idx": 11,
+      "gold": "edit_row",
+      "family": "data_update",
+      "intent": "Change the price and stock columns for product row 8812 in the catalog table.",
+      "a_correct": 3,
+      "b_correct": 3,
+      "a_outcomes": [
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT"
+      ],
+      "b_outcomes": [
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT"
+      ],
+      "a_picks": [
+        "edit_row",
+        "edit_row",
+        "edit_row"
+      ],
+      "b_picks": [
+        "edit_row",
+        "edit_row",
+        "edit_row"
+      ],
+      "wrong_picks": [],
+      "within_family_wrong": [],
+      "cross_family_wrong": [],
+      "a_flips": false,
+      "b_flips": false
+    },
+    {
+      "idx": 12,
+      "gold": "delete_record",
+      "family": "data_delete",
+      "intent": "Permanently erase the account for user_id=2241 \u2014 it must not be recoverable.",
+      "a_correct": 0,
+      "b_correct": 3,
+      "a_outcomes": [
+        "SELECTED-WRONG",
+        "SELECTED-WRONG",
+        "SELECTED-WRONG"
+      ],
+      "b_outcomes": [
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT"
+      ],
+      "a_picks": [
+        "purge_row",
+        "purge_row",
+        "purge_row"
+      ],
+      "b_picks": [
+        "delete_record",
+        "delete_record",
+        "delete_record"
+      ],
+      "wrong_picks": [
+        "purge_row",
+        "purge_row",
+        "purge_row"
+      ],
+      "within_family_wrong": [
+        "purge_row",
+        "purge_row",
+        "purge_row"
+      ],
+      "cross_family_wrong": [],
+      "a_flips": false,
+      "b_flips": false
+    },
+    {
+      "idx": 13,
+      "gold": "remove_entry",
+      "family": "data_delete",
+      "intent": "Hide the log event from the active stream but keep it for compliance auditing.",
+      "a_correct": 0,
+      "b_correct": 3,
+      "a_outcomes": [
+        "SELECTED-WRONG",
+        "SELECTED-WRONG",
+        "SELECTED-WRONG"
+      ],
+      "b_outcomes": [
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT"
+      ],
+      "a_picks": [
+        "archive_item",
+        "archive_item",
+        "archive_item"
+      ],
+      "b_picks": [
+        "remove_entry",
+        "remove_entry",
+        "remove_entry"
+      ],
+      "wrong_picks": [
+        "archive_item",
+        "archive_item",
+        "archive_item"
+      ],
+      "within_family_wrong": [
+        "archive_item",
+        "archive_item",
+        "archive_item"
+      ],
+      "cross_family_wrong": [],
+      "a_flips": false,
+      "b_flips": false
+    },
+    {
+      "idx": 14,
+      "gold": "archive_item",
+      "family": "data_delete",
+      "intent": "Transfer the infrequently-accessed session file to cold storage (still restorable later).",
+      "a_correct": 3,
+      "b_correct": 3,
+      "a_outcomes": [
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT"
+      ],
+      "b_outcomes": [
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT"
+      ],
+      "a_picks": [
+        "archive_item",
+        "archive_item",
+        "archive_item"
+      ],
+      "b_picks": [
+        "archive_item",
+        "archive_item",
+        "archive_item"
+      ],
+      "wrong_picks": [],
+      "within_family_wrong": [],
+      "cross_family_wrong": [],
+      "a_flips": false,
+      "b_flips": false
+    },
+    {
+      "idx": 15,
+      "gold": "purge_row",
+      "family": "data_delete",
+      "intent": "Remove the order row and all its child line-item rows from the SQL tables \u2014 no recovery possible.",
+      "a_correct": 3,
+      "b_correct": 3,
+      "a_outcomes": [
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT"
+      ],
+      "b_outcomes": [
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT"
+      ],
+      "a_picks": [
+        "purge_row",
+        "purge_row",
+        "purge_row"
+      ],
+      "b_picks": [
+        "purge_row",
+        "purge_row",
+        "purge_row"
+      ],
+      "wrong_picks": [],
+      "within_family_wrong": [],
+      "cross_family_wrong": [],
+      "a_flips": false,
+      "b_flips": false
+    },
+    {
+      "idx": 16,
+      "gold": "search_items",
+      "family": "search",
+      "intent": "Find all product listings whose text mentions 'organic' or 'natural' anywhere.",
+      "a_correct": 3,
+      "b_correct": 3,
+      "a_outcomes": [
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT"
+      ],
+      "b_outcomes": [
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT"
+      ],
+      "a_picks": [
+        "search_items",
+        "search_items",
+        "search_items"
+      ],
+      "b_picks": [
+        "search_items",
+        "search_items",
+        "search_items"
+      ],
+      "wrong_picks": [],
+      "within_family_wrong": [],
+      "cross_family_wrong": [],
+      "a_flips": false,
+      "b_flips": false
+    },
+    {
+      "idx": 17,
+      "gold": "query_records",
+      "family": "search",
+      "intent": "Get all invoices where status='overdue' AND amount > 500.",
+      "a_correct": 3,
+      "b_correct": 3,
+      "a_outcomes": [
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT"
+      ],
+      "b_outcomes": [
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT"
+      ],
+      "a_picks": [
+        "query_records",
+        "query_records",
+        "query_records"
+      ],
+      "b_picks": [
+        "query_records",
+        "query_records",
+        "query_records"
+      ],
+      "wrong_picks": [],
+      "within_family_wrong": [],
+      "cross_family_wrong": [],
+      "a_flips": false,
+      "b_flips": false
+    },
+    {
+      "idx": 18,
+      "gold": "find_entries",
+      "family": "search",
+      "intent": "Locate the session whose identifier is exactly 'sess-abc-8871'.",
+      "a_correct": 0,
+      "b_correct": 3,
+      "a_outcomes": [
+        "SELECTED-WRONG",
+        "SELECTED-WRONG",
+        "SELECTED-WRONG"
+      ],
+      "b_outcomes": [
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT"
+      ],
+      "a_picks": [
+        "lookup_data",
+        "lookup_data",
+        "lookup_data"
+      ],
+      "b_picks": [
+        "find_entries",
+        "find_entries",
+        "find_entries"
+      ],
+      "wrong_picks": [
+        "lookup_data",
+        "lookup_data",
+        "lookup_data"
+      ],
+      "within_family_wrong": [
+        "lookup_data",
+        "lookup_data",
+        "lookup_data"
+      ],
+      "cross_family_wrong": [],
+      "a_flips": false,
+      "b_flips": false
+    },
+    {
+      "idx": 19,
+      "gold": "filter_list",
+      "family": "search",
+      "intent": "From the in-memory product list already loaded, keep only items with price below 20.",
+      "a_correct": 3,
+      "b_correct": 3,
+      "a_outcomes": [
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT"
+      ],
+      "b_outcomes": [
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT"
+      ],
+      "a_picks": [
+        "filter_list",
+        "filter_list",
+        "filter_list"
+      ],
+      "b_picks": [
+        "filter_list",
+        "filter_list",
+        "filter_list"
+      ],
+      "wrong_picks": [],
+      "within_family_wrong": [],
+      "cross_family_wrong": [],
+      "a_flips": false,
+      "b_flips": false
+    },
+    {
+      "idx": 20,
+      "gold": "export_data",
+      "family": "export",
+      "intent": "Save the quarterly sales data to a spreadsheet file for offline analysis.",
+      "a_correct": 3,
+      "b_correct": 3,
+      "a_outcomes": [
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT"
+      ],
+      "b_outcomes": [
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT"
+      ],
+      "a_picks": [
+        "export_data",
+        "export_data",
+        "export_data"
+      ],
+      "b_picks": [
+        "export_data",
+        "export_data",
+        "export_data"
+      ],
+      "wrong_picks": [],
+      "within_family_wrong": [],
+      "cross_family_wrong": [],
+      "a_flips": false,
+      "b_flips": false
+    },
+    {
+      "idx": 21,
+      "gold": "send_report",
+      "family": "export",
+      "intent": "Email the weekly summary report to the finance team.",
+      "a_correct": 2,
+      "b_correct": 3,
+      "a_outcomes": [
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT",
+        "SELECTED-WRONG"
+      ],
+      "b_outcomes": [
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT"
+      ],
+      "a_picks": [
+        "send_report",
+        "send_report",
+        "send_notification"
+      ],
+      "b_picks": [
+        "send_report",
+        "send_report",
+        "send_report"
+      ],
+      "wrong_picks": [
+        "send_notification"
+      ],
+      "within_family_wrong": [],
+      "cross_family_wrong": [
+        "send_notification"
+      ],
+      "a_flips": true,
+      "b_flips": false
+    },
+    {
+      "idx": 22,
+      "gold": "publish_entry",
+      "family": "export",
+      "intent": "Put the new order event on the queue so downstream services can process it.",
+      "a_correct": 0,
+      "b_correct": 3,
+      "a_outcomes": [
+        "SELECTED-WRONG",
+        "SELECTED-WRONG",
+        "SELECTED-WRONG"
+      ],
+      "b_outcomes": [
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT"
+      ],
+      "a_picks": [
+        "queue_job",
+        "queue_job",
+        "queue_job"
+      ],
+      "b_picks": [
+        "publish_entry",
+        "publish_entry",
+        "publish_entry"
+      ],
+      "wrong_picks": [
+        "queue_job",
+        "queue_job",
+        "queue_job"
+      ],
+      "within_family_wrong": [],
+      "cross_family_wrong": [
+        "queue_job",
+        "queue_job",
+        "queue_job"
+      ],
+      "a_flips": false,
+      "b_flips": false
+    },
+    {
+      "idx": 23,
+      "gold": "forward_record",
+      "family": "export",
+      "intent": "Push the payment confirmation to the external payment provider's endpoint via HTTP.",
+      "a_correct": 0,
+      "b_correct": 3,
+      "a_outcomes": [
+        "SELECTED-WRONG",
+        "SELECTED-WRONG",
+        "SELECTED-WRONG"
+      ],
+      "b_outcomes": [
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT"
+      ],
+      "a_picks": [
+        "transmit_file",
+        "transmit_file",
+        "transmit_file"
+      ],
+      "b_picks": [
+        "forward_record",
+        "forward_record",
+        "forward_record"
+      ],
+      "wrong_picks": [
+        "transmit_file",
+        "transmit_file",
+        "transmit_file"
+      ],
+      "within_family_wrong": [
+        "transmit_file",
+        "transmit_file",
+        "transmit_file"
+      ],
+      "cross_family_wrong": [],
+      "a_flips": false,
+      "b_flips": false
+    },
+    {
+      "idx": 24,
+      "gold": "notify_user",
+      "family": "notify",
+      "intent": "Show an alert inside the application interface to user_id=1002.",
+      "a_correct": 2,
+      "b_correct": 3,
+      "a_outcomes": [
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT",
+        "SELECTED-WRONG"
+      ],
+      "b_outcomes": [
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT"
+      ],
+      "a_picks": [
+        "notify_user",
+        "notify_user",
+        "alert_contact"
+      ],
+      "b_picks": [
+        "notify_user",
+        "notify_user",
+        "notify_user"
+      ],
+      "wrong_picks": [
+        "alert_contact"
+      ],
+      "within_family_wrong": [
+        "alert_contact"
+      ],
+      "cross_family_wrong": [],
+      "a_flips": true,
+      "b_flips": false
+    },
+    {
+      "idx": 25,
+      "gold": "alert_contact",
+      "family": "notify",
+      "intent": "Dispatch an urgent text message to the on-call engineer's mobile number.",
+      "a_correct": 0,
+      "b_correct": 3,
+      "a_outcomes": [
+        "SELECTED-WRONG",
+        "SELECTED-WRONG",
+        "SELECTED-WRONG"
+      ],
+      "b_outcomes": [
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT"
+      ],
+      "a_picks": [
+        "send_notification",
+        "send_notification",
+        "send_notification"
+      ],
+      "b_picks": [
+        "alert_contact",
+        "alert_contact",
+        "alert_contact"
+      ],
+      "wrong_picks": [
+        "send_notification",
+        "send_notification",
+        "send_notification"
+      ],
+      "within_family_wrong": [
+        "send_notification",
+        "send_notification",
+        "send_notification"
+      ],
+      "cross_family_wrong": [],
+      "a_flips": false,
+      "b_flips": false
+    },
+    {
+      "idx": 26,
+      "gold": "send_notification",
+      "family": "notify",
+      "intent": "Push a pop-up reminder to the user's phone for their upcoming appointment.",
+      "a_correct": 2,
+      "b_correct": 3,
+      "a_outcomes": [
+        "SELECTED-WRONG",
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT"
+      ],
+      "b_outcomes": [
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT"
+      ],
+      "a_picks": [
+        "notify_user",
+        "send_notification",
+        "send_notification"
+      ],
+      "b_picks": [
+        "send_notification",
+        "send_notification",
+        "send_notification"
+      ],
+      "wrong_picks": [
+        "notify_user"
+      ],
+      "within_family_wrong": [
+        "notify_user"
+      ],
+      "cross_family_wrong": [],
+      "a_flips": true,
+      "b_flips": false
+    },
+    {
+      "idx": 27,
+      "gold": "trigger_event",
+      "family": "notify",
+      "intent": "Fire the 'order_shipped' signal into the event log so handlers can react.",
+      "a_correct": 3,
+      "b_correct": 3,
+      "a_outcomes": [
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT"
+      ],
+      "b_outcomes": [
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT"
+      ],
+      "a_picks": [
+        "trigger_event",
+        "trigger_event",
+        "trigger_event"
+      ],
+      "b_picks": [
+        "trigger_event",
+        "trigger_event",
+        "trigger_event"
+      ],
+      "wrong_picks": [],
+      "within_family_wrong": [],
+      "cross_family_wrong": [],
+      "a_flips": false,
+      "b_flips": false
+    },
+    {
+      "idx": 28,
+      "gold": "validate_schema",
+      "family": "validate",
+      "intent": "Confirm the incoming request body matches the required data contract structure.",
+      "a_correct": 3,
+      "b_correct": 3,
+      "a_outcomes": [
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT"
+      ],
+      "b_outcomes": [
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT"
+      ],
+      "a_picks": [
+        "validate_schema",
+        "validate_schema",
+        "validate_schema"
+      ],
+      "b_picks": [
+        "validate_schema",
+        "validate_schema",
+        "validate_schema"
+      ],
+      "wrong_picks": [],
+      "within_family_wrong": [],
+      "cross_family_wrong": [],
+      "a_flips": false,
+      "b_flips": false
+    },
+    {
+      "idx": 29,
+      "gold": "check_permission",
+      "family": "validate",
+      "intent": "Verify whether user_id=5501 is allowed to perform the 'report:export' action.",
+      "a_correct": 3,
+      "b_correct": 3,
+      "a_outcomes": [
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT"
+      ],
+      "b_outcomes": [
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT"
+      ],
+      "a_picks": [
+        "check_permission",
+        "check_permission",
+        "check_permission"
+      ],
+      "b_picks": [
+        "check_permission",
+        "check_permission",
+        "check_permission"
+      ],
+      "wrong_picks": [],
+      "within_family_wrong": [],
+      "cross_family_wrong": [],
+      "a_flips": false,
+      "b_flips": false
+    },
+    {
+      "idx": 30,
+      "gold": "verify_token",
+      "family": "validate",
+      "intent": "Confirm the credential in the Authorization header has not expired.",
+      "a_correct": 3,
+      "b_correct": 3,
+      "a_outcomes": [
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT"
+      ],
+      "b_outcomes": [
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT"
+      ],
+      "a_picks": [
+        "verify_token",
+        "verify_token",
+        "verify_token"
+      ],
+      "b_picks": [
+        "verify_token",
+        "verify_token",
+        "verify_token"
+      ],
+      "wrong_picks": [],
+      "within_family_wrong": [],
+      "cross_family_wrong": [],
+      "a_flips": false,
+      "b_flips": false
+    },
+    {
+      "idx": 31,
+      "gold": "validate_format",
+      "family": "validate",
+      "intent": "Ensure the submitted phone number string matches the E.164 pattern.",
+      "a_correct": 3,
+      "b_correct": 3,
+      "a_outcomes": [
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT"
+      ],
+      "b_outcomes": [
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT"
+      ],
+      "a_picks": [
+        "validate_format",
+        "validate_format",
+        "validate_format"
+      ],
+      "b_picks": [
+        "validate_format",
+        "validate_format",
+        "validate_format"
+      ],
+      "wrong_picks": [],
+      "within_family_wrong": [],
+      "cross_family_wrong": [],
+      "a_flips": false,
+      "b_flips": false
+    },
+    {
+      "idx": 32,
+      "gold": "schedule_task",
+      "family": "schedule",
+      "intent": "Configure a nightly cleanup routine to run at 2 AM every weekday using a cron expression.",
+      "a_correct": 3,
+      "b_correct": 3,
+      "a_outcomes": [
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT"
+      ],
+      "b_outcomes": [
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT"
+      ],
+      "a_picks": [
+        "schedule_task",
+        "schedule_task",
+        "schedule_task"
+      ],
+      "b_picks": [
+        "schedule_task",
+        "schedule_task",
+        "schedule_task"
+      ],
+      "wrong_picks": [],
+      "within_family_wrong": [],
+      "cross_family_wrong": [],
+      "a_flips": false,
+      "b_flips": false
+    },
+    {
+      "idx": 33,
+      "gold": "queue_job",
+      "family": "schedule",
+      "intent": "Submit the image-resizing job for immediate background processing.",
+      "a_correct": 3,
+      "b_correct": 3,
+      "a_outcomes": [
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT"
+      ],
+      "b_outcomes": [
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT"
+      ],
+      "a_picks": [
+        "queue_job",
+        "queue_job",
+        "queue_job"
+      ],
+      "b_picks": [
+        "queue_job",
+        "queue_job",
+        "queue_job"
+      ],
+      "wrong_picks": [],
+      "within_family_wrong": [],
+      "cross_family_wrong": [],
+      "a_flips": false,
+      "b_flips": false
+    },
+    {
+      "idx": 34,
+      "gold": "defer_action",
+      "family": "schedule",
+      "intent": "Delay the email send by 10 minutes so the user can cancel if needed.",
+      "a_correct": 3,
+      "b_correct": 3,
+      "a_outcomes": [
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT"
+      ],
+      "b_outcomes": [
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT"
+      ],
+      "a_picks": [
+        "defer_action",
+        "defer_action",
+        "defer_action"
+      ],
+      "b_picks": [
+        "defer_action",
+        "defer_action",
+        "defer_action"
+      ],
+      "wrong_picks": [],
+      "within_family_wrong": [],
+      "cross_family_wrong": [],
+      "a_flips": false,
+      "b_flips": false
+    },
+    {
+      "idx": 35,
+      "gold": "plan_event",
+      "family": "schedule",
+      "intent": "Add the Thursday team sync to the shared calendar as a 3:00-4:00 PM entry everyone can see.",
+      "a_correct": 0,
+      "b_correct": 3,
+      "a_outcomes": [
+        "SELECTED-WRONG",
+        "SELECTED-WRONG",
+        "SELECTED-WRONG"
+      ],
+      "b_outcomes": [
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT"
+      ],
+      "a_picks": [
+        "insert_document",
+        "insert_document",
+        "insert_document"
+      ],
+      "b_picks": [
+        "plan_event",
+        "plan_event",
+        "plan_event"
+      ],
+      "wrong_picks": [
+        "insert_document",
+        "insert_document",
+        "insert_document"
+      ],
+      "within_family_wrong": [],
+      "cross_family_wrong": [
+        "insert_document",
+        "insert_document",
+        "insert_document"
+      ],
+      "a_flips": false,
+      "b_flips": false
+    },
+    {
+      "idx": 36,
+      "gold": "analyze_data",
+      "family": "analyze",
+      "intent": "Run the end-of-quarter analytics pipeline on the transactions dataset.",
+      "a_correct": 3,
+      "b_correct": 3,
+      "a_outcomes": [
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT"
+      ],
+      "b_outcomes": [
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT"
+      ],
+      "a_picks": [
+        "analyze_data",
+        "analyze_data",
+        "analyze_data"
+      ],
+      "b_picks": [
+        "analyze_data",
+        "analyze_data",
+        "analyze_data"
+      ],
+      "wrong_picks": [],
+      "within_family_wrong": [],
+      "cross_family_wrong": [],
+      "a_flips": false,
+      "b_flips": false
+    },
+    {
+      "idx": 37,
+      "gold": "compute_metric",
+      "family": "analyze",
+      "intent": "Calculate the churn rate for the paid tier over the last 30 days.",
+      "a_correct": 0,
+      "b_correct": 3,
+      "a_outcomes": [
+        "SELECTED-WRONG",
+        "SELECTED-WRONG",
+        "SELECTED-WRONG"
+      ],
+      "b_outcomes": [
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT"
+      ],
+      "a_picks": [
+        "analyze_data",
+        "calculate_stats",
+        "calculate_stats"
+      ],
+      "b_picks": [
+        "compute_metric",
+        "compute_metric",
+        "compute_metric"
+      ],
+      "wrong_picks": [
+        "analyze_data",
+        "calculate_stats",
+        "calculate_stats"
+      ],
+      "within_family_wrong": [
+        "analyze_data",
+        "calculate_stats",
+        "calculate_stats"
+      ],
+      "cross_family_wrong": [],
+      "a_flips": false,
+      "b_flips": false
+    },
+    {
+      "idx": 38,
+      "gold": "calculate_stats",
+      "family": "analyze",
+      "intent": "Get the mean, median, and standard deviation for the response_time_ms column.",
+      "a_correct": 0,
+      "b_correct": 3,
+      "a_outcomes": [
+        "SELECTED-WRONG",
+        "SELECTED-WRONG",
+        "SELECTED-WRONG"
+      ],
+      "b_outcomes": [
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT"
+      ],
+      "a_picks": [
+        "analyze_data",
+        "analyze_data",
+        "analyze_data"
+      ],
+      "b_picks": [
+        "calculate_stats",
+        "calculate_stats",
+        "calculate_stats"
+      ],
+      "wrong_picks": [
+        "analyze_data",
+        "analyze_data",
+        "analyze_data"
+      ],
+      "within_family_wrong": [
+        "analyze_data",
+        "analyze_data",
+        "analyze_data"
+      ],
+      "cross_family_wrong": [],
+      "a_flips": false,
+      "b_flips": false
+    },
+    {
+      "idx": 39,
+      "gold": "aggregate_records",
+      "family": "analyze",
+      "intent": "Group the sales records by region and sum the revenue in each group.",
+      "a_correct": 3,
+      "b_correct": 3,
+      "a_outcomes": [
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT"
+      ],
+      "b_outcomes": [
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT",
+        "SELECTED-CORRECT"
+      ],
+      "a_picks": [
+        "aggregate_records",
+        "aggregate_records",
+        "aggregate_records"
+      ],
+      "b_picks": [
+        "aggregate_records",
+        "aggregate_records",
+        "aggregate_records"
+      ],
+      "wrong_picks": [],
+      "within_family_wrong": [],
+      "cross_family_wrong": [],
+      "a_flips": false,
+      "b_flips": false
+    }
+  ]
+}
