@@ -222,6 +222,20 @@ test suite guarantees ordering + actionability gap regardless of which model is 
 
 ## DONE
 
+### FRONTIER-T18 — Does the T18 description effect survive a frontier agent?
+
+**Merged:** PR #50 — feat(frontier-t18): T18 durability on frontier agent — ApiAgentProvider + 3-outcome classifier
+
+Re-ran the T18 oracle A/B (60-tool confusable catalog) on Llama-3.3-70B (stronger open model than
+gemma2:9b, not a true Claude/GPT frontier). Headroom gate confirmed real headroom (Arm A 65.0% <
+85%); full 3-trial A/B: Arm A 59.2% → Arm B 100.0%, **B−A = +40.8pp**, sign test p<0.0001. Effect
+**SURVIVES** at full strength — does not collapse at a much higher capability tier. Fixed an
+in-flight `plan_event` fixture mislabel (documented in `evals/fixtures/t18_catalog.py`). Full
+write-up: `docs/research/frontier_t18_result.md`; banked into the EXP-4 regime map. See STATUS.md
+for the full result table and caveats.
+
+---
+
 ### UX1 — Presentation + safety pass (tracegauge-style first-touch flow)
 
 **Merged:** PR #51 — feat(ux1): non-destructive backup + inline before/after + agentgauge try verb

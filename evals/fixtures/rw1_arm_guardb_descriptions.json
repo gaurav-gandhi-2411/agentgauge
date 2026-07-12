@@ -1,0 +1,23 @@
+{
+  "get_pull_request": "Returns pull request metadata including title, body, state, author, head/base branches, and merge readiness flags. Does not include code diffs, changed files, or review comments.",
+  "get_pull_request_diff": "Returns the raw unified diff showing all line-level additions and deletions across every file changed in the pull request. Provides detailed code changes, unlike tools that only list files or metadata.",
+  "get_pull_request_files": "Returns a JSON string with a stub response containing the tool identifier and pull request number.",
+  "get_pull_request_reviews": "Returns top-level review decisions for a pull request, including author, state (APPROVED / CHANGES_REQUESTED / COMMENTED), and body text. Does not include inline per-line comments.",
+  "get_pull_request_comments": "Returns inline per-line comments on a pull request's diff. Unlike get_pull_request_reviews, this tool returns per-line inline comments, not top-level review decisions.",
+  "merge_pull_request": "Merges a pull request into its base branch using a specified merge method (merge, squash, or rebase), irreversibly modifying the target branch's commit history as a write operation.",
+  "search_repositories": "Searches GitHub repository metadata including name, description, topics, and README content, returning records with star count, language, and owner. Does not search file contents.",
+  "search_code": "Searches GitHub repository file contents for the query string, returning file paths and matching code snippets with surrounding context. Does not search repository metadata or issue text.",
+  "search_issues": "Searches issues and pull requests across repositories, returning records with state, labels, and assignees. Does not search repository metadata or source file contents.",
+  "search_users": "Searches GitHub users and organizations for matching profiles, returning a stub response.",
+  "get_file_contents": "Returns the decoded text content of a file or directory listing, and is read-only — does not modify the repository.",
+  "create_or_update_file": "Creates or updates a file in a GitHub repository, writing a new commit to the target branch. Requires content and a commit message, with an optional existing SHA for updates.",
+  "push_files": "Pushes multiple files to a GitHub repository in a single commit, writing to the repository and creating the branch if it does not exist. Returns the file count.",
+  "list_pull_requests": "Returns pull request records for a repository, filtered by state, branch, and sort parameters. Unlike list_issues, this tool returns pull request records only — not issues or commits.",
+  "list_issues": "Lists and filters repository issues, returning only issue records — not pull requests, even though pull requests are implemented as issues internally in GitHub's data model. Returns a JSON string with a stub response.",
+  "list_commits": "Returns a JSON stub with tool identifier and purpose.",
+  "list_branches": "Returns branch names and their head commit SHAs for a GitHub repository, optionally filtered to protected branches. Includes commit metadata for each branch, unlike tools that return standalone commits, issues, or pull requests.",
+  "get_repository": "Returns metadata for a GitHub repository including owner, name, description, visibility, default branch, fork status, star count, open issue count, and clone URLs in a JSON string. Read-only — does not modify the repository.",
+  "list_repositories": "Returns a JSON string with a stub indicating repository listing for a GitHub user.",
+  "create_repository": "Creates a new GitHub repository under the authenticated user or organization, creating a permanent repository that persists until explicitly deleted.",
+  "fork_repository": "Forks an existing GitHub repository into the authenticated user's account or specified organization, optionally renaming it. CREATES a permanent, independent copy with lasting side-effects."
+}

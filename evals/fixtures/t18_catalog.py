@@ -489,8 +489,13 @@ TASKS: list[Task] = [
         "Delay the email send by 10 minutes so the user can cancel if needed.",
     ),
     Task(
+        # Fixed 2026-06-14: original wording ("Reserve the ... slot") described book_slot's
+        # distinction, leaving gold=plan_event unresolvable even with the oracle (Ty-style
+        # mislabel surfaced by FRONTIER-T18 STEP 2). Reworded to plan_event's actual niche — a
+        # visible, start/end-bounded shared-calendar entry — without book_slot tokens
+        # (reserve/slot) or plan_event's oracle first token ("plan"). Pre-registration intact.
         "plan_event",
-        "Reserve the 3:00–4:00 PM slot on Thursday for the team sync on the calendar.",
+        "Add the Thursday team sync to the shared calendar as a 3:00-4:00 PM entry everyone can see.",
     ),
     # F10: analyze
     Task(
