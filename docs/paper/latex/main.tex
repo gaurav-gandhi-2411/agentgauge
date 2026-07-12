@@ -1,11 +1,5 @@
 \documentclass[11pt]{article}
 
-% ---- Generic arXiv-style preamble -----------------------------------------
-% No venue/workshop template has been selected yet (per spec.md, target is
-% "arXiv + workshop" with the workshop undecided). This is a clean, standard
-% single-column article layout intended to be swapped for a venue's official
-% .cls/.sty once one is picked -- see the conversion report for what would
-% need to change (title-page macros, column format, page-limit reflow).
 \usepackage[margin=1in]{geometry}
 \usepackage[T1]{fontenc}
 \usepackage{lmodern}
@@ -25,10 +19,10 @@
 
 % This paper's own section numbers (e.g. "4.2", "4.3", "4.4" -- Section 4
 % deliberately has no "4.1"; Section 8's "8.3.1" deliberately appears before
-% "8.1") are hard-coded as literal text in every heading, exactly as written
-% in docs/paper/paper.md. Disabling LaTeX's automatic numbering here (rather
-% than "fixing" the numbering) is the format-only-preserving choice --
-% renumbering would be a content change, not a formatting one.
+% "8.1") are hard-coded as literal text in every heading. Disabling LaTeX's
+% automatic numbering here (rather than "fixing" the numbering) is the
+% format-only-preserving choice -- renumbering would be a content change,
+% not a formatting one.
 \setcounter{secnumdepth}{-5}
 
 % Pandoc's tight-list marker (used throughout the converted body).
