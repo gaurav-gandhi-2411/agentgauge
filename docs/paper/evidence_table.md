@@ -83,13 +83,13 @@ disk (`reports/frontier_t18_step2_openrouter.json`, `reports/frontier_t18_ckpt_o
    - `docs/research/frontier_t18_result.md` (the caveats writeup, previously gitignored, now tracked)
 3. Committed in this branch's paper-prep history (see commit adding these three files).
 
-**Residual, smaller caveat (not a sourcing gap, a scope note):** the *harness code*
-(`agentgauge/frontier.py`, `scripts/run_frontier_t18.py`, `tests/test_frontier.py`) still lives
-only in the still-open `claude/frontier-t18` / PR #50 and has not been merged into this branch or
-`main`. The committed fixtures make the **reported numbers** independently verifiable from this
-branch today; a from-scratch **re-run** of the experiment still requires merging PR #50 first.
-State this distinction in the paper's Reproducibility Artifact section (§9): data is committed
-and hash-verified; harness-code merge is a separate, still-pending repo action.
+**Residual caveat — now resolved:** the *harness code* (`agentgauge/frontier.py`,
+`scripts/run_frontier_t18.py`, `tests/test_frontier.py`) was, at paper-preparation time, still
+only on the open `claude/frontier-t18` / PR #50. PR #50 has since merged to `main`
+(merge commit `4f70226`). The committed fixtures made the **reported numbers** independently
+verifiable before the merge; a from-scratch **re-run** of the experiment is now possible directly
+from `main`, with no further merge required. See the paper's Reproducibility Artifact section
+(§9.2).
 
 ---
 
@@ -216,6 +216,6 @@ commit on this branch's direct ancestry path, cross-checked against either `STAT
 the underlying fixture JSON (spot-checked for EXP-3's binary and graded result files, and
 independently re-derived for FRONTIER-T18).
 
-The one residual scope note (not a sourcing gap): FRONTIER-T18's harness *code* still lives only
-in the unmerged `claude/frontier-t18` branch (PR #50) — see §1.3's closing paragraph. This
-affects re-run reproducibility, not the validity of the reported/committed number.
+The prior residual scope note (not a sourcing gap) — FRONTIER-T18's harness *code* living only in
+the unmerged `claude/frontier-t18` branch — is now resolved: PR #50 merged to `main` (commit
+`4f70226`); see §1.3's closing paragraph.
