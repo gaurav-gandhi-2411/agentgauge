@@ -694,7 +694,7 @@ tools; total description collapse to identical phrasing is explicitly untested.
 The FRONTIER-T18 result (Section 4.2.3) required, during this paper's preparation, recovering a
 raw result file that existed only as a gitignored local artifact and independently re-deriving
 its numbers before committing it as a hashed fixture (Section 9.2). This is now resolved for the
-reported number; the harness code that produced it remains in an unmerged branch (Section 9.2).
+reported number; the harness code that produced it is now merged to `main` as well (Section 9.2).
 
 ---
 
@@ -713,16 +713,14 @@ read from a tracked one.
 
 ### 9.2 FRONTIER-T18 data/code split (state plainly, not silently)
 
-The result data underlying Section 4.2.3 is committed and independently re-derivable from this
-branch: `evals/fixtures/frontier_t18_step2_result.json` (per-task, sha256[:12]=`3ca4a25dbd25`)
+The result data underlying Section 4.2.3 is committed and independently re-derivable:
+`evals/fixtures/frontier_t18_step2_result.json` (per-task, sha256[:12]=`3ca4a25dbd25`)
 and `evals/fixtures/frontier_t18_step2_raw_calls.json` (all 240 raw per-call LLM responses,
 sha256[:12]=`93fb0d77262d`) — re-counting `SELECTED-CORRECT` directly from the raw calls
 reproduces 71/120 (Arm A) and 120/120 (Arm B) exactly. The **harness code** that produced these
-files (`agentgauge/frontier.py`, `scripts/run_frontier_t18.py`) still lives only in an unmerged
-branch (`claude/frontier-t18`, open draft PR #50) — a from-scratch re-run of this experiment
-requires merging that code first, even though the reported number is verifiable from committed
-data today. This split — data committed, harness code pending merge — should be resolved (by
-merging PR #50) before final submission if a fully push-button re-run is required by a venue.
+files (`agentgauge/frontier.py`, `scripts/run_frontier_t18.py`) is now committed to `main`
+alongside the data — a from-scratch re-run of this experiment is possible directly from this
+repository, with no further merge required.
 
 ### 9.3 Governance
 

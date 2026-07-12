@@ -1015,7 +1015,7 @@ preparation, recovering a raw result file that existed only as a
 gitignored local artifact and independently re-deriving its numbers
 before committing it as a hashed fixture (Section 9.2). This is now
 resolved for the reported number; the harness code that produced it
-remains in an unmerged branch (Section 9.2).
+is now merged to \texttt{main} as well (Section 9.2).
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
@@ -1042,7 +1042,7 @@ tracked one.
 silently)}\label{frontier-t18-datacode-split-state-plainly-not-silently}}
 
 The result data underlying Section 4.2.3 is committed and independently
-re-derivable from this branch:
+re-derivable:
 \url{evals/fixtures/frontier_t18_step2_result.json} (per-task,
 sha256{[}:12{]}=\texttt{3ca4a25dbd25}) and
 \url{evals/fixtures/frontier_t18_step2_raw_calls.json} (all 240
@@ -1051,13 +1051,9 @@ re-counting \texttt{SELECTED-CORRECT} directly from the raw calls
 reproduces 71/120 (Arm A) and 120/120 (Arm B) exactly. The
 \textbf{harness code} that produced these files
 (\url{agentgauge/frontier.py},
-\url{scripts/run_frontier_t18.py}) still lives only in an unmerged
-branch (\url{claude/frontier-t18}, open draft PR \#50) --- a
-from-scratch re-run of this experiment requires merging that code first,
-even though the reported number is verifiable from committed data today.
-This split --- data committed, harness code pending merge --- should be
-resolved (by merging PR \#50) before final submission if a fully
-push-button re-run is required by a venue.
+\url{scripts/run_frontier_t18.py}) is now committed to \texttt{main}
+alongside the data --- a from-scratch re-run of this experiment is
+possible directly from this repository, with no further merge required.
 
 \hypertarget{governance-1}{%
 \subsection{9.3 Governance}\label{governance-1}}
