@@ -66,3 +66,23 @@ jobs:
 
       - name: Check docs/paper/paper.md and docs/paper/latex/ stay in sync
         run: python3 scripts/check_paper_latex_sync.py "$RANGE"
+
+  pip-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install uv
+        run: pip install uv --quiet
+
+      - name: Sync dependencies
+        run: uv sync --extra dev
+
+      - name: Run pip-audit
+        # Non-blocking (T1 tier): findings are surfaced in logs but never fail the build.
+        continue-on-error: true
+        run: uv run --with pip-audit pip-audit
