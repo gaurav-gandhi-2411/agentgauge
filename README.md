@@ -7,15 +7,18 @@ tool descriptions helps, does nothing, or backfires.**
 
 [![CI](https://github.com/gaurav-gandhi-2411/agentgauge/actions/workflows/ci.yml/badge.svg)](https://github.com/gaurav-gandhi-2411/agentgauge/actions/workflows/ci.yml)
 
-> **v2.** A predictive-validity study (`reports/predictive_validity_study.md`) found that v1's
+> **v2.1.** A predictive-validity study (`reports/predictive_validity_study.md`) found that v1's
 > 8-axis LLM-judged quality score does not predict real agent task success by a margin surviving
-> both multiple-comparison correction and controlling for description length — every axis was
-> either degenerate (zero variance) or explainable by description length alone. v2 is a rebuild
-> around what that study showed actually works: detecting named defects, and testing whether a
-> change caused a measurable success-rate regression. Every number below is measured in this
-> repo — see `reports/v2_linter_evaluation.md` and `reports/v2_harness_evaluation.md` for the
-> full methodology. v1's `scan`/`fix`/`ci`/`try` commands still exist in the code but are not the
-> recommended product surface; `lint`/`eval`/`diff`/`init` are.
+> both multiple-comparison correction and controlling for description length. v2 rebuilt around
+> what that study showed actually works: a deterministic defect linter and a statistical
+> regression harness. v2.1 rebuilt the harness's estimator after measuring that trial-level
+> repeats within a task carry almost no independent information (ICC=0.793) — the v2 estimator's
+> minimum detectable effect was optimistic, not conservative. Pairing + task-clustering + CUPED
+> cuts the MDE at n=20 tasks/arm from 43.3 to 18.8 points (2.3×) — still short of the 10-point ship
+> target, reported as a real gap, not rounded away. Every number in this README is measured in
+> this repo — see `reports/v2_product_readiness.md` for the full consolidated methodology and
+> what's measured vs. assumed. v1's `scan`/`fix`/`ci`/`try` commands still exist in the code but
+> are not the recommended product surface; `lint`/`eval`/`diff`/`init` are.
 
 ---
 
@@ -76,41 +79,48 @@ states plainly what is and isn't supported by the evidence.
 ## What this actually measures (numbers, not adjectives)
 
 Two components, each evaluated on the task it actually does — never on correlation. Full
-methodology and every number's provenance: `reports/v2_linter_evaluation.md`,
-`reports/v2_harness_evaluation.md`.
+methodology and every number's provenance: `reports/v2_1_linter_recall_fix.md`,
+`reports/v2_1_severity_gate.md`, `reports/v2_1_estimator_rebuild.md`,
+`reports/v2_1_cross_model_validation.md`.
 
 ### 1. Deterministic linter (`agentgauge lint`) — zero LLM calls
 
-Detects four classes of description-vs-schema defect (a schema-required parameter that references
+Detects five classes of description-vs-schema defect (a schema-required parameter that references
 a nonexistent property; description text describing a parameter as boolean when its schema type
-isn't; identifier-like tokens in a description that don't match any real parameter; near-duplicate
-tool names). Measured on this repo's fixtures:
+isn't; identifier-like tokens in a description that don't match any real parameter; a schema
+property that was renamed while the description still refers to the old name; near-duplicate tool
+names). Severity is tiered: **BLOCKING** checks fail CI, **ADVISORY** checks are surfaced but don't
+gate — because a naive single-tier gate would reject 66.67% of genuinely clean tool sets.
 
 | Metric | Measured value | How |
 |---|---|---|
-| False-alarm rate, per tool, on a 21-tool-set clean corpus (521 tools) | **3.45%** | `reports/v2_linter_evaluation.md` §2c |
-| False-alarm rate, per tool **set** (≥1 flag anywhere), same corpus | 66.67% | reported alongside — a CI gate keyed to "any flag" would be noisier than the per-tool number suggests |
-| Recall on injected `contradictory_required_claim` / `type_flipped` / `enum_dropped` defects (276 total injected, 21 base tool sets) | **94–100%** | `reports/v2_linter_evaluation.md` §2d |
-| Recall on injected `param_renamed` defects | **22.9%** overall — 76.9% when the renamed property is multi-word, **2.9%** when single-word | same, measured cause, not glossed over |
-| Recall vs. raw JSON-Schema structural validation baseline | Linter beats it on every defect type; the baseline scores **0%** (all injected defects are semantically, not syntactically, invalid) | `reports/v2_linter_evaluation.md` §2e |
+| False-alarm rate, per tool set, BLOCKING-only (21 tool sets) | **0%** | `reports/v2_1_severity_gate.md` — clears the <10% target decisively |
+| False-alarm rate, per tool, BLOCKING+ADVISORY combined (521 tools) | 4.22% | same, still <5% |
+| Recall on injected `contradictory_required_claim` / `type_flipped` / `enum_dropped` defects | **100%** | `reports/v2_linter_evaluation.md` §2d |
+| Recall on injected `param_renamed` defects (48 cases) | **83.3%** overall — 82.9% when the renamed property is single-word (was 2.9% before this check existed) | `reports/v2_1_linter_recall_fix.md` |
+| Recall vs. raw JSON-Schema structural validation baseline | Linter beats it on every defect type — baseline scores **0%** | `reports/v2_linter_evaluation.md` §2e |
+| Recall vs. single-prompt LLM baseline (llama3.1:8b, 174+138 sampled cases) | Linter beats it once precision is counted — the LLM baseline scores 100% recall but **97.1% false-alarm rate** (a degenerate always-flag baseline; spot-checked to confirm it's genuine model hallucination, not a scoring bug) | `reports/v2_1_cross_model_validation.md` §Task 2e |
 
-### 2. Regression harness (`agentgauge diff`) — bootstrap-CI hypothesis test
+### 2. Regression harness (`agentgauge diff`) — paired, task-clustered, CUPED-adjusted bootstrap test
 
-Compares real task-success rate between two tool-set variants, decomposed into tool-selection
-accuracy and argument-construction accuracy (measured separately — a joint metric cannot see the
-common real-world case where selection is unaffected but argument construction degrades).
+Compares real task-success rate between two tool-set variants at the **server level** (paired on
+task, cluster-robust across tasks, CUPED-adjusted), decomposed into tool-selection accuracy and
+argument-construction accuracy.
 
 | Metric | Measured value | How |
 |---|---|---|
-| False-alarm rate under the null (2200 resampled comparisons of 44 real historical tool sets against themselves) | **0%** | `reports/v2_harness_evaluation.md` §3c — but 71.5% of those correctly abstain (`INSUFFICIENT_SENSITIVITY`) rather than confidently confirm no-change; only 28.5% are confident correct nulls |
-| Replay determinism (50 repeated runs, identical input) | **100%** | §3d |
-| Minimum detectable effect at n=50 trials/arm, 80% power | **27–35 percentage points** | §3b — this is the honest number, not a marketing one: at realistic CI trial budgets, only a large regression is reliably caught |
-| Minimum detectable effect at n=5–10 trials/arm, 80% power | **47–75 percentage points** | same |
+| Minimum detectable effect at n=20 tasks/arm, 80% power | **18.8 percentage points** (down from 43.3 pre-redesign — a 2.3× improvement) | `reports/v2_1_estimator_rebuild.md` |
+| **Ship target — detect a 10-point regression at 80% power, ≤20 tasks/arm** | **NOT MET** (gap: 8.8 points, ≈47% further variance reduction needed) | same — reported as a real gap, not rounded away |
+| Minimum detectable effect at n=50 tasks/arm, 80% power | 11.9 percentage points | same |
+| False-alarm rate under the null (2200 resampled comparisons, 44 real historical tool sets) | **0.59%** (still <5%) | same — not uniform: 1.71% on tool sets with <10 tasks vs. 0.07% on ≥10 tasks (the well-documented "few clusters" cluster-robust-inference effect) |
+| Abstention rate under the null (correctly declining to call a verdict) | 21.6% (down from 71.5% pre-redesign — the harness is far more decisive) | same |
+| Cross-model replication (gemma2:9b, llama3.1:8b, qwen2.5:7b) | Selection-accuracy-flat pattern **replicates across all 3 models** (0.938–1.000 every cell); argument-accuracy-degrades pattern **inconclusive** at the sample size tested (n=16/model, diluted by unconstrained tools) | `reports/v2_1_cross_model_validation.md` |
 
-**What's not yet measured:** a single-prompt LLM baseline for the linter, and cross-model
-replication of the harness's findings (both require live Ollama inference; deferred pending GPU
-availability in the session that built this — see `reports/v2_product_readiness.md`, "What would
-falsify this").
+**What's not yet measured:** determinism was not independently re-verified for the new estimator
+(inherits the prior 100%/50-run result via unchanged PRNG code); the full 32-task/trials≥3
+cross-model replication and the full-corpus LLM baseline were reduced to bounded samples for
+infrastructure-reliability reasons — see `reports/v2_product_readiness.md` §2 for the complete list
+and §4 "what would falsify this."
 
 ---
 
@@ -127,7 +137,7 @@ pip install uv && uv sync
 ## Quickstart (under 5 minutes)
 
 ```bash
-# 1. Lint your server — zero LLM cost, exits 1 on a HIGH-severity finding
+# 1. Lint your server — zero LLM cost, exits 1 on a BLOCKING finding
 agentgauge lint path/to/your_server.py
 
 # 2. Scaffold a starter anti-tautology tasks file + GitHub Action
@@ -149,7 +159,7 @@ agentgauge lint examples/call_constraints_server_fixed.py
 ```
 
 ```
-6 HIGH-severity violation(s):
+6 BLOCKING violation(s) (fails CI):
   x  ping_server: 'host' is in the schema's required list but is not a key in properties
   x  get_server_info: 'hostname' is in the schema's required list but is not a key in properties
   ...
@@ -191,9 +201,14 @@ agentgauge lint examples/echo_server.py
 
 v1's 8-axis scoring is complete but methodologically falsified as a predictor of task success
 (`reports/predictive_validity_study.md`). v2's linter and regression harness are built, measured,
-and CLI-integrated (this README's numbers). Remaining, explicitly not yet done:
-Task 5 cross-model replication (blocked on GPU availability) and a single-prompt LLM baseline for
-the linter (`reports/v2_product_readiness.md` tracks exactly what's measured vs. assumed).
+and CLI-integrated. v2.1 rebuilt the harness's estimator (paired + task-clustered + CUPED) after
+measuring that the v2 estimator's MDE was optimistic (ICC=0.793 within task) — 2.3× improvement,
+but the 10-point-regression-at-n=20 ship target is not yet met. Remaining, explicitly not yet done:
+the full 32-task/trials≥3 cross-model replication (a 16-task/trials=1 reduced version ran; the
+selection-flat half of the pattern replicated across 3 models, the argument-degrades half is
+inconclusive at that sample size) and the full-corpus single-prompt LLM baseline (a 174+138
+stratified sample ran instead) — `reports/v2_product_readiness.md` tracks exactly what's measured
+vs. assumed.
 
 ---
 

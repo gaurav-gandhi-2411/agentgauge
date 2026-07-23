@@ -1,229 +1,296 @@
-# AgentGauge v2 — product readiness report (Task 7)
+# AgentGauge v2.1 — product readiness report (Task 7)
 
-Consolidates every number produced in Tasks 1–6 of the v2 rebuild, separates what is measured in
-this repo from what is assumed, records one adversarial-pass finding (a real bug, fixed) and one
-adversarial-pass cross-check (a modeling assumption, verified not to matter), and states plainly
-what would falsify this product's value claim. Provenance: branch `feat/agentgauge-v2`, commit
-`32c46cc` plus the two follow-up commits from this report's own adversarial pass (harness bugfix +
-regression test, this report). Per the task brief: **STOP after this report — no publish or merge
-action follows without further explicit authorization.**
+Consolidates every number produced across the v2 rebuild (Tasks 0–7, `reports/v2_*.md`) and the
+v2.1 statistical-power rebuild (Tasks 0–7, `reports/v2_1_*.md`), separates MEASURED from NOT
+MEASURED, and states the headline claim in numbers, not adjectives, per this task's explicit
+instruction. Provenance: branch `feat/agentgauge-v2`, pushed to origin.
+
+**Headline claim:** the v2.1 estimator (paired + task-clustered + CUPED) reduces the minimum
+detectable effect at n=20 tasks/arm, 80% power from **0.433** (v2 trial-level baseline) to
+**0.188** — a 2.3× improvement. **The ship target (detect a 10-point regression at 80% power with
+≤20 tasks/arm) is NOT MET** — the gap is 0.088, requiring roughly 47% further variance reduction
+beyond what pairing + CUPED already deliver.
 
 ---
 
 ## 1. MEASURED
 
-### 1.1 Task 1 — Axis triage (`reports/v2_axis_triage.md`)
+### 1.1 Task 1 (v2) — Axis triage (`reports/v2_axis_triage.md`)
 
-- **Zero of v1's 8 axes survive** as a scored quality dimension. `call_correctness` and
-  `robustness` are degenerate (zero variance, n=44). The other six — including the composite
-  `overall_score` — all fail length-controlled partial correlation against the pre-committed
-  Bonferroni bar (m=6, α/m=0.00833); none reaches even the uncorrected p<0.05 threshold except
-  `description_quality` (partial ρ=+0.308, p=0.044), which still fails Bonferroni.
-  `discoverability`'s raw correlation (ρ=+0.186, already non-significant) **sign-flips** to
-  ρ=-0.132 once description length is controlled for — the cleanest demonstration in this dataset
-  that a judged axis can look like signal while re-deriving `len()`.
-- **One structural component salvaged:** `discoverability`'s deterministic Levenshtein
-  near-duplicate-name collision heuristic (never itself a correlational score) is extracted into
-  the Task 2 linter as `name_collision`. The LLM-judged half of `discoverability` is deleted
-  entirely.
+Zero of v1's 8 LLM-judged axes survive as a scored quality dimension. `call_correctness` and
+`robustness` are degenerate (zero variance, n=44). The other six — including composite
+`overall_score` — fail length-controlled partial correlation against the pre-committed Bonferroni
+bar (m=6, α/m=0.00833). `discoverability`'s deterministic name-collision sub-heuristic is salvaged
+into the linter as `name_collision`; the rest is deleted.
 
-### 1.2 Task 2 — Deterministic linter (`reports/v2_linter_evaluation.md`, `agentgauge/linter.py`)
+### 1.2 Task 1 (v2.1) — Variance structure (`reports/v2_variance_structure.md`)
 
-| Metric | Value | Against doctrine target |
+Independently verified (separate fresh re-derivation, not a re-run). Computed from 5,535 real
+historical trial records, zero inference:
+
+| Finding | Value |
+|---|---|
+| ICC(1) of trial outcomes within (tool_set, task) | **0.793** |
+| Effective sample size (of nominal 5,535 trials) | **878** (15.9% efficiency) |
+| (tool_set, task) groups with exactly zero within-group variance | **90.3%** (650/720) |
+| Variance share: between tool set / between task within set / between trial within task | **25.9% / 56.1% / 18.0%** |
+| Pooled before/after task-mean correlation, 40 matched Phase-3 tasks | **Pearson r=0.881** |
+
+These three numbers directly set the v2.1 redesign priority: pair on task first (removes the
+56.1% task-level share), cluster-robust at the task level second, CUPED third, sequential testing
+fourth (justified by ICC — repeat trials add almost no information).
+
+### 1.3 Task 2 (v2.1) — Linter recall fix (`reports/v2_1_linter_recall_fix.md`)
+
+New check `param_possibly_renamed` (inverse of `described_not_in_schema`), with two precision
+guards found necessary empirically (a naive version produced 147 false positives; guards below cut
+it to 4):
+
+| Metric | Before | After |
 |---|---|---|
-| False-alarm rate, per tool (21 tool sets, 521 tools, clean corpus) | **3.45%** (18/521) | Target <5% — **passes** |
-| False-alarm rate, per tool set (≥1 flag anywhere) | 66.67% (14/21) | No target set; reported because a naive "any flag blocks the PR" CI wiring would fail its own target even though the per-tool rate passes |
-| Recall, `contradictory_required_claim` / `type_flipped` / `enum_dropped` (177 injected defects) | **100.0% / 100.0% / 100.0%** | — |
-| Recall, `required_unmentioned_prose` (INFO-severity only, 51 injected) | 94.1% | Not surfaced by default (demoted per the PV study's own finding this check fires on clean professional docs) |
-| Recall, `param_renamed` (48 injected) | **22.9%** overall — 76.9% multi-word, **2.9%** single-word | Genuine, quantified weak spot — not fixed, fixing would explode false alarms |
-| Recall, raw JSON-Schema structural validation baseline | 0.0% (all 5 defect types) | Linter beats it on every defect type — none of the injected defects are structurally invalid JSON-Schema |
-| Recall, single-prompt LLM baseline | **not measured** | See §2.2 |
+| `param_renamed` recall, overall (n=48) | 22.9% | **83.3%** |
+| `param_renamed` recall, single-word properties (n=35) — the specific gap named in the task brief | 2.9% | **82.9%** |
+| Clean-corpus false-alarm rate, per tool (n=521) | 3.45% | 4.22% (still < 5% target) |
 
-### 1.3 Task 3 — Regression harness (`reports/v2_harness_evaluation.md`, `agentgauge/harness.py`)
+Guards: (1) exclude common id/unit-suffix abbreviations (`customer_id` → "customer" is shorthand,
+not a rename — fixed ~79% of an initial false-positive blowup); (2) require the near-miss token and
+property name to share a common prefix (fixed the residual coincidental collisions, e.g.
+`page`/`name`). A length-scaled edit-distance approach was tried and **rejected** — it improved
+precision further but dropped recall to 41.7%, worse than the target; reported as a real, disclosed
+negative result, not silently discarded.
 
-| Metric | Value | Against doctrine target |
+### 1.4 Task 5 (v2.1) — Severity gate restructuring (`reports/v2_1_severity_gate.md`)
+
+Severity restructured from a single HIGH tier into BLOCKING (`type_enum_contradiction`,
+`required_references_missing_property` — both measured 0% false alarms) and ADVISORY
+(`described_not_in_schema`, `name_collision`, `param_possibly_renamed` — each carries documented,
+only-partially-fixable noise). `LintReport.flagged` (CI exit code) now keys off BLOCKING only.
+
+| Granularity | BLOCKING-only false-alarm rate | Target |
 |---|---|---|
-| False-alarm rate under the null (2200 resampled comparisons, 44 real tool sets) | **0.0%** (0/2200) | Target <5% — **passes**, with the caveat that 71.5% of the 2200 are `INSUFFICIENT_SENSITIVITY` (correct abstention), only 28.5% confident correct `NO_CHANGE` |
-| Replay determinism (50 identical repeated runs) | **100%** byte-identical | — |
-| MDE @ n=50/arm, 80% power (baseline=0.75) | **0.273** | Reported as a measured fact, not a target — a regression must cut task success by ~27 points before this harness reliably (80%) catches it at 50 trials/arm |
-| MDE @ n=5/arm, 80% power (baseline=0.75) | 0.711 | Only a near-total collapse in success is reliably caught at CI-realistic trial counts |
-| Full 16-row table (n∈{5,10,20,50} × power∈{80%,95%} × baseline∈{0.75,0.50}) | `evals/fixtures/v2_mde_table.json` | — |
+| Per tool set (n=21) | **0.00%** (0/21) | <10% — passes decisively |
+| Per tool (n=521) | **0.00%** (0/521) | — |
 
-### 1.4 Task 4 — Argument-vs-selection decomposition
+The old single-tier rate (66.67% per tool set) does not disappear — it moves to the non-blocking
+ADVISORY tier, still surfaced to the user, just not gating CI.
 
-Not a separate metric class per the doctrine (`reports/v2_eval_doctrine.md`, Component 3) — it is
-folded into Task 2's defect-injection table (`described_not_in_schema`, `type_enum_contradiction`,
-etc. all operate on the schema/description level, independent of tool selection) and into
-`agentgauge.harness.TrialOutcome`, which reports `selection_correct` and `argument_score`
-separately by construction (`argument_score` is `None`, not `0.0`, when selection is wrong). CLI
-`agentgauge diff` and `agentgauge eval` print both rates. Verified against the exact real historical
-`call_constraints_server` pattern this decomposition was built to fix
-(`tests/test_harness.py::TestDecomposedRate::test_call_constraints_style_pattern`, and confirmed on
-real data via `agentgauge diff --replay-before/--replay-after` against
-`mediocre_server`/`mediocre_server_fixed` during manual CLI verification).
+### 1.5 Task 2/3 (v2.1) — Estimator rebuild and re-derived MDE table (`reports/v2_1_estimator_rebuild.md`)
 
-### 1.5 Task 6 — Packaging
+New estimator: `pair_tasks_common_random_numbers` (2a) + `cluster_bootstrap_mean_ci`/
+`diff_server_level` (2b) + `cuped_adjust` (2c) + `simulate_sequential_expected_n` with
+O'Brien-Fleming alpha-spending (2d), in `agentgauge/harness.py`, alongside the unchanged v2
+trial-level functions.
 
-- CLI: `lint` / `eval` / `diff` / `init` implemented, manually verified end-to-end (text and
-  `--json` modes, correct exit codes, `--mock` and `--replay` zero-inference paths, one live
-  real-historical-data replay reproducing a previously-found selection-accuracy-drop pattern).
-- GitHub Action template (`init`-scaffolded) posts a PR comment and fails the check on
-  `REGRESSION` verdict; `permissions: pull-requests: write` set; explicit note that the runner
-  needs a reachable Ollama instance for live (non-replay) diffs.
-- `pyproject.toml`: version `0.2.0`, Apache-2.0. Verified by building a wheel (`uv build`),
-  installing into a clean venv, and confirming `agentgauge --version` prints `0.2.0`. **Not
-  published to PyPI**, per the task brief's explicit instruction.
-- README rewritten around the measured numbers above (this session, commit `32c46cc`); a
-  under-5-minute quickstart using `lint`/`init`/`diff` is the primary path, v1's `scan`/`fix`/`ci`/
-  `try` are marked legacy but left functional.
-- Test suite: **803 tests pass**, 89.4% coverage (`uv run pytest`), `ruff check`/`ruff format
-  --check`/`mypy` all clean on every v2 module (`linter.py`, `harness.py`, `constraints.py`,
-  `cli.py`) as of this report.
+**MDE ablation, server level** (baseline_rate=0.7749, measured from real data):
+
+| n_tasks/arm | power | v2 baseline (trial-level) | +task-level unpaired | +paired | +paired+CUPED |
+|---|---|---|---|---|---|
+| 5 | 80% | 0.711 | 0.608 | 0.366 | 0.336 |
+| 10 | 80% | 0.598 | 0.441 | 0.263 | 0.254 |
+| **20** | **80%** | **0.433** | **0.313** | **0.191** | **0.188** |
+| 50 | 80% | 0.273 | 0.198 | 0.121 | 0.119 |
+
+(95%-power rows and the full 8-row table: `evals/fixtures/v2_1_mde_ablation.json`.)
+
+**Ablation reading:** moving to a task-level unit of analysis alone buys ~28% MDE reduction (a
+direct consequence of Task 1's ICC finding). Pairing buys the largest further reduction (~39%
+relative, expected given rho=0.881). **CUPED buys very little on top of pairing** (~2% relative at
+n=20) — pairing already captures nearly all the removable task-level variance CUPED's covariate
+could otherwise explain.
+
+**SHIP TARGET (detect a 10-point regression at 80% power, ≤20 tasks/arm): measured MDE = 0.188 →
+NOT MET.** Gap = 0.088 (≈47% further variance reduction needed). This is the honest, unsoftened
+number — the 2.3× improvement over the v2 baseline is real but does not reach the stated target.
+
+**False-alarm re-verification** (`diff_server_level`, same 44 real historical tool sets, 2200 null
+comparisons):
+
+| Metric | v2 (trial-level) | v2.1 (paired+CUPED) |
+|---|---|---|
+| False-alarm rate under the null | 0.00% | **0.59%** (13/2200, still <5% target) |
+| Abstention (`INSUFFICIENT_SENSITIVITY`) rate | 71.5% | **21.6%** |
+| Confident `NO_CHANGE` rate | 28.5% | **77.8%** |
+
+The v2.1 estimator trades a small (still-passing) false-alarm increase for a much more decisive
+harness. **The false-alarm rate is not uniform**: 1.71% on tool sets with <10 tasks vs. 0.07% on
+tool sets with ≥10 tasks (12/700 vs. 1/1500) — the well-documented "few clusters" problem in
+cluster-robust bootstrap inference, found and quantified during this rebuild's own adversarial pass
+(§3 below), not previously visible in the v2 estimator (which never clustered by task).
+
+**Sequential testing** (O'Brien-Fleming, look schedule 5–50 tasks in steps of 5): under the null,
+expected stopping n=43.8 (55.8% unresolved at n_max=50); under a true 10-point regression, expected
+n=40.0 (56.4% unresolved). **Sequential testing does not fix insufficient power** — since even
+fixed n=50 struggles to detect exactly a 10-point regression at 80% power (MDE=0.119 > 0.10 at
+n=50), most sequential runs correctly report `INSUFFICIENT_SENSITIVITY` rather than resolving
+early; the modest expected-n savings (≈6–10 tasks under null) is real but not the headline result.
+
+**Determinism:** not re-measured for the new estimator in this pass — the underlying `_lcg_random`
+mechanism is unchanged and inherits the v2 100%/50-run determinism result, not independently
+re-verified from scratch. Flagged as ASSUMED, not MEASURED (§2 below).
+
+### 1.6 Task 6 (v2.1) — Cross-model validation (`reports/v2_1_cross_model_validation.md`)
+
+Live inference across gemma2:9b, llama3.1:8b, qwen2.5:7b (qwen3:8b reserved as generator), against
+`call_constraints_server`'s flagship real-world pattern. Required rebuilding the `agentgauge-agent`
+Cloud Run service from scratch (bucket had been deleted; gcsfuse volume mount failed outright;
+`gcloud run services proxy` died silently mid-run twice — fixed by calling Cloud Run directly over
+HTTPS with an IAM identity-token bearer header instead).
+
+| Model | Selection (before→after) | Argument accuracy (before→after) |
+|---|---|---|
+| gemma2:9b | 1.000 → 1.000 | 0.500 → 0.500 |
+| llama3.1:8b | 0.938 → 1.000 | 0.533 → 0.500 |
+| qwen2.5:7b | 1.000 → 0.938 | 0.500 → 0.467 |
+
+n=16 trials/cell (trials=1, reduced from the historical 32-task/3-trial design to fit inside a
+single uninterruptible Cloud Run session).
+
+- **Established:** the selection-accuracy-flat half of the flagship pattern replicates across all
+  3 model families (0.938–1.000 in every cell) — not a gemma2:9b artifact.
+- **Not established either way:** the argument-accuracy-degrades half. Observed differences (0 to
+  −0.067) are small and diluted by construction — 4 of 8 tools in this task set have no
+  constrained parameters and always score 1.0, compressing roughly half of every aggregate figure
+  toward a guaranteed ceiling value. This is reported as **inconclusive at this sample size**, not
+  as "model-specific" or "doesn't replicate" — neither stronger claim is supported.
+
+### 1.7 Task 2e (v2.1) — Single-prompt LLM linter baseline (`reports/v2_1_cross_model_validation.md` §Task 2e)
+
+Bounded stratified sample (174/521 clean-corpus tools, 138/276 defect-injection cases), llama3.1:8b:
+
+| Metric | Value |
+|---|---|
+| Clean-corpus false-alarm rate | **97.1%** (169/174) |
+| Recall, all 5 defect types | **100.0%** (138/138) |
+
+**The baseline is degenerate** — it answers "INCONSISTENT" on 97.1% of genuinely clean tools, so
+its 100% recall is not a meaningful signal. Spot-checked directly (not assumed): the model
+hallucinated a fabricated claim ("parameter 'b' is missing from the schema") about a schema that
+plainly contained `b` — confirmed this is a real LLM confabulation, not a regex-parsing artifact on
+the measurement side. The deterministic linter's 4.22% false-alarm / 83.3% recall is a materially
+more useful signal than this baseline's 97.1% false-alarm / 100% recall.
+
+### 1.8 Packaging
+
+- CLI: `lint` / `eval` / `diff` / `init` implemented and manually verified end-to-end. GitHub Action
+  template updated for BLOCKING-only gating.
+- `pyproject.toml`: v0.2.0, Apache-2.0. Verified via clean-venv wheel install. **Not published to
+  PyPI**, per instruction.
+- Test suite: **834 tests pass**, 90.0% coverage. `ruff check` / `ruff format --check` / `mypy`
+  clean on every touched module.
 
 ---
 
-## 2. NOT MEASURED (blocked, not silently skipped)
+## 2. NOT MEASURED (or only partially measured — stated plainly, not silently rounded up)
 
-### 2.1 Task 5 — Cross-model generalization
-
-**Blocked on GPU contention for the entire duration of this rebuild.** Checked repeatedly via
-`nvidia-smi --query-gpu=memory.used,memory.free,memory.total --format=csv` and `ollama ps`; most
-recent check (this report): **490 MiB free of 8192 MiB**, consistent with every prior check this
-session (24–490 MiB free range). Per this study's standing constraint, no inference is run without
-confirming GPU availability first.
-
-- **The linter half of Task 5 needs no live trials and is trivially satisfied by construction:**
-  `agentgauge/linter.py` makes zero LLM calls — its output is identical regardless of which model
-  (if any) is later used as the acting agent. There is no cross-model question to answer for the
-  linter; this is a fact about the code, not a measurement that was skipped.
-- **The harness's cross-model replication genuinely requires live inference** (running the same
-  task set against gemma2:9b, llama3.1:8b, and qwen2.5:7b as acting agents, qwen3:8b reserved as
-  generator) and has not been attempted. This is the single largest open item in this rebuild.
-
-### 2.2 Task 2e — Single-prompt LLM baseline for the linter
-
-Same GPU blocker. Not measured. The other two baselines in the doctrine's Component 1 (no linter;
-raw JSON-Schema validation) are measured (§1.2).
+- **Task 3d determinism for the new estimator**: not independently re-measured; inherits the v2
+  result via unchanged shared PRNG code, not re-verified from scratch.
+- **Task 6 argument-accuracy replication**: inconclusive at n=16/trials=1 (§1.6) — the full 32-task
+  set at trials≥3 across all 3 models would be needed to resolve this, and was not run (would
+  require the Cloud Run infrastructure to sustain a substantially longer continuous session than
+  this rebuild's demonstrated reliability window).
+- **Task 2e full-corpus LLM baseline**: only a stratified sample (174/521, 138/276) was measured,
+  for the same infrastructure-duration reason. The qualitative conclusion (baseline is degenerate)
+  is very unlikely to flip on the remaining cases, but exact percentages could shift slightly.
+- **Sequential testing (2d) is not wired into the live CLI** — only the statistical machinery and
+  its simulation-based expected-sample-size measurement exist; `agentgauge diff` still runs a
+  fixed-n comparison. Incremental live-trial collection with early stopping is a follow-on
+  engineering task.
+- **The CUPED covariate reduction (§1.5) was checked at one baseline rate only** (~0.75–0.77,
+  derived from this study's own historical mean) — not re-checked at the 0.50 baseline row or at
+  baseline rates outside what real MCP servers in this corpus produced.
 
 ---
 
-## 3. Adversarial pass — hunting for a fifth measurement artifact
+## 3. Adversarial pass — hunting for further measurement artifacts
 
-Per the study's standing constraint ("before reporting ANY positive result, run an adversarial
-pass specifically hunting for a fifth [artifact beyond the four already found in the
-predictive-validity study]. Assume it exists."), this pass targeted Task 3's MDE simulation
-specifically, because it is the one component whose "positive result" (the MDE table) rests on a
-modeling assumption rather than a direct empirical measurement.
+Per the study's standing constraint. Four artifacts were found in the predictive-validity study
+(task leakage, tool-name ceiling, zero-vector embedding, RW1 confound); a fifth (bootstrap index
+bug) and a checked-and-cleared concern (binary vs. continuous outcome shape) were found during the
+v2 rebuild's Task 7 pass (`reports/v2_product_readiness.md`'s original §3, preserved below). This
+v2.1 pass found two more, both substantive:
 
-### 3.1 Found and fixed: an indexing crash in `bootstrap_delta_ci`
+### 3.1 (Carried from v2) Bootstrap index bug in `bootstrap_delta_ci` — fixed
 
-`agentgauge.harness.bootstrap_delta_ci`'s deterministic LCG PRNG (`_lcg_random`) can return
-exactly `1.0` (its internal state saturates at `0x7FFFFFFF`, and `next_float()` divides by that
-same value). `int(rng() * n)` then equals `n` — one index past the end of the resample list,
-raising `IndexError`. This was found empirically: a cross-check script
-(`scripts/v2_mde_continuous_crosscheck.py`, written for §3.2 below) hit it after ~4.5 minutes of
-simulation, on real code already shipped in `agentgauge/harness.py`.
+The deterministic LCG can return exactly `1.0` (state saturates at `0x7FFFFFFF`), causing
+`int(rng() * n) == n` — one index past the resample list's end. Fixed by clamping
+(`min(int(rng() * n), n - 1)`); the fix only changes the previously-crashing boundary case, so no
+previously-reported numbers needed recomputation. Regression test: `tests/test_harness.py::
+TestBootstrapDeltaCI::test_no_index_error_across_many_seeds_and_sizes` (200 seeds × 50 resamples).
 
-**This is a real, previously-undiscovered bug in the harness's core statistics engine**, not a bug
-in the cross-check script — both call the same `bootstrap_delta_ci` function. It did not surface
-during Task 3's original measurement runs (`v2_mde_table.py`, `v2_false_alarm_and_determinism.py`)
-because those specific seed sequences did not happen to hit the saturated LCG state — a matter of
-luck, not correctness. Left unfixed, `agentgauge diff` could crash in production on an
-unpredictable, seed-dependent fraction of runs.
+### 3.2 (Carried from v2) Binary vs. continuous outcome-shape assumption — checked, cleared
 
-**Fix:** clamp the resample index (`min(int(rng() * n), n - 1)`) rather than trusting the draw is
-always `< 1.0`. This changes behavior only in the previously-crashing boundary case — every other
-draw resamples identically to before, so **none of the already-reported §1.3 numbers need
-recomputation** (they were computed on seed sequences that never reached the boundary state).
-Regression test added: `tests/test_harness.py::TestBootstrapDeltaCI::
-test_no_index_error_across_many_seeds_and_sizes` (200 seeds × 50 resamples, would have raised
-`IndexError` pre-fix). Full suite re-run after the fix: 803/803 pass.
+The v2 MDE simulation assumes binary (0/1) outcomes; real data is continuous partial credit
+(`{0.0, 0.5, 0.667, 1.0}`). Cross-checked empirically: every MDE cell differed by ≤0.025 from the
+binomial-model table — the assumption does not materially change the result at this baseline rate.
 
-### 3.2 Checked and found not to matter: binary vs. continuous outcome-shape assumption
+### 3.3 (New, v2.1) "Few clusters" false-alarm inflation in the paired/cluster estimator
 
-`simulate_minimum_detectable_effect`'s docstring already discloses that it "uses a binomial outcome
-model... a simplification of the real continuous constraint-satisfaction outcome" — but this was
-never empirically checked against real data before this report. Inspecting
-`evals/fixtures/predictive_validity/results_raw.json` directly: real trial outcomes take **4
-distinct values, `{0.0, 0.5, 0.6667, 1.0}`** (n=5535 trials) — genuine partial credit from
-multi-constraint tasks, not a binary 0/1 outcome. A pure-binomial MDE simulation cannot represent
-that intermediate-value variance by construction, so the reported §1.3 MDE table rests on a
-variance model that provably does not match this study's own data.
+Found while re-verifying false-alarm rate under the null (§1.5): the new estimator's 0.59%
+aggregate false-alarm rate is not uniform — it concentrates in tool sets with few tasks (<10 tasks:
+1.71%, 12/700; ≥10 tasks: 0.07%, 1/1500 — a 24× difference). This is the well-documented
+finite-sample anti-conservative-coverage problem in cluster-robust bootstrap inference (fewer
+clusters → less reliable CI coverage), not previously visible in the v2 trial-level estimator
+(which never clustered by task at all, so had no analogous failure mode to exhibit). Both rates
+still clear the <5% doctrine target, but this is a genuine, previously-undocumented caveat: **the
+v2.1 estimator's false-alarm guarantee is strongest for servers with ≥10 distinct tasks; smaller
+catalogs should expect a higher (though still passing) false-alarm rate.**
 
-**Cross-check performed** (`scripts/v2_mde_continuous_crosscheck.py`,
-`evals/fixtures/v2_mde_continuous_crosscheck.json`): re-ran the identical binary-search MDE
-procedure, but drew "success" outcomes from the real observed non-zero value pool (n=4317 values,
-still `{0.5, 0.6667, 1.0}`) instead of a fixed `1.0`, at the real empirical mean rate (0.7749 vs.
-the original table's 0.75 — both derived the same way, from the same fixture, at slightly
-different points in this session).
+### 3.4 (New, v2.1) Single-prompt LLM baseline hallucinates on unambiguous input
 
-| n_trials/arm | power | MDE — binomial model (§1.3, baseline=0.75) | MDE — empirical outcome shape (baseline=0.7749) | Δ |
-|---|---|---|---|---|
-| 5 | 80% | 0.711 | 0.723 | +0.012 |
-| 5 | 95% | 0.750 | 0.775 | +0.025 |
-| 10 | 80% | 0.598 | 0.581 | -0.017 |
-| 10 | 95% | 0.692 | 0.699 | +0.007 |
-| 20 | 80% | 0.433 | 0.422 | -0.011 |
-| 20 | 95% | 0.537 | 0.539 | +0.002 |
-| 50 | 80% | 0.273 | 0.264 | -0.009 |
-| 50 | 95% | 0.355 | 0.348 | -0.007 |
+Found while measuring Task 2e (§1.7): spot-checked a false alarm directly rather than assuming the
+97.1% false-alarm rate reflected a genuine (if unhelpful) LLM judgment — it does. The model's own
+stated reason for flagging a clean tool was a checkable-false claim about its own context window
+(claiming a schema property was "missing" when the same prompt's JSON schema plainly contained it).
+Ruled out a measurement-side bug (e.g. the extraction regex matching "not inconsistent") before
+accepting this as a real finding, not an artifact of this study's own scoring code.
 
-**Verdict: the outcome-shape mismatch does not materially change the MDE table.** Every cell
-differs by ≤0.025, well within the noise floor of a 1000-simulation Monte Carlo estimate at either
-model. The theoretically-valid concern (binomial variance ≠ real partial-credit variance) turns out
-not to move the substantive conclusion — the bootstrap CI's width is evidently driven by sample
-size and mean-estimator variance in a way that is not very sensitive to the exact shape of the
-non-zero outcome distribution at this baseline rate. **This is reported as a checked-and-cleared
-concern, not a proven-safe one** — it was verified at one baseline rate (~0.75-0.77) derived from
-this study's own historical data; it has not been re-checked at the 0.50 baseline row of the
-original table, nor at baseline rates far from what real MCP servers in this corpus produced.
+### 3.5 Length-scaled edit-distance rejected during Task 2 iteration
 
-No further measurement artifact was found in this pass. The search focused on Task 3's harness
-(the component most rooted in a synthetic model rather than direct counting); a symmetrical pass
-over Task 2's linter was not repeated here since `reports/v2_linter_evaluation.md` §2c/2d already
-documents five separately-found false-positive mechanisms and one measurement-harness artifact
-found during that task's own development, each with its own regression test — the linter has
-already been through more rounds of adversarial hunting than the harness had until this pass.
+Not a "found artifact" in the sense of the four above, but the same spirit of self-skepticism: a
+plausible-looking precision fix for `param_possibly_renamed` (require tighter edit distance on
+short identifiers) was implemented, measured, and **rejected** because it dropped recall from 87.5%
+to 41.7% — reported as a negative result in `reports/v2_1_linter_recall_fix.md` rather than quietly
+discarded without a trace.
+
+No further measurement artifact was found in this pass.
 
 ---
 
 ## 4. What would falsify this product's value claim
 
-- **Linter:** if a clean-corpus false-alarm rate measured on a materially different, larger corpus
-  (not derived from this study's own 21 base tool sets) exceeded 5%, or if `param_renamed` recall
-  on single-word properties could not be improved without a proportional false-alarm increase on an
-  independent corpus, the "precision-first" framing would need revision.
-- **Harness:** if Task 5's (currently blocked) cross-model replication showed the same tool-set
-  change produces a `REGRESSION` verdict under one model family and `NO_CHANGE` under another at
-  matched trial counts, the harness's central claim — that it measures something about the tool set,
-  not an artifact of one specific judge/agent model — would be falsified, and every MDE/false-alarm
-  number in this report would need a "model-specific, not general" caveat added retroactively.
-  This is the single biggest open risk in this rebuild.
-- **Harness MDE, more narrowly:** if a real (not simulated) two-arm comparison at n=50 with a known,
-  independently-verified ~15-20 point true regression failed to be detected at anywhere near the
-  reported 80% rate, the MDE table's already-checked-once (§3.2) modeling assumptions would need a
-  second, harder look — specifically, whether real trial-to-trial correlation (e.g., outcomes for
-  the same task template correlated across trials, not i.i.d.) inflates true variance beyond what
-  either the binomial or empirical-outcome-shape model captures. Neither cross-check in this report
-  tested for within-tool-set trial correlation — only outcome value shape.
-- **Overall:** the axis-triage result (Task 1) would be falsified by a larger, independently
-  collected dataset showing any of the six non-degenerate axes clearing length-controlled
-  significance with Bonferroni correction — this report treats that as settled for this dataset,
-  not for all possible future data.
+- **Linter:** a clean-corpus false-alarm rate >5% on a materially different, independent corpus, or
+  `param_renamed` single-word recall failing to hold above 80% on such a corpus.
+- **Harness MDE:** a real (not simulated) n=50 comparison with a known ~15–20 point true regression
+  failing to be detected anywhere near the reported power would indicate the calibration constants
+  (sigma_task, resid_sd, rho — all measured from this study's own historical data) don't generalize.
+- **Harness false-alarm, few-clusters caveat:** if a materially larger sample of small-task-count
+  (<10 task) servers showed a false-alarm rate approaching or exceeding 5% (not just the 1.71%
+  measured here on 700 comparisons), the "still passes" framing in §1.5/§3.3 would need revision.
+- **Cross-model:** if the full 32-task, trials≥3 replication (not run — §2) showed the
+  argument-accuracy pattern genuinely diverges by model family (one model degrades sharply, another
+  doesn't), every harness number in this report would need a "model-specific, not general" caveat
+  retroactively added. This remains the single largest open risk in the v2.1 rebuild, now partially
+  but not fully addressed.
+- **Axis triage (v2):** a larger, independently collected dataset showing any of the six
+  non-degenerate axes clearing length-controlled Bonferroni significance.
 
 ---
 
 ## 5. Recommendation
 
-Every doctrine-declared target that could be measured this session was measured and passes (linter
-false-alarm <5%, harness false-alarm-under-null <5%, 100% determinism); the two that could not be
-measured (Task 5 cross-model replication, Task 2e LLM baseline) are both blocked on the same,
-already-repeatedly-confirmed GPU contention, not on anything about the product itself. One real bug
-was found and fixed during this report's own adversarial pass (§3.1), with a regression test; one
-modeling assumption was checked and found not to move the numbers (§3.2). Nothing in this rebuild
-is currently unverified-and-reported-as-verified.
+Every doctrine-declared target that could be measured this session was measured. Three pass
+decisively (linter false-alarm 4.22%<5%, harness false-alarm-under-null 0.59%<5%, BLOCKING-only
+per-tool-set false-alarm 0%<10%). **One explicit ship target is NOT MET**: the harness cannot yet
+detect a 10-point regression at 80% power within 20 tasks/arm (measured: 0.188, a 2.3× improvement
+over the v2 baseline but short of the target by 0.088). Two adversarial-pass findings this session
+(few-clusters false-alarm concentration, LLM-baseline hallucination) are new, substantive, and
+disclosed rather than smoothed over. Cross-model validation partially succeeded (selection-flat
+pattern confirmed across 3 models) and partially remains open (argument-degrades pattern
+inconclusive at the sample size this session's infrastructure could sustain).
 
-**Per the task brief: STOPPING HERE.** No publish, merge, or push action follows without explicit
-authorization. Outstanding before that authorization would make sense: Task 5's cross-model run
-(needs GPU availability), and a decision on whether to push `feat/agentgauge-v2` (6 commits ahead of
-this report, not yet pushed to origin) for review.
+**Per the task brief: stopping here.** No publish, merge, or push beyond what's already pushed to
+`feat/agentgauge-v2` follows without further explicit authorization. Outstanding before further
+work would make sense: a decision on whether the 0.188 MDE (vs. 0.10 target) is an acceptable
+shipped state or requires further variance-reduction work, and whether to invest in a
+longer-duration Cloud Run session to complete the full-scope cross-model and LLM-baseline
+measurements this report flags as sample-limited.
