@@ -30,14 +30,22 @@ class TestNegationRegressionBug:
             "Returns the complete set of all items in a collection with no "
             "pagination. Use only when you need every item at once."
         )
-        schema = {"type": "object", "properties": {"collection": {"type": "string"}}, "required": ["collection"]}
+        schema = {
+            "type": "object",
+            "properties": {"collection": {"type": "string"}},
+            "required": ["collection"],
+        }
         result = lint_tool("enumerate_all", description, schema)
         contradictions = [v for v in result.all if v.check == "type_enum_contradiction"]
         assert contradictions == []
 
     def test_genuine_boolean_phrase_still_detected(self) -> None:
         description = "Set to true/false whether the collection should be cached."
-        schema = {"type": "object", "properties": {"collection": {"type": "string"}}, "required": []}
+        schema = {
+            "type": "object",
+            "properties": {"collection": {"type": "string"}},
+            "required": [],
+        }
         result = lint_tool("cache_tool", description, schema)
         contradictions = [v for v in result.all if v.check == "type_enum_contradiction"]
         assert len(contradictions) == 1
@@ -49,7 +57,11 @@ class TestNegationRegressionBug:
             "This tool handles boolean logic operations internally. "
             "The session identifier must be provided."
         )
-        schema = {"type": "object", "properties": {"session": {"type": "string"}}, "required": ["session"]}
+        schema = {
+            "type": "object",
+            "properties": {"session": {"type": "string"}},
+            "required": ["session"],
+        }
         result = lint_tool("logic_tool", description, schema)
         contradictions = [v for v in result.all if v.check == "type_enum_contradiction"]
         assert contradictions == []
@@ -79,9 +91,7 @@ class TestInputOutputSectionRegressionBug:
             "required": ["company_name"],
         }
         result = lint_tool("get_company_profile", description, schema)
-        flagged_tokens = {
-            v.detail for v in result.all if v.check == "described_not_in_schema"
-        }
+        flagged_tokens = {v.detail for v in result.all if v.check == "described_not_in_schema"}
         assert not any("unknown_sections" in d for d in flagged_tokens)
         assert not any("company_urn" in d for d in flagged_tokens)
 
@@ -93,7 +103,11 @@ class TestInputOutputSectionRegressionBug:
             "subtotal, discount_amount, tax_amount, and final_total. "
             "Use when you need the computed final price, not raw field values."
         )
-        schema = {"type": "object", "properties": {"order_id": {"type": "string"}}, "required": ["order_id"]}
+        schema = {
+            "type": "object",
+            "properties": {"order_id": {"type": "string"}},
+            "required": ["order_id"],
+        }
         result = lint_tool("retrieve_order", description, schema)
         flagged = {v.detail for v in result.all if v.check == "described_not_in_schema"}
         assert not any("discount_amount" in d for d in flagged)
@@ -101,11 +115,7 @@ class TestInputOutputSectionRegressionBug:
         assert not any("tax_amount" in d for d in flagged)
 
     def test_genuine_input_param_confusion_still_detected_before_returns_section(self) -> None:
-        description = (
-            "Look up a record by its record_key.\n\n"
-            "Returns:\n"
-            "    The matching record."
-        )
+        description = "Look up a record by its record_key.\n\nReturns:\n    The matching record."
         schema = {"type": "object", "properties": {"key": {"type": "string"}}, "required": ["key"]}
         result = lint_tool("lookup", description, schema)
         flagged_tokens = {v.detail for v in result.all if v.check == "described_not_in_schema"}
@@ -125,7 +135,11 @@ class TestExamplesSectionRegressionBug:
             "Examples:\n"
             '    create_memory("core://my_user/survival_state", "content", priority=2)\n'
         )
-        schema = {"type": "object", "properties": {"parent_uri": {"type": "string"}}, "required": ["parent_uri"]}
+        schema = {
+            "type": "object",
+            "properties": {"parent_uri": {"type": "string"}},
+            "required": ["parent_uri"],
+        }
         result = lint_tool("create_memory", description, schema)
         flagged = {v.detail for v in result.all if v.check == "described_not_in_schema"}
         assert not any("survival_state" in d for d in flagged)
@@ -142,7 +156,9 @@ class TestSiblingToolNameRegressionBug:
     def test_sibling_tool_name_not_flagged_as_missing_param(self) -> None:
         description = "Use watch_topic to register topics before calling this."
         schema = {"type": "object", "properties": {}, "required": []}
-        result = lint_tool("check_alerts", description, schema, sibling_tool_names=frozenset({"watch_topic"}))
+        result = lint_tool(
+            "check_alerts", description, schema, sibling_tool_names=frozenset({"watch_topic"})
+        )
         flagged = {v.detail for v in result.all if v.check == "described_not_in_schema"}
         assert not any("watch_topic" in d for d in flagged)
 
@@ -154,7 +170,11 @@ class TestSiblingToolNameRegressionBug:
                 self.inputSchema = inputSchema
 
         tools = [
-            _T("check_alerts", "Use watch_topic to register topics first.", {"type": "object", "properties": {}}),
+            _T(
+                "check_alerts",
+                "Use watch_topic to register topics first.",
+                {"type": "object", "properties": {}},
+            ),
             _T("watch_topic", "Register a topic watch.", {"type": "object", "properties": {}}),
         ]
         report = lint_tool_set(tools)
@@ -164,7 +184,9 @@ class TestSiblingToolNameRegressionBug:
     def test_genuine_missing_param_still_flagged_when_not_a_sibling_name(self) -> None:
         description = "Look up a record by its record_key."
         schema = {"type": "object", "properties": {}, "required": []}
-        result = lint_tool("lookup", description, schema, sibling_tool_names=frozenset({"other_tool"}))
+        result = lint_tool(
+            "lookup", description, schema, sibling_tool_names=frozenset({"other_tool"})
+        )
         flagged = {v.detail for v in result.all if v.check == "described_not_in_schema"}
         assert any("record_key" in d for d in flagged)
 
