@@ -114,7 +114,11 @@ def _lcg_random(seed: int) -> Any:
 
 
 def bootstrap_delta_ci(
-    before: list[float], after: list[float], n_resamples: int = 2000, seed: int = 42, ci: float = 0.95
+    before: list[float],
+    after: list[float],
+    n_resamples: int = 2000,
+    seed: int = 42,
+    ci: float = 0.95,
 ) -> tuple[float, float, float]:
     """Bootstrap CI for the difference in means (after - before), resampling
     each arm independently with replacement. Returns (point_delta, ci_lo, ci_hi).
@@ -180,7 +184,9 @@ def diff_from_trials(
     before_joint = [t.joint_success for t in before_trials]
     after_joint = [t.joint_success for t in after_trials]
 
-    delta, ci_lo, ci_hi = bootstrap_delta_ci(before_joint, after_joint, n_resamples=n_resamples, seed=seed)
+    delta, ci_lo, ci_hi = bootstrap_delta_ci(
+        before_joint, after_joint, n_resamples=n_resamples, seed=seed
+    )
 
     ci_width = ci_hi - ci_lo
     # Sensitivity gate: if the CI is wide relative to the threshold itself, this
@@ -201,7 +207,9 @@ def diff_from_trials(
         message = f"Regression: success rate dropped by {-delta:.3f} (95% CI [{ci_lo:+.3f}, {ci_hi:+.3f}])."
     elif ci_lo > threshold:
         verdict = Verdict.IMPROVEMENT
-        message = f"Improvement: success rate rose by {delta:.3f} (95% CI [{ci_lo:+.3f}, {ci_hi:+.3f}])."
+        message = (
+            f"Improvement: success rate rose by {delta:.3f} (95% CI [{ci_lo:+.3f}, {ci_hi:+.3f}])."
+        )
     else:
         verdict = Verdict.NO_CHANGE
         message = (

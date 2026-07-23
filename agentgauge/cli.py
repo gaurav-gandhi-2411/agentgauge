@@ -1,15 +1,17 @@
 from __future__ import annotations
 
 import asyncio
+import json
 import sys
 from pathlib import Path
-from typing import Annotated
+from typing import Annotated, Any
 
 import typer
 from rich.console import Console
 
 from agentgauge import __version__
 from agentgauge.client import cleanup_connection, connect_http, connect_stdio
+from agentgauge.constraints import BlindTask, constraint_satisfaction
 from agentgauge.fixer import (
     DEFAULT_MIN_DELTA,
     DEFAULT_SKIP_ABOVE_BAND,
@@ -19,9 +21,13 @@ from agentgauge.fixer import (
     assert_generator_ne_judge,
     run_fixer,
 )
+from agentgauge.harness import DecomposedRate, DiffResult, TrialOutcome, Verdict, diff_from_trials
+from agentgauge.linter import LintReport, lint_tool_set
 from agentgauge.providers import MockProvider, OllamaProvider
 from agentgauge.report import render_html, render_json_stable, render_text
+from agentgauge.runner import RunResult, run_tasks
 from agentgauge.scorer import score_all
+from agentgauge.tasks import Task
 
 # Model the judge rubric was calibrated against. Scores are model-specific:
 # changing --model shifts absolute band values and makes results non-comparable
@@ -432,3 +438,420 @@ async def _try_async(
 
     # Step (c): apply hint
     console.print(f"\nRun `agentgauge fix {target} --apply` to apply these fixes.")
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# v2 commands: lint, eval, diff, init
+#
+# Per reports/v2_axis_triage.md, v2 retains no LLM-judged correlational scoring
+# axis — `scan`/`fix`/`ci`/`try` above are v1 and unchanged; these four commands
+# are the new product surface: a deterministic defect linter and a statistical
+# regression harness, evaluated by precision/recall/false-alarm rate/MDE (see
+# reports/v2_linter_evaluation.md, reports/v2_harness_evaluation.md), not
+# correlation.
+# ─────────────────────────────────────────────────────────────────────────────
+
+
+async def _connect(target: str) -> tuple[Any, Any, str | None]:
+    if target.startswith("http://") or target.startswith("https://"):
+        client, ctx = await connect_http(target)
+        return client, ctx, target
+    client, ctx = await connect_stdio(sys.executable, [target])
+    return client, ctx, None
+
+
+def _print_lint_report(report: LintReport, console: Console, *, show_info: bool) -> None:
+    if not report.high and not (show_info and report.info):
+        console.print("[green]No violations found.[/green]")
+        return
+    if report.high:
+        console.print(f"[bold red]{len(report.high)} HIGH-severity violation(s):[/bold red]")
+        for v in report.high:
+            console.print(f"  [red]x[/red] [{v.check}] {v.tool_name}: {v.detail}")
+    if show_info and report.info:
+        console.print(
+            f"\n[bold yellow]{len(report.info)} INFO-severity hint(s) (off by default):[/bold yellow]"
+        )
+        for v in report.info:
+            console.print(f"  [yellow]-[/yellow] [{v.check}] {v.tool_name}: {v.detail}")
+
+
+@app.command()
+def lint(
+    target: Annotated[str, typer.Argument(help="Path to MCP server script, or HTTP/SSE URL")],
+    show_info: Annotated[
+        bool, typer.Option("--show-info", help="Also show INFO-severity hints (off by default)")
+    ] = False,
+    json_output: Annotated[
+        bool, typer.Option("--json", help="Machine-readable JSON output")
+    ] = False,
+) -> None:
+    """Deterministic schema-consistency + name-collision linter. No LLM calls.
+
+    Exits 1 if any HIGH-severity violation is found (CI-friendly). See
+    reports/v2_linter_evaluation.md for measured precision/recall/false-alarm rate.
+    """
+    asyncio.run(_lint_async(target, show_info=show_info, json_output=json_output))
+
+
+async def _lint_async(target: str, *, show_info: bool, json_output: bool) -> None:
+    console = Console()
+    client, ctx, _ = await _connect(target)
+    try:
+        info = await client.introspect()
+        report = lint_tool_set(info.tools)
+        if json_output:
+            payload = {
+                "high": [
+                    {
+                        "check": v.check,
+                        "severity": v.severity.value,
+                        "tool_name": v.tool_name,
+                        "detail": v.detail,
+                    }
+                    for v in report.high
+                ],
+                "info": [
+                    {
+                        "check": v.check,
+                        "severity": v.severity.value,
+                        "tool_name": v.tool_name,
+                        "detail": v.detail,
+                    }
+                    for v in (report.info if show_info else [])
+                ],
+                "n_high": report.n_high,
+                "n_info": report.n_info,
+                "flagged": report.flagged,
+            }
+            typer.echo(json.dumps(payload, indent=2))
+        else:
+            _print_lint_report(report, console, show_info=show_info)
+    finally:
+        await cleanup_connection(ctx)
+    if report.flagged:
+        raise typer.Exit(1)
+
+
+def _load_tasks_file(path: Path) -> list[BlindTask]:
+    with path.open(encoding="utf-8") as f:
+        raw = json.load(f)
+    return [BlindTask.from_dict(d) for d in raw]
+
+
+async def _collect_trials(
+    target: str, tasks: list[BlindTask], *, model: str, trials: int, mock: bool
+) -> list[TrialOutcome]:
+    """Live trial collection: connects, runs each task `trials` times, scores
+    argument correctness against any user-supplied constraints (1.0 default for
+    unconstrained tasks — see agentgauge.constraints' documented limitation)."""
+    provider = MockProvider() if mock else OllamaProvider(model)
+    client, ctx, _ = await _connect(target)
+    try:
+        task_objs = [Task(tool_name=t.tool_name, description=t.description) for t in tasks]
+        run_results: list[RunResult] = await run_tasks(task_objs, client, provider, trials=trials)
+        outcomes = []
+        constraints_by_key = {(t.tool_name, t.description): t.constraints for t in tasks}
+        for r in run_results:
+            key = (r.task.tool_name, r.task.description)
+            constraints = constraints_by_key.get(key)
+            score = (
+                constraint_satisfaction(r.constructed_args, constraints)
+                if r.selected_tool == r.task.tool_name
+                else 0.0
+            )
+            outcomes.append(
+                TrialOutcome(
+                    task_tool_name=r.task.tool_name,
+                    selected_tool=r.selected_tool,
+                    constraint_satisfaction=score,
+                )
+            )
+        return outcomes
+    finally:
+        await cleanup_connection(ctx)
+
+
+def _load_replay_trials(path: Path) -> list[TrialOutcome]:
+    """Load pre-collected trial outcomes from a JSON file shaped like
+    evals/fixtures/predictive_validity/results_raw.json's `run_results` field
+    -- lets `diff`/`eval` be tested and used with zero live inference."""
+    with path.open(encoding="utf-8") as f:
+        raw = json.load(f)
+    return [TrialOutcome.from_dict(r) for r in raw]
+
+
+def _print_decomposed(label: str, rate: DecomposedRate, console: Console) -> None:
+    arg_str = (
+        f"{rate.argument_accuracy_given_correct_selection:.3f}"
+        if rate.argument_accuracy_given_correct_selection is not None
+        else "n/a (0 correct-selection trials)"
+    )
+    console.print(f"[bold]{label}[/bold] (n={rate.n_trials} trials)")
+    console.print(f"  selection accuracy:          {rate.selection_accuracy:.3f}")
+    console.print(f"  argument accuracy | correct: {arg_str}")
+    console.print(f"  joint success rate:          {rate.joint_success_rate:.3f}")
+
+
+@app.command(name="eval")
+def eval_cmd(
+    target: Annotated[str, typer.Argument(help="Path to MCP server script, or HTTP/SSE URL")],
+    tasks_file: Annotated[
+        Path | None,
+        typer.Option("--tasks", help="JSON file of anti-tautology tasks (see `agentgauge init`)"),
+    ] = None,
+    replay: Annotated[
+        Path | None,
+        typer.Option(
+            "--replay", help="Replay pre-collected trial outcomes instead of running live"
+        ),
+    ] = None,
+    model: Annotated[str, typer.Option("--model", "-m", help="Ollama agent model")] = "gemma2:9b",
+    trials: Annotated[int, typer.Option("--trials", "-t", help="Trials per task")] = 5,
+    mock: Annotated[bool, typer.Option("--mock", help="Use mock LLM provider")] = False,
+    json_output: Annotated[bool, typer.Option("--json")] = False,
+) -> None:
+    """Lint + single-point task-success measurement (selection vs. argument
+    accuracy reported separately — Task 4's decomposition). Not a regression
+    diff; use `agentgauge diff` to compare two variants."""
+    asyncio.run(
+        _eval_async(
+            target,
+            tasks_file=tasks_file,
+            replay=replay,
+            model=model,
+            trials=trials,
+            mock=mock,
+            json_output=json_output,
+        )
+    )
+
+
+async def _eval_async(
+    target: str,
+    *,
+    tasks_file: Path | None,
+    replay: Path | None,
+    model: str,
+    trials: int,
+    mock: bool,
+    json_output: bool,
+) -> None:
+    console = Console()
+    client, ctx, _ = await _connect(target)
+    try:
+        info = await client.introspect()
+        lint_report = lint_tool_set(info.tools)
+    finally:
+        await cleanup_connection(ctx)
+
+    if not json_output:
+        _print_lint_report(lint_report, console, show_info=False)
+
+    if replay is not None:
+        outcomes = _load_replay_trials(replay)
+    elif tasks_file is not None:
+        tasks = _load_tasks_file(tasks_file)
+        outcomes = await _collect_trials(target, tasks, model=model, trials=trials, mock=mock)
+    else:
+        console.print(
+            "[yellow]No --tasks or --replay given -- skipping task-success measurement "
+            "(lint-only). Run `agentgauge init` to scaffold a starter tasks file.[/yellow]"
+        )
+        if json_output:
+            typer.echo(
+                json.dumps({"n_high": lint_report.n_high, "flagged": lint_report.flagged}, indent=2)
+            )
+        if lint_report.flagged:
+            raise typer.Exit(1)
+        return
+
+    rate = DecomposedRate.from_trials(outcomes)
+    if json_output:
+        payload = {
+            "n_high": lint_report.n_high,
+            "flagged": lint_report.flagged,
+            "selection_accuracy": rate.selection_accuracy,
+            "argument_accuracy_given_correct_selection": rate.argument_accuracy_given_correct_selection,
+            "joint_success_rate": rate.joint_success_rate,
+        }
+        typer.echo(json.dumps(payload, indent=2))
+    else:
+        _print_decomposed(target, rate, console)
+    if lint_report.flagged:
+        raise typer.Exit(1)
+
+
+@app.command()
+def diff(
+    before: Annotated[str, typer.Argument(help="Path to the 'before' MCP server script")],
+    after: Annotated[str, typer.Argument(help="Path to the 'after' MCP server script")],
+    tasks_file: Annotated[
+        Path | None,
+        typer.Option("--tasks", help="JSON file of anti-tautology tasks (see `agentgauge init`)"),
+    ] = None,
+    replay_before: Annotated[Path | None, typer.Option("--replay-before")] = None,
+    replay_after: Annotated[Path | None, typer.Option("--replay-after")] = None,
+    model: Annotated[str, typer.Option("--model", "-m", help="Ollama agent model")] = "gemma2:9b",
+    trials: Annotated[int, typer.Option("--trials", "-t", help="Trials per task")] = 5,
+    threshold: Annotated[
+        float,
+        typer.Option(
+            "--threshold",
+            help="Regression threshold on joint success rate (see reports/v2_harness_evaluation.md for the real MDE at your trial count)",
+        ),
+    ] = 0.05,
+    mock: Annotated[bool, typer.Option("--mock", help="Use mock LLM provider")] = False,
+    json_output: Annotated[bool, typer.Option("--json")] = False,
+) -> None:
+    """Regression harness: bootstrap-CI comparison of task success between two
+    tool-set variants, decomposed into selection vs. argument accuracy.
+
+    Exits 1 on a REGRESSION verdict. See reports/v2_harness_evaluation.md for
+    the measured minimum detectable effect at your --trials count before
+    trusting a NO_CHANGE verdict as conclusive.
+    """
+    asyncio.run(
+        _diff_async(
+            before,
+            after,
+            tasks_file=tasks_file,
+            replay_before=replay_before,
+            replay_after=replay_after,
+            model=model,
+            trials=trials,
+            threshold=threshold,
+            mock=mock,
+            json_output=json_output,
+        )
+    )
+
+
+async def _diff_async(
+    before: str,
+    after: str,
+    *,
+    tasks_file: Path | None,
+    replay_before: Path | None,
+    replay_after: Path | None,
+    model: str,
+    trials: int,
+    threshold: float,
+    mock: bool,
+    json_output: bool,
+) -> None:
+    console = Console()
+    if replay_before is not None and replay_after is not None:
+        before_trials = _load_replay_trials(replay_before)
+        after_trials = _load_replay_trials(replay_after)
+    elif tasks_file is not None:
+        tasks = _load_tasks_file(tasks_file)
+        before_trials = await _collect_trials(before, tasks, model=model, trials=trials, mock=mock)
+        after_trials = await _collect_trials(after, tasks, model=model, trials=trials, mock=mock)
+    else:
+        console.print(
+            "[red]Error: provide either --tasks, or both --replay-before and --replay-after.[/red]"
+        )
+        raise typer.Exit(2)
+
+    result: DiffResult = diff_from_trials(before_trials, after_trials, threshold=threshold)
+
+    if json_output:
+        payload = {
+            "verdict": result.verdict.value,
+            "delta": result.delta,
+            "ci_lo": result.ci_lo,
+            "ci_hi": result.ci_hi,
+            "threshold": result.threshold,
+            "message": result.message,
+            "before": {
+                "selection_accuracy": result.before_decomposed.selection_accuracy,
+                "argument_accuracy_given_correct_selection": result.before_decomposed.argument_accuracy_given_correct_selection,
+                "joint_success_rate": result.before_decomposed.joint_success_rate,
+            },
+            "after": {
+                "selection_accuracy": result.after_decomposed.selection_accuracy,
+                "argument_accuracy_given_correct_selection": result.after_decomposed.argument_accuracy_given_correct_selection,
+                "joint_success_rate": result.after_decomposed.joint_success_rate,
+            },
+        }
+        typer.echo(json.dumps(payload, indent=2))
+    else:
+        _print_decomposed("before", result.before_decomposed, console)
+        console.print()
+        _print_decomposed("after", result.after_decomposed, console)
+        console.print()
+        verdict_color = {
+            Verdict.REGRESSION: "red",
+            Verdict.IMPROVEMENT: "green",
+            Verdict.NO_CHANGE: "cyan",
+            Verdict.INSUFFICIENT_SENSITIVITY: "yellow",
+        }[result.verdict]
+        console.print(
+            f"[bold {verdict_color}]{result.verdict.value.upper()}[/bold {verdict_color}]: {result.message}"
+        )
+
+    raise typer.Exit(result.exit_code)
+
+
+_STARTER_TASKS_TEMPLATE = """[
+  {
+    "tool_name": "REPLACE_WITH_YOUR_TOOL_NAME",
+    "description": "Describe the user's INTENT in plain language. Never quote the tool name or any required enum/literal value verbatim -- that makes selection trivial regardless of description quality. See reports/predictive_validity_study.md's blind_tasks.py convention for worked examples.",
+    "constraints": [
+      {"param": "some_param", "kind": "enum", "gold_value": "expected_value"}
+    ]
+  }
+]
+"""
+
+_GITHUB_ACTION_TEMPLATE = """name: agentgauge
+on:
+  pull_request:
+jobs:
+  agentgauge:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install agentgauge
+        run: pip install agentgauge
+      - name: Lint
+        run: agentgauge lint ./path/to/your_server.py --json > lint.json
+      - name: Diff against main
+        run: |
+          git show main:path/to/your_server.py > /tmp/before_server.py
+          agentgauge diff /tmp/before_server.py ./path/to/your_server.py \\
+            --tasks ./agentgauge_tasks.json --json > diff.json
+"""
+
+
+@app.command()
+def init(
+    out_dir: Annotated[Path, typer.Option("--out", help="Directory to scaffold into")] = Path("."),
+) -> None:
+    """Scaffold a starter anti-tautology tasks file and a GitHub Action template."""
+    console = Console()
+    tasks_path = out_dir / "agentgauge_tasks.json"
+    workflow_dir = out_dir / ".github" / "workflows"
+    workflow_path = workflow_dir / "agentgauge.yml"
+
+    if tasks_path.exists():
+        console.print(f"[yellow]{tasks_path} already exists -- not overwriting.[/yellow]")
+    else:
+        tasks_path.write_text(_STARTER_TASKS_TEMPLATE, encoding="utf-8")
+        console.print(f"[green]Wrote {tasks_path}[/green]")
+
+    workflow_dir.mkdir(parents=True, exist_ok=True)
+    if workflow_path.exists():
+        console.print(f"[yellow]{workflow_path} already exists -- not overwriting.[/yellow]")
+    else:
+        workflow_path.write_text(_GITHUB_ACTION_TEMPLATE, encoding="utf-8")
+        console.print(f"[green]Wrote {workflow_path}[/green]")
+
+    console.print(
+        "\nNext steps:\n"
+        "  1. Edit agentgauge_tasks.json with real anti-tautology tasks for your tools.\n"
+        "  2. Run `agentgauge lint <your_server.py>` (zero LLM cost).\n"
+        "  3. Run `agentgauge diff <before.py> <after.py> --tasks agentgauge_tasks.json` "
+        "before merging a description/schema change.\n"
+    )

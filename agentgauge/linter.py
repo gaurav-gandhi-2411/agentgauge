@@ -60,9 +60,7 @@ _BOOLEAN_PHRASE_RE = re.compile(
     re.IGNORECASE,
 )
 _IDENTIFIER_RE = re.compile(r"`([a-zA-Z_][a-zA-Z0-9_]*)`|\b([a-z][a-z0-9]*(?:_[a-z0-9]+)+)\b")
-_RETURN_SECTION_RE = re.compile(
-    r"\n\s*(returns?|output)\s*:", re.IGNORECASE
-)
+_RETURN_SECTION_RE = re.compile(r"\n\s*(returns?|output)\s*:", re.IGNORECASE)
 _RETURN_SENTENCE_RE = re.compile(r"^\s*returns?\b", re.IGNORECASE)
 _EXAMPLES_SECTION_RE = re.compile(r"\n\s*examples?\s*:", re.IGNORECASE)
 
@@ -161,7 +159,9 @@ def _check_described_not_in_schema(
     return violations
 
 
-def _check_type_enum_contradiction(tool_name: str, description: str, props: dict) -> list[Violation]:
+def _check_type_enum_contradiction(
+    tool_name: str, description: str, props: dict
+) -> list[Violation]:
     desc = description or ""
     violations = []
     # Same-sentence co-occurrence, not a raw character window: "nearby" only
@@ -211,7 +211,9 @@ def _check_type_enum_contradiction(tool_name: str, description: str, props: dict
     return violations
 
 
-def _check_required_missing_property(tool_name: str, required: list, props: dict) -> list[Violation]:
+def _check_required_missing_property(
+    tool_name: str, required: list, props: dict
+) -> list[Violation]:
     return [
         Violation(
             check="required_references_missing_property",
@@ -224,7 +226,9 @@ def _check_required_missing_property(tool_name: str, required: list, props: dict
     ]
 
 
-def _check_required_not_mentioned(tool_name: str, description: str, required: list) -> list[Violation]:
+def _check_required_not_mentioned(
+    tool_name: str, description: str, required: list
+) -> list[Violation]:
     desc_lower = (description or "").lower()
     return [
         Violation(
@@ -255,7 +259,9 @@ def lint_tool(
     required: list[str] = (schema or {}).get("required", []) or []
 
     result = ToolLintResult(tool_name=tool_name)
-    result.high.extend(_check_described_not_in_schema(tool_name, description, props, sibling_tool_names))
+    result.high.extend(
+        _check_described_not_in_schema(tool_name, description, props, sibling_tool_names)
+    )
     result.high.extend(_check_type_enum_contradiction(tool_name, description, props))
     result.high.extend(_check_required_missing_property(tool_name, required, props))
     result.info.extend(_check_required_not_mentioned(tool_name, description, required))
@@ -325,7 +331,8 @@ def lint_tool_set(tools: list[Any]) -> LintReport:
     `.name`, `.description`, `.inputSchema` attributes (matches `mcp.types.Tool`)."""
     all_names = frozenset(t.name for t in tools)
     tool_results = [
-        lint_tool(t.name, t.description or "", t.inputSchema or {}, all_names - {t.name}) for t in tools
+        lint_tool(t.name, t.description or "", t.inputSchema or {}, all_names - {t.name})
+        for t in tools
     ]
     collisions = check_name_collisions([t.name for t in tools])
     return LintReport(tool_results=tool_results, collision_violations=collisions)
