@@ -31,6 +31,11 @@ from __future__ import annotations
 #     call_constraints_server, arxiv/   server's real list_tools()/call_tool() bodies
 #     linkedin/jupyter mirrors            (read directly, not guessed)
 from agentgauge.tasks import Task
+from evals.fixtures.p2a_internal_proxy_catalog import TASKS as _P2A_TASKS
+from evals.fixtures.q3_catalog import TASKS as _Q3_CATALOG_TASKS
+from evals.fixtures.q6_catalog import TASKS as _Q6_CATALOG_TASKS
+from evals.fixtures.rw1_github_catalog import TASKS as _RW1_TASKS
+from evals.fixtures.rw2_aws_iam_catalog import TASKS as _RW2_TASKS
 from evals.fixtures.t17_tasks import TASKS as _T17_TASKS
 from evals.fixtures.t18_catalog import FAMILIES as _T18_FAMILIES
 from evals.fixtures.t18_catalog import TASKS as _T18_CATALOG_TASKS
@@ -622,8 +627,256 @@ EXP1_LINKEDIN_MIRROR_TASKS: list[Task] = [
     ),
 ]
 
+# ── Manifest expansion (18 -> 40) ────────────────────────────────────────────
+# Tier 1: RW1 (21 tools), RW2 (29 tools), P2A (48 tools) — each catalog's own
+# pre-registered TASKS list already has 1:1 tool coverage (verified against each
+# catalog's ALL_TOOLS/assert above) and already follows the anti-tautology
+# convention (task text expresses intent only). Reused verbatim, once per catalog,
+# across every arm of that catalog (arms differ only in served descriptions, never
+# in tool names or schemas).
+RW1_GITHUB_TASKS: list[Task] = list(_RW1_TASKS)
+RW2_AWS_IAM_TASKS: list[Task] = list(_RW2_TASKS)
+P2A_INTERNAL_PROXY_TASKS: list[Task] = list(_P2A_TASKS)
+
+# ── Tier 2: Q3 (12 tools) ────────────────────────────────────────────────────
+# q3_catalog.TASKS covers 10 of 12 tools (1 task each) — missing lookup_data and
+# plan_event, the second tool in each of Q3's two "genuinely equivalent" control
+# pairs (find_entries/lookup_data, book_slot/plan_event; see q3_catalog.py's own
+# CONTROL_TASK_PAIRS). Gap tasks below give each of those 2 tools its own task,
+# phrased distinctly from its equivalent partner's existing catalog task, with a
+# concrete literal so it is constrainable (constraints.py).
+_Q3_GAP_TASKS: list[Task] = [
+    Task(
+        "lookup_data",
+        "Search for every entry whose key includes the substring 'sess-4471'.",
+    ),
+    Task(
+        "plan_event",
+        "Add the 'team-retro' block to the shared calendar for Monday morning.",
+    ),
+]
+
+Q3_SUBSET_TASKS: list[Task] = list(_Q3_CATALOG_TASKS) + _Q3_GAP_TASKS
+
+# ── Tier 2: Q6 (23 tools) ────────────────────────────────────────────────────
+# q6_catalog.TASKS (19 tasks) covers 19 of 23 tools. The 4 gap tools are all
+# inherited from Q3's 12-tool catalog but NOT among the 6 tools Q6 kept as its
+# "structural contested" subset: save_record, archive_item (store/delete_family),
+# lookup_data, plan_event (control pairs — same gap as Q3 above). Gap tasks give
+# each its own task with a concrete literal, distinct from any Q3 gap-task wording.
+_Q6_GAP_TASKS: list[Task] = [
+    Task(
+        "save_record",
+        "Update the customer profile for account 'CUST-6612', creating it fresh if "
+        "this is their first record.",
+    ),
+    Task(
+        "archive_item",
+        "Move the outdated marketing record 'promo-2024-q1' out of active results "
+        "while keeping it accessible for later reference.",
+    ),
+    Task(
+        "lookup_data",
+        "Search for every entry whose key includes the substring 'ticket-8827'.",
+    ),
+    Task(
+        "plan_event",
+        "Add the 'quarterly-planning' block to the shared calendar for Thursday afternoon.",
+    ),
+]
+
+Q6_SUBSET_TASKS: list[Task] = list(_Q6_CATALOG_TASKS) + _Q6_GAP_TASKS
+
+# ── Tier 3: T18 family, 2nd 12-tool subset (data_write + validate) ─────────────
+# Mirrors the original 4 T18 entries' approach exactly, but for manifest.py's
+# _T18_FAMILY_SUBSET_SET2 (data_write + validate families) instead of
+# (data_fetch + notify). t18_catalog.TASKS covers 8 of these 12 tools with 1 task
+# each (save_record, write_entry, store_item, persist_row, validate_schema,
+# check_permission, verify_token, validate_format); commit_data, insert_document,
+# check_quota, verify_signature have ZERO catalog tasks. Gap tasks below add a 2nd
+# task to each of the 8 covered tools and 2 new tasks each for the 4 uncovered
+# tools, bringing every one of the 12 tools to >=2 tasks — same structure as the
+# original _T18_GAP_TASKS (8 covered x1 + 4 uncovered x2 = 16 gap tasks; 8 catalog
+# + 16 gap = 24 total, 2 per tool). Unlike the original family pair, most literal
+# identifiers here are newly authored (not inherited from catalog task text) so
+# every gap task carries a concrete constrainable value.
+_T18_FAMILY_SUBSET_SET2: list[str] = _T18_FAMILIES["data_write"] + _T18_FAMILIES["validate"]
+
+_T18_GAP_TASKS_SET2: list[Task] = [
+    # data_write — 2nd task for the 4 tools the catalog already covers
+    Task(
+        "save_record",
+        "Update the shipping preferences on file for repeat customer 'CUST-7734', "
+        "creating a fresh record if this is their first order.",
+    ),
+    Task(
+        "write_entry",
+        "Append today's system health check result for service 'checkout-api' to "
+        "the audit trail as a permanent record.",
+    ),
+    Task(
+        "store_item",
+        "Keep the dashboard summary for widget 'quarterly-revenue' readily "
+        "available for quick access without hitting the database again.",
+    ),
+    Task(
+        "persist_row",
+        "Insert a brand-new subscription-renewal row for subscription 'SUB-88213' "
+        "into the billing table — this should only succeed if no such row exists yet.",
+    ),
+    # data_write — new tasks for the 2 tools the catalog never covers
+    Task(
+        "commit_data",
+        "Flush the batch of pending updates queued under batch id 'BATCH-5591' so "
+        "they're written to the database all at once.",
+    ),
+    Task(
+        "commit_data",
+        "Finalize the queued set of inventory adjustments tagged 'INV-ADJ-220' as "
+        "a single atomic write to the database.",
+    ),
+    Task(
+        "insert_document",
+        "Add a brand-new customer profile document with id 'doc-cust-4471' to the "
+        "NoSQL collection — the operation must fail if that id already exists.",
+    ),
+    Task(
+        "insert_document",
+        "Create a fresh order-history document with id 'doc-ord-9012' in the "
+        "document store, only if no document with that id already exists.",
+    ),
+    # validate — 2nd task for the 4 tools the catalog already covers
+    Task(
+        "validate_schema",
+        "Check that the payload submitted by mobile client request 'REQ-3391' "
+        "matches the registered data contract before accepting it.",
+    ),
+    Task(
+        "check_permission",
+        "Confirm whether support agent account 'agent-2209' is allowed to issue "
+        "refunds under the current access policy.",
+    ),
+    Task(
+        "verify_token",
+        "Make sure the bearer credential 'tok_9f8e7d' attached to this API "
+        "request is still within its valid lifetime and correctly formed.",
+    ),
+    Task(
+        "validate_format",
+        "Check that the entered postal code '94107-1234' matches the required "
+        "regional formatting pattern.",
+    ),
+    # validate — new tasks for the 2 tools the catalog never covers
+    Task(
+        "check_quota",
+        "Find out how close account 'ACC-5502' is to hitting its monthly API call limit.",
+    ),
+    Task(
+        "check_quota",
+        "Check whether team 'team-data-eng' storage allotment has been used up "
+        "before allowing another upload.",
+    ),
+    Task(
+        "verify_signature",
+        "Confirm that incoming webhook payload 'wh-8834' cryptographic signature "
+        "actually matches what the sender's shared secret would produce.",
+    ),
+    Task(
+        "verify_signature",
+        "Make sure update package 'pkg-2.4.1' signature checks out against the "
+        "publisher's public key before installing it.",
+    ),
+]
+
+T18_SUBSET_TASKS_SET2: list[Task] = [
+    t for t in _T18_CATALOG_TASKS if t.tool_name in _T18_FAMILY_SUBSET_SET2
+] + _T18_GAP_TASKS_SET2
+
+# ── Tier 4: exp1_dataojitori_nocturne_memory_mirror ─────────────────────────────
+# 7 tool names read from DOCSTRINGS in exp1_Dataojitori_nocturne_memory_mirror.py.
+# call_tool() is a generic stub (json.dumps({"stub": True, ...})) — tasks describe
+# plausible real-world intent matching each tool's real public docstring; the stub
+# accepts any call regardless of whether it would "really" work. 2 tasks per tool
+# (14 total), matching the density of the other exp1 mirrors.
+EXP1_NOCTURNE_MEMORY_MIRROR_TASKS: list[Task] = [
+    Task(
+        "read_memory",
+        "Load the memory stored at 'core://agent/my_user' so I can see what it "
+        "currently contains before deciding what to change.",
+    ),
+    Task(
+        "read_memory",
+        "Show me the recently modified memories from the last session so I can "
+        "catch up on what changed.",
+    ),
+    Task(
+        "create_memory",
+        "Add a new memory under 'core://agent' with the content 'always confirm "
+        "before deleting user data', high retrieval priority, a disclosure "
+        "condition of 'when I am about to run a delete operation', and the title "
+        "'delete_confirmation_rule'.",
+    ),
+    Task(
+        "create_memory",
+        "Record a brand-new note under the 'writer://' root about the protagonist's "
+        "backstory, with its own title, priority, and a disclosure trigger for "
+        "when a scene involving that character starts.",
+    ),
+    Task(
+        "update_memory",
+        "In the memory at 'core://agent/worldview', replace the sentence 'trust is "
+        "earned slowly' with 'trust is earned through consistent action' — leave "
+        "everything else in that memory unchanged.",
+    ),
+    Task(
+        "update_memory",
+        "Append a new paragraph to the end of the existing memory at "
+        "'writer://chapter_2' without touching what's already there.",
+    ),
+    Task(
+        "delete_memory",
+        "Permanently remove the obsolete memory at 'core://agent/old_note' — I've "
+        "already read it and confirmed it's no longer relevant.",
+    ),
+    Task(
+        "delete_memory",
+        "Cut the outdated draft path 'writer://draft_v1' from the memory tree for good.",
+    ),
+    Task(
+        "add_alias",
+        "Create a second entry point at 'core://timeline/2024/05/20' that points "
+        "to the same existing memory as 'core://agent/my_user/first_meeting', with "
+        "its own priority and its own disclosure condition for this new path.",
+    ),
+    Task(
+        "add_alias",
+        "I want 'core://hazards/network_outage' to also be reachable from a new "
+        "path under 'core://agent/infra_notes' without duplicating the content — "
+        "set a priority and disclosure condition for the new path.",
+    ),
+    Task(
+        "manage_triggers",
+        "Bind the word 'Nginx' as a glossary keyword to the memory node at "
+        "'core://hazards/spa_fallback' so a link to it surfaces automatically "
+        "whenever that word appears elsewhere.",
+    ),
+    Task(
+        "manage_triggers",
+        "Unbind the keyword 'deprecated' from whatever memory node it's currently "
+        "attached to, without deleting the memory itself.",
+    ),
+    Task(
+        "search_memory",
+        "Find every memory whose path or content mentions the word 'job', across all domains.",
+    ),
+    Task(
+        "search_memory",
+        "Look only within the 'writer' domain for any memory mentioning the word 'chapter'.",
+    ),
+]
+
 # ── Manifest-keyed lookup ─────────────────────────────────────────────────────
-# Keys must exactly match ToolSetEntry.name in manifest.py (all 18 entries).
+# Keys must exactly match ToolSetEntry.name in manifest.py (all 40 entries).
 BLIND_TASKS: dict[str, list[Task]] = {
     "echo_server": ECHO_SERVER_TASKS,
     "confusable_server": CONFUSABLE_SERVER_TASKS,
@@ -643,4 +896,42 @@ BLIND_TASKS: dict[str, list[Task]] = {
     "exp1_datalayer_jupyter_mcp_server_mirror_oracle": EXP1_JUPYTER_MIRROR_TASKS,
     "exp1_blazickjp_arxiv_mcp_server_mirror": EXP1_ARXIV_MIRROR_TASKS,
     "exp1_stickerdaniel_linkedin_mcp_server_mirror": EXP1_LINKEDIN_MIRROR_TASKS,
+    # ── Tier 1: RW1 / RW2 / P2A (22 new entries start here) ────────────────────
+    "rw1_github_mirror": RW1_GITHUB_TASKS,
+    "rw1_arm_a": RW1_GITHUB_TASKS,
+    "rw1_arm_guardb": RW1_GITHUB_TASKS,
+    "rw1_arm_oracle": RW1_GITHUB_TASKS,
+    "rw2_aws_iam_mirror": RW2_AWS_IAM_TASKS,
+    "rw2_arm_a": RW2_AWS_IAM_TASKS,
+    "rw2_arm_guardb": RW2_AWS_IAM_TASKS,
+    "p2a_internal_proxy_mirror": P2A_INTERNAL_PROXY_TASKS,
+    "p2a_arm_a": P2A_INTERNAL_PROXY_TASKS,
+    "p2a_arm_guardb": P2A_INTERNAL_PROXY_TASKS,
+    "p2a_arm_oracle": P2A_INTERNAL_PROXY_TASKS,
+    # ── Tier 2: Q3 / Q6 ─────────────────────────────────────────────────────────
+    "q3_real_server": Q3_SUBSET_TASKS,
+    "q3_arm_a": Q3_SUBSET_TASKS,
+    "q3_arm_o": Q3_SUBSET_TASKS,
+    "q6_real_server": Q6_SUBSET_TASKS,
+    "q6_arm_a": Q6_SUBSET_TASKS,
+    "q6_arm_f_doc_guarded": Q6_SUBSET_TASKS,
+    # ── Tier 3: T18 2nd family subset (data_write + validate) ──────────────────
+    "t18_vague_server_set2": T18_SUBSET_TASKS_SET2,
+    "t18_fixer_server_set2": T18_SUBSET_TASKS_SET2,
+    "t18_q2b_server_set2": T18_SUBSET_TASKS_SET2,
+    "t18_oracle_server_set2": T18_SUBSET_TASKS_SET2,
+    # ── Tier 4: new real-world mirror ───────────────────────────────────────────
+    "exp1_dataojitori_nocturne_memory_mirror": EXP1_NOCTURNE_MEMORY_MIRROR_TASKS,
+    # ── Phase 3: LLM-fixer-improved variants (5 new entries) ───────────────────
+    # run_fixer only edits description text and per-param schema metadata — never
+    # tool names or param names (verified in-process against each pair's
+    # list_tools() output before wiring these in). Same underlying tools as the
+    # "before" fixture, so the same task list applies verbatim (identical
+    # convention to the existing oracle-pair entries above, e.g.
+    # confusable_server / confusable_server_oracle sharing CONFUSABLE_SERVER_TASKS).
+    "grounded_server_fixed": GROUNDED_SERVER_TASKS,
+    "confusable_server_fixed": CONFUSABLE_SERVER_TASKS,
+    "mediocre_server_fixed": MEDIOCRE_SERVER_TASKS,
+    "call_constraints_server_fixed": CALL_CONSTRAINTS_SERVER_TASKS,
+    "call_constraints_v2_server_fixed": CALL_CONSTRAINTS_V2_SERVER_TASKS,
 }
