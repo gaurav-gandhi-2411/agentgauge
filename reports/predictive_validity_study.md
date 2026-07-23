@@ -1,6 +1,7 @@
 # Predictive validity study: do AgentGauge's scoring axes predict real task success?
 
-**Date:** 2026-07-23, revised same day (second session — statistical correction + mechanism test)
+**Date:** 2026-07-23, revised across three same-day sessions (statistical correction + mechanism
+test → schema-consistency lead + length-controlled test)
 **Branch:** `chore/predictive-validity-study` (not merged to `main`)
 **Raw data:** `evals/fixtures/predictive_validity/results_raw.json` (45 manifest entries, 44 valid
 records, 1 permanent error — see Repo State below)
@@ -8,31 +9,50 @@ records, 1 permanent error — see Repo State below)
 **Zero-cost:** all inference via Ollama (local + a temporary Cloud Run GPU proxy for Stage B/
 Phase 3 collection), no `ANTHROPIC_API_KEY`, no paid third-party API calls.
 
-**CORRECTION NOTICE (second session, same day):** the CONFIRM verdict below the correlation table
-in the first version of this report has been withdrawn. Applying multiple-comparison correction
-(Bonferroni/Benjamini-Hochberg across the 8 fields actually tested) shows `overall_score` — the
-metric a product CI-gate would actually threshold on — does **not** survive correction. Only
-`description_quality` does, and even it fails the pre-registered rule's "beats the best naive
-baseline by a meaningful margin" clause. See "Multiple-comparison correction" and "Corrected
-decision-rule label" below for the full, blunt restatement. A mechanism test of the Phase-3 blind
-spot (also this session) additionally **falsifies** the leading hypothesis for *why* the blind
-spot exists (LLM-rewrite-induced description homogenization) — see "Phase 3 mechanism test" below.
+## FINAL CONCLUSION: FALSIFIED
 
-## Headline finding (as corrected)
+**The predictive-validity thesis — "AgentGauge's 8-axis quality score predicts real agent task
+success" — is FALSIFIED under this study's own pre-registered decision rule.** This is the final
+verdict, stated plainly and not walked back in any later section of this report:
 
-At n=44, **only `description_quality` (ρ=0.417, p=0.0048) survives multiple-comparison correction**
-(Bonferroni and Benjamini-Hochberg, m=8 comparisons tested). `overall_score` (ρ=0.371, p=0.0132) —
-the single number a CI gate would actually use — does **not** survive either correction. Even for
-`description_quality`, the pre-registered CONFIRM rule's second clause ("beats the best naive
-baseline by a meaningful margin") is not demonstrated: its bootstrap CI ([0.112, 0.677]) overlaps
-`baseline_desc_length`'s CI ([-0.038, 0.58]) almost entirely, with no paired difference test run.
-**Verdict: NOT CONFIRMED** — see "Corrected decision-rule label" for the full reasoning. This
-supersedes the CONFIRM verdict from earlier the same day.
+1. **Neither axis survives the full test.** `overall_score` — the number a product CI-gate would
+   actually threshold on — never reaches significance once corrected for the 8 comparisons this
+   study actually tested (Bonferroni/BH, both reject it: p=0.0132 vs. a 0.00625 cutoff).
+   `description_quality` survives that correction alone, but controlling for description length
+   (a free, zero-LLM-call heuristic) drops its correlation from ρ=0.417 to a **partial ρ=0.308**
+   that would **not** survive the same correction bar (p=0.044 vs. 0.00625) — and its own
+   pre-registered "beats the best naive baseline by a meaningful margin" requirement was never
+   demonstrated in the first place (CI overlaps `baseline_desc_length` almost entirely).
+   `overall_score`'s partial correlation, controlling for length, falls to ρ=0.262 and crosses into
+   **non-significance even uncorrected** (p=0.089).
+2. **There is no axis in this study, at any stage of correction, that has been shown to beat a
+   free character-count heuristic by a margin that survives both (a) multiple-comparison correction
+   and (b) controlling for description length.** The honest reading of the data: longer descriptions
+   score higher on these axes and correlate weakly with better real outcomes — that is not evidence
+   the LLM-judged "quality" assessment captures anything beyond what `len()` already gives away.
+3. Task 4 (re-architecture and further ground-truth collection to push past this result) is
+   **cancelled** — no further GCP provisioning or inference is planned for this study's
+   correlation/CONFIRM question. See "Repo state" for exact resource status (fully torn down).
+
+Everything below this point is supporting detail for how this conclusion was reached, plus a
+separate, still-live finding (the schema-consistency lead) that does not rescue the falsified
+thesis but is a genuine, if small-sample, empirical result in its own right — see "Schema-
+consistency checker: full results."
+
+## History of this conclusion (for provenance, not to soften the verdict above)
+
+**Session 1** (n=18 → n=44 expansion): reported a CONFIRM based on uncorrected significance.
+**Session 2** (same day): applied multiple-comparison correction, downgraded CONFIRM to NOT
+CONFIRMED, and falsified the leading mechanism (homogenization) for the Phase-3 blind spot — see
+"Phase 3 mechanism test" below, which remains accurate and is not superseded by session 3.
+**Session 3** (same day): controlled for description length, which is the test that moves the
+verdict from NOT CONFIRMED to the stronger, final **FALSIFIED** stated above — `overall_score`'s
+residual correlation is no longer even nominally significant once length is accounted for.
 
 **Separately**, the Phase 3 before/after fixer-pair analysis still shows the same **6 of 7 pairs**
 where an LLM-rewritten description raises `overall_score` substantially while real task success
-stays flat or drops — that empirical pattern is unaffected by the statistical correction above and
-remains real. **But** a dedicated mechanism test (this session) of the leading explanation for
+stays flat or drops — that empirical pattern is unaffected by any of the statistical corrections
+above and remains real. A dedicated mechanism test (session 2) of the leading explanation for
 *why* — "the rewrite homogenizes descriptions across tools, reducing discriminability, causing
 wrong-tool selection" — **falsifies that specific mechanism**. Properly measured (using the actual
 selection-prompt text the agent sees, not bare tool descriptions), similarity between tools
@@ -40,9 +60,11 @@ selection-prompt text the agent sees, not bare tool descriptions), similarity be
 similarity-delta/outcome-delta correlations point the wrong sign for the hypothesis in both
 directions tested. Two of the seven pairs (`call_constraints_server`/`_v2`) show 0% wrong-tool
 selection in both arms — their outcome is 100% an argument-construction effect, with zero possible
-contribution from tool discriminability. See "Phase 3 mechanism test" for the full analysis.
-**The blind-spot pattern (score rises, success doesn't) is real and replicates; the proposed
-explanation for it does not.**
+contribution from tool discriminability. See "Phase 3 mechanism test" for the full analysis, and
+"Schema-consistency checker: full results" (session 3) for the follow-up lead this produced.
+**The blind-spot pattern (score rises, success doesn't) is real and replicates; the homogenization
+explanation for it does not; a schema-consistency explanation is a small-sample, suggestive
+follow-up lead, not a rescued thesis.**
 
 ## Methodology
 
@@ -391,6 +413,119 @@ two with the worst/flat real-success outcomes among the 7; the pair with the lar
 suggestive, not confirmed — see Task 3 pre-registration and scope discussion for what a properly
 powered follow-up requires.
 
+### Schema-consistency checker: full results (fourth session, 2026-07-23 — no inference, no GCP)
+
+Task 4's ground-truth expansion was cancelled (see FINAL CONCLUSION above) after 5 consecutive
+local-process/Cloud-Run-proxy failures burned real spend without completing. This section reports
+the schema-consistency checker's results, which were computed and committed in session 3 but never
+written up in this report until now.
+
+**(a) Violation prevalence across all 45 manifest entries.** `evals/fixtures/predictive_validity/
+schema_consistency_results.json`, computed over 749 total tools:
+
+| Check | Raw violation count |
+|---|---|
+| (b) `required_not_mentioned` | **872** |
+| (a) `described_not_in_schema` | 143 |
+| (c) `type_enum_contradiction` | 42 |
+| (e) `required_references_missing_property` | 6 |
+| **Total** | **1,063** |
+
+**40 of 45 entries (89%) have at least 1 violation.** Only 5 have zero: `mediocre_server`,
+`t18_fixer_server`, `t18_fixer_server_set2`, `grounded_server_fixed`, `confusable_server_fixed`.
+`required_not_mentioned` (check b) dominates by volume — most tool descriptions in this study's
+fixtures, across every tier, simply don't name their required parameters in prose. This is not
+unique to fixer-rewritten arms; it's pervasive, including in real-world mirrors with verbatim public
+docstrings (e.g. `rw2_aws_iam_mirror`: 59 violations across 29 tools, all check (b) — a real AWS IAM
+API's own terse one-line docstrings don't enumerate required params either).
+
+**(b) Do violations increase after LLM rewrite, across all 9 valid Phase-3 pairs** (the original 7
+plus 2 previously-unreported free pairs found this session, `t18_vague_server_set2` →
+`t18_fixer_server_set2` / `t18_q2b_server_set2`, both already fully collected at zero extra cost):
+
+| Before | After | Violations before | Violations after | Δ | Δ task success | Δ overall_score |
+|---|---|---|---|---|---|---|
+| `t18_vague_server` | `t18_fixer_server` | 12 | 0 | -12 | -0.025 | +17.8 |
+| `t18_vague_server` | `t18_q2b_server` | 12 | 11 | -1 | -0.067 | +17.2 |
+| `grounded_server` | `grounded_server_fixed` | 10 | 0 | -10 | **+0.183** | +27.4 |
+| `confusable_server` | `confusable_server_fixed` | 23 | 0 | -23 | -0.031 | +15.2 |
+| `mediocre_server` | `mediocre_server_fixed` | 0 | 12 | **+12** | -0.150 | +29.8 |
+| `call_constraints_server` | `..._fixed` | 8 | 13 | **+5** | 0.000 | +16.4 |
+| `call_constraints_v2_server` | `..._fixed` | 13 | 2 | -11 | -0.020 | +17.0 |
+| `t18_vague_server_set2` | `t18_fixer_server_set2` | 12 | 0 | -12 | -0.042 | +16.2 |
+| `t18_vague_server_set2` | `t18_q2b_server_set2` | 12 | 5 | -7 | **+0.075** | +15.9 |
+
+**Violations increased in 2/9 pairs, decreased in 7/9, flat in 0/9.** This replicates the n=7
+finding's direction at n=9 (the 2 new pairs are both decreases, one paired with the study's second
+genuine joint-improvement case: `t18_q2b_server_set2` improved real success too). The two pairs
+where violations rose are exactly the two flat/worst outcomes among the original 7 — unchanged from
+the earlier report.
+
+**(c) Confusion matrix against the blind-spot pattern** (pattern = real success flat-or-down while
+`overall_score` rose — true for 7 of these 9 pairs; the 2 exceptions are `grounded_server_fixed` and
+`t18_q2b_server_set2`, both genuine joint improvements). Two candidate flagging rules, reported
+separately since they represent different practical linter designs:
+
+| Flagging rule | TP | FP | FN | TN | Precision | Recall |
+|---|---|---|---|---|---|---|
+| A: violations *increased* (Δ>0) | 2 | 0 | 5 | 2 | **100%** | 29% |
+| B: violations *present* in after-arm (>0) | 4 | 1 | 3 | 1 | 80% | 57% |
+
+**Rule A (delta-based — "did this rewrite make it worse") never cries wolf in this sample: 0 false
+positives.** Its one cost is recall — it misses 5 of 7 real degraded pairs, because most of them
+still have *fewer* absolute violations after the rewrite even though the rewrite didn't help (or
+hurt) real success; a delta-only rule can't see that. **Rule B (absolute — "is this currently
+non-compliant") catches more (4/7) at the cost of one false positive** (`t18_q2b_server_set2`,
+which improved real success despite having 5 residual violations). n=9 is small — these are point
+estimates with wide confidence intervals, not final numbers — but the qualitative shape (rule A:
+zero false positives, weak recall; rule B: better recall, one false positive) is the honest
+takeaway a linter design should account for.
+
+**(d) Hand spot-check of 5 flagged violations, one per check type where possible, judged as
+"genuine defect a developer would fix" vs. "false positive":**
+
+1. **`ping_server` (check e, `call_constraints_server_fixed`).** Description: *"...with no required
+   parameters..."* Schema: `required: ['host']`, `properties: {}` (host doesn't even exist as a
+   property). **GENUINE** — confirmed fixer-introduced (the "before" arm has `required: []`,
+   consistent with its description at the time). Unambiguous, severe, exactly the finding that
+   motivated building this checker.
+2. **`put_x` (check b, `mediocre_server_fixed`).** Description: *"Put."* (one word, unchanged by the
+   fixer). Schema requires `sid`, `key`, `val`, `ts` — none named in the description.
+   **GENUINE** — a real, actionable gap, though pre-existing (not introduced by this particular
+   rewrite; the fixer left the tool-level description untouched here and only added parameter-level
+   metadata, per the mechanism-test finding above).
+3. **`get_company_profile` (check a, `exp1_stickerdaniel_linkedin_mcp_server_mirror`).** Flagged
+   `described_not_in_schema: ['unknown_sections', 'company_urn']`. Reading the full docstring: both
+   terms are documented **return-value fields** ("Includes `unknown_sections` list when...",
+   "...may include a `{kind: "company_urn"...}` entry"), not input parameters at all.
+   **FALSE POSITIVE** — check (a) doesn't distinguish input-parameter mentions from output/return
+   documentation, a real precision gap beyond the "natural-language synonym" caveat already
+   documented in the checker's own docstring. (The same tool's `required_not_mentioned: ['extractor']`
+   finding is separately genuine — `extractor` is a required schema field never mentioned anywhere
+   in the docstring.)
+4. **`enumerate_all` (check c, `confusable_server_oracle`).** Flagged: *"description uses boolean
+   language near 'collection' but its schema type is 'string'."* The description is: *"Returns the
+   complete set of all items in a collection with no pagination."* **FALSE POSITIVE, and a clean
+   bug**: the trigger is the word **"no"** in "no pagination" — an ordinary English word with zero
+   relation to the `collection` parameter's type. Check (c)'s boolean-word detector has no proximity
+   or grammatical-relevance filtering; it fires on any boolean-ish word appearing anywhere in a
+   description that also mentions the parameter's name, however unrelated.
+5. **`attach_user_policy` (check b, `rw2_aws_iam_mirror`, a real-world mirror).** Description:
+   *"Attach a managed policy to an IAM user."* Schema requires `user_name`, `policy_arn`,
+   `confirmed` — none named. **GENUINE** — an accurate reflection of how terse real AWS-IAM-style
+   API one-liners actually are; not a rewrite artifact, but a real, actionable documentation gap.
+
+**Precision by check, from this spot-check (small sample, not exhaustive):** checks **(b)** and
+**(e)** were genuine in all 3 instances examined. Checks **(a)** and **(c)** each produced one
+concrete false positive out of one instance examined — **(a)**'s input/output-field confusion and
+**(c)**'s naive "no" trigger are both real, fixable precision problems, not edge cases. **Saying
+this plainly, as instructed: (a) and (c) are not demonstrated to be precise enough for a linter a
+developer wouldn't turn off. (b) and (e) — the two checks driving the large majority of this
+section's positive signal (872 + 6 of 1,063 total violations, 83%) — held up in every instance
+checked.** No fix to (a)/(c) was made in this session (out of scope — report, not repair — see
+Task 1's explicit ask). This finding does not change the confusion-matrix numbers above, which
+were computed against the checker's current, as-shipped behavior, including the noisier checks.
+
 ## Limitations (read before citing any number above)
 
 - **`rw2_arm_guardb` (1 of 45 manifest entries) has no ground truth.** Five collection attempts
@@ -444,21 +579,66 @@ powered follow-up requires.
   `task_success_rate` near 0.5 on such entries is not cleanly distinguishable from chance without a
   computed baseline, which this study does not provide.
 
+## Methodology contribution: four measurement artifacts found during this study
+
+Independent of the FALSIFIED product-thesis conclusion above, this study's own process is a
+citable finding in its own right: **four distinct measurement artifacts were found and fixed or
+documented across three sessions, each of which would have produced a spuriously positive or
+spuriously confident result if left uncaught.** Listed here as a standalone methodology
+contribution, since it's a concrete demonstration of how easily an agent-evaluation study can
+manufacture false signal even when built carefully:
+
+1. **Task-name leakage (Stage A, session 1 predecessor).** `agentgauge.tasks.generate_tasks()`
+   quotes the gold tool's name verbatim in the task text shown to the agent
+   (`f"Call '{tool.name}': {tool.description}"`), making tool selection trivial regardless of
+   description quality. Produced a zero-variance, near-ceiling ground truth on the first 9 tool sets
+   collected this way. Fixed by hand-authoring anti-tautology tasks (`blind_tasks.py`) that never
+   quote the gold tool's name or required literal values.
+2. **Binary-metric tool-name-match ceiling collapse (Stage A→B transition).** The original ground
+   truth (`success AND selected_tool == tool_name`) was degenerate because every example server in
+   this repo accepts any well-formed call — `success` was always `True` regardless of argument
+   correctness, so the metric collapsed to pure tool-name matching. 44% of the original Stage-A
+   records tied at an exact 1.0 ceiling under the old binary metric (this figure is about the
+   now-discarded metric on the original smaller sample, not the current n=44 dataset — see
+   Methodology above; ceiling incidence under the current fractional metric is 11.4%, 5/44).
+   Fixed with a continuous fractional constraint-satisfaction score
+   (`constraints.py`); ceiling incidence dropped to 11.4%.
+3. **Zero-vector empty-string embedding artifact (session 2, mechanism test).** Embedding an empty
+   string via `nomic-embed-text` returns a zero-length vector, not a zero vector or an error. Since
+   5 of 6 "before" fixer-pair fixtures have literally empty tool descriptions by design, a
+   bare-`tool.description` similarity measurement showed similarity apparently *rising* sharply
+   after the fixer rewrite — an artifact of "text went from absent to present," not of
+   homogenization. Caught before drawing any conclusion; fixed by re-measuring on the actual
+   selection-prompt text format instead.
+4. **RW1 self-descriptive-tool-name confound (session 2, correlation-table audit).** The RW1 family
+   (real GitHub API tool names like `get_pull_request`, `get_pull_request_diff`) shows near-zero
+   task-success variance (0.95–1.00) across all 4 description-quality arms, because the tool names
+   alone are informative enough for `gemma2:9b` to select correctly regardless of description
+   content — unlike `confusable_server`'s deliberately-synonymous names, where real spread appears.
+   Pooling a name-dominant family with description-dominant families in one correlation dilutes
+   whatever true signal exists — found by directly comparing live tool names across families, not
+   assumed.
+
+All four biased toward manufacturing or inflating a *positive* result (or, in artifact 4's case,
+toward attenuating the true correlation, which would have made the eventual FALSIFY conclusion
+easier to reach sooner, not harder) — none were caught by a single check; each required directly
+reading raw data (task text, embeddings, live schemas, live tool names) rather than trusting an
+aggregate statistic. **The practical lesson for any future agent-eval study: budget explicit time to
+audit for exactly this class of artifact before trusting a correlation, especially a positive one.**
+
 ## Recommended next step
 
-Two independent lines of evidence now argue against selling "AgentGauge's score predicts real
-agent success" as a settled result: `overall_score` fails multiple-comparison correction, and the
-one axis that survives (`description_quality`) doesn't clear the baseline-beating bar either. What
-*is* real and actionable is the Phase-3 blind-spot pattern (6/7 pairs) — but its proposed mechanism
-(homogenization) is now falsified, so a fix targeting discriminability specifically would not
-address it. Given the mechanism-test finding that `call_constraints_server`/`_v2`'s outcomes are
-100% argument-construction effects with a directly-observed case of hallucinated parameter
-semantics, the more promising next artifact is a **schema-metadata-accuracy check** (does a
-rewritten parameter description still correctly describe what that parameter actually does/means),
-not a discriminability scorer. Not undertaken here; flagged as the natural following work item,
-alongside a properly-powered re-run of the core correlation (more tool sets, or a pre-registered
-smaller comparison set to avoid the 8-comparison correction penalty) before drawing further product
-conclusions from the axis-level correlation.
+The predictive-validity thesis is FALSIFIED (see top of report) and Task 4 (further ground-truth
+collection to test past this result) is cancelled — no further GCP spend or inference is planned
+against the core correlation question. What remains open and small-sample-suggestive, not
+rescued, is the schema-consistency lead: Spearman(Δviolations, Δtask-success) = -0.607 (n=7) /
+consistent direction at n=9, with a confusion matrix showing zero false positives (delta-based
+rule) at the cost of weak recall. If this thesis is ever revisited, the schema-consistency checker
+itself needs the two precision problems from the spot-check fixed first (check (a)'s input/output
+confusion, check (c)'s naive boolean-word trigger) before it could be trusted as a linter, not
+just a research instrument — and any further ground-truth collection would need the infra
+reliability problems from this session's Task 4 attempt (5 consecutive local-process/Cloud-Run
+failures) solved first, independent of whether the underlying question is worth re-testing at all.
 
 ## Repo state note
 
@@ -485,6 +665,21 @@ across a cold start / scale-to-zero cycle, unlike the pre-existing `agentgauge-j
 (5th) `rw2_arm_guardb` collection attempt's `404` error (models had been wiped by an intervening
 cold start). Both the `agentgauge-agent` Cloud Run service and its bucket were torn down (user
 confirmed) once data collection finished — no ongoing billing from this study's GCP usage.
+
+**Second GCP episode (session 3, Phase-3 expansion attempt, also fully torn down):** `agentgauge-agent`
+was redeployed (ephemeral-storage config only, no gcsfuse bucket — the lesson from the first episode
+applied directly) to build ≥20 fixer pairs for the schema-hallucination follow-up. Local
+proxy/build-process reliability failed 5 consecutive times across 3 distinct launch mechanisms
+(console-window `cmd start`, Windows Task Scheduler, and a repeat `cmd start`), with 2 different
+failure signatures (a ~30min-mark silent death, and a <3min-mark death ending in a bare `Ctrl+C` in
+the proxy's log) that were never conclusively root-caused. 5 of the planned 11 new fixer fixtures
+were generated and preserved (tool/parameter-name parity verified against each "before" counterpart)
+before the attempt was abandoned; **zero ground truth was collected for any of them** — the crashes
+happened during fixture generation, before the collection phase started. `agentgauge-agent` and all
+associated local processes were torn down/killed; verified via `gcloud run services list` (service
+absent, 0 revisions), `gcloud storage buckets list` (no `agentgauge-agent` bucket — none was ever
+created this episode), and local process checks (proxy port closed, no build-script process
+running) — zero billable resources remain from this study as of this report.
 
 ### Audit performed before trusting this data (this session)
 
