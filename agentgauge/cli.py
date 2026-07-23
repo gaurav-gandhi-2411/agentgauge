@@ -461,13 +461,21 @@ async def _connect(target: str) -> tuple[Any, Any, str | None]:
 
 
 def _print_lint_report(report: LintReport, console: Console, *, show_info: bool) -> None:
-    if not report.high and not (show_info and report.info):
+    if not report.blocking and not report.advisory and not (show_info and report.info):
         console.print("[green]No violations found.[/green]")
         return
-    if report.high:
-        console.print(f"[bold red]{len(report.high)} HIGH-severity violation(s):[/bold red]")
-        for v in report.high:
+    if report.blocking:
+        console.print(
+            f"[bold red]{len(report.blocking)} BLOCKING violation(s) (fails CI):[/bold red]"
+        )
+        for v in report.blocking:
             console.print(f"  [red]x[/red] [{v.check}] {v.tool_name}: {v.detail}")
+    if report.advisory:
+        console.print(
+            f"[bold yellow]{len(report.advisory)} ADVISORY violation(s) (does not fail CI):[/bold yellow]"
+        )
+        for v in report.advisory:
+            console.print(f"  [yellow]![/yellow] [{v.check}] {v.tool_name}: {v.detail}")
     if show_info and report.info:
         console.print(
             f"\n[bold yellow]{len(report.info)} INFO-severity hint(s) (off by default):[/bold yellow]"
@@ -488,8 +496,10 @@ def lint(
 ) -> None:
     """Deterministic schema-consistency + name-collision linter. No LLM calls.
 
-    Exits 1 if any HIGH-severity violation is found (CI-friendly). See
-    reports/v2_linter_evaluation.md for measured precision/recall/false-alarm rate.
+    Exits 1 if any BLOCKING violation is found (CI-friendly); ADVISORY
+    violations are printed but do not fail the exit code (v2.1, Task 5 --
+    a naive "any flag blocks" gate rejected 66.67% of clean tool sets). See
+    reports/v2_1_severity_gate.md for measured precision/recall/false-alarm rate.
     """
     asyncio.run(_lint_async(target, show_info=show_info, json_output=json_output))
 
@@ -502,14 +512,23 @@ async def _lint_async(target: str, *, show_info: bool, json_output: bool) -> Non
         report = lint_tool_set(info.tools)
         if json_output:
             payload = {
-                "high": [
+                "blocking": [
                     {
                         "check": v.check,
                         "severity": v.severity.value,
                         "tool_name": v.tool_name,
                         "detail": v.detail,
                     }
-                    for v in report.high
+                    for v in report.blocking
+                ],
+                "advisory": [
+                    {
+                        "check": v.check,
+                        "severity": v.severity.value,
+                        "tool_name": v.tool_name,
+                        "detail": v.detail,
+                    }
+                    for v in report.advisory
                 ],
                 "info": [
                     {
@@ -520,7 +539,8 @@ async def _lint_async(target: str, *, show_info: bool, json_output: bool) -> Non
                     }
                     for v in (report.info if show_info else [])
                 ],
-                "n_high": report.n_high,
+                "n_blocking": report.n_blocking,
+                "n_advisory": report.n_advisory,
                 "n_info": report.n_info,
                 "flagged": report.flagged,
             }
@@ -660,7 +680,14 @@ async def _eval_async(
         )
         if json_output:
             typer.echo(
-                json.dumps({"n_high": lint_report.n_high, "flagged": lint_report.flagged}, indent=2)
+                json.dumps(
+                    {
+                        "n_blocking": lint_report.n_blocking,
+                        "n_advisory": lint_report.n_advisory,
+                        "flagged": lint_report.flagged,
+                    },
+                    indent=2,
+                )
             )
         if lint_report.flagged:
             raise typer.Exit(1)
@@ -669,7 +696,8 @@ async def _eval_async(
     rate = DecomposedRate.from_trials(outcomes)
     if json_output:
         payload = {
-            "n_high": lint_report.n_high,
+            "n_blocking": lint_report.n_blocking,
+            "n_advisory": lint_report.n_advisory,
             "flagged": lint_report.flagged,
             "selection_accuracy": rate.selection_accuracy,
             "argument_accuracy_given_correct_selection": rate.argument_accuracy_given_correct_selection,
@@ -845,12 +873,14 @@ jobs:
             const fs = require('fs');
             const lint = JSON.parse(fs.readFileSync('lint.json', 'utf8'));
             const diff = JSON.parse(fs.readFileSync('diff.json', 'utf8'));
-            const lintLines = lint.high.map(v => `- **${v.check}** (${v.tool_name}): ${v.detail}`).join('\\n') || '_none_';
+            const blockingLines = lint.blocking.map(v => `- **${v.check}** (${v.tool_name}): ${v.detail}`).join('\\n') || '_none_';
+            const advisoryLines = lint.advisory.map(v => `- **${v.check}** (${v.tool_name}): ${v.detail}`).join('\\n') || '_none_';
             const body = [
               '### agentgauge results',
               '',
-              `**Linter:** ${lint.n_high} HIGH-severity finding(s)`,
-              lintLines,
+              `**Linter:** ${lint.n_blocking} BLOCKING finding(s) (fails CI), ${lint.n_advisory} ADVISORY finding(s) (does not fail CI)`,
+              blockingLines,
+              advisoryLines,
               '',
               `**Regression harness:** verdict = \\`${diff.verdict}\\``,
               `delta=${diff.delta.toFixed(3)}, 95% CI [${diff.ci_lo.toFixed(3)}, ${diff.ci_hi.toFixed(3)}]`,
@@ -869,7 +899,7 @@ jobs:
               body,
             });
 
-      - name: Fail on regression or HIGH-severity lint finding
+      - name: Fail on regression or BLOCKING lint finding (ADVISORY does not fail CI)
         run: |
           agentgauge lint ./path/to/your_server.py
           agentgauge diff /tmp/before_server.py ./path/to/your_server.py --tasks ./agentgauge_tasks.json

@@ -6,14 +6,13 @@ this module ships only checks whose task is genuine defect *detection*
 (precision/recall/false-alarm rate against labeled ground truth), never a
 correlational score.
 
-Checks, each independently toggleable and each with an explicit severity:
+Checks, each independently toggleable and each with an explicit severity tier
+(v2.1, Task 5: restructured from a single HIGH tier into BLOCKING/ADVISORY,
+after measuring that a naive "any HIGH flag blocks the PR" gate would reject
+66.67% of genuinely clean tool sets -- see `reports/v2_1_severity_gate.md`):
 
-  HIGH severity (on by default):
-    (a) described_not_in_schema: identifier-like tokens in the top-level tool
-        description that don't match any schema property, EXCLUDING tokens that
-        only appear in a documented Returns/Output section (v1 false-positived on
-        exactly this: a docstring's own return-value field names, e.g.
-        `unknown_sections`, mistaken for missing input parameters).
+  BLOCKING severity (fails CI; 0% measured false alarms on the clean corpus,
+  100% measured recall on their targeted defect type):
     (c) type_enum_contradiction: boolean-PHRASE description language
         ("true/false", "yes/no", "boolean") near a non-boolean-typed property, or
         a quoted description value absent from that property's schema `enum`. v1
@@ -24,10 +23,32 @@ Checks, each independently toggleable and each with an explicit severity:
     (e) required_references_missing_property: schema-internal -- a name in
         `required` that isn't a key in `properties` at all. Fully deterministic,
         no NLP judgment, unaffected by anything above.
+
+  ADVISORY severity (surfaced, does not fail CI; each carries measured,
+  documented, only-partially-fixable false-alarm noise):
+    (a) described_not_in_schema: identifier-like tokens in the top-level tool
+        description that don't match any schema property, EXCLUDING tokens that
+        only appear in a documented Returns/Output section (v1 false-positived on
+        exactly this: a docstring's own return-value field names, e.g.
+        `unknown_sections`, mistaken for missing input parameters).
     (f) name_collision: near-duplicate tool names within one tool set (normalized
         Levenshtein similarity >= the threshold shared with agentgauge.scorer).
         Extracted from v1's `discoverability` axis per v2_axis_triage.md -- this
         was never itself a correlational judgment, just misfiled as 60% of one.
+    (g) param_possibly_renamed (v2.1, Task 4): the INVERSE direction of (a).
+        For each schema property NOT mentioned verbatim in the description,
+        search the description's tokens for a near-miss sharing a common
+        prefix (Levenshtein distance <=2 after folding case/underscore/
+        camelCase differences, excluding common id/unit-suffix abbreviations
+        like `_id`/`_cs` that are routine shorthand, not renames). A near-miss
+        token where the exact name is absent is high-precision evidence the
+        description was written for an old parameter name since renamed in
+        the schema. Fixes the 22.9%-recall gap (a) left on `param_renamed`
+        defects -- (a) can only ever flag identifiers that ARE in the
+        description but AREN'T in the schema; it structurally cannot notice a
+        schema property that silently has no description coverage at all,
+        which is exactly what a rename produces from the new name's
+        perspective. See `reports/v2_1_linter_recall_fix.md`.
 
   INFO severity (off by default -- opt in explicitly):
     (b) required_not_mentioned: a schema-required property name that never
@@ -36,7 +57,7 @@ Checks, each independently toggleable and each with an explicit severity:
         at nearly the same rate on real-world professional API docs (1.42/tool)
         as on deliberately-bad synthetic fixtures (1.37/tool) -- individually
         accurate, but it does not discriminate documented-badly from
-        documented-fine, so it is not a HIGH-severity defect signal.
+        documented-fine, so it is not a BLOCKING-severity defect signal.
 
   Not implemented in this module (LLM-judged, requires live inference; see
   `check_d_semantic_llm` in the archived `scripts/schema_consistency_checker.py`
@@ -55,6 +76,20 @@ from typing import Any
 
 from agentgauge.scorer import _COLLISION_THRESHOLD, _levenshtein
 
+_CAMEL_BOUNDARY_RE = re.compile(r"(?<=[a-z0-9])(?=[A-Z])")
+_WORD_TOKEN_RE = re.compile(r"[a-zA-Z][a-zA-Z0-9_]*")
+_RENAME_MIN_NORMALIZED_LEN = 4  # below this, edit-distance<=2 is too loose (matches common words)
+_RENAME_MAX_EDIT_DISTANCE = 2
+# Common identifier suffixes that are routinely dropped in natural-language prose
+# without indicating a rename at all ("customer_id" -> "the customer", "delay_cs"
+# -> "the delay"). Found empirically: the "id" pattern alone was ~79% of this
+# check's clean-corpus false positives (order_id/invoice_id/customer_id/
+# ticket_id/account_id -> their bare noun) before this exclusion was added; "cs"/
+# "ds" (centi-/deci-second units) were a smaller residual of the same shape --
+# see reports/v2_1_linter_recall_fix.md. Not exhaustive: other unit/unit-code
+# suffixes in other domains may need adding if they surface as false positives.
+_COMMON_ID_SUFFIXES = ("id", "key", "code", "no", "num", "ref", "type", "cs", "ds", "ms")
+
 _BOOLEAN_PHRASE_RE = re.compile(
     r"\btrue\s*(?:/|or)\s*false\b|\byes\s*(?:/|or)\s*no\b|\bboolean\b|\btrue\b.{0,20}\bfalse\b",
     re.IGNORECASE,
@@ -66,7 +101,13 @@ _EXAMPLES_SECTION_RE = re.compile(r"\n\s*examples?\s*:", re.IGNORECASE)
 
 
 class Severity(StrEnum):
-    HIGH = "high"
+    """v2.1, Task 5: BLOCKING/ADVISORY split replaces v2's single HIGH tier,
+    after measuring that a naive "any HIGH flag blocks the PR" gate rejected
+    66.67% of genuinely clean tool sets (`reports/v2_linter_evaluation.md`
+    §2c). Only BLOCKING checks (measured 0% false alarms) fail CI."""
+
+    BLOCKING = "blocking"
+    ADVISORY = "advisory"
     INFO = "info"
 
 
@@ -83,12 +124,13 @@ class ToolLintResult:
     """Lint result for one tool, split by severity so callers can filter cheaply."""
 
     tool_name: str
-    high: list[Violation] = field(default_factory=list)
+    blocking: list[Violation] = field(default_factory=list)
+    advisory: list[Violation] = field(default_factory=list)
     info: list[Violation] = field(default_factory=list)
 
     @property
     def all(self) -> list[Violation]:
-        return self.high + self.info
+        return self.blocking + self.advisory + self.info
 
 
 def _input_section(description: str) -> str:
@@ -151,7 +193,7 @@ def _check_described_not_in_schema(
         violations.append(
             Violation(
                 check="described_not_in_schema",
-                severity=Severity.HIGH,
+                severity=Severity.ADVISORY,
                 tool_name=tool_name,
                 detail=f"description mentions '{tok}' as if it were a parameter, but it is not in the schema",
             )
@@ -182,7 +224,7 @@ def _check_type_enum_contradiction(
                 violations.append(
                     Violation(
                         check="type_enum_contradiction",
-                        severity=Severity.HIGH,
+                        severity=Severity.BLOCKING,
                         tool_name=tool_name,
                         detail=(
                             f"description uses boolean phrase {m.group(0)!r} near '{pname}' "
@@ -203,7 +245,7 @@ def _check_type_enum_contradiction(
                     violations.append(
                         Violation(
                             check="type_enum_contradiction",
-                            severity=Severity.HIGH,
+                            severity=Severity.BLOCKING,
                             tool_name=tool_name,
                             detail=f"description quotes '{q}' near param '{pname}' but schema enum is {penum}",
                         )
@@ -217,13 +259,99 @@ def _check_required_missing_property(
     return [
         Violation(
             check="required_references_missing_property",
-            severity=Severity.HIGH,
+            severity=Severity.BLOCKING,
             tool_name=tool_name,
             detail=f"'{r}' is in the schema's required list but is not a key in properties",
         )
         for r in required
         if r not in props
     ]
+
+
+def _normalize_identifier(token: str) -> str:
+    """Fold case/underscore/camelCase differences so 'user_id', 'userId', and
+    'UserID' all normalize to the same form: split camelCase boundaries,
+    lowercase, strip separators."""
+    split = _CAMEL_BOUNDARY_RE.sub("_", token)
+    return split.lower().replace("_", "").replace("-", "")
+
+
+def _is_common_id_suffix_abbreviation(norm_pname: str, norm_tok: str) -> bool:
+    """True if norm_pname is exactly norm_tok plus one of the common
+    identifier suffixes (id/key/code/no/num/ref/type) -- e.g. 'customerid'
+    (customer_id) vs 'customer'. This is routine technical-writing shorthand
+    ("the customer" for a customer_id parameter), not a rename signal, and
+    was ~79% of this check's clean-corpus false positives before this
+    exclusion existed."""
+    if not norm_pname.startswith(norm_tok):
+        return False
+    return norm_pname[len(norm_tok) :] in _COMMON_ID_SUFFIXES
+
+
+def _shares_prefix(norm_pname: str, norm_tok: str) -> bool:
+    """True if one normalized form is a prefix of the other. A genuine rename
+    (typo, version suffix like '_v2', or an id-style suffix) always shares a
+    common prefix with the original name by construction; an unrelated
+    English word that merely happens to be edit-distance-close (e.g.
+    'page'/'name', 'query'/'queue', 'limit'/'List') essentially never does.
+    This single structural check was the fix that separated genuine renames
+    from coincidental short-word collisions -- see
+    reports/v2_1_linter_recall_fix.md for the measured before/after."""
+    return norm_pname.startswith(norm_tok) or norm_tok.startswith(norm_pname)
+
+
+def _check_param_possibly_renamed(tool_name: str, description: str, props: dict) -> list[Violation]:
+    """(g) Task 4 (v2.1): inverse of (a). For each schema property not
+    mentioned verbatim in the description, look for a near-miss token among
+    the description's words -- high-precision evidence of a stale rename,
+    not a generic "this parameter went undocumented" signal (that is check
+    (b), INFO-severity, which fires on ANY undocumented required param
+    whether or not a near-miss exists). Two precision guards, both found
+    necessary empirically (reports/v2_1_linter_recall_fix.md):
+    - A near-miss must share a prefix with the property name (`_shares_prefix`)
+      -- excludes coincidental edit-distance-2 collisions between unrelated
+      English words that share no common root.
+    - Common identifier-suffix abbreviations (`_id`, `_key`, etc.) are
+      excluded outright even though they share a prefix -- routine
+      documentation shorthand, not a rename.
+    """
+    desc = description or ""
+    desc_lower = desc.lower()
+    candidate_tokens = {m.group(0) for m in _WORD_TOKEN_RE.finditer(desc)}
+    violations = []
+    for pname in props:
+        if pname.lower() in desc_lower:
+            continue
+        norm_pname = _normalize_identifier(pname)
+        if len(norm_pname) < _RENAME_MIN_NORMALIZED_LEN:
+            continue
+        best_token: str | None = None
+        best_dist: int | None = None
+        for tok in candidate_tokens:
+            norm_tok = _normalize_identifier(tok)
+            if len(norm_tok) < _RENAME_MIN_NORMALIZED_LEN:
+                continue
+            if not _shares_prefix(norm_pname, norm_tok):
+                continue
+            if _is_common_id_suffix_abbreviation(norm_pname, norm_tok):
+                continue
+            dist = _levenshtein(norm_tok, norm_pname)
+            if dist <= _RENAME_MAX_EDIT_DISTANCE and (best_dist is None or dist < best_dist):
+                best_token, best_dist = tok, dist
+        if best_token is not None:
+            violations.append(
+                Violation(
+                    check="param_possibly_renamed",
+                    severity=Severity.ADVISORY,
+                    tool_name=tool_name,
+                    detail=(
+                        f"schema property '{pname}' is not named in the description, but "
+                        f"'{best_token}' is (edit distance {best_dist} after case/underscore/"
+                        f"camelCase normalization) -- possible stale rename"
+                    ),
+                )
+            )
+    return violations
 
 
 def _check_required_not_mentioned(
@@ -259,17 +387,25 @@ def lint_tool(
     required: list[str] = (schema or {}).get("required", []) or []
 
     result = ToolLintResult(tool_name=tool_name)
-    result.high.extend(
+    all_violations = (
         _check_described_not_in_schema(tool_name, description, props, sibling_tool_names)
+        + _check_type_enum_contradiction(tool_name, description, props)
+        + _check_required_missing_property(tool_name, required, props)
+        + _check_param_possibly_renamed(tool_name, description, props)
+        + _check_required_not_mentioned(tool_name, description, required)
     )
-    result.high.extend(_check_type_enum_contradiction(tool_name, description, props))
-    result.high.extend(_check_required_missing_property(tool_name, required, props))
-    result.info.extend(_check_required_not_mentioned(tool_name, description, required))
+    for v in all_violations:
+        if v.severity == Severity.BLOCKING:
+            result.blocking.append(v)
+        elif v.severity == Severity.ADVISORY:
+            result.advisory.append(v)
+        else:
+            result.info.append(v)
     return result
 
 
 def check_name_collisions(tool_names: list[str]) -> list[Violation]:
-    """Near-duplicate tool names within one tool set (HIGH severity).
+    """Near-duplicate tool names within one tool set (ADVISORY severity).
 
     Extracted from v1's discoverability axis's deterministic heuristic sub-score
     (agentgauge.scorer._heuristic_subscore) -- this was never itself a
@@ -287,7 +423,7 @@ def check_name_collisions(tool_names: list[str]) -> list[Violation]:
                 violations.append(
                     Violation(
                         check="name_collision",
-                        severity=Severity.HIGH,
+                        severity=Severity.ADVISORY,
                         tool_name=f"{tool_names[i]}/{tool_names[j]}",
                         detail=f"'{tool_names[i]}' and '{tool_names[j]}' are near-duplicate names (similarity={sim:.2f})",
                     )
@@ -297,22 +433,32 @@ def check_name_collisions(tool_names: list[str]) -> list[Violation]:
 
 @dataclass
 class LintReport:
-    """Lint result for a full tool set (one MCP server / manifest entry)."""
+    """Lint result for a full tool set (one MCP server / manifest entry).
+    `collision_violations` (name_collision, ADVISORY) are reported separately
+    from per-tool results since they are pairwise, not per-tool."""
 
     tool_results: list[ToolLintResult]
     collision_violations: list[Violation]
 
     @property
-    def high(self) -> list[Violation]:
-        return [v for r in self.tool_results for v in r.high] + self.collision_violations
+    def blocking(self) -> list[Violation]:
+        return [v for r in self.tool_results for v in r.blocking]
+
+    @property
+    def advisory(self) -> list[Violation]:
+        return [v for r in self.tool_results for v in r.advisory] + self.collision_violations
 
     @property
     def info(self) -> list[Violation]:
         return [v for r in self.tool_results for v in r.info]
 
     @property
-    def n_high(self) -> int:
-        return len(self.high)
+    def n_blocking(self) -> int:
+        return len(self.blocking)
+
+    @property
+    def n_advisory(self) -> int:
+        return len(self.advisory)
 
     @property
     def n_info(self) -> int:
@@ -320,10 +466,12 @@ class LintReport:
 
     @property
     def flagged(self) -> bool:
-        """A tool set is 'flagged' if it has any HIGH-severity violation.
-        INFO-severity violations never flag a tool set by design (they are
-        off-by-default hints, not defect signals)."""
-        return self.n_high > 0
+        """A tool set is 'flagged' (fails CI) if it has any BLOCKING-severity
+        violation. ADVISORY and INFO never flag a tool set by design (v2.1,
+        Task 5) -- ADVISORY findings are still surfaced to the user, just not
+        gated on, since both carry measured, only-partially-fixable noise
+        (`reports/v2_1_severity_gate.md`)."""
+        return self.n_blocking > 0
 
 
 def lint_tool_set(tools: list[Any]) -> LintReport:

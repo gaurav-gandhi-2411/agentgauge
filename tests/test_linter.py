@@ -178,7 +178,7 @@ class TestSiblingToolNameRegressionBug:
             _T("watch_topic", "Register a topic watch.", {"type": "object", "properties": {}}),
         ]
         report = lint_tool_set(tools)
-        flagged = {v.detail for v in report.high if v.check == "described_not_in_schema"}
+        flagged = {v.detail for v in report.advisory if v.check == "described_not_in_schema"}
         assert not any("watch_topic" in d for d in flagged)
 
     def test_genuine_missing_param_still_flagged_when_not_a_sibling_name(self) -> None:
@@ -200,7 +200,7 @@ class TestRequiredReferencesMissingProperty:
         result = lint_tool("ping_server", description, schema)
         e_violations = [v for v in result.all if v.check == "required_references_missing_property"]
         assert len(e_violations) == 1
-        assert e_violations[0].severity == Severity.HIGH
+        assert e_violations[0].severity == Severity.BLOCKING
 
     def test_no_false_positive_when_required_matches_properties(self) -> None:
         description = "Stores a value under a key."
@@ -215,7 +215,7 @@ class TestRequiredReferencesMissingProperty:
 
 
 class TestRequiredNotMentionedIsInfoSeverityOnly:
-    """Demoted check must never appear in the HIGH severity list."""
+    """Demoted check must never appear in the BLOCKING or ADVISORY lists."""
 
     def test_required_not_mentioned_is_info_not_high(self) -> None:
         description = "Put."
@@ -225,7 +225,8 @@ class TestRequiredNotMentionedIsInfoSeverityOnly:
             "required": ["sid", "key"],
         }
         result = lint_tool("put_x", description, schema)
-        assert result.high == []
+        assert result.blocking == []
+        assert result.advisory == []
         assert len(result.info) == 2
         assert all(v.severity == Severity.INFO for v in result.info)
         assert all(v.check == "required_not_mentioned" for v in result.info)
@@ -238,7 +239,7 @@ class TestNameCollisions:
         violations = check_name_collisions(["get_a", "get_b", "delete_record"])
         assert len(violations) == 1
         assert violations[0].check == "name_collision"
-        assert violations[0].severity == Severity.HIGH
+        assert violations[0].severity == Severity.ADVISORY
 
     def test_distinct_names_not_flagged(self) -> None:
         violations = check_name_collisions(["search_documents", "send_message", "create_record"])
@@ -251,7 +252,7 @@ class TestNameCollisions:
 
 class TestCleanToolNoFalsePositives:
     """A well-documented tool with fully consistent schema/description should
-    produce zero HIGH-severity violations."""
+    produce zero BLOCKING- or ADVISORY-severity violations."""
 
     def test_fully_consistent_tool_is_clean(self) -> None:
         description = (
@@ -268,4 +269,97 @@ class TestCleanToolNoFalsePositives:
             "required": ["user_name", "policy_arn", "confirmed"],
         }
         result = lint_tool("attach_user_policy", description, schema)
-        assert result.high == []
+        assert result.blocking == []
+        assert result.advisory == []
+
+
+class TestParamPossiblyRenamed:
+    """Task 4 (v2.1): the inverse of described_not_in_schema -- catches a
+    schema property that was renamed while the description still refers to
+    the old name. Fixed param_renamed recall from 22.9% to 83.3% overall
+    (2.9% -> 82.9% on the single-word case specifically); see
+    reports/v2_1_linter_recall_fix.md.
+    """
+
+    def test_detects_versioned_rename(self) -> None:
+        description = "Set the field to control behavior."
+        schema = {
+            "type": "object",
+            "properties": {"field_v2": {"type": "string"}},
+            "required": ["field_v2"],
+        }
+        result = lint_tool("do_thing", description, schema)
+        renames = [v for v in result.all if v.check == "param_possibly_renamed"]
+        assert len(renames) == 1
+        assert "field_v2" in renames[0].detail
+
+    def test_detects_camelcase_vs_snakecase_only_difference(self) -> None:
+        # Exact match once normalized (distance 0) -- still flagged, since the
+        # exact-string check (`pname.lower() in desc_lower`) does not
+        # recognize 'userId' as naming 'user_id'.
+        description = "Look up the account for userId."
+        schema = {
+            "type": "object",
+            "properties": {"user_id": {"type": "string"}},
+            "required": ["user_id"],
+        }
+        result = lint_tool("get_account", description, schema)
+        renames = [v for v in result.all if v.check == "param_possibly_renamed"]
+        assert len(renames) == 1
+
+    def test_exact_match_present_no_violation(self) -> None:
+        description = "Set the field_v2 value."
+        schema = {
+            "type": "object",
+            "properties": {"field_v2": {"type": "string"}},
+            "required": ["field_v2"],
+        }
+        result = lint_tool("do_thing", description, schema)
+        assert [v for v in result.all if v.check == "param_possibly_renamed"] == []
+
+    def test_id_suffix_abbreviation_not_a_rename(self) -> None:
+        """'customer_id' described in prose as just 'the customer' is routine
+        technical writing, not a rename -- regression test for the dominant
+        (~79%) false-positive mechanism found on the clean corpus."""
+        description = "Look up the order for a given customer."
+        schema = {
+            "type": "object",
+            "properties": {"customer_id": {"type": "string"}},
+            "required": ["customer_id"],
+        }
+        result = lint_tool("get_order", description, schema)
+        assert [v for v in result.all if v.check == "param_possibly_renamed"] == []
+
+    def test_unit_suffix_abbreviation_not_a_rename(self) -> None:
+        description = "Configure the delay before the alarm triggers."
+        schema = {
+            "type": "object",
+            "properties": {"delay_cs": {"type": "string"}},
+            "required": ["delay_cs"],
+        }
+        result = lint_tool("set_alarm", description, schema)
+        assert [v for v in result.all if v.check == "param_possibly_renamed"] == []
+
+    def test_unrelated_short_word_collision_not_flagged(self) -> None:
+        """'page' vs 'name' -- edit distance 2, but no shared prefix, so this
+        is a coincidental collision between unrelated words, not a rename.
+        Regression test for the dominant residual false-positive mechanism
+        after the id-suffix exclusion alone."""
+        description = "Return items matching the given name."
+        schema = {
+            "type": "object",
+            "properties": {"page": {"type": "integer"}},
+            "required": ["page"],
+        }
+        result = lint_tool("search", description, schema)
+        assert [v for v in result.all if v.check == "param_possibly_renamed"] == []
+
+    def test_short_property_name_below_minimum_length_skipped(self) -> None:
+        description = "Set the identifier to any value."
+        schema = {
+            "type": "object",
+            "properties": {"id": {"type": "string"}},
+            "required": ["id"],
+        }
+        result = lint_tool("set_id", description, schema)
+        assert [v for v in result.all if v.check == "param_possibly_renamed"] == []

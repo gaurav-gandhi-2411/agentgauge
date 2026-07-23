@@ -1,0 +1,470 @@
+{
+  "clean_corpus_false_alarms": {
+    "n_tool_sets": 21,
+    "n_tools": 521,
+    "n_flagged_tools": 22,
+    "pct_flagged_tools": 4.222648752399232,
+    "n_flagged_toolsets": 14,
+    "pct_flagged_toolsets": 66.66666666666667,
+    "violations_by_check": {
+      "described_not_in_schema": 29,
+      "name_collision": 22,
+      "param_possibly_renamed": 4
+    }
+  },
+  "param_renamed_recall": {
+    "n_total": 48,
+    "recall_forward_only_pct": 22.916666666666668,
+    "recall_inverse_only_pct": 81.25,
+    "recall_either_pct": 83.33333333333333,
+    "n_both_checks_fired": 10,
+    "by_property_shape": {
+      "multi_word": {
+        "n": 13,
+        "recall_forward_only": 0.7692307692307693,
+        "recall_inverse_only": 0.8461538461538461,
+        "recall_either": 0.8461538461538461
+      },
+      "single_word": {
+        "n": 35,
+        "recall_forward_only": 0.02857142857142857,
+        "recall_inverse_only": 0.8,
+        "recall_either": 0.8285714285714286
+      }
+    },
+    "per_case": [
+      {
+        "base_tool_set": "confusable_server_oracle",
+        "tool_name": "query_records",
+        "renamed_prop": "field",
+        "shape": "single_word",
+        "forward_hit": false,
+        "inverse_hit": true,
+        "either_hit": true
+      },
+      {
+        "base_tool_set": "confusable_server_oracle",
+        "tool_name": "send_message",
+        "renamed_prop": "user_id",
+        "shape": "multi_word",
+        "forward_hit": true,
+        "inverse_hit": true,
+        "either_hit": true
+      },
+      {
+        "base_tool_set": "confusable_server_oracle",
+        "tool_name": "enumerate_all",
+        "renamed_prop": "collection",
+        "shape": "single_word",
+        "forward_hit": false,
+        "inverse_hit": true,
+        "either_hit": true
+      },
+      {
+        "base_tool_set": "call_constraints_server_oracle",
+        "tool_name": "set_acquisition_mode",
+        "renamed_prop": "mode",
+        "shape": "single_word",
+        "forward_hit": false,
+        "inverse_hit": true,
+        "either_hit": true
+      },
+      {
+        "base_tool_set": "call_constraints_server_oracle",
+        "tool_name": "configure_output_codec",
+        "renamed_prop": "codec",
+        "shape": "single_word",
+        "forward_hit": false,
+        "inverse_hit": true,
+        "either_hit": true
+      },
+      {
+        "base_tool_set": "call_constraints_server_oracle",
+        "tool_name": "schedule_maintenance",
+        "renamed_prop": "priority",
+        "shape": "single_word",
+        "forward_hit": false,
+        "inverse_hit": true,
+        "either_hit": true
+      },
+      {
+        "base_tool_set": "call_constraints_v2_server_oracle",
+        "tool_name": "register_channel",
+        "renamed_prop": "channel_ref",
+        "shape": "multi_word",
+        "forward_hit": true,
+        "inverse_hit": true,
+        "either_hit": true
+      },
+      {
+        "base_tool_set": "call_constraints_v2_server_oracle",
+        "tool_name": "log_fault",
+        "renamed_prop": "fault_code",
+        "shape": "multi_word",
+        "forward_hit": true,
+        "inverse_hit": true,
+        "either_hit": true
+      },
+      {
+        "base_tool_set": "call_constraints_v2_server_oracle",
+        "tool_name": "set_output_encoding",
+        "renamed_prop": "encoding",
+        "shape": "single_word",
+        "forward_hit": false,
+        "inverse_hit": true,
+        "either_hit": true
+      },
+      {
+        "base_tool_set": "t18_q2b_server",
+        "tool_name": "get_record",
+        "renamed_prop": "query",
+        "shape": "single_word",
+        "forward_hit": false,
+        "inverse_hit": true,
+        "either_hit": true
+      },
+      {
+        "base_tool_set": "t18_q2b_server",
+        "tool_name": "fetch_record",
+        "renamed_prop": "query",
+        "shape": "single_word",
+        "forward_hit": false,
+        "inverse_hit": true,
+        "either_hit": true
+      },
+      {
+        "base_tool_set": "t18_q2b_server",
+        "tool_name": "read_entry",
+        "renamed_prop": "query",
+        "shape": "single_word",
+        "forward_hit": false,
+        "inverse_hit": true,
+        "either_hit": true
+      },
+      {
+        "base_tool_set": "t18_oracle_server",
+        "tool_name": "retrieve_row",
+        "renamed_prop": "query",
+        "shape": "single_word",
+        "forward_hit": false,
+        "inverse_hit": true,
+        "either_hit": true
+      },
+      {
+        "base_tool_set": "t18_oracle_server",
+        "tool_name": "query_records",
+        "renamed_prop": "query",
+        "shape": "single_word",
+        "forward_hit": false,
+        "inverse_hit": true,
+        "either_hit": true
+      },
+      {
+        "base_tool_set": "exp1_datalayer_jupyter_mcp_server_mirror",
+        "tool_name": "use_notebook",
+        "renamed_prop": "notebook_name",
+        "shape": "multi_word",
+        "forward_hit": true,
+        "inverse_hit": true,
+        "either_hit": true
+      },
+      {
+        "base_tool_set": "exp1_datalayer_jupyter_mcp_server_mirror",
+        "tool_name": "read_notebook",
+        "renamed_prop": "limit",
+        "shape": "single_word",
+        "forward_hit": false,
+        "inverse_hit": true,
+        "either_hit": true
+      },
+      {
+        "base_tool_set": "exp1_datalayer_jupyter_mcp_server_mirror",
+        "tool_name": "overwrite_cell_source",
+        "renamed_prop": "cell_source",
+        "shape": "multi_word",
+        "forward_hit": false,
+        "inverse_hit": false,
+        "either_hit": false
+      },
+      {
+        "base_tool_set": "exp1_datalayer_jupyter_mcp_server_mirror_oracle",
+        "tool_name": "use_notebook",
+        "renamed_prop": "notebook_name",
+        "shape": "multi_word",
+        "forward_hit": true,
+        "inverse_hit": true,
+        "either_hit": true
+      },
+      {
+        "base_tool_set": "exp1_datalayer_jupyter_mcp_server_mirror_oracle",
+        "tool_name": "overwrite_cell_source",
+        "renamed_prop": "cell_source",
+        "shape": "multi_word",
+        "forward_hit": false,
+        "inverse_hit": false,
+        "either_hit": false
+      },
+      {
+        "base_tool_set": "exp1_datalayer_jupyter_mcp_server_mirror_oracle",
+        "tool_name": "edit_cell_source",
+        "renamed_prop": "old_string",
+        "shape": "multi_word",
+        "forward_hit": true,
+        "inverse_hit": true,
+        "either_hit": true
+      },
+      {
+        "base_tool_set": "exp1_stickerdaniel_linkedin_mcp_server_mirror",
+        "tool_name": "get_company_profile",
+        "renamed_prop": "company_name",
+        "shape": "multi_word",
+        "forward_hit": true,
+        "inverse_hit": true,
+        "either_hit": true
+      },
+      {
+        "base_tool_set": "exp1_stickerdaniel_linkedin_mcp_server_mirror",
+        "tool_name": "get_company_posts",
+        "renamed_prop": "company_name",
+        "shape": "multi_word",
+        "forward_hit": true,
+        "inverse_hit": true,
+        "either_hit": true
+      },
+      {
+        "base_tool_set": "exp1_stickerdaniel_linkedin_mcp_server_mirror",
+        "tool_name": "search_companies",
+        "renamed_prop": "keywords",
+        "shape": "single_word",
+        "forward_hit": false,
+        "inverse_hit": true,
+        "either_hit": true
+      },
+      {
+        "base_tool_set": "rw1_github_mirror",
+        "tool_name": "get_file_contents",
+        "renamed_prop": "repo",
+        "shape": "single_word",
+        "forward_hit": false,
+        "inverse_hit": false,
+        "either_hit": false
+      },
+      {
+        "base_tool_set": "rw1_github_mirror",
+        "tool_name": "create_or_update_file",
+        "renamed_prop": "repo",
+        "shape": "single_word",
+        "forward_hit": false,
+        "inverse_hit": false,
+        "either_hit": false
+      },
+      {
+        "base_tool_set": "rw1_github_mirror",
+        "tool_name": "push_files",
+        "renamed_prop": "repo",
+        "shape": "single_word",
+        "forward_hit": false,
+        "inverse_hit": false,
+        "either_hit": false
+      },
+      {
+        "base_tool_set": "rw1_arm_guardb",
+        "tool_name": "search_code",
+        "renamed_prop": "query",
+        "shape": "single_word",
+        "forward_hit": false,
+        "inverse_hit": true,
+        "either_hit": true
+      },
+      {
+        "base_tool_set": "rw1_arm_guardb",
+        "tool_name": "get_file_contents",
+        "renamed_prop": "repo",
+        "shape": "single_word",
+        "forward_hit": false,
+        "inverse_hit": false,
+        "either_hit": false
+      },
+      {
+        "base_tool_set": "rw1_arm_guardb",
+        "tool_name": "create_or_update_file",
+        "renamed_prop": "repo",
+        "shape": "single_word",
+        "forward_hit": false,
+        "inverse_hit": false,
+        "either_hit": false
+      },
+      {
+        "base_tool_set": "rw1_arm_oracle",
+        "tool_name": "search_repositories",
+        "renamed_prop": "query",
+        "shape": "single_word",
+        "forward_hit": false,
+        "inverse_hit": true,
+        "either_hit": true
+      },
+      {
+        "base_tool_set": "rw1_arm_oracle",
+        "tool_name": "search_code",
+        "renamed_prop": "query",
+        "shape": "single_word",
+        "forward_hit": false,
+        "inverse_hit": true,
+        "either_hit": true
+      },
+      {
+        "base_tool_set": "rw1_arm_oracle",
+        "tool_name": "search_issues",
+        "renamed_prop": "query",
+        "shape": "single_word",
+        "forward_hit": false,
+        "inverse_hit": true,
+        "either_hit": true
+      },
+      {
+        "base_tool_set": "p2a_internal_proxy_mirror",
+        "tool_name": "message_customer",
+        "renamed_prop": "message",
+        "shape": "single_word",
+        "forward_hit": false,
+        "inverse_hit": true,
+        "either_hit": true
+      },
+      {
+        "base_tool_set": "p2a_arm_guardb",
+        "tool_name": "filter_accounts",
+        "renamed_prop": "status",
+        "shape": "single_word",
+        "forward_hit": false,
+        "inverse_hit": true,
+        "either_hit": true
+      },
+      {
+        "base_tool_set": "p2a_arm_guardb",
+        "tool_name": "lookup_account",
+        "renamed_prop": "account_id",
+        "shape": "multi_word",
+        "forward_hit": false,
+        "inverse_hit": true,
+        "either_hit": true
+      },
+      {
+        "base_tool_set": "p2a_arm_guardb",
+        "tool_name": "push_update",
+        "renamed_prop": "title",
+        "shape": "single_word",
+        "forward_hit": false,
+        "inverse_hit": true,
+        "either_hit": true
+      },
+      {
+        "base_tool_set": "p2a_arm_oracle",
+        "tool_name": "list_orders",
+        "renamed_prop": "status",
+        "shape": "single_word",
+        "forward_hit": false,
+        "inverse_hit": true,
+        "either_hit": true
+      },
+      {
+        "base_tool_set": "p2a_arm_oracle",
+        "tool_name": "upsert_invoice",
+        "renamed_prop": "invoice_id",
+        "shape": "multi_word",
+        "forward_hit": true,
+        "inverse_hit": true,
+        "either_hit": true
+      },
+      {
+        "base_tool_set": "p2a_arm_oracle",
+        "tool_name": "filter_accounts",
+        "renamed_prop": "status",
+        "shape": "single_word",
+        "forward_hit": false,
+        "inverse_hit": true,
+        "either_hit": true
+      },
+      {
+        "base_tool_set": "q3_arm_o",
+        "tool_name": "store_item",
+        "renamed_prop": "query",
+        "shape": "single_word",
+        "forward_hit": false,
+        "inverse_hit": true,
+        "either_hit": true
+      },
+      {
+        "base_tool_set": "q3_arm_o",
+        "tool_name": "persist_row",
+        "renamed_prop": "query",
+        "shape": "single_word",
+        "forward_hit": false,
+        "inverse_hit": true,
+        "either_hit": true
+      },
+      {
+        "base_tool_set": "q3_arm_o",
+        "tool_name": "remove_entry",
+        "renamed_prop": "query",
+        "shape": "single_word",
+        "forward_hit": false,
+        "inverse_hit": true,
+        "either_hit": true
+      },
+      {
+        "base_tool_set": "q6_arm_f_doc_guarded",
+        "tool_name": "store_item",
+        "renamed_prop": "query",
+        "shape": "single_word",
+        "forward_hit": false,
+        "inverse_hit": true,
+        "either_hit": true
+      },
+      {
+        "base_tool_set": "q6_arm_f_doc_guarded",
+        "tool_name": "persist_row",
+        "renamed_prop": "query",
+        "shape": "single_word",
+        "forward_hit": false,
+        "inverse_hit": true,
+        "either_hit": true
+      },
+      {
+        "base_tool_set": "q6_arm_f_doc_guarded",
+        "tool_name": "find_entries",
+        "renamed_prop": "query",
+        "shape": "single_word",
+        "forward_hit": false,
+        "inverse_hit": true,
+        "either_hit": true
+      },
+      {
+        "base_tool_set": "exp1_dataojitori_nocturne_memory_mirror",
+        "tool_name": "read_memory",
+        "renamed_prop": "uri",
+        "shape": "single_word",
+        "forward_hit": false,
+        "inverse_hit": false,
+        "either_hit": false
+      },
+      {
+        "base_tool_set": "exp1_dataojitori_nocturne_memory_mirror",
+        "tool_name": "create_memory",
+        "renamed_prop": "parent_uri",
+        "shape": "multi_word",
+        "forward_hit": true,
+        "inverse_hit": true,
+        "either_hit": true
+      },
+      {
+        "base_tool_set": "exp1_dataojitori_nocturne_memory_mirror",
+        "tool_name": "update_memory",
+        "renamed_prop": "uri",
+        "shape": "single_word",
+        "forward_hit": true,
+        "inverse_hit": false,
+        "either_hit": true
+      }
+    ]
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "n_tool_sets": 21,
+  "n_tools": 521,
+  "blocking_only": {
+    "n_flagged_tools": 0,
+    "pct_flagged_tools": 0.0,
+    "n_flagged_toolsets": 0,
+    "pct_flagged_toolsets": 0.0
+  },
+  "blocking_plus_advisory": {
+    "n_flagged_tools": 22,
+    "pct_flagged_tools": 4.222648752399232,
+    "n_flagged_toolsets": 14,
+    "pct_flagged_toolsets": 66.66666666666667
+  }
+}
