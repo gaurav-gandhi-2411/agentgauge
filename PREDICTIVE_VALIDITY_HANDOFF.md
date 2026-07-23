@@ -1,5 +1,37 @@
 # Predictive-validity study — session handoff
 
+## CLOSED OUT (2026-07-23) — read this first, do not resume without explicit authorization
+
+**This study is complete. Final verdict: FALSIFIED** under the pre-registered decision rule.
+`overall_score` never survives multiple-comparison correction across the 8 fields tested;
+`description_quality` survives alone but its correlation with real task success collapses to a
+level that would not survive the same correction once description length is controlled for
+(partial ρ=0.308, p=0.044 vs. a 0.00625 Bonferroni cutoff), and it never demonstrated the
+pre-registered rule's "beats the best naive baseline by a meaningful margin" requirement in the
+first place. **No axis or composite score in this study beats a free character-count heuristic by
+a margin surviving both correction and length-control.** Full reasoning:
+`reports/predictive_validity_study.md`, "FINAL CONCLUSION: FALSIFIED" at the top.
+
+**No further ground-truth collection is planned or authorized.** A Phase-3 expansion attempt was
+tried and abandoned after 5 consecutive local-process/Cloud-Run-proxy failures (see
+`reports/predictive_validity_study.md`'s Repo State section and the
+`local-gcloud-proxy-unreliable` reference memory) — that infra problem, not the underlying research
+question, was why it stopped; it is not grounds to resume this study to "get past" the FALSIFIED
+result. All GCP resources from this study are torn down; zero billable resources remain.
+
+**What is still open, separately, and does not rescue the falsified thesis:** a small-sample
+(n=7-9), suggestive schema-consistency lead (Spearman(Δviolations, Δsuccess) ≈ -0.6, not
+statistically significant) — see the report's "Schema-consistency checker" sections. If ever
+revisited, the checker's known false-positive bugs need fixing first (see report), and any new
+ground-truth collection needs the infra reliability problem solved first, independent of whether
+the question is worth re-testing.
+
+A PR from `chore/predictive-validity-study` to `main` is open (not merged) summarizing this
+close-out. Everything below this note is the original, pre-close-out handoff — kept for provenance,
+not current instructions.
+
+---
+
 **Status as of 2026-07-19. Not committed to git** (one unauthorized commit by an
 executor happened early on — `blind_tasks.py`, flagged to the user at the time —
 everything else below is untracked, awaiting an explicit commit decision).

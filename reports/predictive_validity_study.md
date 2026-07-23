@@ -522,9 +522,39 @@ concrete false positive out of one instance examined — **(a)**'s input/output-
 this plainly, as instructed: (a) and (c) are not demonstrated to be precise enough for a linter a
 developer wouldn't turn off. (b) and (e) — the two checks driving the large majority of this
 section's positive signal (872 + 6 of 1,063 total violations, 83%) — held up in every instance
-checked.** No fix to (a)/(c) was made in this session (out of scope — report, not repair — see
-Task 1's explicit ask). This finding does not change the confusion-matrix numbers above, which
-were computed against the checker's current, as-shipped behavior, including the noisier checks.
+checked (per-instance accuracy).** No fix to (a)/(c) was made in this session (out of scope —
+report, not repair — see Task 1's explicit ask). This finding does not change the confusion-matrix
+numbers above, which were computed against the checker's current, as-shipped behavior, including
+the noisier checks.
+
+**A second, different angle on check (b) specifically — per-tier discriminative value, not
+per-instance accuracy (fourth session, 2026-07-23):** grouping `required_not_mentioned` rate by
+manifest tier tells a more complicated story than "genuine, therefore useful":
+
+| Tier | Tools | (a)/tool | **(b)/tool** | (c)/tool | (e)/tool |
+|---|---|---|---|---|---|
+| real-world-mirror-improved | 17 | 0.35 | **1.76** | 0.35 | 0.00 |
+| real-world-mirror | 147 | 0.58 | **1.42** | 0.21 | 0.00 |
+| bad | 227 | 0.00 | **1.37** | 0.00 | 0.00 |
+| mediocre-good | 145 | 0.18 | **1.16** | 0.00 | 0.00 |
+| good | 140 | 0.19 | **0.94** | 0.04 | 0.00 |
+| fixer-improved | 40 | 0.00 | **0.53** | 0.00 | 0.15 |
+| mixed | 4 | 0.00 | 0.25 | 0.00 | 0.00 |
+| mediocre | 29 | 0.00 | 0.00 | 0.00 | 0.00 |
+
+**`real-world-mirror` (verbatim public docstrings from real, unremarkable-quality GitHub/AWS-style
+API servers — not the "bad" tier by design) fires check (b) at 1.42/tool, nearly as high as the
+deliberately-authored "bad" tier's 1.37/tool.** Each individual firing is accurate (the required
+param genuinely isn't named in prose — confirmed by hand above), but a check that fires at nearly
+equal rates on real professional documentation and deliberately-bad synthetic fixtures has **low
+discriminative value as a quality signal**, independent of whether each instance is individually
+true. This is a distinct criticism from the per-instance-accuracy spot-check above, and both are
+valid at once: **(b) is accurate but not very discriminating; (a) and (c) are both inaccurate in a
+demonstrated instance and lower-volume.** Neither framing alone is the full picture. `good` and
+`fixer-improved` do show the lowest rates in this table, so (b) is not *purely* noise — there is a
+real, if weak, gradient — but "required param not mentioned in prose" is common enough across even
+professionally-written real-world API docs that failing this specific check should not, on its
+own, be read as "this description is defective."
 
 ## Limitations (read before citing any number above)
 
