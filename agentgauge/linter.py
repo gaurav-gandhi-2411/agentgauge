@@ -63,6 +63,8 @@ _IDENTIFIER_RE = re.compile(r"`([a-zA-Z_][a-zA-Z0-9_]*)`|\b([a-z][a-z0-9]*(?:_[a
 _RETURN_SECTION_RE = re.compile(
     r"\n\s*(returns?|output)\s*:", re.IGNORECASE
 )
+_RETURN_SENTENCE_RE = re.compile(r"^\s*returns?\b", re.IGNORECASE)
+_EXAMPLES_SECTION_RE = re.compile(r"\n\s*examples?\s*:", re.IGNORECASE)
 
 
 class Severity(StrEnum):
@@ -92,11 +94,31 @@ class ToolLintResult:
 
 
 def _input_section(description: str) -> str:
-    """Strip any Returns:/Output: section (and everything after it) before
-    scanning for parameter mentions -- v1's (a) check false-positived by treating
-    documented return-value field names as missing input parameters."""
-    m = _RETURN_SECTION_RE.search(description or "")
-    return description[: m.start()] if m else (description or "")
+    """Return only the input-relevant text, with output-describing text removed
+    before scanning for parameter mentions.
+
+    Three independently-found false-positive patterns are handled:
+    1. A formal `Returns:`/`Output:` section header (everything after it is
+       dropped) -- v1's original bug.
+    2. A single SENTENCE whose main verb is "Returns"/"Return", even mid-
+       paragraph with no section header (e.g. "Returns the order with discount
+       and tax calculations applied: subtotal, discount_amount, ...") -- found
+       during v2 clean-corpus measurement on p2a_arm_oracle's real-world-style
+       prose, where professional descriptions routinely describe output shape
+       inline rather than under a formal heading.
+    3. An `Examples:` section (everything after it dropped) -- illustrative
+       example values (e.g. an example URI `core://my_user/survival_state`)
+       contain snake_case-looking substrings that are not parameter references
+       at all. Found on exp1_dataojitori_nocturne_memory_mirror.
+    """
+    desc = description or ""
+    for section_re in (_RETURN_SECTION_RE, _EXAMPLES_SECTION_RE):
+        m = section_re.search(desc)
+        if m:
+            desc = desc[: m.start()]
+    sentences = re.split(r"(?<=[.!?])\s+", desc)
+    kept = [s for s in sentences if not _RETURN_SENTENCE_RE.match(s)]
+    return " ".join(kept)
 
 
 def _extract_identifiers(text: str) -> set[str]:
@@ -108,21 +130,34 @@ def _extract_identifiers(text: str) -> set[str]:
     return found
 
 
-def _check_described_not_in_schema(tool_name: str, description: str, props: dict) -> list[Violation]:
+def _check_described_not_in_schema(
+    tool_name: str, description: str, props: dict, sibling_tool_names: frozenset[str] = frozenset()
+) -> list[Violation]:
+    """(a) description mentions an identifier absent from the schema.
+
+    Excludes: the tool's own name (self-reference in prose); any SIBLING tool's
+    name in the same tool set (workflow guidance like "use `watch_topic` before
+    calling this" references another TOOL, not a parameter -- found as a
+    concrete false positive on exp1_blazickjp_arxiv_mcp_server_mirror's
+    `check_alerts`/`get_abstract`/etc. tools during v2 clean-corpus measurement,
+    fixed here rather than shipped).
+    """
     input_text = _input_section(description)
     mentioned = _extract_identifiers(input_text)
     prop_names_lower = {p.lower() for p in props}
+    sibling_names_lower = {n.lower() for n in sibling_tool_names}
     violations = []
     for tok in sorted(mentioned):
-        if tok not in prop_names_lower and tok != tool_name.lower():
-            violations.append(
-                Violation(
-                    check="described_not_in_schema",
-                    severity=Severity.HIGH,
-                    tool_name=tool_name,
-                    detail=f"description mentions '{tok}' as if it were a parameter, but it is not in the schema",
-                )
+        if tok in prop_names_lower or tok == tool_name.lower() or tok in sibling_names_lower:
+            continue
+        violations.append(
+            Violation(
+                check="described_not_in_schema",
+                severity=Severity.HIGH,
+                tool_name=tool_name,
+                detail=f"description mentions '{tok}' as if it were a parameter, but it is not in the schema",
             )
+        )
     return violations
 
 
@@ -203,13 +238,24 @@ def _check_required_not_mentioned(tool_name: str, description: str, required: li
     ]
 
 
-def lint_tool(tool_name: str, description: str, schema: dict[str, Any]) -> ToolLintResult:
-    """Run every per-tool check. Pure function, no I/O, no LLM calls."""
+def lint_tool(
+    tool_name: str,
+    description: str,
+    schema: dict[str, Any],
+    sibling_tool_names: frozenset[str] = frozenset(),
+) -> ToolLintResult:
+    """Run every per-tool check. Pure function, no I/O, no LLM calls.
+
+    `sibling_tool_names`: names of OTHER tools in the same tool set, so
+    check (a) can exclude cross-tool workflow references (e.g. "call
+    `other_tool` first") from being mistaken for missing parameters. Empty by
+    default for single-tool testing; `lint_tool_set` always populates it.
+    """
     props: dict[str, Any] = (schema or {}).get("properties", {}) or {}
     required: list[str] = (schema or {}).get("required", []) or []
 
     result = ToolLintResult(tool_name=tool_name)
-    result.high.extend(_check_described_not_in_schema(tool_name, description, props))
+    result.high.extend(_check_described_not_in_schema(tool_name, description, props, sibling_tool_names))
     result.high.extend(_check_type_enum_contradiction(tool_name, description, props))
     result.high.extend(_check_required_missing_property(tool_name, required, props))
     result.info.extend(_check_required_not_mentioned(tool_name, description, required))
@@ -277,6 +323,9 @@ class LintReport:
 def lint_tool_set(tools: list[Any]) -> LintReport:
     """Lint a full tool set. `tools` is any sequence of objects with
     `.name`, `.description`, `.inputSchema` attributes (matches `mcp.types.Tool`)."""
-    tool_results = [lint_tool(t.name, t.description or "", t.inputSchema or {}) for t in tools]
+    all_names = frozenset(t.name for t in tools)
+    tool_results = [
+        lint_tool(t.name, t.description or "", t.inputSchema or {}, all_names - {t.name}) for t in tools
+    ]
     collisions = check_name_collisions([t.name for t in tools])
     return LintReport(tool_results=tool_results, collision_violations=collisions)

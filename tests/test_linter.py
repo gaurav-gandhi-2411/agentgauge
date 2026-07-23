@@ -14,6 +14,7 @@ from agentgauge.linter import (
     Severity,
     check_name_collisions,
     lint_tool,
+    lint_tool_set,
 )
 
 
@@ -84,6 +85,21 @@ class TestInputOutputSectionRegressionBug:
         assert not any("unknown_sections" in d for d in flagged_tokens)
         assert not any("company_urn" in d for d in flagged_tokens)
 
+    def test_inline_returns_sentence_not_flagged_as_missing_param(self) -> None:
+        # Found on p2a_arm_oracle's retrieve_order: "Returns" as a mid-paragraph
+        # verb, no formal "Returns:" section header at all.
+        description = (
+            "Returns the order with discount and tax calculations applied: "
+            "subtotal, discount_amount, tax_amount, and final_total. "
+            "Use when you need the computed final price, not raw field values."
+        )
+        schema = {"type": "object", "properties": {"order_id": {"type": "string"}}, "required": ["order_id"]}
+        result = lint_tool("retrieve_order", description, schema)
+        flagged = {v.detail for v in result.all if v.check == "described_not_in_schema"}
+        assert not any("discount_amount" in d for d in flagged)
+        assert not any("final_total" in d for d in flagged)
+        assert not any("tax_amount" in d for d in flagged)
+
     def test_genuine_input_param_confusion_still_detected_before_returns_section(self) -> None:
         description = (
             "Look up a record by its record_key.\n\n"
@@ -94,6 +110,63 @@ class TestInputOutputSectionRegressionBug:
         result = lint_tool("lookup", description, schema)
         flagged_tokens = {v.detail for v in result.all if v.check == "described_not_in_schema"}
         assert any("record_key" in d for d in flagged_tokens)
+
+
+class TestExamplesSectionRegressionBug:
+    """Regression test: identifiers inside an Examples: section's illustrative
+    string values must not be flagged as missing parameters. Exact false
+    positive found on exp1_dataojitori_nocturne_memory_mirror's create_memory
+    (example URI 'core://my_user/survival_state')."""
+
+    def test_example_uri_content_not_flagged(self) -> None:
+        description = (
+            "Creates a new memory under a parent URI.\n\n"
+            "Args:\n    parent_uri: The existing node to create this memory under.\n\n"
+            "Examples:\n"
+            '    create_memory("core://my_user/survival_state", "content", priority=2)\n'
+        )
+        schema = {"type": "object", "properties": {"parent_uri": {"type": "string"}}, "required": ["parent_uri"]}
+        result = lint_tool("create_memory", description, schema)
+        flagged = {v.detail for v in result.all if v.check == "described_not_in_schema"}
+        assert not any("survival_state" in d for d in flagged)
+        assert not any("my_user" in d for d in flagged)
+
+
+class TestSiblingToolNameRegressionBug:
+    """Regression test: a description referencing ANOTHER tool by name (workflow
+    guidance, e.g. "use `watch_topic` before calling this") must not be flagged
+    as a missing parameter. Exact false positive found on
+    exp1_blazickjp_arxiv_mcp_server_mirror's check_alerts/get_abstract/etc.
+    """
+
+    def test_sibling_tool_name_not_flagged_as_missing_param(self) -> None:
+        description = "Use watch_topic to register topics before calling this."
+        schema = {"type": "object", "properties": {}, "required": []}
+        result = lint_tool("check_alerts", description, schema, sibling_tool_names=frozenset({"watch_topic"}))
+        flagged = {v.detail for v in result.all if v.check == "described_not_in_schema"}
+        assert not any("watch_topic" in d for d in flagged)
+
+    def test_lint_tool_set_excludes_sibling_names_automatically(self) -> None:
+        class _T:
+            def __init__(self, name: str, description: str, inputSchema: dict) -> None:
+                self.name = name
+                self.description = description
+                self.inputSchema = inputSchema
+
+        tools = [
+            _T("check_alerts", "Use watch_topic to register topics first.", {"type": "object", "properties": {}}),
+            _T("watch_topic", "Register a topic watch.", {"type": "object", "properties": {}}),
+        ]
+        report = lint_tool_set(tools)
+        flagged = {v.detail for v in report.high if v.check == "described_not_in_schema"}
+        assert not any("watch_topic" in d for d in flagged)
+
+    def test_genuine_missing_param_still_flagged_when_not_a_sibling_name(self) -> None:
+        description = "Look up a record by its record_key."
+        schema = {"type": "object", "properties": {}, "required": []}
+        result = lint_tool("lookup", description, schema, sibling_tool_names=frozenset({"other_tool"}))
+        flagged = {v.detail for v in result.all if v.check == "described_not_in_schema"}
+        assert any("record_key" in d for d in flagged)
 
 
 class TestRequiredReferencesMissingProperty:
