@@ -90,6 +90,18 @@ class TestBootstrapDeltaCI:
         result2 = bootstrap_delta_ci(before, after, seed=42)
         assert result1 == result2
 
+    def test_no_index_error_across_many_seeds_and_sizes(self) -> None:
+        """Regression test for a real crash found during Task 7's adversarial
+        pass: the LCG's next_float() can return exactly 1.0 (state saturates
+        at 0x7FFFFFFF), so `int(rng() * n)` can equal `n` -- one past the end
+        of the resample list. Runs enough (seed, n_resamples) combinations to
+        reliably hit the saturated state at least once; a fixed build must not
+        raise IndexError for any of them."""
+        before = [0.2, 0.4, 0.6, 0.8, 1.0]
+        after = [0.1, 0.3, 0.5, 0.7, 0.9]
+        for seed in range(200):
+            bootstrap_delta_ci(before, after, n_resamples=50, seed=seed)
+
 
 class TestDiffFromTrials:
     def test_clear_regression_detected(self) -> None:

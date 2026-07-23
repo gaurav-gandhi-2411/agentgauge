@@ -128,8 +128,10 @@ def bootstrap_delta_ci(
     deltas = []
     nb, na = len(before), len(after)
     for _ in range(n_resamples):
-        b_sample = [before[int(rng() * nb)] for _ in range(nb)]
-        a_sample = [after[int(rng() * na)] for _ in range(na)]
+        # min(..., n - 1): the LCG can return exactly 1.0 (state saturates at
+        # 0x7FFFFFFF), which would otherwise index one past the end of the list.
+        b_sample = [before[min(int(rng() * nb), nb - 1)] for _ in range(nb)]
+        a_sample = [after[min(int(rng() * na), na - 1)] for _ in range(na)]
         deltas.append((sum(a_sample) / na) - (sum(b_sample) / nb))
     deltas.sort()
     lo_idx = int((1 - ci) / 2 * n_resamples)
