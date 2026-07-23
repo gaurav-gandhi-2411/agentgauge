@@ -35,9 +35,6 @@ spec:
               cpu: "8"
               memory: 32Gi
               nvidia.com/gpu: "1"
-          volumeMounts:
-            - name: ollama-models
-              mountPath: /root/.ollama/models
           startupProbe:
             tcpSocket:
               port: 8080
@@ -45,9 +42,3 @@ spec:
             periodSeconds: 10
             failureThreshold: 90
             timeoutSeconds: 3
-      volumes:
-        - name: ollama-models
-          csi:
-            driver: gcsfuse.run.googleapis.com
-            volumeAttributes:
-              bucketName: agentgauge-agent-models-expense-tracker
