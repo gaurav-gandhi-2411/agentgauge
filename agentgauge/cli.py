@@ -808,20 +808,71 @@ _STARTER_TASKS_TEMPLATE = """[
 _GITHUB_ACTION_TEMPLATE = """name: agentgauge
 on:
   pull_request:
+    paths:
+      - "path/to/your_server.py"   # <-- edit to your actual MCP server path(s)
 jobs:
   agentgauge:
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write   # required to comment the results table on the PR
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # need the base-branch file too, for the diff step
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
       - name: Install agentgauge
         run: pip install agentgauge
-      - name: Lint
-        run: agentgauge lint ./path/to/your_server.py --json > lint.json
-      - name: Diff against main
+
+      - name: Lint (deterministic, zero LLM cost)
+        id: lint
+        run: agentgauge lint ./path/to/your_server.py --json > lint.json || true
+
+      - name: Diff against base branch (requires Ollama reachable from the runner)
+        id: diff
         run: |
-          git show main:path/to/your_server.py > /tmp/before_server.py
+          git show origin/${{ github.base_ref }}:path/to/your_server.py > /tmp/before_server.py
           agentgauge diff /tmp/before_server.py ./path/to/your_server.py \\
-            --tasks ./agentgauge_tasks.json --json > diff.json
+            --tasks ./agentgauge_tasks.json --json > diff.json || true
+
+      - name: Comment results on the PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const lint = JSON.parse(fs.readFileSync('lint.json', 'utf8'));
+            const diff = JSON.parse(fs.readFileSync('diff.json', 'utf8'));
+            const lintLines = lint.high.map(v => `- **${v.check}** (${v.tool_name}): ${v.detail}`).join('\\n') || '_none_';
+            const body = [
+              '### agentgauge results',
+              '',
+              `**Linter:** ${lint.n_high} HIGH-severity finding(s)`,
+              lintLines,
+              '',
+              `**Regression harness:** verdict = \\`${diff.verdict}\\``,
+              `delta=${diff.delta.toFixed(3)}, 95% CI [${diff.ci_lo.toFixed(3)}, ${diff.ci_hi.toFixed(3)}]`,
+              '',
+              `| | selection accuracy | argument accuracy | joint success |`,
+              `|---|---|---|---|`,
+              `| before | ${diff.before.selection_accuracy.toFixed(3)} | ${diff.before.argument_accuracy_given_correct_selection ?? 'n/a'} | ${diff.before.joint_success_rate.toFixed(3)} |`,
+              `| after  | ${diff.after.selection_accuracy.toFixed(3)} | ${diff.after.argument_accuracy_given_correct_selection ?? 'n/a'} | ${diff.after.joint_success_rate.toFixed(3)} |`,
+              '',
+              diff.message,
+            ].join('\\n');
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body,
+            });
+
+      - name: Fail on regression or HIGH-severity lint finding
+        run: |
+          agentgauge lint ./path/to/your_server.py
+          agentgauge diff /tmp/before_server.py ./path/to/your_server.py --tasks ./agentgauge_tasks.json
 """
 
 

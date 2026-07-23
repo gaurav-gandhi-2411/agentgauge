@@ -52,10 +52,12 @@ def test_scan_mock_provider(tmp_path) -> None:
 
 
 def test_version_flag() -> None:
+    from agentgauge import __version__
+
     runner = CliRunner()
     result = runner.invoke(app, ["--version"])
     assert result.exit_code == 0
-    assert "0.1.0" in result.output
+    assert __version__ in result.output
 
 
 def test_ci_exits_zero_when_above_threshold() -> None:
