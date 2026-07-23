@@ -22946,16 +22946,1198 @@
     "tier": "bad",
     "server_path": "examples/rw2_arm_a.py",
     "tool_name_filter": null,
-    "error": "HTTPStatusError(\"Server error '500 Internal Server Error' for url 'http://localhost:11435/api/chat'\\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500\")",
-    "timestamp": "2026-07-19T11:02:07.536289+00:00"
+    "tool_count": 29,
+    "agent_model": "gemma2:9b",
+    "judge_model": "llama3.1:8b",
+    "trials": 3,
+    "ground_truth_trials": 5,
+    "task_success_rate": 0.9655,
+    "task_success_rate_binary": 1.0,
+    "dimension_scores": {
+      "schema_completeness": 95.9,
+      "description_quality": 84.3,
+      "discoverability": 68.7,
+      "selection_accuracy": 100.0,
+      "call_correctness": 100.0,
+      "error_legibility": 67.4,
+      "robustness": 0.0,
+      "docs_manifest": 20.0
+    },
+    "overall_score": 84.1,
+    "baseline_desc_length": 107.21,
+    "baseline_single_prompt": 68.0,
+    "run_results": [
+      {
+        "task_tool_name": "attach_user_policy",
+        "selected_tool": "attach_user_policy",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "attach_user_policy",
+        "selected_tool": "attach_user_policy",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "attach_user_policy",
+        "selected_tool": "attach_user_policy",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "attach_user_policy",
+        "selected_tool": "attach_user_policy",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "attach_user_policy",
+        "selected_tool": "attach_user_policy",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "attach_group_policy",
+        "selected_tool": "attach_group_policy",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "attach_group_policy",
+        "selected_tool": "attach_group_policy",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "attach_group_policy",
+        "selected_tool": "attach_group_policy",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "attach_group_policy",
+        "selected_tool": "attach_group_policy",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "attach_group_policy",
+        "selected_tool": "attach_group_policy",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "detach_user_policy",
+        "selected_tool": "detach_user_policy",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "detach_user_policy",
+        "selected_tool": "detach_user_policy",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "detach_user_policy",
+        "selected_tool": "detach_user_policy",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "detach_user_policy",
+        "selected_tool": "detach_user_policy",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "detach_user_policy",
+        "selected_tool": "detach_user_policy",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "detach_group_policy",
+        "selected_tool": "detach_group_policy",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "detach_group_policy",
+        "selected_tool": "detach_group_policy",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "detach_group_policy",
+        "selected_tool": "detach_group_policy",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "detach_group_policy",
+        "selected_tool": "detach_group_policy",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "detach_group_policy",
+        "selected_tool": "detach_group_policy",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "list_policies",
+        "selected_tool": "list_policies",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "list_policies",
+        "selected_tool": "list_policies",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "list_policies",
+        "selected_tool": "list_policies",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "list_policies",
+        "selected_tool": "list_policies",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "list_policies",
+        "selected_tool": "list_policies",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "list_user_policies",
+        "selected_tool": "list_user_policies",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "list_user_policies",
+        "selected_tool": "list_user_policies",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "list_user_policies",
+        "selected_tool": "list_user_policies",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "list_user_policies",
+        "selected_tool": "list_user_policies",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "list_user_policies",
+        "selected_tool": "list_user_policies",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "list_role_policies",
+        "selected_tool": "list_role_policies",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "list_role_policies",
+        "selected_tool": "list_role_policies",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "list_role_policies",
+        "selected_tool": "list_role_policies",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "list_role_policies",
+        "selected_tool": "list_role_policies",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "list_role_policies",
+        "selected_tool": "list_role_policies",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "list_users",
+        "selected_tool": "list_users",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "list_users",
+        "selected_tool": "list_users",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "list_users",
+        "selected_tool": "list_users",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "list_users",
+        "selected_tool": "list_users",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "list_users",
+        "selected_tool": "list_users",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "list_groups",
+        "selected_tool": "list_groups",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "list_groups",
+        "selected_tool": "list_groups",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "list_groups",
+        "selected_tool": "list_groups",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "list_groups",
+        "selected_tool": "list_groups",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "list_groups",
+        "selected_tool": "list_groups",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "list_roles",
+        "selected_tool": "list_roles",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "list_roles",
+        "selected_tool": "list_roles",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "list_roles",
+        "selected_tool": "list_roles",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "list_roles",
+        "selected_tool": "list_roles",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "list_roles",
+        "selected_tool": "list_roles",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "delete_user_policy",
+        "selected_tool": "delete_user_policy",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "delete_user_policy",
+        "selected_tool": "delete_user_policy",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "delete_user_policy",
+        "selected_tool": "delete_user_policy",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "delete_user_policy",
+        "selected_tool": "delete_user_policy",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "delete_user_policy",
+        "selected_tool": "delete_user_policy",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "delete_role_policy",
+        "selected_tool": "delete_role_policy",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "delete_role_policy",
+        "selected_tool": "delete_role_policy",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "delete_role_policy",
+        "selected_tool": "delete_role_policy",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "delete_role_policy",
+        "selected_tool": "delete_role_policy",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "delete_role_policy",
+        "selected_tool": "delete_role_policy",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "create_user",
+        "selected_tool": "create_user",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "create_user",
+        "selected_tool": "create_user",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "create_user",
+        "selected_tool": "create_user",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "create_user",
+        "selected_tool": "create_user",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "create_user",
+        "selected_tool": "create_user",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "get_user",
+        "selected_tool": "get_user",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "get_user",
+        "selected_tool": "get_user",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "get_user",
+        "selected_tool": "get_user",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "get_user",
+        "selected_tool": "get_user",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "get_user",
+        "selected_tool": "get_user",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "delete_user",
+        "selected_tool": "delete_user",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "delete_user",
+        "selected_tool": "delete_user",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "delete_user",
+        "selected_tool": "delete_user",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "delete_user",
+        "selected_tool": "delete_user",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "delete_user",
+        "selected_tool": "delete_user",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "create_role",
+        "selected_tool": "create_role",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "create_role",
+        "selected_tool": "create_role",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "create_role",
+        "selected_tool": "create_role",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "create_role",
+        "selected_tool": "create_role",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "create_role",
+        "selected_tool": "create_role",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "get_managed_policy_document",
+        "selected_tool": "get_managed_policy_document",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "get_managed_policy_document",
+        "selected_tool": "get_managed_policy_document",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "get_managed_policy_document",
+        "selected_tool": "get_managed_policy_document",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "get_managed_policy_document",
+        "selected_tool": "get_managed_policy_document",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "get_managed_policy_document",
+        "selected_tool": "get_managed_policy_document",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "put_user_policy",
+        "selected_tool": "put_user_policy",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "put_user_policy",
+        "selected_tool": "put_user_policy",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "put_user_policy",
+        "selected_tool": "put_user_policy",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "put_user_policy",
+        "selected_tool": "put_user_policy",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "put_user_policy",
+        "selected_tool": "put_user_policy",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "get_user_policy",
+        "selected_tool": "get_user_policy",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "get_user_policy",
+        "selected_tool": "get_user_policy",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "get_user_policy",
+        "selected_tool": "get_user_policy",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "get_user_policy",
+        "selected_tool": "get_user_policy",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "get_user_policy",
+        "selected_tool": "get_user_policy",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "put_role_policy",
+        "selected_tool": "put_role_policy",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "put_role_policy",
+        "selected_tool": "put_role_policy",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "put_role_policy",
+        "selected_tool": "put_role_policy",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "put_role_policy",
+        "selected_tool": "put_role_policy",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "put_role_policy",
+        "selected_tool": "put_role_policy",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "get_role_policy",
+        "selected_tool": "get_role_policy",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "get_role_policy",
+        "selected_tool": "get_role_policy",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "get_role_policy",
+        "selected_tool": "get_role_policy",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "get_role_policy",
+        "selected_tool": "get_role_policy",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "get_role_policy",
+        "selected_tool": "get_role_policy",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "create_group",
+        "selected_tool": "create_group",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "create_group",
+        "selected_tool": "create_group",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "create_group",
+        "selected_tool": "create_group",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "create_group",
+        "selected_tool": "create_group",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "create_group",
+        "selected_tool": "create_group",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "get_group",
+        "selected_tool": "get_group",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "get_group",
+        "selected_tool": "get_group",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "get_group",
+        "selected_tool": "get_group",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "get_group",
+        "selected_tool": "get_group",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "get_group",
+        "selected_tool": "get_group",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "add_user_to_group",
+        "selected_tool": "add_user_to_group",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "add_user_to_group",
+        "selected_tool": "add_user_to_group",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "add_user_to_group",
+        "selected_tool": "add_user_to_group",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "add_user_to_group",
+        "selected_tool": "add_user_to_group",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "add_user_to_group",
+        "selected_tool": "add_user_to_group",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "remove_user_from_group",
+        "selected_tool": "remove_user_from_group",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "remove_user_from_group",
+        "selected_tool": "remove_user_from_group",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "remove_user_from_group",
+        "selected_tool": "remove_user_from_group",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "remove_user_from_group",
+        "selected_tool": "remove_user_from_group",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "remove_user_from_group",
+        "selected_tool": "remove_user_from_group",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "delete_group",
+        "selected_tool": "delete_group",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "delete_group",
+        "selected_tool": "delete_group",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "delete_group",
+        "selected_tool": "delete_group",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "delete_group",
+        "selected_tool": "delete_group",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "delete_group",
+        "selected_tool": "delete_group",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "simulate_principal_policy",
+        "selected_tool": "simulate_principal_policy",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "simulate_principal_policy",
+        "selected_tool": "simulate_principal_policy",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "simulate_principal_policy",
+        "selected_tool": "simulate_principal_policy",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "simulate_principal_policy",
+        "selected_tool": "simulate_principal_policy",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "simulate_principal_policy",
+        "selected_tool": "simulate_principal_policy",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "create_access_key",
+        "selected_tool": "create_access_key",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "create_access_key",
+        "selected_tool": "create_access_key",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "create_access_key",
+        "selected_tool": "create_access_key",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "create_access_key",
+        "selected_tool": "create_access_key",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "create_access_key",
+        "selected_tool": "create_access_key",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "delete_access_key",
+        "selected_tool": "delete_access_key",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "delete_access_key",
+        "selected_tool": "delete_access_key",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "delete_access_key",
+        "selected_tool": "delete_access_key",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "delete_access_key",
+        "selected_tool": "delete_access_key",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "delete_access_key",
+        "selected_tool": "delete_access_key",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      }
+    ],
+    "timestamp": "2026-07-23T05:41:39.964766+00:00",
+    "error": null
   },
   {
     "name": "rw2_arm_guardb",
     "tier": "mediocre-good",
     "server_path": "examples/rw2_arm_guardb.py",
     "tool_name_filter": null,
-    "error": "HTTPStatusError(\"Server error '500 Internal Server Error' for url 'http://localhost:11435/api/chat'\\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500\")",
-    "timestamp": "2026-07-19T11:02:30.539658+00:00"
+    "error": "HTTPStatusError(\"Client error '404 Not Found' for url 'http://localhost:11435/api/chat'\\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404\")",
+    "timestamp": "2026-07-23T08:42:01.955412+00:00"
   },
   {
     "name": "p2a_internal_proxy_mirror",
@@ -39737,6 +40919,4796 @@
       }
     ],
     "timestamp": "2026-07-19T16:28:10.864539+00:00",
+    "error": null
+  },
+  {
+    "name": "grounded_server_fixed",
+    "tier": "fixer-improved",
+    "server_path": "examples/grounded_server_fixed.py",
+    "tool_name_filter": null,
+    "tool_count": 5,
+    "agent_model": "gemma2:9b",
+    "judge_model": "llama3.1:8b",
+    "trials": 3,
+    "ground_truth_trials": 5,
+    "task_success_rate": 0.75,
+    "task_success_rate_binary": 0.9,
+    "dimension_scores": {
+      "schema_completeness": 79.5,
+      "description_quality": 83.3,
+      "discoverability": 89.3,
+      "selection_accuracy": 100.0,
+      "call_correctness": 100.0,
+      "error_legibility": 60.7,
+      "robustness": 0.0,
+      "docs_manifest": 20.0
+    },
+    "overall_score": 82.5,
+    "baseline_desc_length": 262.8,
+    "baseline_single_prompt": 86.0,
+    "run_results": [
+      {
+        "task_tool_name": "transform_scale",
+        "selected_tool": "transform_scale",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "transform_scale",
+        "selected_tool": "transform_scale",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "transform_scale",
+        "selected_tool": "transform_scale",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "transform_scale",
+        "selected_tool": "transform_scale",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "transform_scale",
+        "selected_tool": "transform_scale",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "transform_scale",
+        "selected_tool": "transform_scale",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "transform_scale",
+        "selected_tool": "transform_scale",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "transform_scale",
+        "selected_tool": "transform_scale",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "transform_scale",
+        "selected_tool": "transform_scale",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "transform_scale",
+        "selected_tool": "transform_scale",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "transform_normalize",
+        "selected_tool": "transform_normalize",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "transform_normalize",
+        "selected_tool": "transform_normalize",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "transform_normalize",
+        "selected_tool": "transform_normalize",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "transform_normalize",
+        "selected_tool": "transform_normalize",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "transform_normalize",
+        "selected_tool": "transform_normalize",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "transform_normalize",
+        "selected_tool": "transform_scale",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "transform_normalize",
+        "selected_tool": "transform_scale",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "transform_normalize",
+        "selected_tool": "transform_scale",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "transform_normalize",
+        "selected_tool": "transform_scale",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "transform_normalize",
+        "selected_tool": "transform_scale",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "transform_clip",
+        "selected_tool": "transform_clip",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "transform_clip",
+        "selected_tool": "transform_clip",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "transform_clip",
+        "selected_tool": "transform_clip",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "transform_clip",
+        "selected_tool": "transform_clip",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "transform_clip",
+        "selected_tool": "transform_clip",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "transform_clip",
+        "selected_tool": "transform_clip",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "transform_clip",
+        "selected_tool": "transform_clip",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "transform_clip",
+        "selected_tool": "transform_clip",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "transform_clip",
+        "selected_tool": "transform_clip",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "transform_clip",
+        "selected_tool": "transform_clip",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "transform_round",
+        "selected_tool": "transform_round",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "transform_round",
+        "selected_tool": "transform_round",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "transform_round",
+        "selected_tool": "transform_round",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "transform_round",
+        "selected_tool": "transform_round",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "transform_round",
+        "selected_tool": "transform_round",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "transform_round",
+        "selected_tool": "transform_round",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "transform_round",
+        "selected_tool": "transform_round",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "transform_round",
+        "selected_tool": "transform_round",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "transform_round",
+        "selected_tool": "transform_round",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "transform_round",
+        "selected_tool": "transform_round",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "transform_log",
+        "selected_tool": "transform_log",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "transform_log",
+        "selected_tool": "transform_log",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "transform_log",
+        "selected_tool": "transform_log",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "transform_log",
+        "selected_tool": "transform_log",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "transform_log",
+        "selected_tool": "transform_log",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "transform_log",
+        "selected_tool": "transform_log",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.5
+      },
+      {
+        "task_tool_name": "transform_log",
+        "selected_tool": "transform_log",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.5
+      },
+      {
+        "task_tool_name": "transform_log",
+        "selected_tool": "transform_log",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.5
+      },
+      {
+        "task_tool_name": "transform_log",
+        "selected_tool": "transform_log",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.5
+      },
+      {
+        "task_tool_name": "transform_log",
+        "selected_tool": "transform_log",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.5
+      }
+    ],
+    "timestamp": "2026-07-23T05:48:17.101089+00:00",
+    "error": null
+  },
+  {
+    "name": "confusable_server_fixed",
+    "tier": "fixer-improved",
+    "server_path": "examples/confusable_server_fixed.py",
+    "tool_name_filter": null,
+    "tool_count": 16,
+    "agent_model": "gemma2:9b",
+    "judge_model": "llama3.1:8b",
+    "trials": 3,
+    "ground_truth_trials": 5,
+    "task_success_rate": 0.6094,
+    "task_success_rate_binary": 0.75,
+    "dimension_scores": {
+      "schema_completeness": 66.7,
+      "description_quality": 82.5,
+      "discoverability": 86.7,
+      "selection_accuracy": 100.0,
+      "call_correctness": 100.0,
+      "error_legibility": 65.2,
+      "robustness": 0.0,
+      "docs_manifest": 20.0
+    },
+    "overall_score": 79.0,
+    "baseline_desc_length": 196.81,
+    "baseline_single_prompt": 96.0,
+    "run_results": [
+      {
+        "task_tool_name": "search_documents",
+        "selected_tool": "search_documents",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "search_documents",
+        "selected_tool": "search_documents",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "search_documents",
+        "selected_tool": "search_documents",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "search_documents",
+        "selected_tool": "search_documents",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "search_documents",
+        "selected_tool": "search_documents",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "search_documents",
+        "selected_tool": "search_documents",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "search_documents",
+        "selected_tool": "search_documents",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "search_documents",
+        "selected_tool": "search_documents",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "search_documents",
+        "selected_tool": "search_documents",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "search_documents",
+        "selected_tool": "search_documents",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "query_records",
+        "selected_tool": "query_records",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "query_records",
+        "selected_tool": "query_records",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "query_records",
+        "selected_tool": "query_records",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "query_records",
+        "selected_tool": "query_records",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "query_records",
+        "selected_tool": "query_records",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "query_records",
+        "selected_tool": "list_items",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "query_records",
+        "selected_tool": "list_items",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "query_records",
+        "selected_tool": "list_items",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "query_records",
+        "selected_tool": "list_items",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "query_records",
+        "selected_tool": "list_items",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "send_message",
+        "selected_tool": "send_message",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "send_message",
+        "selected_tool": "send_message",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "send_message",
+        "selected_tool": "send_message",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "send_message",
+        "selected_tool": "send_message",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "send_message",
+        "selected_tool": "send_message",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "send_message",
+        "selected_tool": "send_message",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "send_message",
+        "selected_tool": "send_message",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "send_message",
+        "selected_tool": "send_message",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "send_message",
+        "selected_tool": "send_message",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "send_message",
+        "selected_tool": "send_message",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "dispatch_event",
+        "selected_tool": "dispatch_event",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "dispatch_event",
+        "selected_tool": "dispatch_event",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "dispatch_event",
+        "selected_tool": "dispatch_event",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "dispatch_event",
+        "selected_tool": "dispatch_event",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "dispatch_event",
+        "selected_tool": "dispatch_event",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "dispatch_event",
+        "selected_tool": "dispatch_event",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "dispatch_event",
+        "selected_tool": "dispatch_event",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "dispatch_event",
+        "selected_tool": "dispatch_event",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "dispatch_event",
+        "selected_tool": "dispatch_event",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "dispatch_event",
+        "selected_tool": "dispatch_event",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "list_items",
+        "selected_tool": "list_items",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "list_items",
+        "selected_tool": "list_items",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "list_items",
+        "selected_tool": "list_items",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "list_items",
+        "selected_tool": "list_items",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "list_items",
+        "selected_tool": "list_items",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "list_items",
+        "selected_tool": "list_items",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "list_items",
+        "selected_tool": "list_items",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "list_items",
+        "selected_tool": "list_items",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "list_items",
+        "selected_tool": "list_items",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "list_items",
+        "selected_tool": "list_items",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "enumerate_all",
+        "selected_tool": "list_items",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "enumerate_all",
+        "selected_tool": "list_items",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "enumerate_all",
+        "selected_tool": "list_items",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "enumerate_all",
+        "selected_tool": "list_items",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "enumerate_all",
+        "selected_tool": "list_items",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "enumerate_all",
+        "selected_tool": "enumerate_all",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "enumerate_all",
+        "selected_tool": "enumerate_all",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "enumerate_all",
+        "selected_tool": "enumerate_all",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "enumerate_all",
+        "selected_tool": "enumerate_all",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "enumerate_all",
+        "selected_tool": "enumerate_all",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "create_record",
+        "selected_tool": "create_record",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "create_record",
+        "selected_tool": "create_record",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "create_record",
+        "selected_tool": "create_record",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "create_record",
+        "selected_tool": "create_record",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "create_record",
+        "selected_tool": "create_record",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "create_record",
+        "selected_tool": "create_record",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "create_record",
+        "selected_tool": "create_record",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "create_record",
+        "selected_tool": "create_record",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "create_record",
+        "selected_tool": "create_record",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "create_record",
+        "selected_tool": "create_record",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "register_user",
+        "selected_tool": "register_user",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "register_user",
+        "selected_tool": "register_user",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "register_user",
+        "selected_tool": "register_user",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "register_user",
+        "selected_tool": "register_user",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "register_user",
+        "selected_tool": "register_user",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "register_user",
+        "selected_tool": "register_user",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "register_user",
+        "selected_tool": "register_user",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "register_user",
+        "selected_tool": "register_user",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "register_user",
+        "selected_tool": "register_user",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "register_user",
+        "selected_tool": "register_user",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "update_record",
+        "selected_tool": "list_items",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "update_record",
+        "selected_tool": "list_items",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "update_record",
+        "selected_tool": "list_items",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "update_record",
+        "selected_tool": "list_items",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "update_record",
+        "selected_tool": "list_items",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "update_record",
+        "selected_tool": "update_record",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "update_record",
+        "selected_tool": "update_record",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "update_record",
+        "selected_tool": "update_record",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "update_record",
+        "selected_tool": "update_record",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "update_record",
+        "selected_tool": "update_record",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "patch_fields",
+        "selected_tool": "patch_fields",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.5
+      },
+      {
+        "task_tool_name": "patch_fields",
+        "selected_tool": "patch_fields",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.5
+      },
+      {
+        "task_tool_name": "patch_fields",
+        "selected_tool": "patch_fields",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.5
+      },
+      {
+        "task_tool_name": "patch_fields",
+        "selected_tool": "patch_fields",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.5
+      },
+      {
+        "task_tool_name": "patch_fields",
+        "selected_tool": "patch_fields",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.5
+      },
+      {
+        "task_tool_name": "patch_fields",
+        "selected_tool": "patch_fields",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "patch_fields",
+        "selected_tool": "patch_fields",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "patch_fields",
+        "selected_tool": "patch_fields",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "patch_fields",
+        "selected_tool": "patch_fields",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "patch_fields",
+        "selected_tool": "patch_fields",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "delete_record",
+        "selected_tool": "register_user",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "delete_record",
+        "selected_tool": "register_user",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "delete_record",
+        "selected_tool": "register_user",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "delete_record",
+        "selected_tool": "register_user",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "delete_record",
+        "selected_tool": "register_user",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "delete_record",
+        "selected_tool": "delete_record",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "delete_record",
+        "selected_tool": "delete_record",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "delete_record",
+        "selected_tool": "delete_record",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "delete_record",
+        "selected_tool": "delete_record",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "delete_record",
+        "selected_tool": "delete_record",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "archive_record",
+        "selected_tool": "archive_record",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "archive_record",
+        "selected_tool": "archive_record",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "archive_record",
+        "selected_tool": "archive_record",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "archive_record",
+        "selected_tool": "archive_record",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "archive_record",
+        "selected_tool": "archive_record",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "archive_record",
+        "selected_tool": "register_user",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "archive_record",
+        "selected_tool": "register_user",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "archive_record",
+        "selected_tool": "register_user",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "archive_record",
+        "selected_tool": "register_user",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "archive_record",
+        "selected_tool": "register_user",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "get_record",
+        "selected_tool": "get_record",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "get_record",
+        "selected_tool": "get_record",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "get_record",
+        "selected_tool": "get_record",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "get_record",
+        "selected_tool": "get_record",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "get_record",
+        "selected_tool": "get_record",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "get_record",
+        "selected_tool": "get_record",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "get_record",
+        "selected_tool": "get_record",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "get_record",
+        "selected_tool": "get_record",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "get_record",
+        "selected_tool": "get_record",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "get_record",
+        "selected_tool": "get_record",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "fetch_latest",
+        "selected_tool": "fetch_latest",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "fetch_latest",
+        "selected_tool": "fetch_latest",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "fetch_latest",
+        "selected_tool": "fetch_latest",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "fetch_latest",
+        "selected_tool": "fetch_latest",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "fetch_latest",
+        "selected_tool": "fetch_latest",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "fetch_latest",
+        "selected_tool": "fetch_latest",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "fetch_latest",
+        "selected_tool": "fetch_latest",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "fetch_latest",
+        "selected_tool": "fetch_latest",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "fetch_latest",
+        "selected_tool": "fetch_latest",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "fetch_latest",
+        "selected_tool": "fetch_latest",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "export_report",
+        "selected_tool": "export_report",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "export_report",
+        "selected_tool": "export_report",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "export_report",
+        "selected_tool": "export_report",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "export_report",
+        "selected_tool": "export_report",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "export_report",
+        "selected_tool": "export_report",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "export_report",
+        "selected_tool": "list_items",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "export_report",
+        "selected_tool": "list_items",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "export_report",
+        "selected_tool": "list_items",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "export_report",
+        "selected_tool": "list_items",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "export_report",
+        "selected_tool": "list_items",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "extract_data",
+        "selected_tool": "list_items",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "extract_data",
+        "selected_tool": "list_items",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "extract_data",
+        "selected_tool": "list_items",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "extract_data",
+        "selected_tool": "list_items",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "extract_data",
+        "selected_tool": "list_items",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "extract_data",
+        "selected_tool": "export_report",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "extract_data",
+        "selected_tool": "export_report",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "extract_data",
+        "selected_tool": "export_report",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "extract_data",
+        "selected_tool": "export_report",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "extract_data",
+        "selected_tool": "export_report",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      }
+    ],
+    "timestamp": "2026-07-23T06:06:28.223528+00:00",
+    "error": null
+  },
+  {
+    "name": "mediocre_server_fixed",
+    "tier": "fixer-improved",
+    "server_path": "examples/mediocre_server_fixed.py",
+    "tool_name_filter": null,
+    "tool_count": 5,
+    "agent_model": "gemma2:9b",
+    "judge_model": "llama3.1:8b",
+    "trials": 3,
+    "ground_truth_trials": 5,
+    "task_success_rate": 0.3833,
+    "task_success_rate_binary": 0.5,
+    "dimension_scores": {
+      "schema_completeness": 100.0,
+      "description_quality": 76.7,
+      "discoverability": 66.0,
+      "selection_accuracy": 100.0,
+      "call_correctness": 100.0,
+      "error_legibility": 70.0,
+      "robustness": 0.0,
+      "docs_manifest": 20.0
+    },
+    "overall_score": 83.0,
+    "baseline_desc_length": 4.0,
+    "baseline_single_prompt": 76.0,
+    "run_results": [
+      {
+        "task_tool_name": "put_x",
+        "selected_tool": "put_x",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "put_x",
+        "selected_tool": "put_x",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "put_x",
+        "selected_tool": "put_x",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "put_x",
+        "selected_tool": "put_x",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "put_x",
+        "selected_tool": "put_x",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "put_x",
+        "selected_tool": "put_x",
+        "success": true,
+        "error": null,
+        "parse_failed": true,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "put_x",
+        "selected_tool": "put_x",
+        "success": true,
+        "error": null,
+        "parse_failed": true,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "put_x",
+        "selected_tool": "put_x",
+        "success": true,
+        "error": null,
+        "parse_failed": true,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "put_x",
+        "selected_tool": "put_x",
+        "success": true,
+        "error": null,
+        "parse_failed": true,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "put_x",
+        "selected_tool": "put_x",
+        "success": true,
+        "error": null,
+        "parse_failed": true,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "get_a",
+        "selected_tool": "get_a",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "get_a",
+        "selected_tool": "get_a",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.5
+      },
+      {
+        "task_tool_name": "get_a",
+        "selected_tool": "get_a",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.5
+      },
+      {
+        "task_tool_name": "get_a",
+        "selected_tool": "get_a",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.5
+      },
+      {
+        "task_tool_name": "get_a",
+        "selected_tool": "get_a",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.5
+      },
+      {
+        "task_tool_name": "get_a",
+        "selected_tool": "get_a",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "get_a",
+        "selected_tool": "get_a",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "get_a",
+        "selected_tool": "get_a",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "get_a",
+        "selected_tool": "get_a",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "get_a",
+        "selected_tool": "get_a",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "get_b",
+        "selected_tool": "get_a",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "get_b",
+        "selected_tool": "get_a",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "get_b",
+        "selected_tool": "get_a",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "get_b",
+        "selected_tool": "get_a",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "get_b",
+        "selected_tool": "get_a",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "get_b",
+        "selected_tool": "get_a",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "get_b",
+        "selected_tool": "get_a",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "get_b",
+        "selected_tool": "get_a",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "get_b",
+        "selected_tool": "get_a",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "get_b",
+        "selected_tool": "get_a",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "get_b",
+        "selected_tool": "get_a",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "get_b",
+        "selected_tool": "get_a",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "get_b",
+        "selected_tool": "get_a",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "get_b",
+        "selected_tool": "get_a",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "get_b",
+        "selected_tool": "get_a",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "get_b",
+        "selected_tool": "get_a",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "get_b",
+        "selected_tool": "get_a",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "get_b",
+        "selected_tool": "get_a",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "get_b",
+        "selected_tool": "get_a",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "get_b",
+        "selected_tool": "get_a",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "del_a",
+        "selected_tool": "del_a",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "del_a",
+        "selected_tool": "del_a",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "del_a",
+        "selected_tool": "del_a",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "del_a",
+        "selected_tool": "del_a",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "del_a",
+        "selected_tool": "del_a",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "del_a",
+        "selected_tool": "del_a",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "del_a",
+        "selected_tool": "del_a",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "del_a",
+        "selected_tool": "del_a",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "del_a",
+        "selected_tool": "del_a",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "del_a",
+        "selected_tool": "del_a",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "del_b",
+        "selected_tool": "del_a",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "del_b",
+        "selected_tool": "del_a",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "del_b",
+        "selected_tool": "del_a",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "del_b",
+        "selected_tool": "del_a",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "del_b",
+        "selected_tool": "del_a",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "del_b",
+        "selected_tool": "get_a",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "del_b",
+        "selected_tool": "get_a",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "del_b",
+        "selected_tool": "get_a",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "del_b",
+        "selected_tool": "get_a",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "del_b",
+        "selected_tool": "get_a",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      }
+    ],
+    "timestamp": "2026-07-23T06:12:38.046638+00:00",
+    "error": null
+  },
+  {
+    "name": "call_constraints_server_fixed",
+    "tier": "fixer-improved",
+    "server_path": "examples/call_constraints_server_fixed.py",
+    "tool_name_filter": null,
+    "tool_count": 8,
+    "agent_model": "gemma2:9b",
+    "judge_model": "llama3.1:8b",
+    "trials": 3,
+    "ground_truth_trials": 5,
+    "task_success_rate": 0.5,
+    "task_success_rate_binary": 1.0,
+    "dimension_scores": {
+      "schema_completeness": 66.7,
+      "description_quality": 67.9,
+      "discoverability": 89.3,
+      "selection_accuracy": 100.0,
+      "call_correctness": 100.0,
+      "error_legibility": 71.0,
+      "robustness": 0.0,
+      "docs_manifest": 20.0
+    },
+    "overall_score": 76.0,
+    "baseline_desc_length": 217.88,
+    "baseline_single_prompt": 86.0,
+    "run_results": [
+      {
+        "task_tool_name": "ping_server",
+        "selected_tool": "ping_server",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "ping_server",
+        "selected_tool": "ping_server",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "ping_server",
+        "selected_tool": "ping_server",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "ping_server",
+        "selected_tool": "ping_server",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "ping_server",
+        "selected_tool": "ping_server",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "ping_server",
+        "selected_tool": "ping_server",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "ping_server",
+        "selected_tool": "ping_server",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "ping_server",
+        "selected_tool": "ping_server",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "ping_server",
+        "selected_tool": "ping_server",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "ping_server",
+        "selected_tool": "ping_server",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "ping_server",
+        "selected_tool": "ping_server",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "ping_server",
+        "selected_tool": "ping_server",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "ping_server",
+        "selected_tool": "ping_server",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "ping_server",
+        "selected_tool": "ping_server",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "ping_server",
+        "selected_tool": "ping_server",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "ping_server",
+        "selected_tool": "ping_server",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "ping_server",
+        "selected_tool": "ping_server",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "ping_server",
+        "selected_tool": "ping_server",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "ping_server",
+        "selected_tool": "ping_server",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "ping_server",
+        "selected_tool": "ping_server",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "get_server_info",
+        "selected_tool": "get_server_info",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "get_server_info",
+        "selected_tool": "get_server_info",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "get_server_info",
+        "selected_tool": "get_server_info",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "get_server_info",
+        "selected_tool": "get_server_info",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "get_server_info",
+        "selected_tool": "get_server_info",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "get_server_info",
+        "selected_tool": "get_server_info",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "get_server_info",
+        "selected_tool": "get_server_info",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "get_server_info",
+        "selected_tool": "get_server_info",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "get_server_info",
+        "selected_tool": "get_server_info",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "get_server_info",
+        "selected_tool": "get_server_info",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "get_server_info",
+        "selected_tool": "get_server_info",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "get_server_info",
+        "selected_tool": "get_server_info",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "get_server_info",
+        "selected_tool": "get_server_info",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "get_server_info",
+        "selected_tool": "get_server_info",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "get_server_info",
+        "selected_tool": "get_server_info",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "get_server_info",
+        "selected_tool": "get_server_info",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "get_server_info",
+        "selected_tool": "get_server_info",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "get_server_info",
+        "selected_tool": "get_server_info",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "get_server_info",
+        "selected_tool": "get_server_info",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "get_server_info",
+        "selected_tool": "get_server_info",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "list_channels",
+        "selected_tool": "list_channels",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "list_channels",
+        "selected_tool": "list_channels",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "list_channels",
+        "selected_tool": "list_channels",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "list_channels",
+        "selected_tool": "list_channels",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "list_channels",
+        "selected_tool": "list_channels",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "list_channels",
+        "selected_tool": "list_channels",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "list_channels",
+        "selected_tool": "list_channels",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "list_channels",
+        "selected_tool": "list_channels",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "list_channels",
+        "selected_tool": "list_channels",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "list_channels",
+        "selected_tool": "list_channels",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "list_channels",
+        "selected_tool": "list_channels",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "list_channels",
+        "selected_tool": "list_channels",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "list_channels",
+        "selected_tool": "list_channels",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "list_channels",
+        "selected_tool": "list_channels",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "list_channels",
+        "selected_tool": "list_channels",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "list_channels",
+        "selected_tool": "list_channels",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "list_channels",
+        "selected_tool": "list_channels",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "list_channels",
+        "selected_tool": "list_channels",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "list_channels",
+        "selected_tool": "list_channels",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "list_channels",
+        "selected_tool": "list_channels",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "reset_state",
+        "selected_tool": "reset_state",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "reset_state",
+        "selected_tool": "reset_state",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "reset_state",
+        "selected_tool": "reset_state",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "reset_state",
+        "selected_tool": "reset_state",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "reset_state",
+        "selected_tool": "reset_state",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "reset_state",
+        "selected_tool": "reset_state",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "reset_state",
+        "selected_tool": "reset_state",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "reset_state",
+        "selected_tool": "reset_state",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "reset_state",
+        "selected_tool": "reset_state",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "reset_state",
+        "selected_tool": "reset_state",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "reset_state",
+        "selected_tool": "reset_state",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "reset_state",
+        "selected_tool": "reset_state",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "reset_state",
+        "selected_tool": "reset_state",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "reset_state",
+        "selected_tool": "reset_state",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "reset_state",
+        "selected_tool": "reset_state",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "reset_state",
+        "selected_tool": "reset_state",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "reset_state",
+        "selected_tool": "reset_state",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "reset_state",
+        "selected_tool": "reset_state",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "reset_state",
+        "selected_tool": "reset_state",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "reset_state",
+        "selected_tool": "reset_state",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "set_acquisition_mode",
+        "selected_tool": "set_acquisition_mode",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "set_acquisition_mode",
+        "selected_tool": "set_acquisition_mode",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "set_acquisition_mode",
+        "selected_tool": "set_acquisition_mode",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "set_acquisition_mode",
+        "selected_tool": "set_acquisition_mode",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "set_acquisition_mode",
+        "selected_tool": "set_acquisition_mode",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "set_acquisition_mode",
+        "selected_tool": "set_acquisition_mode",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "set_acquisition_mode",
+        "selected_tool": "set_acquisition_mode",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "set_acquisition_mode",
+        "selected_tool": "set_acquisition_mode",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "set_acquisition_mode",
+        "selected_tool": "set_acquisition_mode",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "set_acquisition_mode",
+        "selected_tool": "set_acquisition_mode",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "set_acquisition_mode",
+        "selected_tool": "set_acquisition_mode",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "set_acquisition_mode",
+        "selected_tool": "set_acquisition_mode",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "set_acquisition_mode",
+        "selected_tool": "set_acquisition_mode",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "set_acquisition_mode",
+        "selected_tool": "set_acquisition_mode",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "set_acquisition_mode",
+        "selected_tool": "set_acquisition_mode",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "set_acquisition_mode",
+        "selected_tool": "set_acquisition_mode",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "set_acquisition_mode",
+        "selected_tool": "set_acquisition_mode",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "set_acquisition_mode",
+        "selected_tool": "set_acquisition_mode",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "set_acquisition_mode",
+        "selected_tool": "set_acquisition_mode",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "set_acquisition_mode",
+        "selected_tool": "set_acquisition_mode",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "configure_output_codec",
+        "selected_tool": "configure_output_codec",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "configure_output_codec",
+        "selected_tool": "configure_output_codec",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "configure_output_codec",
+        "selected_tool": "configure_output_codec",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "configure_output_codec",
+        "selected_tool": "configure_output_codec",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "configure_output_codec",
+        "selected_tool": "configure_output_codec",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "configure_output_codec",
+        "selected_tool": "configure_output_codec",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "configure_output_codec",
+        "selected_tool": "configure_output_codec",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "configure_output_codec",
+        "selected_tool": "configure_output_codec",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "configure_output_codec",
+        "selected_tool": "configure_output_codec",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "configure_output_codec",
+        "selected_tool": "configure_output_codec",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "configure_output_codec",
+        "selected_tool": "configure_output_codec",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "configure_output_codec",
+        "selected_tool": "configure_output_codec",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "configure_output_codec",
+        "selected_tool": "configure_output_codec",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "configure_output_codec",
+        "selected_tool": "configure_output_codec",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "configure_output_codec",
+        "selected_tool": "configure_output_codec",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "configure_output_codec",
+        "selected_tool": "configure_output_codec",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "configure_output_codec",
+        "selected_tool": "configure_output_codec",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "configure_output_codec",
+        "selected_tool": "configure_output_codec",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "configure_output_codec",
+        "selected_tool": "configure_output_codec",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "configure_output_codec",
+        "selected_tool": "configure_output_codec",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "schedule_maintenance",
+        "selected_tool": "schedule_maintenance",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "schedule_maintenance",
+        "selected_tool": "schedule_maintenance",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "schedule_maintenance",
+        "selected_tool": "schedule_maintenance",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "schedule_maintenance",
+        "selected_tool": "schedule_maintenance",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "schedule_maintenance",
+        "selected_tool": "schedule_maintenance",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "schedule_maintenance",
+        "selected_tool": "schedule_maintenance",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "schedule_maintenance",
+        "selected_tool": "schedule_maintenance",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "schedule_maintenance",
+        "selected_tool": "schedule_maintenance",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "schedule_maintenance",
+        "selected_tool": "schedule_maintenance",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "schedule_maintenance",
+        "selected_tool": "schedule_maintenance",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "schedule_maintenance",
+        "selected_tool": "schedule_maintenance",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "schedule_maintenance",
+        "selected_tool": "schedule_maintenance",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "schedule_maintenance",
+        "selected_tool": "schedule_maintenance",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "schedule_maintenance",
+        "selected_tool": "schedule_maintenance",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "schedule_maintenance",
+        "selected_tool": "schedule_maintenance",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "schedule_maintenance",
+        "selected_tool": "schedule_maintenance",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "schedule_maintenance",
+        "selected_tool": "schedule_maintenance",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "schedule_maintenance",
+        "selected_tool": "schedule_maintenance",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "schedule_maintenance",
+        "selected_tool": "schedule_maintenance",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "schedule_maintenance",
+        "selected_tool": "schedule_maintenance",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "set_channel_routing",
+        "selected_tool": "set_channel_routing",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "set_channel_routing",
+        "selected_tool": "set_channel_routing",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "set_channel_routing",
+        "selected_tool": "set_channel_routing",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "set_channel_routing",
+        "selected_tool": "set_channel_routing",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "set_channel_routing",
+        "selected_tool": "set_channel_routing",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "set_channel_routing",
+        "selected_tool": "set_channel_routing",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "set_channel_routing",
+        "selected_tool": "set_channel_routing",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "set_channel_routing",
+        "selected_tool": "set_channel_routing",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "set_channel_routing",
+        "selected_tool": "set_channel_routing",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "set_channel_routing",
+        "selected_tool": "set_channel_routing",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "set_channel_routing",
+        "selected_tool": "set_channel_routing",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "set_channel_routing",
+        "selected_tool": "set_channel_routing",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "set_channel_routing",
+        "selected_tool": "set_channel_routing",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "set_channel_routing",
+        "selected_tool": "set_channel_routing",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "set_channel_routing",
+        "selected_tool": "set_channel_routing",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "set_channel_routing",
+        "selected_tool": "set_channel_routing",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "set_channel_routing",
+        "selected_tool": "set_channel_routing",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "set_channel_routing",
+        "selected_tool": "set_channel_routing",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "set_channel_routing",
+        "selected_tool": "set_channel_routing",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "set_channel_routing",
+        "selected_tool": "set_channel_routing",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      }
+    ],
+    "timestamp": "2026-07-23T06:26:00.092151+00:00",
+    "error": null
+  },
+  {
+    "name": "call_constraints_v2_server_fixed",
+    "tier": "fixer-improved",
+    "server_path": "examples/call_constraints_v2_server_fixed.py",
+    "tool_name_filter": null,
+    "tool_count": 6,
+    "agent_model": "gemma2:9b",
+    "judge_model": "llama3.1:8b",
+    "trials": 3,
+    "ground_truth_trials": 5,
+    "task_success_rate": 0.34,
+    "task_success_rate_binary": 1.0,
+    "dimension_scores": {
+      "schema_completeness": 66.7,
+      "description_quality": 83.9,
+      "discoverability": 89.3,
+      "selection_accuracy": 100.0,
+      "call_correctness": 100.0,
+      "error_legibility": 64.7,
+      "robustness": 0.0,
+      "docs_manifest": 20.0
+    },
+    "overall_score": 79.7,
+    "baseline_desc_length": 272.5,
+    "baseline_single_prompt": 86.0,
+    "run_results": [
+      {
+        "task_tool_name": "register_channel",
+        "selected_tool": "register_channel",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "register_channel",
+        "selected_tool": "register_channel",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "register_channel",
+        "selected_tool": "register_channel",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "register_channel",
+        "selected_tool": "register_channel",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "register_channel",
+        "selected_tool": "register_channel",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "register_channel",
+        "selected_tool": "register_channel",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "register_channel",
+        "selected_tool": "register_channel",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "register_channel",
+        "selected_tool": "register_channel",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "register_channel",
+        "selected_tool": "register_channel",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "register_channel",
+        "selected_tool": "register_channel",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "register_channel",
+        "selected_tool": "register_channel",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "register_channel",
+        "selected_tool": "register_channel",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "register_channel",
+        "selected_tool": "register_channel",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "register_channel",
+        "selected_tool": "register_channel",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "register_channel",
+        "selected_tool": "register_channel",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "register_channel",
+        "selected_tool": "register_channel",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "register_channel",
+        "selected_tool": "register_channel",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "register_channel",
+        "selected_tool": "register_channel",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "register_channel",
+        "selected_tool": "register_channel",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "register_channel",
+        "selected_tool": "register_channel",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "register_channel",
+        "selected_tool": "register_channel",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "register_channel",
+        "selected_tool": "register_channel",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "register_channel",
+        "selected_tool": "register_channel",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "register_channel",
+        "selected_tool": "register_channel",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "register_channel",
+        "selected_tool": "register_channel",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "log_fault",
+        "selected_tool": "log_fault",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "log_fault",
+        "selected_tool": "log_fault",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "log_fault",
+        "selected_tool": "log_fault",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "log_fault",
+        "selected_tool": "log_fault",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "log_fault",
+        "selected_tool": "log_fault",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "log_fault",
+        "selected_tool": "log_fault",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "log_fault",
+        "selected_tool": "log_fault",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "log_fault",
+        "selected_tool": "log_fault",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "log_fault",
+        "selected_tool": "log_fault",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "log_fault",
+        "selected_tool": "log_fault",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "log_fault",
+        "selected_tool": "log_fault",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "log_fault",
+        "selected_tool": "log_fault",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "log_fault",
+        "selected_tool": "log_fault",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "log_fault",
+        "selected_tool": "log_fault",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "log_fault",
+        "selected_tool": "log_fault",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "log_fault",
+        "selected_tool": "log_fault",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "log_fault",
+        "selected_tool": "log_fault",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "log_fault",
+        "selected_tool": "log_fault",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "log_fault",
+        "selected_tool": "log_fault",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "log_fault",
+        "selected_tool": "log_fault",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "log_fault",
+        "selected_tool": "log_fault",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "log_fault",
+        "selected_tool": "log_fault",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "log_fault",
+        "selected_tool": "log_fault",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "log_fault",
+        "selected_tool": "log_fault",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "log_fault",
+        "selected_tool": "log_fault",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "set_output_encoding",
+        "selected_tool": "set_output_encoding",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "set_output_encoding",
+        "selected_tool": "set_output_encoding",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "set_output_encoding",
+        "selected_tool": "set_output_encoding",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "set_output_encoding",
+        "selected_tool": "set_output_encoding",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "set_output_encoding",
+        "selected_tool": "set_output_encoding",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "set_output_encoding",
+        "selected_tool": "set_output_encoding",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "set_output_encoding",
+        "selected_tool": "set_output_encoding",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "set_output_encoding",
+        "selected_tool": "set_output_encoding",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "set_output_encoding",
+        "selected_tool": "set_output_encoding",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "set_output_encoding",
+        "selected_tool": "set_output_encoding",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "set_output_encoding",
+        "selected_tool": "set_output_encoding",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "set_output_encoding",
+        "selected_tool": "set_output_encoding",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "set_output_encoding",
+        "selected_tool": "set_output_encoding",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "set_output_encoding",
+        "selected_tool": "set_output_encoding",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "set_output_encoding",
+        "selected_tool": "set_output_encoding",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "set_output_encoding",
+        "selected_tool": "set_output_encoding",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "set_output_encoding",
+        "selected_tool": "set_output_encoding",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "set_output_encoding",
+        "selected_tool": "set_output_encoding",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "set_output_encoding",
+        "selected_tool": "set_output_encoding",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "set_output_encoding",
+        "selected_tool": "set_output_encoding",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "set_output_encoding",
+        "selected_tool": "set_output_encoding",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "set_output_encoding",
+        "selected_tool": "set_output_encoding",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "set_output_encoding",
+        "selected_tool": "set_output_encoding",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "set_output_encoding",
+        "selected_tool": "set_output_encoding",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "set_output_encoding",
+        "selected_tool": "set_output_encoding",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "set_trigger_mode",
+        "selected_tool": "set_trigger_mode",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "set_trigger_mode",
+        "selected_tool": "set_trigger_mode",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "set_trigger_mode",
+        "selected_tool": "set_trigger_mode",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "set_trigger_mode",
+        "selected_tool": "set_trigger_mode",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "set_trigger_mode",
+        "selected_tool": "set_trigger_mode",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "set_trigger_mode",
+        "selected_tool": "set_trigger_mode",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "set_trigger_mode",
+        "selected_tool": "set_trigger_mode",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "set_trigger_mode",
+        "selected_tool": "set_trigger_mode",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "set_trigger_mode",
+        "selected_tool": "set_trigger_mode",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "set_trigger_mode",
+        "selected_tool": "set_trigger_mode",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "set_trigger_mode",
+        "selected_tool": "set_trigger_mode",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "set_trigger_mode",
+        "selected_tool": "set_trigger_mode",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "set_trigger_mode",
+        "selected_tool": "set_trigger_mode",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "set_trigger_mode",
+        "selected_tool": "set_trigger_mode",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "set_trigger_mode",
+        "selected_tool": "set_trigger_mode",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "set_trigger_mode",
+        "selected_tool": "set_trigger_mode",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "set_trigger_mode",
+        "selected_tool": "set_trigger_mode",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "set_trigger_mode",
+        "selected_tool": "set_trigger_mode",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "set_trigger_mode",
+        "selected_tool": "set_trigger_mode",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "set_trigger_mode",
+        "selected_tool": "set_trigger_mode",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "set_trigger_mode",
+        "selected_tool": "set_trigger_mode",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "set_trigger_mode",
+        "selected_tool": "set_trigger_mode",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "set_trigger_mode",
+        "selected_tool": "set_trigger_mode",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "set_trigger_mode",
+        "selected_tool": "set_trigger_mode",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "set_trigger_mode",
+        "selected_tool": "set_trigger_mode",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "set_debounce_delay",
+        "selected_tool": "set_debounce_delay",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "set_debounce_delay",
+        "selected_tool": "set_debounce_delay",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "set_debounce_delay",
+        "selected_tool": "set_debounce_delay",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "set_debounce_delay",
+        "selected_tool": "set_debounce_delay",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "set_debounce_delay",
+        "selected_tool": "set_debounce_delay",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "set_debounce_delay",
+        "selected_tool": "set_debounce_delay",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "set_debounce_delay",
+        "selected_tool": "set_debounce_delay",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "set_debounce_delay",
+        "selected_tool": "set_debounce_delay",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "set_debounce_delay",
+        "selected_tool": "set_debounce_delay",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "set_debounce_delay",
+        "selected_tool": "set_debounce_delay",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "set_debounce_delay",
+        "selected_tool": "set_debounce_delay",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "set_debounce_delay",
+        "selected_tool": "set_debounce_delay",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "set_debounce_delay",
+        "selected_tool": "set_debounce_delay",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "set_debounce_delay",
+        "selected_tool": "set_debounce_delay",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "set_debounce_delay",
+        "selected_tool": "set_debounce_delay",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "set_debounce_delay",
+        "selected_tool": "set_debounce_delay",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "set_debounce_delay",
+        "selected_tool": "set_debounce_delay",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "set_debounce_delay",
+        "selected_tool": "set_debounce_delay",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "set_debounce_delay",
+        "selected_tool": "set_debounce_delay",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "set_debounce_delay",
+        "selected_tool": "set_debounce_delay",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "set_debounce_delay",
+        "selected_tool": "set_debounce_delay",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "set_debounce_delay",
+        "selected_tool": "set_debounce_delay",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "set_debounce_delay",
+        "selected_tool": "set_debounce_delay",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "set_debounce_delay",
+        "selected_tool": "set_debounce_delay",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "set_debounce_delay",
+        "selected_tool": "set_debounce_delay",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "configure_watchdog",
+        "selected_tool": "configure_watchdog",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "configure_watchdog",
+        "selected_tool": "configure_watchdog",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "configure_watchdog",
+        "selected_tool": "configure_watchdog",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "configure_watchdog",
+        "selected_tool": "configure_watchdog",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "configure_watchdog",
+        "selected_tool": "configure_watchdog",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "configure_watchdog",
+        "selected_tool": "configure_watchdog",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "configure_watchdog",
+        "selected_tool": "configure_watchdog",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "configure_watchdog",
+        "selected_tool": "configure_watchdog",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "configure_watchdog",
+        "selected_tool": "configure_watchdog",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "configure_watchdog",
+        "selected_tool": "configure_watchdog",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "configure_watchdog",
+        "selected_tool": "configure_watchdog",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "configure_watchdog",
+        "selected_tool": "configure_watchdog",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "configure_watchdog",
+        "selected_tool": "configure_watchdog",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "configure_watchdog",
+        "selected_tool": "configure_watchdog",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "configure_watchdog",
+        "selected_tool": "configure_watchdog",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 1.0
+      },
+      {
+        "task_tool_name": "configure_watchdog",
+        "selected_tool": "configure_watchdog",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "configure_watchdog",
+        "selected_tool": "configure_watchdog",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "configure_watchdog",
+        "selected_tool": "configure_watchdog",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "configure_watchdog",
+        "selected_tool": "configure_watchdog",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "configure_watchdog",
+        "selected_tool": "configure_watchdog",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "configure_watchdog",
+        "selected_tool": "configure_watchdog",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "configure_watchdog",
+        "selected_tool": "configure_watchdog",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "configure_watchdog",
+        "selected_tool": "configure_watchdog",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "configure_watchdog",
+        "selected_tool": "configure_watchdog",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      },
+      {
+        "task_tool_name": "configure_watchdog",
+        "selected_tool": "configure_watchdog",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constraint_satisfaction": 0.0
+      }
+    ],
+    "timestamp": "2026-07-23T06:38:14.830287+00:00",
     "error": null
   }
 ]
