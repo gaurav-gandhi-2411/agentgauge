@@ -306,6 +306,91 @@ axis): that step was explicitly conditioned on this mechanism test supporting th
 does not. Building a discriminability-based 9th axis on a falsified mechanism would not address the
 actual blind spot and is not undertaken in this report — see Recommended next step.
 
+### Is `description_quality` just a length proxy? (third session, 2026-07-23)
+
+Computed a partial Spearman correlation of `description_quality` (and separately `overall_score`)
+with real task success, controlling for `baseline_desc_length` (mean description character count),
+across all n=44 records. Method: rank-transform all three variables, compute pairwise Pearson
+correlations on the ranks, then the standard partial-correlation formula
+`(r_xy - r_xz·r_yz) / sqrt((1-r_xz²)(1-r_yz²))`, significance via a t-test with `df = n - 3`. Reused
+this repo's own dependency-free `_rank`/`_pearsonr`/`_t_two_tailed_p` helpers
+(`scripts/predictive_validity_analysis.py`) rather than introducing scipy.
+
+`description_quality` correlates strongly with description length in its own right:
+**Spearman(description_quality, length) = 0.590, p<0.0001.** `overall_score` similarly:
+**Spearman(overall_score, length) = 0.511, p=0.0004.**
+
+| Field | Raw ρ (vs. success) | Partial ρ (vs. success, controlling length) | Partial p |
+|---|---|---|---|
+| `description_quality` | 0.417 | **0.308** | 0.0444 |
+| `overall_score` | 0.371 | **0.262** | 0.0894 |
+
+**Neither collapses fully to zero — this is not "the axis is purely a length counter."** But both
+attenuate substantially once length is controlled for, and the practical consequence is blunt:
+`description_quality`'s partial p (0.0444) would **not** survive the same Bonferroni bar
+(0.00625) that its raw, unpartialed p (0.0048) cleared earlier in this report — a large chunk of
+what looked like a correction-surviving finding is attributable to description length, a metric
+`baseline_desc_length` already gets for zero LLM calls. `overall_score`'s partial correlation
+crosses from nominally significant to **not significant even uncorrected** (p=0.089). **Commercial
+read: paying for an LLM judge to compute `description_quality` buys some signal beyond what a free
+character count already gives you, but a substantial share of its apparent predictive power is
+just rewarding longer descriptions, not something specifically about their quality.** This further
+weakens the case for `overall_score` as a standalone product signal, on top of the
+multiple-comparison correction above.
+
+### Schema-consistency checker (third session, 2026-07-23)
+
+Prompted by the mediocre_server hallucination found in the mechanism test above, and a second,
+independently-discovered concrete instance: reading `call_constraints_server_fixed`'s live schema
+directly showed the fixer had **introduced** `"required": ["host"]` (and similarly for two other
+tools) referencing a property that doesn't exist in `properties` at all (`{}`, unchanged) — while
+the tool's rewritten top-level description explicitly and now-falsely states "with no required
+parameters." Confirmed via the "before" arm's live schema (`call_constraints_server`, not fixed):
+`required: []` for all 4 affected tools, consistent with the description at that point — this
+defect was introduced by the rewrite, not pre-existing.
+
+Built a deterministic checker (`scripts/schema_consistency_checker.py`, `run_schema_consistency.py`)
+with four checks, no LLM calls, run across all 45 manifest entries' live-introspected tools:
+- **(a) `described_not_in_schema`**: identifier-like tokens in the description absent from the
+  schema's own properties. Heuristic and noisy by construction (natural-language synonyms
+  false-positive) — flagged as approximate in its own docstring, not claimed precise.
+- **(b) `required_not_mentioned`**: a schema-required property name that never appears (substring)
+  in the description text.
+- **(c) `type_enum_contradiction`**: boolean-ish description language for a non-boolean-typed
+  property, or a quoted description value absent from that property's own schema `enum`.
+- **(e) `required_references_missing_property`**: schema-internal — a name in `required` that isn't
+  a key in `properties` at all (the exact defect found above). Fully deterministic, no NLP
+  judgment involved.
+- (A separate, LLM-judged check "(d)" — does a *parameter-level* description's stated meaning match
+  what its name/schema constraints imply — is implemented (`check_d_semantic_llm`) but **not run
+  in this session**: local GPU is contended (confirmed via `nvidia-smi`, <500 MB free) and this
+  check requires live inference. Deferred, not silently skipped.)
+
+**Cross-referencing violations-per-tool delta against task-success delta across the same 7 Phase-3
+pairs used in the mechanism test above:**
+
+| Before → After | Δ violations/tool (all checks) | Δ violations/tool (checks b+e only) | Δ task success |
+|---|---|---|---|
+| `t18_vague_server` → `t18_fixer_server` | -1.00 | -1.00 | -0.025 |
+| `t18_vague_server` → `t18_q2b_server` | -0.08 | -1.00 | -0.067 |
+| `grounded_server` → `grounded_server_fixed` | **-2.00** | -2.00 | **+0.183** |
+| `confusable_server` → `confusable_server_fixed` | -1.44 | -1.44 | -0.031 |
+| `mediocre_server` → `mediocre_server_fixed` | **+2.40** | +2.40 | **-0.150** |
+| `call_constraints_server` → `..._fixed` | **+0.62** | +0.62 | 0.000 |
+| `call_constraints_v2_server` → `..._fixed` | -1.83 | -1.83 | -0.020 |
+
+Spearman(Δviolations, Δtask-success) = **-0.607** (p=0.148, n=7) using all checks; **-0.577**
+(p=0.175, n=7) using only the two hand-validated deterministic checks (b)+(e), confirming the
+correlation isn't an artifact of the noisier check (a). **Not statistically significant at n=7**
+(expected — this is a 7-point sample), but a substantially larger effect size, in the
+theoretically-expected direction (more violations, less success), than the near-zero,
+wrong-signed correlations the homogenization mechanism test produced. The two pairs where
+violations *increased* (`mediocre_server_fixed`, `call_constraints_server_fixed`) are exactly the
+two with the worst/flat real-success outcomes among the 7; the pair with the largest violation
+*decrease* (`grounded_server_fixed`, -2.00/tool) is the one pair that genuinely improved. This is
+suggestive, not confirmed — see Task 3 pre-registration and scope discussion for what a properly
+powered follow-up requires.
+
 ## Limitations (read before citing any number above)
 
 - **`rw2_arm_guardb` (1 of 45 manifest entries) has no ground truth.** Five collection attempts
