@@ -86,3 +86,41 @@ consolidated readiness report).
   universal. The infrastructure cost of reaching a decisive sample size on this specific Cloud Run
   setup was substantial (three distinct infra failures fixed in sequence) and the reduced scope
   taken to fit inside a reliable single run is not sufficient to resolve this half of the question.
+
+---
+
+## Task 2e — single-prompt LLM linter baseline, measured
+
+Deferred in Task 2 (`reports/v2_linter_evaluation.md` §2e) pending GPU. Run here via
+`scripts/v2_1_llm_linter_baseline.py`, llama3.1:8b (the study's pinned judge model), same
+direct-HTTPS + checkpointing infrastructure as above. **Bounded stratified sample**, not the full
+corpus, for the same infrastructure-fragility reason: 174 of 521 clean-corpus tools (every 3rd),
+138 of 276 defect-injection cases (every 2nd, stratified so all 5 defect types are still
+represented — 24–32 cases per type).
+
+| Metric | Value |
+|---|---|
+| Clean-corpus false-alarm rate | **97.1%** (169/174 clean tools flagged) |
+| Recall, all 5 defect types | **100.0%** (every single case) |
+
+**The 100% recall number is not meaningful in isolation.** A baseline that answers "INCONSISTENT"
+on 97.1% of genuinely clean tools will trivially also answer "INCONSISTENT" on 100% of defective
+ones — this is a degenerate always-flag baseline, not a working linter. Spot-checked directly (not
+assumed): asked the same model the same prompt about an unambiguous, genuinely clean tool
+(`add(a: number, b: number)`, schema correctly declaring both `a` and `b`). Response: *"INCONSISTENT:
+A parameter 'b' is mentioned in the description but it's missing in the provided JSON Schema."* —
+a fabricated claim; `b` is plainly present in the schema passed in the same prompt. This was checked
+to rule out a false alarm on the measurement side (e.g. the extraction regex matching "not
+inconsistent") — it is not: the model's own stated reason is a hallucinated, checkable-false claim
+about content in its own context window, not a borderline judgment call.
+
+**Conclusion: the deterministic linter beats this baseline decisively once precision is accounted
+for**, not just on recall — 4.22% false-alarm / 83.3% recall on the single hardest defect type
+(`reports/v2_1_linter_recall_fix.md`) is a materially more useful signal than 97.1% false-alarm /
+100% recall from a baseline that has, in effect, stopped discriminating at all. This matches the
+doctrine's own framing (`reports/v2_eval_doctrine.md`): "a linter that's wrong half the time gets
+disabled" — this baseline is wrong on clean input 97% of the time.
+
+**Not measured:** the full corpus (521 tools, 276 defects) — the stratified sample here is large
+enough (n=174, n=138) that the qualitative conclusion (baseline is degenerate) is very unlikely to
+flip on the remaining cases, but the exact percentages could shift slightly on the full set.
