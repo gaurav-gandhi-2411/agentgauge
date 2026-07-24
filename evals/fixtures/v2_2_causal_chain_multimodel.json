@@ -1,0 +1,1718 @@
+{
+  "gemma2:9b": {
+    "blocking_instances": [
+      {
+        "tool_set": "confusable_server_oracle",
+        "module_path": "examples.confusable_server_oracle",
+        "defect_type": "contradictory_required_claim",
+        "target_tool": "search_documents",
+        "task_deltas": [
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 1.0,
+            "delta": 0.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 1.0,
+            "delta": 0.0
+          }
+        ]
+      },
+      {
+        "tool_set": "confusable_server_oracle",
+        "module_path": "examples.confusable_server_oracle",
+        "defect_type": "type_flipped",
+        "target_tool": "search_documents",
+        "task_deltas": [
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 1.0,
+            "delta": 0.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 1.0,
+            "delta": 0.0
+          }
+        ]
+      },
+      {
+        "tool_set": "confusable_server_oracle",
+        "module_path": "examples.confusable_server_oracle",
+        "defect_type": "enum_dropped",
+        "target_tool": "search_documents",
+        "task_deltas": [
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 0.0,
+            "delta": -1.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 1.0,
+            "delta": 0.0
+          }
+        ]
+      },
+      {
+        "tool_set": "call_constraints_server_oracle",
+        "module_path": "examples.call_constraints_server_oracle",
+        "defect_type": "contradictory_required_claim",
+        "target_tool": "ping_server",
+        "task_deltas": [
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 1.0,
+            "delta": 0.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 1.0,
+            "delta": 0.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 1.0,
+            "delta": 0.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 1.0,
+            "delta": 0.0
+          }
+        ]
+      },
+      {
+        "tool_set": "call_constraints_server_oracle",
+        "module_path": "examples.call_constraints_server_oracle",
+        "defect_type": "type_flipped",
+        "target_tool": "set_acquisition_mode",
+        "task_deltas": [
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 1.0,
+            "delta": 0.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 1.0,
+            "delta": 0.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 1.0,
+            "delta": 0.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 1.0,
+            "delta": 0.0
+          }
+        ]
+      },
+      {
+        "tool_set": "call_constraints_server_oracle",
+        "module_path": "examples.call_constraints_server_oracle",
+        "defect_type": "enum_dropped",
+        "target_tool": "set_acquisition_mode",
+        "task_deltas": [
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 1.0,
+            "delta": 0.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 1.0,
+            "delta": 0.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 1.0,
+            "delta": 0.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 1.0,
+            "delta": 0.0
+          }
+        ]
+      },
+      {
+        "tool_set": "call_constraints_v2_server_oracle",
+        "module_path": "examples.call_constraints_v2_server_oracle",
+        "defect_type": "contradictory_required_claim",
+        "target_tool": "register_channel",
+        "task_deltas": [
+          {
+            "task_description": null,
+            "before_joint_success": 0.0,
+            "after_joint_success": 1.0,
+            "delta": 1.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 1.0,
+            "delta": 0.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 1.0,
+            "delta": 0.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 1.0,
+            "delta": 0.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 0.0,
+            "delta": -1.0
+          }
+        ]
+      },
+      {
+        "tool_set": "call_constraints_v2_server_oracle",
+        "module_path": "examples.call_constraints_v2_server_oracle",
+        "defect_type": "type_flipped",
+        "target_tool": "register_channel",
+        "task_deltas": [
+          {
+            "task_description": null,
+            "before_joint_success": 0.0,
+            "after_joint_success": 0.0,
+            "delta": 0.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 0.0,
+            "delta": -1.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 0.0,
+            "delta": -1.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 0.0,
+            "delta": -1.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 0.0,
+            "delta": -1.0
+          }
+        ]
+      },
+      {
+        "tool_set": "call_constraints_v2_server_oracle",
+        "module_path": "examples.call_constraints_v2_server_oracle",
+        "defect_type": "enum_dropped",
+        "target_tool": "register_channel",
+        "task_deltas": [
+          {
+            "task_description": null,
+            "before_joint_success": 0.0,
+            "after_joint_success": 0.0,
+            "delta": 0.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 0.0,
+            "delta": -1.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 0.0,
+            "delta": -1.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 0.0,
+            "delta": -1.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 0.0,
+            "delta": -1.0
+          }
+        ]
+      },
+      {
+        "tool_set": "t18_oracle_server",
+        "module_path": "examples.t18_oracle_server",
+        "defect_type": "contradictory_required_claim",
+        "target_tool": "get_record",
+        "task_deltas": [
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 1.0,
+            "delta": 0.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 1.0,
+            "delta": 0.0
+          }
+        ]
+      },
+      {
+        "tool_set": "t18_oracle_server",
+        "module_path": "examples.t18_oracle_server",
+        "defect_type": "type_flipped",
+        "target_tool": "get_record",
+        "task_deltas": [
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 1.0,
+            "delta": 0.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 1.0,
+            "delta": 0.0
+          }
+        ]
+      },
+      {
+        "tool_set": "t18_oracle_server",
+        "module_path": "examples.t18_oracle_server",
+        "defect_type": "enum_dropped",
+        "target_tool": "get_record",
+        "task_deltas": [
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 0.0,
+            "delta": -1.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 1.0,
+            "delta": 0.0
+          }
+        ]
+      },
+      {
+        "tool_set": "rw1_arm_oracle",
+        "module_path": "examples.rw1_arm_oracle",
+        "defect_type": "contradictory_required_claim",
+        "target_tool": "get_pull_request",
+        "task_deltas": [
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 1.0,
+            "delta": 0.0
+          }
+        ]
+      },
+      {
+        "tool_set": "rw1_arm_oracle",
+        "module_path": "examples.rw1_arm_oracle",
+        "defect_type": "type_flipped",
+        "target_tool": "get_pull_request",
+        "task_deltas": [
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 0.6666666666666666,
+            "delta": -0.33333333333333337
+          }
+        ]
+      },
+      {
+        "tool_set": "rw1_arm_oracle",
+        "module_path": "examples.rw1_arm_oracle",
+        "defect_type": "enum_dropped",
+        "target_tool": "get_pull_request",
+        "task_deltas": [
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 1.0,
+            "delta": 0.0
+          }
+        ]
+      },
+      {
+        "tool_set": "p2a_arm_oracle",
+        "module_path": "examples.p2a_arm_oracle",
+        "defect_type": "contradictory_required_claim",
+        "target_tool": "get_order",
+        "task_deltas": [
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 1.0,
+            "delta": 0.0
+          }
+        ]
+      },
+      {
+        "tool_set": "p2a_arm_oracle",
+        "module_path": "examples.p2a_arm_oracle",
+        "defect_type": "type_flipped",
+        "target_tool": "get_order",
+        "task_deltas": [
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 0.0,
+            "delta": -1.0
+          }
+        ]
+      },
+      {
+        "tool_set": "p2a_arm_oracle",
+        "module_path": "examples.p2a_arm_oracle",
+        "defect_type": "enum_dropped",
+        "target_tool": "get_order",
+        "task_deltas": [
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 1.0,
+            "delta": 0.0
+          }
+        ]
+      }
+    ],
+    "advisory_instances": [
+      {
+        "tool_set": "confusable_server_oracle",
+        "module_path": "examples.confusable_server_oracle",
+        "defect_type": "param_renamed",
+        "target_tool": "query_records",
+        "task_deltas": [
+          {
+            "task_description": null,
+            "before_joint_success": 0.0,
+            "after_joint_success": 0.5,
+            "delta": 0.5
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 0.0,
+            "delta": -1.0
+          }
+        ]
+      },
+      {
+        "tool_set": "call_constraints_server_oracle",
+        "module_path": "examples.call_constraints_server_oracle",
+        "defect_type": "param_renamed",
+        "target_tool": "set_acquisition_mode",
+        "task_deltas": [
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 0.0,
+            "delta": -1.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 0.0,
+            "delta": -1.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 0.0,
+            "delta": -1.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 0.0,
+            "delta": -1.0
+          }
+        ]
+      },
+      {
+        "tool_set": "call_constraints_v2_server_oracle",
+        "module_path": "examples.call_constraints_v2_server_oracle",
+        "defect_type": "param_renamed",
+        "target_tool": "register_channel",
+        "task_deltas": [
+          {
+            "task_description": null,
+            "before_joint_success": 0.0,
+            "after_joint_success": 0.0,
+            "delta": 0.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 0.0,
+            "delta": -1.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 0.0,
+            "delta": -1.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 0.0,
+            "delta": -1.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 0.0,
+            "delta": -1.0
+          }
+        ]
+      },
+      {
+        "tool_set": "t18_oracle_server",
+        "module_path": "examples.t18_oracle_server",
+        "defect_type": "param_renamed",
+        "target_tool": "retrieve_row",
+        "task_deltas": [
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 0.0,
+            "delta": -1.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 0.0,
+            "delta": -1.0
+          }
+        ]
+      },
+      {
+        "tool_set": "rw1_arm_oracle",
+        "module_path": "examples.rw1_arm_oracle",
+        "defect_type": "param_renamed",
+        "target_tool": "search_repositories",
+        "task_deltas": [
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 0.0,
+            "delta": -1.0
+          }
+        ]
+      },
+      {
+        "tool_set": "p2a_arm_oracle",
+        "module_path": "examples.p2a_arm_oracle",
+        "defect_type": "param_renamed",
+        "target_tool": "list_orders",
+        "task_deltas": [
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 1.0,
+            "delta": 0.0
+          }
+        ]
+      }
+    ],
+    "blocking_pooled": {
+      "mean_delta": -0.2518518518518519,
+      "ci_lo": -0.3902081278456006,
+      "ci_hi": -0.11349557585810316,
+      "n_tool_sets": 6,
+      "m_tasks": 45
+    },
+    "advisory_pooled": {
+      "mean_delta": -0.7666666666666667,
+      "ci_lo": -1.036946715078906,
+      "ci_hi": -0.4963866182544275,
+      "n_tool_sets": 6,
+      "m_tasks": 15
+    }
+  },
+  "llama3.1:8b": {
+    "blocking_instances": [
+      {
+        "tool_set": "confusable_server_oracle",
+        "module_path": "examples.confusable_server_oracle",
+        "defect_type": "contradictory_required_claim",
+        "target_tool": "search_documents",
+        "task_deltas": [
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 0.0,
+            "delta": -1.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 0.0,
+            "delta": -1.0
+          }
+        ]
+      },
+      {
+        "tool_set": "confusable_server_oracle",
+        "module_path": "examples.confusable_server_oracle",
+        "defect_type": "type_flipped",
+        "target_tool": "search_documents",
+        "task_deltas": [
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 1.0,
+            "delta": 0.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 0.0,
+            "delta": -1.0
+          }
+        ]
+      },
+      {
+        "tool_set": "confusable_server_oracle",
+        "module_path": "examples.confusable_server_oracle",
+        "defect_type": "enum_dropped",
+        "target_tool": "search_documents",
+        "task_deltas": [
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 1.0,
+            "delta": 0.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 0.0,
+            "delta": -1.0
+          }
+        ]
+      },
+      {
+        "tool_set": "call_constraints_server_oracle",
+        "module_path": "examples.call_constraints_server_oracle",
+        "defect_type": "contradictory_required_claim",
+        "target_tool": "ping_server",
+        "task_deltas": [
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 1.0,
+            "delta": 0.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 1.0,
+            "delta": 0.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 1.0,
+            "delta": 0.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 1.0,
+            "delta": 0.0
+          }
+        ]
+      },
+      {
+        "tool_set": "call_constraints_server_oracle",
+        "module_path": "examples.call_constraints_server_oracle",
+        "defect_type": "type_flipped",
+        "target_tool": "set_acquisition_mode",
+        "task_deltas": [
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 1.0,
+            "delta": 0.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 1.0,
+            "delta": 0.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 0.0,
+            "after_joint_success": 0.0,
+            "delta": 0.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 1.0,
+            "delta": 0.0
+          }
+        ]
+      },
+      {
+        "tool_set": "call_constraints_server_oracle",
+        "module_path": "examples.call_constraints_server_oracle",
+        "defect_type": "enum_dropped",
+        "target_tool": "set_acquisition_mode",
+        "task_deltas": [
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 1.0,
+            "delta": 0.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 1.0,
+            "delta": 0.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 0.0,
+            "after_joint_success": 1.0,
+            "delta": 1.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 1.0,
+            "delta": 0.0
+          }
+        ]
+      },
+      {
+        "tool_set": "call_constraints_v2_server_oracle",
+        "module_path": "examples.call_constraints_v2_server_oracle",
+        "defect_type": "contradictory_required_claim",
+        "target_tool": "register_channel",
+        "task_deltas": [
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 1.0,
+            "delta": 0.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 1.0,
+            "delta": 0.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 1.0,
+            "delta": 0.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 1.0,
+            "delta": 0.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 1.0,
+            "delta": 0.0
+          }
+        ]
+      },
+      {
+        "tool_set": "call_constraints_v2_server_oracle",
+        "module_path": "examples.call_constraints_v2_server_oracle",
+        "defect_type": "type_flipped",
+        "target_tool": "register_channel",
+        "task_deltas": [
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 0.0,
+            "delta": -1.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 1.0,
+            "delta": 0.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 1.0,
+            "delta": 0.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 1.0,
+            "delta": 0.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 0.0,
+            "delta": -1.0
+          }
+        ]
+      },
+      {
+        "tool_set": "call_constraints_v2_server_oracle",
+        "module_path": "examples.call_constraints_v2_server_oracle",
+        "defect_type": "enum_dropped",
+        "target_tool": "register_channel",
+        "task_deltas": [
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 0.0,
+            "delta": -1.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 1.0,
+            "delta": 0.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 0.0,
+            "delta": -1.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 0.0,
+            "delta": -1.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 0.0,
+            "delta": -1.0
+          }
+        ]
+      },
+      {
+        "tool_set": "t18_oracle_server",
+        "module_path": "examples.t18_oracle_server",
+        "defect_type": "contradictory_required_claim",
+        "target_tool": "get_record",
+        "task_deltas": [
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 0.0,
+            "delta": -1.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 0.0,
+            "after_joint_success": 0.0,
+            "delta": 0.0
+          }
+        ]
+      },
+      {
+        "tool_set": "t18_oracle_server",
+        "module_path": "examples.t18_oracle_server",
+        "defect_type": "type_flipped",
+        "target_tool": "get_record",
+        "task_deltas": [
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 0.0,
+            "delta": -1.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 0.0,
+            "after_joint_success": 0.0,
+            "delta": 0.0
+          }
+        ]
+      },
+      {
+        "tool_set": "t18_oracle_server",
+        "module_path": "examples.t18_oracle_server",
+        "defect_type": "enum_dropped",
+        "target_tool": "get_record",
+        "task_deltas": [
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 0.0,
+            "delta": -1.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 0.0,
+            "after_joint_success": 0.0,
+            "delta": 0.0
+          }
+        ]
+      },
+      {
+        "tool_set": "rw1_arm_oracle",
+        "module_path": "examples.rw1_arm_oracle",
+        "defect_type": "contradictory_required_claim",
+        "target_tool": "get_pull_request",
+        "task_deltas": [
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 1.0,
+            "delta": 0.0
+          }
+        ]
+      },
+      {
+        "tool_set": "rw1_arm_oracle",
+        "module_path": "examples.rw1_arm_oracle",
+        "defect_type": "type_flipped",
+        "target_tool": "get_pull_request",
+        "task_deltas": [
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 1.0,
+            "delta": 0.0
+          }
+        ]
+      },
+      {
+        "tool_set": "rw1_arm_oracle",
+        "module_path": "examples.rw1_arm_oracle",
+        "defect_type": "enum_dropped",
+        "target_tool": "get_pull_request",
+        "task_deltas": [
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 1.0,
+            "delta": 0.0
+          }
+        ]
+      },
+      {
+        "tool_set": "p2a_arm_oracle",
+        "module_path": "examples.p2a_arm_oracle",
+        "defect_type": "contradictory_required_claim",
+        "target_tool": "get_order",
+        "task_deltas": [
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 1.0,
+            "delta": 0.0
+          }
+        ]
+      },
+      {
+        "tool_set": "p2a_arm_oracle",
+        "module_path": "examples.p2a_arm_oracle",
+        "defect_type": "type_flipped",
+        "target_tool": "get_order",
+        "task_deltas": [
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 0.0,
+            "delta": -1.0
+          }
+        ]
+      },
+      {
+        "tool_set": "p2a_arm_oracle",
+        "module_path": "examples.p2a_arm_oracle",
+        "defect_type": "enum_dropped",
+        "target_tool": "get_order",
+        "task_deltas": [
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 1.0,
+            "delta": 0.0
+          }
+        ]
+      }
+    ],
+    "advisory_instances": [
+      {
+        "tool_set": "confusable_server_oracle",
+        "module_path": "examples.confusable_server_oracle",
+        "defect_type": "param_renamed",
+        "target_tool": "query_records",
+        "task_deltas": [
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 0.0,
+            "delta": -1.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 0.0,
+            "delta": -1.0
+          }
+        ]
+      },
+      {
+        "tool_set": "call_constraints_server_oracle",
+        "module_path": "examples.call_constraints_server_oracle",
+        "defect_type": "param_renamed",
+        "target_tool": "set_acquisition_mode",
+        "task_deltas": [
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 0.0,
+            "delta": -1.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 0.0,
+            "delta": -1.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 0.0,
+            "after_joint_success": 0.0,
+            "delta": 0.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 0.0,
+            "delta": -1.0
+          }
+        ]
+      },
+      {
+        "tool_set": "call_constraints_v2_server_oracle",
+        "module_path": "examples.call_constraints_v2_server_oracle",
+        "defect_type": "param_renamed",
+        "target_tool": "register_channel",
+        "task_deltas": [
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 0.0,
+            "delta": -1.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 0.0,
+            "delta": -1.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 0.0,
+            "delta": -1.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 0.0,
+            "delta": -1.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 0.0,
+            "delta": -1.0
+          }
+        ]
+      },
+      {
+        "tool_set": "t18_oracle_server",
+        "module_path": "examples.t18_oracle_server",
+        "defect_type": "param_renamed",
+        "target_tool": "retrieve_row",
+        "task_deltas": [
+          {
+            "task_description": null,
+            "before_joint_success": 0.0,
+            "after_joint_success": 0.0,
+            "delta": 0.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 0.0,
+            "delta": -1.0
+          }
+        ]
+      },
+      {
+        "tool_set": "rw1_arm_oracle",
+        "module_path": "examples.rw1_arm_oracle",
+        "defect_type": "param_renamed",
+        "target_tool": "search_repositories",
+        "task_deltas": [
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 0.0,
+            "delta": -1.0
+          }
+        ]
+      },
+      {
+        "tool_set": "p2a_arm_oracle",
+        "module_path": "examples.p2a_arm_oracle",
+        "defect_type": "param_renamed",
+        "target_tool": "list_orders",
+        "task_deltas": [
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 1.0,
+            "delta": 0.0
+          }
+        ]
+      }
+    ],
+    "blocking_pooled": {
+      "mean_delta": -0.28888888888888886,
+      "ci_lo": -0.4357635686293397,
+      "ci_hi": -0.14201420914843804,
+      "n_tool_sets": 6,
+      "m_tasks": 45
+    },
+    "advisory_pooled": {
+      "mean_delta": -0.8,
+      "ci_lo": -1.0204561179690304,
+      "ci_hi": -0.5795438820309697,
+      "n_tool_sets": 6,
+      "m_tasks": 15
+    }
+  },
+  "qwen2.5:7b": {
+    "blocking_instances": [
+      {
+        "tool_set": "confusable_server_oracle",
+        "module_path": "examples.confusable_server_oracle",
+        "defect_type": "contradictory_required_claim",
+        "target_tool": "search_documents",
+        "task_deltas": [
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 1.0,
+            "delta": 0.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 1.0,
+            "delta": 0.0
+          }
+        ]
+      },
+      {
+        "tool_set": "confusable_server_oracle",
+        "module_path": "examples.confusable_server_oracle",
+        "defect_type": "type_flipped",
+        "target_tool": "search_documents",
+        "task_deltas": [
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 1.0,
+            "delta": 0.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 1.0,
+            "delta": 0.0
+          }
+        ]
+      },
+      {
+        "tool_set": "confusable_server_oracle",
+        "module_path": "examples.confusable_server_oracle",
+        "defect_type": "enum_dropped",
+        "target_tool": "search_documents",
+        "task_deltas": [
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 0.0,
+            "delta": -1.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 1.0,
+            "delta": 0.0
+          }
+        ]
+      },
+      {
+        "tool_set": "call_constraints_server_oracle",
+        "module_path": "examples.call_constraints_server_oracle",
+        "defect_type": "contradictory_required_claim",
+        "target_tool": "ping_server",
+        "task_deltas": [
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 1.0,
+            "delta": 0.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 1.0,
+            "delta": 0.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 1.0,
+            "delta": 0.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 1.0,
+            "delta": 0.0
+          }
+        ]
+      },
+      {
+        "tool_set": "call_constraints_server_oracle",
+        "module_path": "examples.call_constraints_server_oracle",
+        "defect_type": "type_flipped",
+        "target_tool": "set_acquisition_mode",
+        "task_deltas": [
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 0.0,
+            "delta": -1.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 0.0,
+            "delta": -1.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 1.0,
+            "delta": 0.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 0.0,
+            "delta": -1.0
+          }
+        ]
+      },
+      {
+        "tool_set": "call_constraints_server_oracle",
+        "module_path": "examples.call_constraints_server_oracle",
+        "defect_type": "enum_dropped",
+        "target_tool": "set_acquisition_mode",
+        "task_deltas": [
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 1.0,
+            "delta": 0.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 1.0,
+            "delta": 0.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 1.0,
+            "delta": 0.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 1.0,
+            "delta": 0.0
+          }
+        ]
+      },
+      {
+        "tool_set": "call_constraints_v2_server_oracle",
+        "module_path": "examples.call_constraints_v2_server_oracle",
+        "defect_type": "contradictory_required_claim",
+        "target_tool": "register_channel",
+        "task_deltas": [
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 1.0,
+            "delta": 0.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 1.0,
+            "delta": 0.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 1.0,
+            "delta": 0.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 1.0,
+            "delta": 0.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 1.0,
+            "delta": 0.0
+          }
+        ]
+      },
+      {
+        "tool_set": "call_constraints_v2_server_oracle",
+        "module_path": "examples.call_constraints_v2_server_oracle",
+        "defect_type": "type_flipped",
+        "target_tool": "register_channel",
+        "task_deltas": [
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 1.0,
+            "delta": 0.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 1.0,
+            "delta": 0.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 1.0,
+            "delta": 0.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 1.0,
+            "delta": 0.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 1.0,
+            "delta": 0.0
+          }
+        ]
+      },
+      {
+        "tool_set": "call_constraints_v2_server_oracle",
+        "module_path": "examples.call_constraints_v2_server_oracle",
+        "defect_type": "enum_dropped",
+        "target_tool": "register_channel",
+        "task_deltas": [
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 1.0,
+            "delta": 0.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 1.0,
+            "delta": 0.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 1.0,
+            "delta": 0.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 1.0,
+            "delta": 0.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 1.0,
+            "delta": 0.0
+          }
+        ]
+      },
+      {
+        "tool_set": "t18_oracle_server",
+        "module_path": "examples.t18_oracle_server",
+        "defect_type": "contradictory_required_claim",
+        "target_tool": "get_record",
+        "task_deltas": [
+          {
+            "task_description": null,
+            "before_joint_success": 0.0,
+            "after_joint_success": 0.0,
+            "delta": 0.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 0.0,
+            "delta": -1.0
+          }
+        ]
+      },
+      {
+        "tool_set": "t18_oracle_server",
+        "module_path": "examples.t18_oracle_server",
+        "defect_type": "type_flipped",
+        "target_tool": "get_record",
+        "task_deltas": [
+          {
+            "task_description": null,
+            "before_joint_success": 0.0,
+            "after_joint_success": 1.0,
+            "delta": 1.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 1.0,
+            "delta": 0.0
+          }
+        ]
+      },
+      {
+        "tool_set": "t18_oracle_server",
+        "module_path": "examples.t18_oracle_server",
+        "defect_type": "enum_dropped",
+        "target_tool": "get_record",
+        "task_deltas": [
+          {
+            "task_description": null,
+            "before_joint_success": 0.0,
+            "after_joint_success": 0.0,
+            "delta": 0.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 0.0,
+            "delta": -1.0
+          }
+        ]
+      },
+      {
+        "tool_set": "rw1_arm_oracle",
+        "module_path": "examples.rw1_arm_oracle",
+        "defect_type": "contradictory_required_claim",
+        "target_tool": "get_pull_request",
+        "task_deltas": [
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 1.0,
+            "delta": 0.0
+          }
+        ]
+      },
+      {
+        "tool_set": "rw1_arm_oracle",
+        "module_path": "examples.rw1_arm_oracle",
+        "defect_type": "type_flipped",
+        "target_tool": "get_pull_request",
+        "task_deltas": [
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 1.0,
+            "delta": 0.0
+          }
+        ]
+      },
+      {
+        "tool_set": "rw1_arm_oracle",
+        "module_path": "examples.rw1_arm_oracle",
+        "defect_type": "enum_dropped",
+        "target_tool": "get_pull_request",
+        "task_deltas": [
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 1.0,
+            "delta": 0.0
+          }
+        ]
+      },
+      {
+        "tool_set": "p2a_arm_oracle",
+        "module_path": "examples.p2a_arm_oracle",
+        "defect_type": "contradictory_required_claim",
+        "target_tool": "get_order",
+        "task_deltas": [
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 1.0,
+            "delta": 0.0
+          }
+        ]
+      },
+      {
+        "tool_set": "p2a_arm_oracle",
+        "module_path": "examples.p2a_arm_oracle",
+        "defect_type": "type_flipped",
+        "target_tool": "get_order",
+        "task_deltas": [
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 0.0,
+            "delta": -1.0
+          }
+        ]
+      },
+      {
+        "tool_set": "p2a_arm_oracle",
+        "module_path": "examples.p2a_arm_oracle",
+        "defect_type": "enum_dropped",
+        "target_tool": "get_order",
+        "task_deltas": [
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 1.0,
+            "delta": 0.0
+          }
+        ]
+      }
+    ],
+    "advisory_instances": [
+      {
+        "tool_set": "confusable_server_oracle",
+        "module_path": "examples.confusable_server_oracle",
+        "defect_type": "param_renamed",
+        "target_tool": "query_records",
+        "task_deltas": [
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 0.5,
+            "delta": -0.5
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 0.0,
+            "after_joint_success": 0.0,
+            "delta": 0.0
+          }
+        ]
+      },
+      {
+        "tool_set": "call_constraints_server_oracle",
+        "module_path": "examples.call_constraints_server_oracle",
+        "defect_type": "param_renamed",
+        "target_tool": "set_acquisition_mode",
+        "task_deltas": [
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 0.0,
+            "delta": -1.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 0.0,
+            "delta": -1.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 0.0,
+            "delta": -1.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 0.0,
+            "delta": -1.0
+          }
+        ]
+      },
+      {
+        "tool_set": "call_constraints_v2_server_oracle",
+        "module_path": "examples.call_constraints_v2_server_oracle",
+        "defect_type": "param_renamed",
+        "target_tool": "register_channel",
+        "task_deltas": [
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 0.0,
+            "delta": -1.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 0.0,
+            "delta": -1.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 0.0,
+            "delta": -1.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 0.0,
+            "delta": -1.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 0.0,
+            "delta": -1.0
+          }
+        ]
+      },
+      {
+        "tool_set": "t18_oracle_server",
+        "module_path": "examples.t18_oracle_server",
+        "defect_type": "param_renamed",
+        "target_tool": "retrieve_row",
+        "task_deltas": [
+          {
+            "task_description": null,
+            "before_joint_success": 0.0,
+            "after_joint_success": 0.0,
+            "delta": 0.0
+          },
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 0.0,
+            "delta": -1.0
+          }
+        ]
+      },
+      {
+        "tool_set": "rw1_arm_oracle",
+        "module_path": "examples.rw1_arm_oracle",
+        "defect_type": "param_renamed",
+        "target_tool": "search_repositories",
+        "task_deltas": [
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 0.0,
+            "delta": -1.0
+          }
+        ]
+      },
+      {
+        "tool_set": "p2a_arm_oracle",
+        "module_path": "examples.p2a_arm_oracle",
+        "defect_type": "param_renamed",
+        "target_tool": "list_orders",
+        "task_deltas": [
+          {
+            "task_description": null,
+            "before_joint_success": 1.0,
+            "after_joint_success": 1.0,
+            "delta": 0.0
+          }
+        ]
+      }
+    ],
+    "blocking_pooled": {
+      "mean_delta": -0.13333333333333333,
+      "ci_lo": -0.25146791498714915,
+      "ci_hi": -0.015198751679517536,
+      "n_tool_sets": 6,
+      "m_tasks": 45
+    },
+    "advisory_pooled": {
+      "mean_delta": -0.7666666666666667,
+      "ci_lo": -0.9891085462764644,
+      "ci_hi": -0.544224787056869,
+      "n_tool_sets": 6,
+      "m_tasks": 15
+    }
+  }
+}
