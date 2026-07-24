@@ -106,5 +106,16 @@ fine" — it is a direct byte-identity proof, computable and re-checkable by
 anyone from the two public branches (`backup/pre-rebase-v2-4` and
 `feat/agentgauge-v2`) without trusting this report at all. A separate
 verifier agent independently re-derived it (and re-ran the post-rebase test
-suite) rather than re-reading this report's table; results appended below
-once it returns.
+suite) rather than re-reading this report's table.
+
+**Result: all 5 items CONFIRMED, no discrepancies.** The verifier recomputed
+all 14 position-paired tree hashes across the rebased range (accounting for
+the one new commit this report itself added on top) and found every pair
+identical, with exactly the 2 expected message changes; independently
+spot-checked both new messages against their commits' actual file lists
+(`k8s_workloads_*` for the relabeled-to-Kubernetes commit,
+`docker_containers_*` for the relabeled-to-Docker commit — no mismatch);
+confirmed PR #63 lives on `chore/predictive-validity-study` with an
+unchanged `headRefOid`; confirmed `origin/main` is unrelated and unchanged;
+and independently re-ran `uv run pytest -q` on `feat/agentgauge-v2`,
+reproducing **871 passed, 92.15% coverage** exactly.
