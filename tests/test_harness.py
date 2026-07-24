@@ -20,6 +20,8 @@ from agentgauge.harness import (
     simulate_minimum_detectable_effect,
     simulate_sequential_expected_n,
     simulate_task_level_pairs,
+    t_adjusted_cluster_bootstrap_mean_ci,
+    wild_cluster_bootstrap_mean_ci,
 )
 
 
@@ -323,6 +325,82 @@ class TestClusterBootstrapMeanCi:
         assert point == 0.5
 
 
+class TestWildClusterBootstrapMeanCi:
+    """v2.2 Task 2: the first few-clusters correction attempt. Kept and
+    tested (it's a real, documented technique and other callers may still
+    want it), but `diff_server_level` does NOT use it -- measured to give a
+    NARROWER, not wider, CI on this repo's actual small-cluster-count data
+    (4-8 clusters), the opposite of the intended conservative correction.
+    See `TestTAdjustedClusterBootstrapMeanCi` for what `diff_server_level`
+    actually uses."""
+
+    def test_deterministic_given_same_seed(self) -> None:
+        values = [0.1, -0.2, 0.3, 0.0, -0.1]
+        r1 = wild_cluster_bootstrap_mean_ci(values, seed=42)
+        r2 = wild_cluster_bootstrap_mean_ci(values, seed=42)
+        assert r1 == r2
+
+    def test_point_estimate_is_plain_mean(self) -> None:
+        values = [1.0, 0.0, 0.5, 0.5]
+        point, _, _ = wild_cluster_bootstrap_mean_ci(values, seed=42)
+        assert point == 0.5
+
+    def test_every_cluster_contributes_to_every_resample(self) -> None:
+        """Unlike resample-with-replacement, a wild (sign-flip) bootstrap can
+        never produce a CI wider than the point estimate +- the sum of all
+        |centered| deviations / n -- i.e. the CI must stay bounded by the
+        full-sample spread, since every cluster's magnitude (just not its
+        sign) is preserved in every resample."""
+        values = [0.9, 0.1, 0.5, 0.5, 0.5]
+        point, ci_lo, ci_hi = wild_cluster_bootstrap_mean_ci(values, n_resamples=2000, seed=42)
+        centered = [v - point for v in values]
+        max_possible_swing = sum(abs(c) for c in centered) / len(values)
+        assert ci_lo >= point - max_possible_swing - 1e-9
+        assert ci_hi <= point + max_possible_swing + 1e-9
+
+    def test_identical_values_zero_width_ci(self) -> None:
+        """All clusters identical -> every sign-flip combination gives the
+        same mean -> zero-width CI (no variance to speak of)."""
+        values = [0.5, 0.5, 0.5, 0.5]
+        point, ci_lo, ci_hi = wild_cluster_bootstrap_mean_ci(values, seed=42)
+        assert point == ci_lo == ci_hi == 0.5
+
+
+class TestTAdjustedClusterBootstrapMeanCi:
+    """v2.2 Task 2 (revised): what diff_server_level actually uses for G<30."""
+
+    def test_deterministic_given_same_seed(self) -> None:
+        values = [0.1, -0.2, 0.3, 0.0, -0.1]
+        r1 = t_adjusted_cluster_bootstrap_mean_ci(values, seed=42)
+        r2 = t_adjusted_cluster_bootstrap_mean_ci(values, seed=42)
+        assert r1 == r2
+
+    def test_point_estimate_is_plain_mean(self) -> None:
+        values = [1.0, 0.0, 0.5, 0.5]
+        point, _, _ = t_adjusted_cluster_bootstrap_mean_ci(values, seed=42)
+        assert point == 0.5
+
+    def test_wider_than_standard_bootstrap_at_small_g(self) -> None:
+        """The whole point: at small G, the t(G-1) multiplier must produce a
+        WIDER (more conservative) CI than the plain percentile bootstrap --
+        this is the property the wild bootstrap attempt was measured to
+        lack."""
+        values = [0.9, 0.1, 0.5, 0.6, 0.4]  # G=5, small
+        _, std_lo, std_hi = cluster_bootstrap_mean_ci(values, seed=42)
+        _, t_lo, t_hi = t_adjusted_cluster_bootstrap_mean_ci(values, seed=42)
+        assert (t_hi - t_lo) > (std_hi - std_lo)
+
+    def test_converges_toward_standard_bootstrap_at_large_g(self) -> None:
+        """At G>=30, t(G-1) ~ z, so the widening effect should be small --
+        confirms the correction is specifically a SMALL-G fix, not a
+        universal always-wider-CI change."""
+        values = [0.5 + 0.01 * (i % 7 - 3) for i in range(40)]  # G=40, large
+        _, std_lo, std_hi = cluster_bootstrap_mean_ci(values, seed=42)
+        _, t_lo, t_hi = t_adjusted_cluster_bootstrap_mean_ci(values, seed=42)
+        std_width, t_width = std_hi - std_lo, t_hi - t_lo
+        assert t_width / std_width < 1.15  # close, not dramatically wider
+
+
 class TestDiffServerLevel:
     def test_clear_regression_across_matched_tasks(self) -> None:
         before = [TrialOutcome(f"t{i}", f"t{i}", 1.0) for i in range(10)]
@@ -372,6 +450,22 @@ class TestDiffServerLevel:
         after += [TrialOutcome("log_fault", "log_fault", 0.0) for _ in range(5)]
         result = diff_server_level(before, after, threshold=0.05, use_cuped=False)
         assert result.verdict == Verdict.REGRESSION
+
+    def test_uses_wild_bootstrap_below_few_clusters_threshold(self) -> None:
+        """v2.2 Task 2: fewer than 30 matched tasks (clusters) must switch to
+        the wild cluster bootstrap, not the resample-with-replacement one."""
+        before = [TrialOutcome(f"t{i}", f"t{i}", 0.8) for i in range(10)]
+        after = [TrialOutcome(f"t{i}", f"t{i}", 0.8) for i in range(10)]
+        result = diff_server_level(before, after, use_cuped=False)
+        assert result.n_tasks_matched == 10
+        assert result.used_few_clusters_correction is True
+
+    def test_uses_standard_bootstrap_at_or_above_threshold(self) -> None:
+        before = [TrialOutcome(f"t{i}", f"t{i}", 0.8) for i in range(30)]
+        after = [TrialOutcome(f"t{i}", f"t{i}", 0.8) for i in range(30)]
+        result = diff_server_level(before, after, use_cuped=False)
+        assert result.n_tasks_matched == 30
+        assert result.used_few_clusters_correction is False
 
 
 class TestObrienFlemingAlphaSpending:
@@ -434,6 +528,42 @@ class TestSimulateMdeTaskLevel:
         mde_small = simulate_mde_task_level(n_tasks=5, power=0.8, n_simulations=100, seed=42)
         mde_large = simulate_mde_task_level(n_tasks=50, power=0.8, n_simulations=100, seed=42)
         assert mde_large < mde_small
+
+    def test_trials_per_task_default_matches_explicit_one(self) -> None:
+        """v2.2 Task 1: trials_per_task=1 (the implicit v2.1 default) must be
+        byte-identical to explicitly passing trials_per_task=1 -- the new
+        parameter must not silently change behavior for existing callers."""
+        mde_implicit = simulate_mde_task_level(n_tasks=20, power=0.8, n_simulations=50, seed=42)
+        mde_explicit = simulate_mde_task_level(
+            n_tasks=20, power=0.8, n_simulations=50, seed=42, trials_per_task=1
+        )
+        assert mde_implicit == mde_explicit
+
+    def test_more_trials_per_task_reduces_mde_at_fixed_n_tasks(self) -> None:
+        """More trials per task -> less residual noise per observation -> a
+        smaller (better) MDE at the same n_tasks, though at a higher total
+        trial cost (this does not test cost-efficiency, only direction)."""
+        mde_1_trial = simulate_mde_task_level(
+            n_tasks=20, power=0.8, n_simulations=100, seed=42, trials_per_task=1
+        )
+        mde_5_trials = simulate_mde_task_level(
+            n_tasks=20, power=0.8, n_simulations=100, seed=42, trials_per_task=5
+        )
+        assert mde_5_trials < mde_1_trial
+
+    def test_same_total_trial_budget_favors_more_tasks_fewer_trials(self) -> None:
+        """The v2.2 Task 1 prediction: at a fixed total trial budget (100),
+        reallocating from few-tasks/many-trials to many-tasks/one-trial
+        should reduce MDE, since ICC=0.793 means repeat trials on the same
+        task carry almost no independent information (n_eff = n*m/(1+(m-1)*ICC)
+        is maximized at m=1 for fixed n*m)."""
+        mde_20x5 = simulate_mde_task_level(
+            n_tasks=20, power=0.8, n_simulations=100, seed=42, trials_per_task=5
+        )
+        mde_100x1 = simulate_mde_task_level(
+            n_tasks=100, power=0.8, n_simulations=100, seed=42, trials_per_task=1
+        )
+        assert mde_100x1 < mde_20x5
 
 
 class TestSimulateSequentialExpectedN:

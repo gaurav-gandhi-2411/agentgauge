@@ -407,7 +407,16 @@ def cluster_bootstrap_mean_ci(
     """Task 2b: cluster-robust bootstrap CI for a mean, resampling at the
     TASK level (each entry in `values` is one task's delta -- the cluster
     Task 1b identified as carrying 56.1% of total variance), not the trial
-    level. Returns (point_mean, ci_lo, ci_hi)."""
+    level. Returns (point_mean, ci_lo, ci_hi).
+
+    Known-poor coverage when the number of clusters (len(values)) is small
+    (<30, the standard cluster-robust-inference rule of thumb) -- resampling
+    with replacement can, and with meaningful probability does, drop a large
+    fraction of a small cluster set entirely from a given resample, or draw
+    the same cluster many times over, inflating apparent precision. For
+    small-G cases, see `wild_cluster_bootstrap_mean_ci` (v2.2, Task 2) and
+    `_FEW_CLUSTERS_THRESHOLD`.
+    """
     n = len(values)
     point = sum(values) / n
     rng = _lcg_random(seed)
@@ -419,6 +428,104 @@ def cluster_bootstrap_mean_ci(
     lo_idx = int((1 - ci) / 2 * n_resamples)
     hi_idx = min(int((1 + ci) / 2 * n_resamples) - 1, n_resamples - 1)
     return point, resampled_means[lo_idx], resampled_means[hi_idx]
+
+
+_FEW_CLUSTERS_THRESHOLD = 30  # standard cluster-robust-inference rule of thumb (Cameron et al.)
+
+
+def wild_cluster_bootstrap_mean_ci(
+    values: list[float],
+    n_resamples: int = 2000,
+    seed: int = 42,
+    ci: float = 0.95,
+) -> tuple[float, float, float]:
+    """v2.2, Task 2: wild cluster bootstrap (Rademacher weights) for a mean,
+    the standard small-G fix (Cameron, Gelbach & Miller 2008) for the
+    resample-with-replacement cluster bootstrap's documented poor coverage
+    when the number of clusters is small. Instead of resampling clusters
+    with replacement (which can drop clusters from a resample or duplicate
+    others -- a large, noisy perturbation when there are few clusters to
+    begin with), every cluster's deviation from the point estimate is kept
+    but independently sign-flipped (+1 or -1, i.e. Rademacher-weighted).
+    This is the direct analog, for a simple one-sample mean, of the wild
+    bootstrap's regression-residual sign-flip: it is exactly a sign-flip
+    (permutation-style) resampling test, appropriate because under the null
+    of no true effect, a cluster's deviation from the mean is as likely to
+    be positive as negative. Every one of the G clusters contributes to
+    every resample -- no cluster is ever entirely dropped, unlike
+    `cluster_bootstrap_mean_ci`'s resample-with-replacement.
+    """
+    n = len(values)
+    point = sum(values) / n
+    centered = [v - point for v in values]
+    rng = _lcg_random(seed)
+    resampled_means = []
+    for _ in range(n_resamples):
+        flipped_mean = sum((1.0 if rng() >= 0.5 else -1.0) * c for c in centered) / n
+        resampled_means.append(point + flipped_mean)
+    resampled_means.sort()
+    lo_idx = int((1 - ci) / 2 * n_resamples)
+    hi_idx = min(int((1 + ci) / 2 * n_resamples) - 1, n_resamples - 1)
+    return point, resampled_means[lo_idx], resampled_means[hi_idx]
+
+
+# Two-sided 97.5th-percentile t critical values (alpha=0.05), df=1..29. Standard,
+# well-known mathematical constants -- not measured or tuned. df>=30 uses the
+# normal-theory z=1.959964 (_Z_ALPHA_2_005 below), matching _FEW_CLUSTERS_THRESHOLD.
+_T_CRITICAL_975 = {
+    1: 12.706, 2: 4.303, 3: 3.182, 4: 2.776, 5: 2.571, 6: 2.447, 7: 2.365, 8: 2.306,
+    9: 2.262, 10: 2.228, 11: 2.201, 12: 2.179, 13: 2.160, 14: 2.145, 15: 2.131,
+    16: 2.120, 17: 2.110, 18: 2.101, 19: 2.093, 20: 2.086, 21: 2.080, 22: 2.074,
+    23: 2.069, 24: 2.064, 25: 2.060, 26: 2.056, 27: 2.052, 28: 2.048, 29: 2.045,
+}  # fmt: skip
+
+
+def _t_critical_975(df: int) -> float:
+    """Two-sided 97.5th-percentile t critical value. Falls back to the
+    standard normal z=1.96 for df>=30 (`_FEW_CLUSTERS_THRESHOLD`), where the
+    t distribution is close enough to normal that a lookup table adds no
+    real precision."""
+    if df >= 30:
+        return _Z_ALPHA_2_005
+    return _T_CRITICAL_975[max(df, 1)]
+
+
+def t_adjusted_cluster_bootstrap_mean_ci(
+    values: list[float],
+    n_resamples: int = 2000,
+    seed: int = 42,
+) -> tuple[float, float, float]:
+    """v2.2, Task 2 (revised few-clusters correction): t(G-1)-critical-value
+    CI, replacing the Rademacher wild bootstrap tried first.
+
+    The wild bootstrap (above) was measured, not just implemented, against
+    the same real null-hypothesis data used to find the original few-
+    clusters problem -- and found to give a NARROWER mean CI width (0.0588
+    vs 0.0647) and a slightly HIGHER false-alarm rate (2.00% vs 1.71%) than
+    the resample-with-replacement method it was meant to correct, on the
+    <10-task stratum (reports/v2_2_few_clusters_correction.md). Mechanism:
+    a Rademacher sign-flip bootstrap is bounded by 2^G distinct sign
+    patterns; for G as small as 4-8 (this stratum's actual range), that
+    combinatorial resolution is too coarse to reliably widen the interval
+    the way the classic few-clusters correction is supposed to.
+
+    t(G-1) critical values widen the interval by a known, principled amount
+    that does not depend on G's combinatorial resolution: uses the cluster
+    bootstrap's own resampled-mean standard deviation as the SE estimate,
+    then forms point +/- t_{G-1,0.025} * SE (a standard "bootstrap-SE with
+    small-sample-corrected critical value" hybrid).
+    """
+    n = len(values)
+    point = sum(values) / n
+    rng = _lcg_random(seed)
+    resampled_means = []
+    for _ in range(n_resamples):
+        sample = [values[min(int(rng() * n), n - 1)] for _ in range(n)]
+        resampled_means.append(sum(sample) / n)
+    mean_resampled = sum(resampled_means) / n_resamples
+    se = math.sqrt(sum((m - mean_resampled) ** 2 for m in resampled_means) / (n_resamples - 1))
+    margin = _t_critical_975(n - 1) * se
+    return point, point - margin, point + margin
 
 
 @dataclass
@@ -437,6 +544,7 @@ class ServerDiffResult:
     message: str
     cuped_theta: float
     cuped_variance_reduction_pct: float
+    used_few_clusters_correction: bool = False
 
     @property
     def exit_code(self) -> int:
@@ -471,7 +579,22 @@ def diff_server_level(
         deltas = [p.delta for p in pairs]
         theta, reduction_pct = 0.0, 0.0
 
-    delta, ci_lo, ci_hi = cluster_bootstrap_mean_ci(deltas, n_resamples=n_resamples, seed=seed)
+    # v2.2, Task 2: few-clusters correction. Below the standard G<30 rule of
+    # thumb, the resample-with-replacement cluster bootstrap has documented
+    # poor coverage (found empirically in this repo: false-alarm rate 1.71%
+    # on <10-task servers vs 0.07% on >=10-task servers, reports/
+    # v2_product_readiness.md §3.3) -- switch to a t(G-1)-critical-value CI.
+    # A Rademacher wild bootstrap was tried first and measured to NOT widen
+    # the interval as intended at this stratum's actual cluster counts (4-8);
+    # see t_adjusted_cluster_bootstrap_mean_ci's docstring for the measured
+    # comparison and reports/v2_2_few_clusters_correction.md.
+    used_few_clusters_correction = len(pairs) < _FEW_CLUSTERS_THRESHOLD
+    if used_few_clusters_correction:
+        delta, ci_lo, ci_hi = t_adjusted_cluster_bootstrap_mean_ci(
+            deltas, n_resamples=n_resamples, seed=seed
+        )
+    else:
+        delta, ci_lo, ci_hi = cluster_bootstrap_mean_ci(deltas, n_resamples=n_resamples, seed=seed)
 
     ci_width = ci_hi - ci_lo
     if ci_width > 2 * threshold:
@@ -510,6 +633,7 @@ def diff_server_level(
         message=message,
         cuped_theta=theta,
         cuped_variance_reduction_pct=reduction_pct,
+        used_few_clusters_correction=used_few_clusters_correction,
     )
 
 
@@ -540,6 +664,7 @@ def simulate_task_level_pairs(
     sigma_task: float = CALIBRATED_SIGMA_TASK,
     resid_sd: float = CALIBRATED_RESID_SD,
     rho: float = CALIBRATED_RHO,
+    trials_per_task: int = 1,
 ) -> list[tuple[float, float]]:
     """Generate n_tasks correlated (before_observed, after_observed) task-mean
     pairs, calibrated to Task 1's measured variance structure: each task has
@@ -547,7 +672,17 @@ def simulate_task_level_pairs(
     incarnation at correlation `rho` (1c), plus independent residual noise
     (sd=resid_sd, matching the measured within-task trial-to-trial spread,
     1a/1b) added to each arm's observation separately.
+
+    `trials_per_task` (v2.2, Task 1): each task's OBSERVED mean is modeled as
+    the average of `trials_per_task` i.i.d. trials, so residual noise shrinks
+    by sqrt(trials_per_task) -- standard averaging, and exactly the classic
+    cluster design-effect formula DEFF = 1 + (m-1)*ICC this study's measured
+    ICC=0.793 already implies. The task-level true-difficulty spread
+    (sigma_task) is UNCHANGED by trials_per_task -- repeating trials on the
+    same task cannot make the task itself easier or harder, only average out
+    trial-to-trial noise around its fixed true value.
     """
+    effective_resid_sd = resid_sd / math.sqrt(trials_per_task)
     pairs = []
     for _ in range(n_tasks):
         task_effect = _approx_standard_normal(rng) * sigma_task
@@ -555,8 +690,12 @@ def simulate_task_level_pairs(
         after_task_effect = rho * task_effect + math.sqrt(max(0.0, 1 - rho**2)) * indep_component
         before_true = min(1.0, max(0.0, baseline_rate + task_effect))
         after_true = min(1.0, max(0.0, baseline_rate + true_delta + after_task_effect))
-        before_obs = min(1.0, max(0.0, before_true + _approx_standard_normal(rng) * resid_sd))
-        after_obs = min(1.0, max(0.0, after_true + _approx_standard_normal(rng) * resid_sd))
+        before_obs = min(
+            1.0, max(0.0, before_true + _approx_standard_normal(rng) * effective_resid_sd)
+        )
+        after_obs = min(
+            1.0, max(0.0, after_true + _approx_standard_normal(rng) * effective_resid_sd)
+        )
         pairs.append((before_obs, after_obs))
     return pairs
 
@@ -573,18 +712,22 @@ def simulate_mde_task_level(
     sigma_task: float = CALIBRATED_SIGMA_TASK,
     resid_sd: float = CALIBRATED_RESID_SD,
     rho: float = CALIBRATED_RHO,
+    trials_per_task: int = 1,
 ) -> float:
-    """Task 3: re-derive MDE under the v2.1 estimator, at the SERVER
-    (task-clustered) level. `use_paired=False` collapses to an independent-
-    samples comparison (the v2 baseline's assumption) for the Task 3 ablation
-    table; `use_cuped=False` isolates pairing's contribution without CUPED's
-    additional reduction.
+    """Task 3 (v2.1) / Task 1 (v2.2): re-derive MDE under the v2.1 estimator,
+    at the SERVER (task-clustered) level. `use_paired=False` collapses to an
+    independent-samples comparison (the v2 baseline's assumption) for the
+    ablation table; `use_cuped=False` isolates pairing's contribution without
+    CUPED's additional reduction. `trials_per_task` (v2.2): allocate the same
+    total trial budget as `trials_per_task * n_tasks` differently -- more
+    trials per task (less noise per observation) vs. more tasks (more
+    independent clusters); see `simulate_task_level_pairs`.
     """
     rng = _lcg_random(seed)
 
     def _detects(true_delta: float) -> bool:
         pairs = simulate_task_level_pairs(
-            baseline_rate, true_delta, n_tasks, rng, sigma_task, resid_sd, rho
+            baseline_rate, true_delta, n_tasks, rng, sigma_task, resid_sd, rho, trials_per_task
         )
         if use_paired:
             deltas = [a - b for b, a in pairs]
