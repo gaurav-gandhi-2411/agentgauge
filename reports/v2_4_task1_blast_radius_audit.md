@@ -132,3 +132,11 @@ confirmed each model has exactly 18 non-duplicated instances with
 `task_deltas` lengths matching `BLIND_TASKS` filtered by target tool
 (5 instances spot-checked), and confirmed the byte-identical-deltas finding
 independently before flagging it for this precision check. **CONFIRMED.**
+
+## GCP teardown (post Task 1b)
+
+User approved teardown after Task 1b completed. `gcloud run services delete
+agentgauge-agent` and `gcloud container images delete
+gcr.io/expense-tracker-498014/agentgauge-agent-baked` (0 tags/digests remain,
+confirmed directly). `agentgauge-judge` confirmed still running and healthy,
+untouched. `expense-tracker` (unrelated) also untouched.
