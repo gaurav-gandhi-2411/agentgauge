@@ -627,7 +627,19 @@ def eval_cmd(
         ),
     ] = None,
     model: Annotated[str, typer.Option("--model", "-m", help="Ollama agent model")] = "gemma2:9b",
-    trials: Annotated[int, typer.Option("--trials", "-t", help="Trials per task")] = 5,
+    trials: Annotated[
+        int,
+        typer.Option(
+            "--trials",
+            "-t",
+            help=(
+                "Trials per task. Default 1: measured ICC=0.793 means repeat trials on the "
+                "SAME task carry almost no independent information (reports/"
+                "v2_variance_structure.md) -- more distinct TASKS, not more trials per task, "
+                "is what buys detection power (reports/v2_2_optimal_allocation.md)."
+            ),
+        ),
+    ] = 1,
     mock: Annotated[bool, typer.Option("--mock", help="Use mock LLM provider")] = False,
     json_output: Annotated[bool, typer.Option("--json")] = False,
 ) -> None:
@@ -721,12 +733,25 @@ def diff(
     replay_before: Annotated[Path | None, typer.Option("--replay-before")] = None,
     replay_after: Annotated[Path | None, typer.Option("--replay-after")] = None,
     model: Annotated[str, typer.Option("--model", "-m", help="Ollama agent model")] = "gemma2:9b",
-    trials: Annotated[int, typer.Option("--trials", "-t", help="Trials per task")] = 5,
+    trials: Annotated[
+        int,
+        typer.Option(
+            "--trials",
+            "-t",
+            help=(
+                "Trials per task. Default 1: measured ICC=0.793 means repeat trials on the "
+                "SAME task carry almost no independent information -- more distinct TASKS is "
+                "what buys detection power. At 100 tasks/arm x 1 trial, MDE=0.085 at 80% power "
+                "(reports/v2_2_optimal_allocation.md) -- write ~100 tasks in your --tasks file "
+                "for a reliable regression gate, not more trials per task."
+            ),
+        ),
+    ] = 1,
     threshold: Annotated[
         float,
         typer.Option(
             "--threshold",
-            help="Regression threshold on joint success rate (see reports/v2_harness_evaluation.md for the real MDE at your trial count)",
+            help="Regression threshold on joint success rate (see reports/v2_2_optimal_allocation.md for the real MDE at your trial count)",
         ),
     ] = 0.05,
     mock: Annotated[bool, typer.Option("--mock", help="Use mock LLM provider")] = False,
@@ -735,7 +760,7 @@ def diff(
     """Regression harness: bootstrap-CI comparison of task success between two
     tool-set variants, decomposed into selection vs. argument accuracy.
 
-    Exits 1 on a REGRESSION verdict. See reports/v2_harness_evaluation.md for
+    Exits 1 on a REGRESSION verdict. See reports/v2_2_optimal_allocation.md for
     the measured minimum detectable effect at your --trials count before
     trusting a NO_CHANGE verdict as conclusive.
     """

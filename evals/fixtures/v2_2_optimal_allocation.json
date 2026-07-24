@@ -1,0 +1,247 @@
+{
+  "grid": [
+    {
+      "trials_per_task": 1,
+      "n_tasks": 20,
+      "power": 0.8,
+      "total_trials_per_arm": 20,
+      "mde": 0.18237392578125
+    },
+    {
+      "trials_per_task": 1,
+      "n_tasks": 50,
+      "power": 0.8,
+      "total_trials_per_arm": 50,
+      "mde": 0.12126730957031251
+    },
+    {
+      "trials_per_task": 1,
+      "n_tasks": 100,
+      "power": 0.8,
+      "total_trials_per_arm": 100,
+      "mde": 0.08475468750000001
+    },
+    {
+      "trials_per_task": 1,
+      "n_tasks": 150,
+      "power": 0.8,
+      "total_trials_per_arm": 150,
+      "mde": 0.07018747558593749
+    },
+    {
+      "trials_per_task": 2,
+      "n_tasks": 20,
+      "power": 0.8,
+      "total_trials_per_arm": 40,
+      "mde": 0.15286113281250002
+    },
+    {
+      "trials_per_task": 2,
+      "n_tasks": 50,
+      "power": 0.8,
+      "total_trials_per_arm": 100,
+      "mde": 0.09743005371093749
+    },
+    {
+      "trials_per_task": 2,
+      "n_tasks": 100,
+      "power": 0.8,
+      "total_trials_per_arm": 200,
+      "mde": 0.0720793212890625
+    },
+    {
+      "trials_per_task": 2,
+      "n_tasks": 150,
+      "power": 0.8,
+      "total_trials_per_arm": 300,
+      "mde": 0.0592147705078125
+    },
+    {
+      "trials_per_task": 3,
+      "n_tasks": 20,
+      "power": 0.8,
+      "total_trials_per_arm": 60,
+      "mde": 0.14075332031249999
+    },
+    {
+      "trials_per_task": 3,
+      "n_tasks": 50,
+      "power": 0.8,
+      "total_trials_per_arm": 150,
+      "mde": 0.08853837890624999
+    },
+    {
+      "trials_per_task": 3,
+      "n_tasks": 100,
+      "power": 0.8,
+      "total_trials_per_arm": 300,
+      "mde": 0.06753889160156251
+    },
+    {
+      "trials_per_task": 3,
+      "n_tasks": 150,
+      "power": 0.8,
+      "total_trials_per_arm": 450,
+      "mde": 0.056187817382812505
+    },
+    {
+      "trials_per_task": 5,
+      "n_tasks": 20,
+      "power": 0.8,
+      "total_trials_per_arm": 100,
+      "mde": 0.1316724609375
+    },
+    {
+      "trials_per_task": 5,
+      "n_tasks": 50,
+      "power": 0.8,
+      "total_trials_per_arm": 250,
+      "mde": 0.08399794921875
+    },
+    {
+      "trials_per_task": 5,
+      "n_tasks": 100,
+      "power": 0.8,
+      "total_trials_per_arm": 500,
+      "mde": 0.060539062500000004
+    },
+    {
+      "trials_per_task": 5,
+      "n_tasks": 150,
+      "power": 0.8,
+      "total_trials_per_arm": 750,
+      "mde": 0.051647387695312505
+    },
+    {
+      "trials_per_task": 1,
+      "n_tasks": 20,
+      "power": 0.95,
+      "total_trials_per_arm": 20,
+      "mde": 0.23685908203125
+    },
+    {
+      "trials_per_task": 1,
+      "n_tasks": 50,
+      "power": 0.95,
+      "total_trials_per_arm": 50,
+      "mde": 0.1498341796875
+    },
+    {
+      "trials_per_task": 1,
+      "n_tasks": 100,
+      "power": 0.95,
+      "total_trials_per_arm": 100,
+      "mde": 0.1102946044921875
+    },
+    {
+      "trials_per_task": 1,
+      "n_tasks": 150,
+      "power": 0.95,
+      "total_trials_per_arm": 150,
+      "mde": 0.09005185546875
+    },
+    {
+      "trials_per_task": 2,
+      "n_tasks": 20,
+      "power": 0.95,
+      "total_trials_per_arm": 40,
+      "mde": 0.20602199707031252
+    },
+    {
+      "trials_per_task": 2,
+      "n_tasks": 50,
+      "power": 0.95,
+      "total_trials_per_arm": 100,
+      "mde": 0.12637529296875
+    },
+    {
+      "trials_per_task": 2,
+      "n_tasks": 100,
+      "power": 0.95,
+      "total_trials_per_arm": 200,
+      "mde": 0.0921328857421875
+    },
+    {
+      "trials_per_task": 2,
+      "n_tasks": 150,
+      "power": 0.95,
+      "total_trials_per_arm": 300,
+      "mde": 0.07605219726562501
+    },
+    {
+      "trials_per_task": 3,
+      "n_tasks": 20,
+      "power": 0.95,
+      "total_trials_per_arm": 60,
+      "mde": 0.18540087890625
+    },
+    {
+      "trials_per_task": 3,
+      "n_tasks": 50,
+      "power": 0.95,
+      "total_trials_per_arm": 150,
+      "mde": 0.12126730957031251
+    },
+    {
+      "trials_per_task": 3,
+      "n_tasks": 100,
+      "power": 0.95,
+      "total_trials_per_arm": 300,
+      "mde": 0.08570061035156251
+    },
+    {
+      "trials_per_task": 3,
+      "n_tasks": 150,
+      "power": 0.95,
+      "total_trials_per_arm": 450,
+      "mde": 0.071511767578125
+    },
+    {
+      "trials_per_task": 5,
+      "n_tasks": 20,
+      "power": 0.95,
+      "total_trials_per_arm": 100,
+      "mde": 0.17329306640625003
+    },
+    {
+      "trials_per_task": 5,
+      "n_tasks": 50,
+      "power": 0.95,
+      "total_trials_per_arm": 250,
+      "mde": 0.10972705078125
+    },
+    {
+      "trials_per_task": 5,
+      "n_tasks": 100,
+      "power": 0.95,
+      "total_trials_per_arm": 500,
+      "mde": 0.0804034423828125
+    },
+    {
+      "trials_per_task": 5,
+      "n_tasks": 150,
+      "power": 0.95,
+      "total_trials_per_arm": 750,
+      "mde": 0.065457861328125
+    }
+  ],
+  "precise": {
+    "100x1": 0.08475468750000001,
+    "20x5": 0.131294091796875
+  },
+  "cuped_effectiveness_by_trials_per_task": {
+    "1": 13.09967881728088,
+    "2": 9.415302275254046,
+    "3": 8.038949346487701,
+    "5": 6.860437393561725
+  },
+  "best_cell_meeting_target": {
+    "trials_per_task": 1,
+    "n_tasks": 100,
+    "power": 0.8,
+    "total_trials_per_arm": 100,
+    "mde": 0.08475468750000001
+  },
+  "ship_target_mde": 0.1,
+  "improvement_ratio": 1.5491071428571428
+}
