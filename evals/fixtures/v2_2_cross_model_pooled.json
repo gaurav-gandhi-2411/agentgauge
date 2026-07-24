@@ -1,0 +1,44 @@
+{
+  "gemma2:9b": {
+    "before": {
+      "n_trials": 62,
+      "selection_accuracy": 1.0,
+      "argument_accuracy_given_correct_selection": 0.41935483870967744,
+      "joint_success_rate": 0.41935483870967744
+    },
+    "after": {
+      "n_trials": 62,
+      "selection_accuracy": 1.0,
+      "argument_accuracy_given_correct_selection": 0.43548387096774194,
+      "joint_success_rate": 0.43548387096774194
+    }
+  },
+  "llama3.1:8b": {
+    "before": {
+      "n_trials": 62,
+      "selection_accuracy": 0.9193548387096774,
+      "argument_accuracy_given_correct_selection": 0.38596491228070173,
+      "joint_success_rate": 0.3548387096774194
+    },
+    "after": {
+      "n_trials": 62,
+      "selection_accuracy": 0.9838709677419355,
+      "argument_accuracy_given_correct_selection": 0.36065573770491804,
+      "joint_success_rate": 0.3548387096774194
+    }
+  },
+  "qwen2.5:7b": {
+    "before": {
+      "n_trials": 62,
+      "selection_accuracy": 0.9838709677419355,
+      "argument_accuracy_given_correct_selection": 0.32786885245901637,
+      "joint_success_rate": 0.3225806451612903
+    },
+    "after": {
+      "n_trials": 62,
+      "selection_accuracy": 0.967741935483871,
+      "argument_accuracy_given_correct_selection": 0.3333333333333333,
+      "joint_success_rate": 0.3225806451612903
+    }
+  }
+}
