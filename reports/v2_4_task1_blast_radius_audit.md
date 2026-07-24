@@ -81,6 +81,54 @@ this same source. **CONFIRMED, no discrepancies.**
 ## 1b. Re-measuring the surviving BLOCKING claim
 
 (GCP redeploy required — local GPU had contention from a resident qwen3:8b;
-user approved GCP use for this specific measurement after being asked.)
+user approved GCP use for this specific measurement after being asked.
+`agentgauge-agent` was rebuilt from scratch — image + service had been fully
+torn down after v2.2/v2.3 — then re-measured, exercising the exact same
+instance selection as `scripts/v2_2_causal_chain_multimodel.py`, restricted
+to the 3 BLOCKING defect types. `scripts/v2_4_blocking_remeasurement.py`,
+`evals/fixtures/v2_4_blocking_remeasurement.json`.)
 
-[Filled in once the live re-measurement completes — see below.]
+**The claim survives, exactly.**
+
+| Model | Original (v2.2) | Re-measured (v2.4) |
+|---|---|---|
+| gemma2:9b | -25.2pp [-39.0,-11.3] | **-25.19pp [-39.02,-11.35]** |
+| llama3.1:8b | -28.9pp [-43.6,-14.2] | **-28.89pp [-43.58,-14.20]** |
+| qwen2.5:7b | -13.3pp [-25.2,-1.5] | **-13.33pp [-25.15,-1.52]** |
+
+All three CIs still exclude zero. **"NO linter check collapsing to null" —
+refuted directly: `type_enum_contradiction` still shows a real, measured,
+statistically significant task-success drop in every model tested.** This
+is the one claim in the whole v2.2-v2.4 arc that has now been checked twice,
+independently deployed, and holds both times.
+
+**A finding surfaced by the independent verifier, checked before accepting
+this result:** the raw per-task deltas in the v2.4 re-measurement are
+**byte-identical** to the original v2.2 run — not just statistically
+similar, the exact same before/after/delta float values for all 45
+tasks × 3 models, down to full precision. Two possible explanations were
+weighed: (a) the re-measurement script accidentally reused old data instead
+of calling the model live, or (b) Ollama's seeded decoding (`seed=42`,
+passed on every `/api/chat` call in both scripts) is fully deterministic
+given identical prompts on the same model, so identical inputs genuinely
+produce identical outputs. **(a) is ruled out**: `evals/fixtures/
+v2_4_blocking_remeasurement.json` did not exist before this run (confirmed
+via `ls` before launch) and Cloud Monitoring's `request_count` metric shows
+**542 real HTTP requests** hit the service during the exact re-measurement
+window — genuine live inference occurred, not a shortcut. **(b) is the
+correct explanation.** This means the v2.4 result is not independent
+statistical evidence in the sense of "fresh sampling variance that could
+have landed elsewhere" — given fixed inputs and Ollama's deterministic
+seeding, a third run would reproduce the same numbers again. What it DOES
+confirm: no drift, no infrastructure-dependent instability, and no residual
+concern that the original number was a one-off fluke of that specific Cloud
+Run session — the pipeline reproduces stably from scratch, on a freshly
+rebuilt service, hours later. Reported precisely rather than oversold as
+"independently replicated."
+
+**Independent verification:** a separate verifier agent recomputed the
+pooled mean+CI for all 3 models directly from the raw JSON (exact match),
+confirmed each model has exactly 18 non-duplicated instances with
+`task_deltas` lengths matching `BLIND_TASKS` filtered by target tool
+(5 instances spot-checked), and confirmed the byte-identical-deltas finding
+independently before flagging it for this precision check. **CONFIRMED.**
