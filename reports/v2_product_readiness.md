@@ -57,6 +57,11 @@ for G<30 clusters.
 
 ### 0.3 Task 3/B (v2.2) — End-to-end causal chain, now measured, now cross-model
 
+> **CORRECTED IN v2.3 (§0-B below):** the ADVISORY row in the table just below
+> (-76.7 to -80.0pp) was found to be ~77–100% a scoring artifact and is
+> corrected to a clean null in all 3 models. The BLOCKING row is unaffected.
+> This section is preserved as originally written for the historical record.
+
 **The core, previously-unmeasured product claim: does a BLOCKING linter violation actually cause
 agent task failure?** Measured directly with live agent runs against mutated, runnable MCP servers
 (`scripts/_mutated_stdio_server.py` — mutates only the `ListToolsRequest` handler an agent sees;
@@ -114,16 +119,84 @@ Registry all checked directly, not assumed). Total spend: **$28.39** compute
 `agentgauge-judge` (separate, pre-existing, pinned to llama3.1:8b) was left untouched and confirmed
 still healthy.
 
-### 0.6 v2.2 headline claim (supersedes §Headline above)
+### 0.6 v2.2 headline claim (superseded by §0-B below — kept for historical record)
 
 **The ship target is now met**: the harness detects a 10-point regression at 80% power using 100
 tasks/arm at 1 trial/task (MDE=0.0848), not the 20-tasks/5-trials allocation v2.1 tested. **The
 core causal claim is now measured, not assumed, and holds across 3 model families**: BLOCKING
-violations cause a 13.3–28.9 point drop in real task success; ADVISORY violations cause a larger,
+violations cause a 13.3–28.9 point drop in real task success; ~~ADVISORY violations cause a larger,
 76.7–80.0 point drop in every model tested — meaning the severity gate's CI-blocking tier is not
-the more behaviorally damaging one. The one open item from v2.1 (argument-degradation cross-model
+the more behaviorally damaging one.~~ **(This ADVISORY claim is corrected in §0-B — it was a
+scoring artifact.)** The one open item from v2.1 (argument-degradation cross-model
 replication) remains genuinely inconclusive at the best achievable sample size (n=62, MDE=0.106),
 reported as such rather than resolved by assertion.
+
+---
+
+## 0-B. v2.3 update — audit, re-tier, correct (read this first, supersedes §0.3/§0.6's ADVISORY claim)
+
+### 0-B.1 Task 1 (v2.3) — Measurement artifact #7: the -80pp ADVISORY effect was a scoring bug (`reports/v2_3_task1_advisory_audit.md`)
+
+Before any re-tiering, audited the -76.7 to -80.0pp ADVISORY effect from §0.3
+(an implausibly large, near-total-collapse effect that demanded scrutiny).
+Ten sample injections confirmed the description mutation itself is genuinely
+subtle (not the "bolted-on sentence" pattern of the BLOCKING injectors).
+Full failure-mode instrumentation (selected_tool, success, parse_failed,
+constructed_args — fields the original scoring collapsed into one scalar)
+found **zero refusals, zero wrong-tool-selections beyond noise** — but
+inspecting the actual constructed_args revealed the agent was mostly
+constructing fully correct calls (right tool, right renamed key, right
+value), scored as total failures because `constraint_satisfaction` checked
+the constraint's PRE-rename parameter name against POST-rename
+`constructed_args` — a dict key that no longer exists.
+
+**Corrected effect size, all 3 models, independently verified twice:**
+
+| Model | Original (reported in §0.3) | Corrected |
+|---|---|---|
+| gemma2:9b | -76.7pp [-103.7,-49.6] | **+0.0pp** [-20.5,+20.5] |
+| llama3.1:8b | -80.0pp [-102.1,-58.0] | **-13.3pp** [-40.8,+14.1] |
+| qwen2.5:7b | -76.7pp [-98.9,-54.4] | **+6.7pp** [-7.1,+20.4] |
+
+**All 3 CIs include zero — a clean null, not a large effect.** ~77-100% of
+the "argument construction failure" category (depending on model) was this
+scoring artifact; the remainder were genuine but unrelated errors (wrong
+value, different response shape) — zero cases of the agent actually being
+fooled by the stale description name, the failure mode this defect type was
+designed to measure. **The BLOCKING-class findings in §0.3 are unaffected**
+— those defect types don't rename any schema key, so this bug cannot apply
+to them.
+
+### 0-B.2 Task 2 (v2.3) — Re-tiered by the corrected numbers (`reports/v2_3_task2_retiering.md`)
+
+| Check | Corrected effect | False-alarm (per tool set) | Recall | Tier change |
+|---|---|---|---|---|
+| `type_enum_contradiction` | -13.3 to -40.0pp | 0% | 100% | BLOCKING (unchanged) |
+| `required_references_missing_property` | 0.0pp, all 3 models | 0% | 100% | **BLOCKING → INFO** (zero measured impact despite perfect precision) |
+| `described_not_in_schema` (`param_renamed`) | ~0pp, all 3 models (§0-B.1) | 28.57%→**23.81%** (5 targeted precision fixes) | 81.2% | ADVISORY (unchanged — false-alarm bar not cleared even after real improvement; impact no longer justifies promotion either) |
+| `name_collision` | not causally measured (no injector exists for this defect class) | 47.62%, 86% is the documented-irreducible verb-differentiated class | n/a | ADVISORY (unchanged) |
+
+Post-retiering BLOCKING-tier false-alarm rate: **0/21 = 0.00%**, unchanged
+(the demoted check already had 0% false alarms, so its removal cannot
+regress the remaining check's precision). `agentgauge init`'s GitHub Action
+template needed no code change — it already computes `n_blocking`/`n_advisory`
+dynamically from each violation's severity, not a hardcoded check list.
+
+### 0-B.3 v2.3 headline claim
+
+**The core causal-chain claim from v2.2 survives, corrected on one axis**:
+BLOCKING violations still cause a real, measured 13.3–28.9 point drop in
+agent task success across all 3 model families — unaffected by this
+correction. **What does not survive**: the claim that ADVISORY violations
+cause a *larger* drop than BLOCKING — that was a scoring artifact, and the
+corrected ADVISORY effect is statistically indistinguishable from zero
+everywhere. The severity-gate re-tiering that followed removed the one
+BLOCKING check with zero measured impact and left the other two ADVISORY
+checks in place after a genuine, measured precision-engineering effort that
+improved but did not clear the promotion bar. Six measurement artifacts were
+found before this session; **this is the seventh**, found by the specific
+audit the task brief called for before trusting a suspiciously large effect
+size, and corrected rather than left standing.
 
 ---
 

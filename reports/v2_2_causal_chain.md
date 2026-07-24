@@ -1,5 +1,12 @@
 # AgentGauge v2.2 — end-to-end causal chain (Task 3)
 
+> **CORRECTION (v2.3, Task 1 — `reports/v2_3_task1_advisory_audit.md`):** §3d's
+> ADVISORY (`param_renamed`) effect size below (-76.7pp) was audited and found
+> to be a scoring artifact (rename-aware key lookup was missing from the
+> constraint checker) — corrected, the effect is a clean null. **§3b/3c's
+> BLOCKING findings are unaffected.** See the correction report for detail;
+> §3d below is preserved as originally written for the historical record.
+
 Live inference (gemma2:9b, `agentgauge-agent` Cloud Run, direct HTTPS + IAM bearer token).
 `scripts/_mutated_stdio_server.py`, `scripts/v2_2_causal_chain.py`,
 `evals/fixtures/v2_2_causal_chain.json`.

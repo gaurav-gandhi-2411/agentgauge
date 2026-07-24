@@ -38,12 +38,18 @@ bug. Full methodology: `reports/v2_1_linter_recall_fix.md`, `reports/v2_1_severi
 > fewer tasks. Measured MDE at that allocation: **0.0848 — ship target met.** v2.2 also measured,
 > for the first time, whether a BLOCKING linter violation actually *causes* agent task failure
 > (previously assumed, never tested): it does — a 13.3–28.9 point drop in real task success,
-> replicated across three model families — and found that ADVISORY violations cause a **larger**
-> drop (76.7–80.0pp) in every model tested, meaning the linter's CI-blocking severity tier is not
-> the more behaviorally damaging one. Every number in this README is measured in this repo — see
-> `reports/v2_product_readiness.md` for the full consolidated methodology, §0 for the v2.2 update,
-> and what's measured vs. assumed. v1's `scan`/`fix`/`ci`/`try` commands still exist in the code but
-> are not the recommended product surface; `lint`/`eval`/`diff`/`init` are.
+> replicated across three model families. **v2.3 audited a v2.2 ADVISORY-defect finding before
+> trusting it and found the effect was ~77–100% a scoring artifact** (the checker looked up a
+> pre-rename parameter name against post-rename arguments, scoring correct agent responses as
+> failures) — corrected, the ADVISORY (`param_renamed`) effect is a clean null in all three models,
+> not the originally-reported 76.7–80.0pp drop. v2.3 re-tiered the linter by the corrected numbers:
+> `required_references_missing_property` demoted BLOCKING→INFO (zero measured task-success effect
+> in every model); `described_not_in_schema`'s false-alarm rate improved 28.57%→23.81% via real
+> precision fixes but did not clear the promotion bar. Every number in this README is measured in
+> this repo — see `reports/v2_product_readiness.md` for the full consolidated methodology, §0/§1
+> for the v2.2/v2.3 updates, and what's measured vs. assumed. v1's `scan`/`fix`/`ci`/`try` commands
+> still exist in the code but are not the recommended product surface; `lint`/`eval`/`diff`/`init`
+> are.
 
 ---
 
@@ -114,15 +120,20 @@ Detects five classes of description-vs-schema defect (a schema-required paramete
 a nonexistent property; description text describing a parameter as boolean when its schema type
 isn't; identifier-like tokens in a description that don't match any real parameter; a schema
 property that was renamed while the description still refers to the old name; near-duplicate tool
-names). Severity is tiered: **BLOCKING** checks fail CI, **ADVISORY** checks are surfaced but don't
-gate — because a naive single-tier gate would reject 66.67% of genuinely clean tool sets.
+names). Severity is tiered by **measured causal impact × precision**, not false-alarm rate alone
+(v2.3 re-tiering, `reports/v2_3_task2_retiering.md`): **BLOCKING** (`type_enum_contradiction` only
+— 0% false alarms AND a measured task-success drop in every model tested) fails CI; **ADVISORY**
+and **INFO** are surfaced but don't gate. `required_references_missing_property` was demoted
+BLOCKING→INFO after being causally measured to have zero effect on real task success in 3 model
+families despite its perfect 0%/100% false-alarm/recall — a naive false-alarm-only gate would have
+kept it BLOCKING forever.
 
 | Metric | Measured value | How |
 |---|---|---|
-| False-alarm rate, per tool set, BLOCKING-only (21 tool sets) | **0%** | `reports/v2_1_severity_gate.md` — clears the <10% target decisively |
-| False-alarm rate, per tool, BLOCKING+ADVISORY combined (521 tools) | 4.22% | same, still <5% |
-| Recall on injected `contradictory_required_claim` / `type_flipped` / `enum_dropped` defects | **100%** | `reports/v2_linter_evaluation.md` §2d |
-| Recall on injected `param_renamed` defects (48 cases) | **83.3%** overall — 82.9% when the renamed property is single-word (was 2.9% before this check existed) | `reports/v2_1_linter_recall_fix.md` |
+| False-alarm rate, per tool set, BLOCKING-only (21 tool sets) | **0%** | `reports/v2_1_severity_gate.md`, re-confirmed post-retiering in `reports/v2_3_task2_retiering.md` — clears the <10% target decisively |
+| False-alarm rate, per tool, BLOCKING+ADVISORY combined (521 tools) | 4.22% | `reports/v2_1_severity_gate.md`, still <5% |
+| Recall on injected `type_flipped` / `enum_dropped` (BLOCKING) defects | **100%** | `reports/v2_linter_evaluation.md` §2d |
+| Recall on injected `param_renamed` defects (48 cases) | **81.2%** via `described_not_in_schema` OR `param_possibly_renamed` (`described_not_in_schema` false-alarm rate improved 28.57%→23.81% in v2.3 via 5 targeted precision fixes, still short of the BLOCKING promotion bar) | `reports/v2_1_linter_recall_fix.md`, `reports/v2_3_task2_retiering.md` |
 | Recall vs. raw JSON-Schema structural validation baseline | Linter beats it on every defect type — baseline scores **0%** | `reports/v2_linter_evaluation.md` §2e |
 | Recall vs. single-prompt LLM baseline (llama3.1:8b, 174+138 sampled cases) | Linter beats it once precision is counted — the LLM baseline scores 100% recall but **97.1% false-alarm rate** (a degenerate always-flag baseline; spot-checked to confirm it's genuine model hallucination, not a scoring bug) | `reports/v2_1_cross_model_validation.md` §Task 2e |
 
@@ -139,8 +150,8 @@ more distinct tasks, not more trials per task, buys detection power (`reports/v2
 | Minimum detectable effect at n=100 tasks/arm, 1 trial/task, 80% power | **8.48 percentage points** | `reports/v2_2_optimal_allocation.md` |
 | **Ship target — detect a 10-point regression at 80% power** | **MET** at n=100 tasks/arm, 1 trial/task (was NOT MET at the v2.1-tested n=20/5-trials allocation, MDE=18.8) | same |
 | False-alarm rate under the null, few-clusters-corrected (2200 resampled comparisons) | **<5% in every cluster-count stratum** (<10 tasks: 1.57%; 10–29: 0.08%; ≥30: 0.00%) | `reports/v2_2_few_clusters_correction.md` — a t(G-1)-adjusted CI fixes the v2.1-measured 1.71%/<10-task concentration; a wild-bootstrap fix was tried first and **measured to make it worse**, rejected before shipping |
-| **End-to-end causal chain — does a BLOCKING violation actually cause task failure?** (previously assumed, not measured) | **Yes**: BLOCKING → **-13.3 to -28.9pp** task success (CI excludes zero in all 3 models); ADVISORY (`param_renamed`) → **-76.7 to -80.0pp**, larger than BLOCKING in every model tested | `reports/v2_2_causal_chain.md`, `reports/v2_2_task_b_causal_chain_multimodel.md` |
-| Cross-model replication, causal chain (gemma2:9b, llama3.1:8b, qwen2.5:7b) | Both BLOCKING and ADVISORY effects significant in **all 3 model families**; one BLOCKING check (`required_references_missing_property`) shows **zero effect in all 3 models**; qwen2.5:7b measurably more robust to `type_enum_contradiction` specifically | `reports/v2_2_task_b_causal_chain_multimodel.md` |
+| **End-to-end causal chain — does a BLOCKING violation actually cause task failure?** (previously assumed, not measured) | **Yes**: BLOCKING → **-13.3 to -28.9pp** task success (CI excludes zero in all 3 models). The ADVISORY (`param_renamed`) effect originally reported here (-76.7 to -80.0pp) was audited in v2.3 and found to be ~77–100% a scoring artifact — corrected, it is a **clean null in all 3 models** (+0.0 to +6.7pp, every CI includes zero) | `reports/v2_2_causal_chain.md`, `reports/v2_2_task_b_causal_chain_multimodel.md`, `reports/v2_3_task1_advisory_audit.md` (correction) |
+| Cross-model replication, causal chain (gemma2:9b, llama3.1:8b, qwen2.5:7b) | BLOCKING effect significant in **all 3 model families**; `required_references_missing_property` shows **zero effect in all 3 models** (demoted BLOCKING→INFO in v2.3, `reports/v2_3_task2_retiering.md`); qwen2.5:7b measurably more robust to `type_enum_contradiction` specifically | `reports/v2_2_task_b_causal_chain_multimodel.md`, `reports/v2_3_task2_retiering.md` |
 | Cross-model replication, argument-degradation (separate question — does description quality fix argument construction?) | **Inconclusive** at the real achievable sample ceiling (n=62/model, MDE=0.106 > any observed delta) — not "no effect"; only two comparable hand-authored fixtures exist for this specific question | `reports/v2_2_task_a_reallocation.md` |
 
 **What's not yet measured:** determinism was not independently re-verified for the estimator

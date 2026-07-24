@@ -1,5 +1,17 @@
 # AgentGauge v2.2 — Task B: end-to-end causal chain, cross-model (reorder)
 
+> **CORRECTION (v2.3, Task 1 — `reports/v2_3_task1_advisory_audit.md`):** the
+> ADVISORY (`param_renamed`) effect size reported below (-76.7 to -80.0pp)
+> was audited and found to be ~77–100% a scoring artifact — the constraint
+> checker looked up the pre-rename parameter name against post-rename
+> constructed_args, scoring correct agent responses as total failures.
+> **Corrected effect: a clean null in all 3 models** (+0.0pp / -13.3pp /
+> +6.7pp, every CI includes zero). Independently verified twice. **The
+> BLOCKING-class findings below (-13.3 to -28.9pp) are unaffected** — that
+> defect class doesn't rename any schema key, so the same bug cannot apply.
+> The sections below are preserved as originally written for the historical
+> record; do not cite the ADVISORY numbers below without this correction.
+
 Extends `reports/v2_2_causal_chain.md` (Task 3, gemma2:9b only) to all three warm
 model families on the same Cloud Run instance, in one pass, per the user's
 explicit reorder ("run Task 3 on the SAME warm instance, then tear down").
