@@ -7,7 +7,26 @@ tool descriptions helps, does nothing, or backfires.**
 
 [![CI](https://github.com/gaurav-gandhi-2411/agentgauge/actions/workflows/ci.yml/badge.svg)](https://github.com/gaurav-gandhi-2411/agentgauge/actions/workflows/ci.yml)
 
-> **v2.1.** A predictive-validity study (`reports/predictive_validity_study.md`) found that v1's
+## `agentgauge lint` vs. an LLM judge — measured, not asserted
+
+The deterministic linter is the shipped, production-ready surface (v0.3.0). Both rows below are
+measured on the same clean corpus and defect-injection corpus in this repo — not cherry-picked.
+
+| | Per-tool-set false-alarm rate (BLOCKING checks, 21 clean tool sets) | Recall (defect-injection corpus) |
+|---|---|---|
+| **`agentgauge lint`** (zero LLM calls) | **0%** | **100%** (`type_enum_contradiction`, `required_references_missing_property`) |
+| Single-prompt LLM judge (llama3.1:8b) | **97.1%** (169/174 clean tools flagged — a degenerate always-flag baseline) | 100% (not a meaningful number given the false-alarm rate) |
+
+The LLM baseline's 100% recall is not a real signal: a judge that flags 97.1% of genuinely clean
+tools will trivially also flag 100% of defective ones. Spot-checked directly (not assumed): the
+model hallucinated a fabricated claim about a schema property being "missing" when the same
+prompt's JSON schema plainly contained it — confirmed as a real model failure, not a measurement
+bug. Full methodology: `reports/v2_1_linter_recall_fix.md`, `reports/v2_1_severity_gate.md`,
+`reports/v2_1_cross_model_validation.md` §Task 2e.
+
+---
+
+> **v2.2.** A predictive-validity study (`reports/predictive_validity_study.md`) found that v1's
 > 8-axis LLM-judged quality score does not predict real agent task success by a margin surviving
 > both multiple-comparison correction and controlling for description length. v2 rebuilt around
 > what that study showed actually works: a deterministic defect linter and a statistical
