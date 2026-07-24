@@ -191,12 +191,22 @@ async def _diff_async(
         after_trials = _load_replay_trials(replay_after)
     elif tasks_file is not None:
         tasks = _load_tasks_file(tasks_file)
-        before_trials, before_tools = await _collect_trials(
-            before, tasks, model=model, trials=trials, mock=mock
+        before_tools = await _introspect_tools(before)
+        after_tools = await _introspect_tools(after)
+        # Schema-only pass FIRST -- catches a scoring-reference mismatch (a
+        # task's constraint naming a parameter that isn't in the ACTUAL
+        # schema this run just connected to, e.g. a renamed property) before
+        # any live inference runs, not just before the result is reported.
+        _schema_audit_or_exit(
+            tasks,
+            before_tools=before_tools,
+            after_tools=after_tools,
+            console=console,
+            json_output=json_output,
+            fail_message="Audit failed -- refusing to run live trials. Fix the flagged issue(s) and re-run.",
         )
-        after_trials, after_tools = await _collect_trials(
-            after, tasks, model=model, trials=trials, mock=mock
-        )
+        before_trials = await _collect_trials(before, tasks, model=model, trials=trials, mock=mock)
+        after_trials = await _collect_trials(after, tasks, model=model, trials=trials, mock=mock)
         audit_report = run_audit(
             tasks,
             before_tools=before_tools,
@@ -275,21 +285,38 @@ def _load_tasks_file(path: Path) -> list[BlindTask]:
     return [BlindTask.from_dict(d) for d in raw]
 
 
-async def _collect_trials(
-    target: str, tasks: list[BlindTask], *, model: str, trials: int, mock: bool
-) -> tuple[list[TrialOutcome], list[Any]]:
-    """Live trial collection: connects, runs each task `trials` times, scores
-    argument correctness against any user-supplied constraints (1.0 default for
-    unconstrained tasks — see agentgauge.constraints' documented limitation).
-    Also returns the introspected tool list (`mcp.types.Tool`) so the caller
-    can run `agentgauge.audit.run_audit` against the ACTUAL schema the agent
-    saw, not an assumed one (the artifact #7 class this module's Task 2 was
-    built to catch: a task's constraints authored against a different schema
-    than the one connected here)."""
-    provider = MockProvider() if mock else OllamaProvider(model)
+async def _introspect_tools(target: str) -> list[Any]:
+    """Connect, introspect, disconnect -- no live trials. Used to run the
+    schema-only `agentgauge.audit` checks (task leakage, scoring-reference
+    consistency) BEFORE spending any inference budget, not just before
+    reporting a result (v2.5, Task 1: the v2.4 audit gate correctly blocked a
+    bad measurement from being REPORTED, but `_collect_trials` still ran a
+    full, wasted set of live trials first every time -- fixing the artifact
+    #7 class in shipped code means failing fast and cheap on a schema
+    mismatch, not just failing safe after paying for it)."""
     client, ctx, _ = await _connect(target)
     try:
         info = await client.introspect()
+        return list(info.tools)
+    finally:
+        await cleanup_connection(ctx)
+
+
+async def _collect_trials(
+    target: str, tasks: list[BlindTask], *, model: str, trials: int, mock: bool
+) -> list[TrialOutcome]:
+    """Live trial collection: connects, runs each task `trials` times, scores
+    argument correctness against any user-supplied constraints (1.0 default for
+    unconstrained tasks — see agentgauge.constraints' documented limitation).
+    Callers must run `_introspect_tools` + a schema-only `agentgauge.audit.run_audit`
+    pass BEFORE calling this (see `_diff_async`/`_eval_async`) so a
+    scoring-reference mismatch (the artifact #7 class -- a task's constraints
+    authored against a different schema than the one connected here) is
+    caught before live inference runs, not just before its result is
+    reported."""
+    provider = MockProvider() if mock else OllamaProvider(model)
+    client, ctx, _ = await _connect(target)
+    try:
         task_objs = [Task(tool_name=t.tool_name, description=t.description) for t in tasks]
         run_results: list[RunResult] = await run_tasks(task_objs, client, provider, trials=trials)
         outcomes = []
@@ -309,9 +336,37 @@ async def _collect_trials(
                     constraint_satisfaction=score,
                 )
             )
-        return outcomes, list(info.tools)
+        return outcomes
     finally:
         await cleanup_connection(ctx)
+
+
+def _schema_audit_or_exit(
+    tasks: list[BlindTask],
+    *,
+    before_tools: list[Any] | None = None,
+    after_tools: list[Any] | None = None,
+    console: Console,
+    json_output: bool,
+    fail_message: str,
+) -> None:
+    """Schema-only audit pass (no trial data yet) -- run before any live
+    inference. Raises typer.Exit(2) on a BLOCKING finding so a scoring-
+    reference mismatch or task-leakage defect is caught for free, before
+    paying for a single LLM call."""
+    report = run_audit(tasks, before_tools=before_tools, after_tools=after_tools)
+    if report.blocking:
+        if not json_output:
+            _print_audit_report(report, console)
+            console.print(f"[bold red]{fail_message}[/bold red]")
+        else:
+            typer.echo(
+                json.dumps(
+                    {"audit_failed": True, "blocking": [f.detail for f in report.blocking]},
+                    indent=2,
+                )
+            )
+        raise typer.Exit(2)
 
 
 def _print_audit_report(report: AuditReport, console: Console) -> None:
@@ -414,9 +469,18 @@ async def _eval_async(
         outcomes = _load_replay_trials(replay)
     elif tasks_file is not None:
         tasks = _load_tasks_file(tasks_file)
-        outcomes, tools = await _collect_trials(
-            target, tasks, model=model, trials=trials, mock=mock
+        tools = list(info.tools)
+        # Schema-only pass FIRST (reusing the introspection already done for
+        # linting above) -- catches a scoring-reference mismatch before any
+        # live inference runs, not just before the result is reported.
+        _schema_audit_or_exit(
+            tasks,
+            before_tools=tools,
+            console=console,
+            json_output=json_output,
+            fail_message="Audit failed -- refusing to run live trials. Fix the flagged issue(s) and re-run.",
         )
+        outcomes = await _collect_trials(target, tasks, model=model, trials=trials, mock=mock)
         audit_report = run_audit(tasks, before_tools=tools, before_trials=outcomes)
         if not json_output:
             _print_audit_report(audit_report, console)
