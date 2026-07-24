@@ -10,6 +10,7 @@ import typer
 from rich.console import Console
 
 from agentgauge import __version__
+from agentgauge.audit import AuditReport, run_audit
 from agentgauge.client import cleanup_connection, connect_http, connect_stdio
 from agentgauge.constraints import BlindTask, constraint_satisfaction
 from agentgauge.fixer import (
@@ -561,13 +562,19 @@ def _load_tasks_file(path: Path) -> list[BlindTask]:
 
 async def _collect_trials(
     target: str, tasks: list[BlindTask], *, model: str, trials: int, mock: bool
-) -> list[TrialOutcome]:
+) -> tuple[list[TrialOutcome], list[Any]]:
     """Live trial collection: connects, runs each task `trials` times, scores
     argument correctness against any user-supplied constraints (1.0 default for
-    unconstrained tasks — see agentgauge.constraints' documented limitation)."""
+    unconstrained tasks — see agentgauge.constraints' documented limitation).
+    Also returns the introspected tool list (`mcp.types.Tool`) so the caller
+    can run `agentgauge.audit.run_audit` against the ACTUAL schema the agent
+    saw, not an assumed one (the artifact #7 class this module's Task 2 was
+    built to catch: a task's constraints authored against a different schema
+    than the one connected here)."""
     provider = MockProvider() if mock else OllamaProvider(model)
     client, ctx, _ = await _connect(target)
     try:
+        info = await client.introspect()
         task_objs = [Task(tool_name=t.tool_name, description=t.description) for t in tasks]
         run_results: list[RunResult] = await run_tasks(task_objs, client, provider, trials=trials)
         outcomes = []
@@ -587,9 +594,16 @@ async def _collect_trials(
                     constraint_satisfaction=score,
                 )
             )
-        return outcomes
+        return outcomes, list(info.tools)
     finally:
         await cleanup_connection(ctx)
+
+
+def _print_audit_report(report: AuditReport, console: Console) -> None:
+    for f in report.blocking:
+        console.print(f"[bold red]AUDIT BLOCK[/bold red] ({f.check}): {f.detail}")
+    for f in report.warnings:
+        console.print(f"[yellow]AUDIT WARN[/yellow] ({f.check}): {f.detail}")
 
 
 def _load_replay_trials(path: Path) -> list[TrialOutcome]:
@@ -680,11 +694,29 @@ async def _eval_async(
     if not json_output:
         _print_lint_report(lint_report, console, show_info=False)
 
+    tools: list[Any] | None = None
     if replay is not None:
         outcomes = _load_replay_trials(replay)
     elif tasks_file is not None:
         tasks = _load_tasks_file(tasks_file)
-        outcomes = await _collect_trials(target, tasks, model=model, trials=trials, mock=mock)
+        outcomes, tools = await _collect_trials(target, tasks, model=model, trials=trials, mock=mock)
+        audit_report = run_audit(tasks, before_tools=tools, before_trials=outcomes)
+        if not json_output:
+            _print_audit_report(audit_report, console)
+        if not audit_report.passed:
+            if json_output:
+                typer.echo(
+                    json.dumps(
+                        {"audit_failed": True, "blocking": [f.detail for f in audit_report.blocking]},
+                        indent=2,
+                    )
+                )
+            else:
+                console.print(
+                    "[bold red]Audit failed -- refusing to report a task-success measurement. "
+                    "Fix the flagged issue(s) and re-run.[/bold red]"
+                )
+            raise typer.Exit(2)
     else:
         console.print(
             "[yellow]No --tasks or --replay given -- skipping task-success measurement "
@@ -794,13 +826,42 @@ async def _diff_async(
     json_output: bool,
 ) -> None:
     console = Console()
+    before_tools: list[Any] | None = None
+    after_tools: list[Any] | None = None
     if replay_before is not None and replay_after is not None:
         before_trials = _load_replay_trials(replay_before)
         after_trials = _load_replay_trials(replay_after)
     elif tasks_file is not None:
         tasks = _load_tasks_file(tasks_file)
-        before_trials = await _collect_trials(before, tasks, model=model, trials=trials, mock=mock)
-        after_trials = await _collect_trials(after, tasks, model=model, trials=trials, mock=mock)
+        before_trials, before_tools = await _collect_trials(
+            before, tasks, model=model, trials=trials, mock=mock
+        )
+        after_trials, after_tools = await _collect_trials(
+            after, tasks, model=model, trials=trials, mock=mock
+        )
+        audit_report = run_audit(
+            tasks,
+            before_tools=before_tools,
+            after_tools=after_tools,
+            before_trials=before_trials,
+            after_trials=after_trials,
+        )
+        if not json_output:
+            _print_audit_report(audit_report, console)
+        if not audit_report.passed:
+            if json_output:
+                typer.echo(
+                    json.dumps(
+                        {"audit_failed": True, "blocking": [f.detail for f in audit_report.blocking]},
+                        indent=2,
+                    )
+                )
+            else:
+                console.print(
+                    "[bold red]Audit failed -- refusing to report a diff. "
+                    "Fix the flagged issue(s) and re-run.[/bold red]"
+                )
+            raise typer.Exit(2)
     else:
         console.print(
             "[red]Error: provide either --tasks, or both --replay-before and --replay-after.[/red]"
