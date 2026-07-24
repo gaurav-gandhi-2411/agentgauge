@@ -55,8 +55,34 @@ left in v2.4's own "what this does and does not establish" section.
 
 ## Independent verification
 
-A separate verifier agent is re-running `scripts/mde_grid_v2_5.py`
-independently to confirm 0.0605/0.0537 are reproducible (this script is
-fully deterministic on `seed=42`, so an independent re-run reproducing the
-exact same floats is the correct verification method here — not a second,
-different methodology). Results appended once it returns.
+A separate verifier agent independently re-ran `scripts/mde_grid_v2_5.py`
+from scratch (fully deterministic on `seed=42`, so exact reproduction is
+the correct verification method here, not a second methodology). Took two
+attempts: the first two runs stalled without producing a final report — a
+subagent-tooling issue (it kept re-checking its own long-running background
+job rather than reading the completed result), not evidence against the
+computation itself, so a third resume was sent with an explicit instruction
+to check the completed output. That attempt completed cleanly.
+
+**Result: CONFIRMED on all 5 checked items, no discrepancies:**
+
+1. **Determinism, verified by code inspection**: `harness.py` imports no
+   `random`/`numpy`; every stochastic draw flows through the single
+   `_lcg_random(seed)` closure (hand-rolled LCG,
+   `state = (1103515245*state + 12345) & 0x7FFFFFFF`), reseeded only from
+   values deterministically derived from that same LCG stream — never from
+   `time.time()` or OS entropy. Aggregation is over fixed-order `list`s, not
+   `set`/`dict` iteration, so floating-point summation order is stable.
+2. **Reproduced values, exact match**: `n_tasks=200 → MDE=0.0605` (547.9s),
+   `n_tasks=253 → MDE=0.0537` (701.2s) — identical to the claimed values to
+   the printed 4-decimal precision.
+3. **Calibration constants, unchanged**: `git log -p -- agentgauge/harness.py`
+   shows `CALIBRATED_BASELINE_RATE`/`CALIBRATED_SIGMA_TASK`/
+   `CALIBRATED_RESID_SD`/`CALIBRATED_RHO` were all set once, in commit
+   `fc149ba` (v2.1's estimator rebuild), and never touched by any commit
+   since — independently cross-checked against `0.7749`/`0.881` as quoted in
+   `reports/v2_product_readiness.md` and `reports/v2_1_estimator_rebuild.md`.
+   No silent recalibration to produce a more favorable number.
+4. **Monotonicity holds**: 0.0537 (n=253) < 0.0605 (n=200) < 0.0689 (n=150)
+   < 0.0848 (n=100) < 0.1061 (n=62) — strictly decreasing, as expected of a
+   correctly functioning estimator.
