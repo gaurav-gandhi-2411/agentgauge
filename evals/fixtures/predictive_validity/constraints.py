@@ -121,6 +121,34 @@ def constraint_satisfaction(
     return satisfied / len(constraints)
 
 
+def constraint_satisfaction_renamed(
+    constructed_args: dict[str, Any], constraints: list[Any] | None, rename_map: dict[str, str]
+) -> float:
+    """Same as `constraint_satisfaction`, but for scoring a call against a MUTATED
+    schema where one or more properties were renamed (`scripts/v2_defect_injector.py`'s
+    `inject_param_renamed`). `rename_map` is {old_param_name: new_param_name}.
+
+    `constraint_satisfaction` alone is WRONG here: it looks up `constructed_args.get(c.param)`
+    using the pre-rename name from the constraint, but a schema-valid call to the mutated
+    tool must use the new key -- so a fully correct call is scored as a total failure purely
+    because the checker is looking at the wrong dict key. Found during v2.3 Task 1's audit
+    of the `param_renamed` causal-chain measurement: ~77% of what
+    `evals/fixtures/v2_2_causal_chain_multimodel.json`'s advisory_instances recorded as
+    "argument construction failure" were this artifact, not a real agent mistake
+    (`reports/v2_3_task1_advisory_audit.md`). Kept as a separate function rather than
+    changing `constraint_satisfaction` in place, so no other (non-rename) measurement's
+    already-reported numbers are retroactively altered by this fix.
+    """
+    if not constraints:
+        return 1.0
+    satisfied = 0
+    for c in constraints:
+        param = rename_map.get(c.param, c.param)
+        if _check_constraint(constructed_args.get(param), c):
+            satisfied += 1
+    return satisfied / len(constraints)
+
+
 # =============================================================================
 # Part A continued — reuse of existing constraint sources (no new authoring).
 # =============================================================================

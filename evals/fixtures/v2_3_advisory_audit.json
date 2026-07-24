@@ -1,0 +1,586 @@
+{
+  "gemma2:9b": {
+    "confusable_server_oracle::query_records": [
+      {
+        "task": "Get all orders where the status field is set to 'pending'",
+        "selected_tool": "query_records",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constructed_args": {
+          "field_v2": "status",
+          "value": "pending"
+        },
+        "category": "argument_construction_failure"
+      },
+      {
+        "task": "Retrieve customers from the enterprise tier",
+        "selected_tool": "query_records",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constructed_args": {
+          "field_v2": "enterprise",
+          "value": "*"
+        },
+        "category": "argument_construction_failure"
+      }
+    ],
+    "call_constraints_server_oracle::set_acquisition_mode": [
+      {
+        "task": "Configure sensor S01 to capture a rapid cluster of readings on each incoming trigger event",
+        "selected_tool": "set_acquisition_mode",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constructed_args": {
+          "sensor_id": "S01",
+          "mode_v2": "ACQ_BURST"
+        },
+        "category": "argument_construction_failure"
+      },
+      {
+        "task": "Set sensor S02 to continuously stream data as fast as possible without any timing constraints",
+        "selected_tool": "set_acquisition_mode",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constructed_args": {
+          "sensor_id": "S02",
+          "mode_v2": "ACQ_CONT"
+        },
+        "category": "argument_construction_failure"
+      },
+      {
+        "task": "Configure sensor S03 so its output is locked to an external reference clock",
+        "selected_tool": "set_acquisition_mode",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constructed_args": {
+          "sensor_id": "S03",
+          "mode_v2": "ACQ_SYNC"
+        },
+        "category": "argument_construction_failure"
+      },
+      {
+        "task": "Reconfigure sensor S04 to fire a grouped burst of samples whenever a start pulse arrives",
+        "selected_tool": "set_acquisition_mode",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constructed_args": {
+          "sensor_id": "S04",
+          "mode_v2": "ACQ_BURST"
+        },
+        "category": "argument_construction_failure"
+      }
+    ],
+    "call_constraints_v2_server_oracle::register_channel": [
+      {
+        "task": "Register the primary pressure sensor channel at facility site F1",
+        "selected_tool": "register_channel",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constructed_args": {
+          "site_id": "F1",
+          "channel_ref_v2": "F101"
+        },
+        "category": "argument_construction_failure"
+      },
+      {
+        "task": "Add a new temperature monitoring channel for site S3",
+        "selected_tool": "register_channel",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constructed_args": {
+          "site_id": "S3",
+          "channel_ref_v2": "SC01"
+        },
+        "category": "argument_construction_failure"
+      },
+      {
+        "task": "Register the flow rate measurement channel at site A2",
+        "selected_tool": "register_channel",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constructed_args": {
+          "site_id": "A2",
+          "channel_ref_v2": "AB01"
+        },
+        "category": "argument_construction_failure"
+      },
+      {
+        "task": "Set up a humidity sensor channel for site H9",
+        "selected_tool": "register_channel",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constructed_args": {
+          "site_id": "H9",
+          "channel_ref_v2": "HY01"
+        },
+        "category": "argument_construction_failure"
+      },
+      {
+        "task": "Register a voltage measurement channel at site V5",
+        "selected_tool": "register_channel",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constructed_args": {
+          "site_id": "V5",
+          "channel_ref_v2": "VA01"
+        },
+        "category": "argument_construction_failure"
+      }
+    ],
+    "t18_oracle_server::retrieve_row": [
+      {
+        "task": "Pull the customer row from the accounts SQL table where email equals 'j.doe@example.com'",
+        "selected_tool": "retrieve_row",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constructed_args": {
+          "query_v2": "SELECT * FROM accounts WHERE email = 'j.doe@example.com'"
+        },
+        "category": "argument_construction_failure"
+      },
+      {
+        "task": "Get the shipment row from the logistics table whose tracking_number is 'TRK-88213'",
+        "selected_tool": "retrieve_row",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constructed_args": {
+          "query_v2": "SELECT * FROM logistics WHERE tracking_number = 'TRK-88213'"
+        },
+        "category": "argument_construction_failure"
+      }
+    ],
+    "rw1_arm_oracle::search_repositories": [
+      {
+        "task": "Find public GitHub repositories related to transformer-based language models.",
+        "selected_tool": "search_repositories",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constructed_args": {
+          "page": 1,
+          "perPage": 100,
+          "query_v2": "transformer-based language models"
+        },
+        "category": "argument_construction_failure"
+      }
+    ],
+    "p2a_arm_oracle::list_orders": [
+      {
+        "task": "Show all orders placed by customer CUST-901.",
+        "selected_tool": "list_orders",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constructed_args": {
+          "customer_id": "CUST-901"
+        },
+        "category": "success"
+      }
+    ]
+  },
+  "llama3.1:8b": {
+    "confusable_server_oracle::query_records": [
+      {
+        "task": "Get all orders where the status field is set to 'pending'",
+        "selected_tool": "query_records",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constructed_args": {
+          "filter": {
+            "status": "pending"
+          }
+        },
+        "category": "argument_construction_failure"
+      },
+      {
+        "task": "Retrieve customers from the enterprise tier",
+        "selected_tool": "query_records",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constructed_args": {
+          "filter": "{\"field_v2\": \"enterprise\"}",
+          "collection": "customers"
+        },
+        "category": "argument_construction_failure"
+      }
+    ],
+    "call_constraints_server_oracle::set_acquisition_mode": [
+      {
+        "task": "Configure sensor S01 to capture a rapid cluster of readings on each incoming trigger event",
+        "selected_tool": "set_acquisition_mode",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constructed_args": {
+          "sensor_id": "S01",
+          "mode_v2": "ACQ_BURST"
+        },
+        "category": "argument_construction_failure"
+      },
+      {
+        "task": "Set sensor S02 to continuously stream data as fast as possible without any timing constraints",
+        "selected_tool": "set_acquisition_mode",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constructed_args": {
+          "sensor_id": "S02",
+          "mode_v2": "ACQ_CONT"
+        },
+        "category": "argument_construction_failure"
+      },
+      {
+        "task": "Configure sensor S03 so its output is locked to an external reference clock",
+        "selected_tool": "get_server_info",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constructed_args": {
+          "command": "set_config",
+          "sensor_id": "S03",
+          "config": {
+            "lock_output_to_reference_clock": true,
+            "reference_clock_source": "external"
+          }
+        },
+        "category": "wrong_tool_selection"
+      },
+      {
+        "task": "Reconfigure sensor S04 to fire a grouped burst of samples whenever a start pulse arrives",
+        "selected_tool": "set_acquisition_mode",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constructed_args": {
+          "sensor_id": "S04",
+          "mode_v2": "ACQ_BURST"
+        },
+        "category": "argument_construction_failure"
+      }
+    ],
+    "call_constraints_v2_server_oracle::register_channel": [
+      {
+        "task": "Register the primary pressure sensor channel at facility site F1",
+        "selected_tool": "register_channel",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constructed_args": {
+          "site_id": "F1",
+          "channel_ref_v2": "PH04"
+        },
+        "category": "argument_construction_failure"
+      },
+      {
+        "task": "Add a new temperature monitoring channel for site S3",
+        "selected_tool": "register_channel",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constructed_args": {
+          "site_id": "S3",
+          "channel_ref_v2": "TM04"
+        },
+        "category": "argument_construction_failure"
+      },
+      {
+        "task": "Register the flow rate measurement channel at site A2",
+        "selected_tool": "register_channel",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constructed_args": {
+          "site_id": "A2",
+          "channel_ref_v2": "PH04"
+        },
+        "category": "argument_construction_failure"
+      },
+      {
+        "task": "Set up a humidity sensor channel for site H9",
+        "selected_tool": "register_channel",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constructed_args": {
+          "site_id": "H9",
+          "channel_ref_v2": "HS01"
+        },
+        "category": "argument_construction_failure"
+      },
+      {
+        "task": "Register a voltage measurement channel at site V5",
+        "selected_tool": "register_channel",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constructed_args": {
+          "site_id": "V5",
+          "channel_ref_v2": "TM07"
+        },
+        "category": "argument_construction_failure"
+      }
+    ],
+    "t18_oracle_server::retrieve_row": [
+      {
+        "task": "Pull the customer row from the accounts SQL table where email equals 'j.doe@example.com'",
+        "selected_tool": "retrieve_row",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constructed_args": {
+          "query_v2": "SELECT * FROM accounts WHERE email = 'j.doe@example.com'"
+        },
+        "category": "argument_construction_failure"
+      },
+      {
+        "task": "Get the shipment row from the logistics table whose tracking_number is 'TRK-88213'",
+        "selected_tool": "retrieve_row",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constructed_args": {
+          "db": "logistics",
+          "table": "shipments",
+          "conditions": "{\"tracking_number\": \"TRK-88213\"}",
+          "output_format": "dict",
+          "tool": "retrieve_row"
+        },
+        "category": "argument_construction_failure"
+      }
+    ],
+    "rw1_arm_oracle::search_repositories": [
+      {
+        "task": "Find public GitHub repositories related to transformer-based language models.",
+        "selected_tool": "search_repositories",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constructed_args": {
+          "query_v2": "transformer language model",
+          "perPage": 100,
+          "page": 1
+        },
+        "category": "argument_construction_failure"
+      }
+    ],
+    "p2a_arm_oracle::list_orders": [
+      {
+        "task": "Show all orders placed by customer CUST-901.",
+        "selected_tool": "list_orders",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constructed_args": {
+          "customer_id": "CUST-901"
+        },
+        "category": "success"
+      }
+    ]
+  },
+  "qwen2.5:7b": {
+    "confusable_server_oracle::query_records": [
+      {
+        "task": "Get all orders where the status field is set to 'pending'",
+        "selected_tool": "query_records",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constructed_args": {
+          "field_v2": "status",
+          "value": "pending"
+        },
+        "category": "argument_construction_failure"
+      },
+      {
+        "task": "Retrieve customers from the enterprise tier",
+        "selected_tool": "enumerate_all",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constructed_args": {
+          "collection": "customers"
+        },
+        "category": "wrong_tool_selection"
+      }
+    ],
+    "call_constraints_server_oracle::set_acquisition_mode": [
+      {
+        "task": "Configure sensor S01 to capture a rapid cluster of readings on each incoming trigger event",
+        "selected_tool": "set_acquisition_mode",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constructed_args": {
+          "sensor_id": "S01",
+          "mode_v2": "ACQ_BURST"
+        },
+        "category": "argument_construction_failure"
+      },
+      {
+        "task": "Set sensor S02 to continuously stream data as fast as possible without any timing constraints",
+        "selected_tool": "set_acquisition_mode",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constructed_args": {
+          "sensor_id": "S02",
+          "mode_v2": "ACQ_CONT"
+        },
+        "category": "argument_construction_failure"
+      },
+      {
+        "task": "Configure sensor S03 so its output is locked to an external reference clock",
+        "selected_tool": "set_acquisition_mode",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constructed_args": {
+          "sensor_id": "S03",
+          "mode_v2": "ACQ_SYNC"
+        },
+        "category": "argument_construction_failure"
+      },
+      {
+        "task": "Reconfigure sensor S04 to fire a grouped burst of samples whenever a start pulse arrives",
+        "selected_tool": "set_acquisition_mode",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constructed_args": {
+          "sensor_id": "S04",
+          "mode_v2": "ACQ_BURST"
+        },
+        "category": "argument_construction_failure"
+      }
+    ],
+    "call_constraints_v2_server_oracle::register_channel": [
+      {
+        "task": "Register the primary pressure sensor channel at facility site F1",
+        "selected_tool": "register_channel",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constructed_args": {
+          "site_id": "F1",
+          "channel_ref_v2": "PR01"
+        },
+        "category": "argument_construction_failure"
+      },
+      {
+        "task": "Add a new temperature monitoring channel for site S3",
+        "selected_tool": "register_channel",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constructed_args": {
+          "site_id": "S3",
+          "channel_ref_v2": "TM01"
+        },
+        "category": "argument_construction_failure"
+      },
+      {
+        "task": "Register the flow rate measurement channel at site A2",
+        "selected_tool": "register_channel",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constructed_args": {
+          "site_id": "A2",
+          "channel_ref_v2": "FR01"
+        },
+        "category": "argument_construction_failure"
+      },
+      {
+        "task": "Set up a humidity sensor channel for site H9",
+        "selected_tool": "register_channel",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constructed_args": {
+          "site_id": "H9",
+          "channel_ref_v2": "HM01"
+        },
+        "category": "argument_construction_failure"
+      },
+      {
+        "task": "Register a voltage measurement channel at site V5",
+        "selected_tool": "register_channel",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constructed_args": {
+          "site_id": "V5",
+          "channel_ref_v2": "VM01"
+        },
+        "category": "argument_construction_failure"
+      }
+    ],
+    "t18_oracle_server::retrieve_row": [
+      {
+        "task": "Pull the customer row from the accounts SQL table where email equals 'j.doe@example.com'",
+        "selected_tool": "retrieve_row",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constructed_args": {
+          "query_v2": "SELECT * FROM accounts WHERE email = 'j.doe@example.com'"
+        },
+        "category": "argument_construction_failure"
+      },
+      {
+        "task": "Get the shipment row from the logistics table whose tracking_number is 'TRK-88213'",
+        "selected_tool": "retrieve_row",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constructed_args": {
+          "query_v2": "SELECT * FROM logistics WHERE tracking_number = 'TRK-88213'"
+        },
+        "category": "argument_construction_failure"
+      }
+    ],
+    "rw1_arm_oracle::search_repositories": [
+      {
+        "task": "Find public GitHub repositories related to transformer-based language models.",
+        "selected_tool": "search_repositories",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constructed_args": {
+          "page": 1,
+          "perPage": 30,
+          "query_v2": "transformer-based language model -is:issue"
+        },
+        "category": "argument_construction_failure"
+      }
+    ],
+    "p2a_arm_oracle::list_orders": [
+      {
+        "task": "Show all orders placed by customer CUST-901.",
+        "selected_tool": "list_orders",
+        "success": true,
+        "error": null,
+        "parse_failed": false,
+        "constructed_args": {
+          "customer_id": "CUST-901"
+        },
+        "category": "success"
+      }
+    ]
+  }
+}

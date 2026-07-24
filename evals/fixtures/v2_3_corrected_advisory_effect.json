@@ -1,0 +1,407 @@
+{
+  "gemma2:9b": {
+    "n": 15,
+    "original": {
+      "mean_delta": -0.7666666666666667,
+      "ci_lo": -1.036946715078906,
+      "ci_hi": -0.4963866182544275
+    },
+    "corrected": {
+      "mean_delta": 0.0,
+      "ci_lo": -0.2052353375222794,
+      "ci_hi": 0.2052353375222794
+    },
+    "per_task_detail": [
+      {
+        "tool_set": "confusable_server_oracle",
+        "tool": "query_records",
+        "before": 0.0,
+        "after_original": 0.5,
+        "after_corrected": 1.0,
+        "category": "argument_construction_failure"
+      },
+      {
+        "tool_set": "confusable_server_oracle",
+        "tool": "query_records",
+        "before": 1.0,
+        "after_original": 0.0,
+        "after_corrected": 0.0,
+        "category": "argument_construction_failure"
+      },
+      {
+        "tool_set": "call_constraints_server_oracle",
+        "tool": "set_acquisition_mode",
+        "before": 1.0,
+        "after_original": 0.0,
+        "after_corrected": 1.0,
+        "category": "argument_construction_failure"
+      },
+      {
+        "tool_set": "call_constraints_server_oracle",
+        "tool": "set_acquisition_mode",
+        "before": 1.0,
+        "after_original": 0.0,
+        "after_corrected": 1.0,
+        "category": "argument_construction_failure"
+      },
+      {
+        "tool_set": "call_constraints_server_oracle",
+        "tool": "set_acquisition_mode",
+        "before": 1.0,
+        "after_original": 0.0,
+        "after_corrected": 1.0,
+        "category": "argument_construction_failure"
+      },
+      {
+        "tool_set": "call_constraints_server_oracle",
+        "tool": "set_acquisition_mode",
+        "before": 1.0,
+        "after_original": 0.0,
+        "after_corrected": 1.0,
+        "category": "argument_construction_failure"
+      },
+      {
+        "tool_set": "call_constraints_v2_server_oracle",
+        "tool": "register_channel",
+        "before": 0.0,
+        "after_original": 0.0,
+        "after_corrected": 0.0,
+        "category": "argument_construction_failure"
+      },
+      {
+        "tool_set": "call_constraints_v2_server_oracle",
+        "tool": "register_channel",
+        "before": 1.0,
+        "after_original": 0.0,
+        "after_corrected": 1.0,
+        "category": "argument_construction_failure"
+      },
+      {
+        "tool_set": "call_constraints_v2_server_oracle",
+        "tool": "register_channel",
+        "before": 1.0,
+        "after_original": 0.0,
+        "after_corrected": 1.0,
+        "category": "argument_construction_failure"
+      },
+      {
+        "tool_set": "call_constraints_v2_server_oracle",
+        "tool": "register_channel",
+        "before": 1.0,
+        "after_original": 0.0,
+        "after_corrected": 1.0,
+        "category": "argument_construction_failure"
+      },
+      {
+        "tool_set": "call_constraints_v2_server_oracle",
+        "tool": "register_channel",
+        "before": 1.0,
+        "after_original": 0.0,
+        "after_corrected": 1.0,
+        "category": "argument_construction_failure"
+      },
+      {
+        "tool_set": "t18_oracle_server",
+        "tool": "retrieve_row",
+        "before": 1.0,
+        "after_original": 0.0,
+        "after_corrected": 1.0,
+        "category": "argument_construction_failure"
+      },
+      {
+        "tool_set": "t18_oracle_server",
+        "tool": "retrieve_row",
+        "before": 1.0,
+        "after_original": 0.0,
+        "after_corrected": 1.0,
+        "category": "argument_construction_failure"
+      },
+      {
+        "tool_set": "rw1_arm_oracle",
+        "tool": "search_repositories",
+        "before": 1.0,
+        "after_original": 0.0,
+        "after_corrected": 1.0,
+        "category": "argument_construction_failure"
+      },
+      {
+        "tool_set": "p2a_arm_oracle",
+        "tool": "list_orders",
+        "before": 1.0,
+        "after_original": 1.0,
+        "after_corrected": 1.0,
+        "category": "success"
+      }
+    ]
+  },
+  "llama3.1:8b": {
+    "n": 15,
+    "original": {
+      "mean_delta": -0.8,
+      "ci_lo": -1.0204561179690304,
+      "ci_hi": -0.5795438820309697
+    },
+    "corrected": {
+      "mean_delta": -0.13333333333333333,
+      "ci_lo": -0.40768532390633005,
+      "ci_hi": 0.14101865723966336
+    },
+    "per_task_detail": [
+      {
+        "tool_set": "confusable_server_oracle",
+        "tool": "query_records",
+        "before": 1.0,
+        "after_original": 0.0,
+        "after_corrected": 0.0,
+        "category": "argument_construction_failure"
+      },
+      {
+        "tool_set": "confusable_server_oracle",
+        "tool": "query_records",
+        "before": 1.0,
+        "after_original": 0.0,
+        "after_corrected": 0.0,
+        "category": "argument_construction_failure"
+      },
+      {
+        "tool_set": "call_constraints_server_oracle",
+        "tool": "set_acquisition_mode",
+        "before": 1.0,
+        "after_original": 0.0,
+        "after_corrected": 1.0,
+        "category": "argument_construction_failure"
+      },
+      {
+        "tool_set": "call_constraints_server_oracle",
+        "tool": "set_acquisition_mode",
+        "before": 1.0,
+        "after_original": 0.0,
+        "after_corrected": 1.0,
+        "category": "argument_construction_failure"
+      },
+      {
+        "tool_set": "call_constraints_server_oracle",
+        "tool": "set_acquisition_mode",
+        "before": 0.0,
+        "after_original": 0.0,
+        "after_corrected": 0.0,
+        "category": "wrong_tool_selection"
+      },
+      {
+        "tool_set": "call_constraints_server_oracle",
+        "tool": "set_acquisition_mode",
+        "before": 1.0,
+        "after_original": 0.0,
+        "after_corrected": 1.0,
+        "category": "argument_construction_failure"
+      },
+      {
+        "tool_set": "call_constraints_v2_server_oracle",
+        "tool": "register_channel",
+        "before": 1.0,
+        "after_original": 0.0,
+        "after_corrected": 1.0,
+        "category": "argument_construction_failure"
+      },
+      {
+        "tool_set": "call_constraints_v2_server_oracle",
+        "tool": "register_channel",
+        "before": 1.0,
+        "after_original": 0.0,
+        "after_corrected": 1.0,
+        "category": "argument_construction_failure"
+      },
+      {
+        "tool_set": "call_constraints_v2_server_oracle",
+        "tool": "register_channel",
+        "before": 1.0,
+        "after_original": 0.0,
+        "after_corrected": 1.0,
+        "category": "argument_construction_failure"
+      },
+      {
+        "tool_set": "call_constraints_v2_server_oracle",
+        "tool": "register_channel",
+        "before": 1.0,
+        "after_original": 0.0,
+        "after_corrected": 1.0,
+        "category": "argument_construction_failure"
+      },
+      {
+        "tool_set": "call_constraints_v2_server_oracle",
+        "tool": "register_channel",
+        "before": 1.0,
+        "after_original": 0.0,
+        "after_corrected": 1.0,
+        "category": "argument_construction_failure"
+      },
+      {
+        "tool_set": "t18_oracle_server",
+        "tool": "retrieve_row",
+        "before": 0.0,
+        "after_original": 0.0,
+        "after_corrected": 1.0,
+        "category": "argument_construction_failure"
+      },
+      {
+        "tool_set": "t18_oracle_server",
+        "tool": "retrieve_row",
+        "before": 1.0,
+        "after_original": 0.0,
+        "after_corrected": 0.0,
+        "category": "argument_construction_failure"
+      },
+      {
+        "tool_set": "rw1_arm_oracle",
+        "tool": "search_repositories",
+        "before": 1.0,
+        "after_original": 0.0,
+        "after_corrected": 1.0,
+        "category": "argument_construction_failure"
+      },
+      {
+        "tool_set": "p2a_arm_oracle",
+        "tool": "list_orders",
+        "before": 1.0,
+        "after_original": 1.0,
+        "after_corrected": 1.0,
+        "category": "success"
+      }
+    ]
+  },
+  "qwen2.5:7b": {
+    "n": 15,
+    "original": {
+      "mean_delta": -0.7666666666666667,
+      "ci_lo": -0.9891085462764644,
+      "ci_hi": -0.544224787056869
+    },
+    "corrected": {
+      "mean_delta": 0.06666666666666667,
+      "ci_lo": -0.07108232474912567,
+      "ci_hi": 0.20441565808245898
+    },
+    "per_task_detail": [
+      {
+        "tool_set": "confusable_server_oracle",
+        "tool": "query_records",
+        "before": 1.0,
+        "after_original": 0.5,
+        "after_corrected": 1.0,
+        "category": "argument_construction_failure"
+      },
+      {
+        "tool_set": "confusable_server_oracle",
+        "tool": "query_records",
+        "before": 0.0,
+        "after_original": 0.0,
+        "after_corrected": 0.0,
+        "category": "wrong_tool_selection"
+      },
+      {
+        "tool_set": "call_constraints_server_oracle",
+        "tool": "set_acquisition_mode",
+        "before": 1.0,
+        "after_original": 0.0,
+        "after_corrected": 1.0,
+        "category": "argument_construction_failure"
+      },
+      {
+        "tool_set": "call_constraints_server_oracle",
+        "tool": "set_acquisition_mode",
+        "before": 1.0,
+        "after_original": 0.0,
+        "after_corrected": 1.0,
+        "category": "argument_construction_failure"
+      },
+      {
+        "tool_set": "call_constraints_server_oracle",
+        "tool": "set_acquisition_mode",
+        "before": 1.0,
+        "after_original": 0.0,
+        "after_corrected": 1.0,
+        "category": "argument_construction_failure"
+      },
+      {
+        "tool_set": "call_constraints_server_oracle",
+        "tool": "set_acquisition_mode",
+        "before": 1.0,
+        "after_original": 0.0,
+        "after_corrected": 1.0,
+        "category": "argument_construction_failure"
+      },
+      {
+        "tool_set": "call_constraints_v2_server_oracle",
+        "tool": "register_channel",
+        "before": 1.0,
+        "after_original": 0.0,
+        "after_corrected": 1.0,
+        "category": "argument_construction_failure"
+      },
+      {
+        "tool_set": "call_constraints_v2_server_oracle",
+        "tool": "register_channel",
+        "before": 1.0,
+        "after_original": 0.0,
+        "after_corrected": 1.0,
+        "category": "argument_construction_failure"
+      },
+      {
+        "tool_set": "call_constraints_v2_server_oracle",
+        "tool": "register_channel",
+        "before": 1.0,
+        "after_original": 0.0,
+        "after_corrected": 1.0,
+        "category": "argument_construction_failure"
+      },
+      {
+        "tool_set": "call_constraints_v2_server_oracle",
+        "tool": "register_channel",
+        "before": 1.0,
+        "after_original": 0.0,
+        "after_corrected": 1.0,
+        "category": "argument_construction_failure"
+      },
+      {
+        "tool_set": "call_constraints_v2_server_oracle",
+        "tool": "register_channel",
+        "before": 1.0,
+        "after_original": 0.0,
+        "after_corrected": 1.0,
+        "category": "argument_construction_failure"
+      },
+      {
+        "tool_set": "t18_oracle_server",
+        "tool": "retrieve_row",
+        "before": 0.0,
+        "after_original": 0.0,
+        "after_corrected": 1.0,
+        "category": "argument_construction_failure"
+      },
+      {
+        "tool_set": "t18_oracle_server",
+        "tool": "retrieve_row",
+        "before": 1.0,
+        "after_original": 0.0,
+        "after_corrected": 1.0,
+        "category": "argument_construction_failure"
+      },
+      {
+        "tool_set": "rw1_arm_oracle",
+        "tool": "search_repositories",
+        "before": 1.0,
+        "after_original": 0.0,
+        "after_corrected": 1.0,
+        "category": "argument_construction_failure"
+      },
+      {
+        "tool_set": "p2a_arm_oracle",
+        "tool": "list_orders",
+        "before": 1.0,
+        "after_original": 1.0,
+        "after_corrected": 1.0,
+        "category": "success"
+      }
+    ]
+  }
+}

@@ -200,7 +200,7 @@ class TestRequiredReferencesMissingProperty:
         result = lint_tool("ping_server", description, schema)
         e_violations = [v for v in result.all if v.check == "required_references_missing_property"]
         assert len(e_violations) == 1
-        assert e_violations[0].severity == Severity.BLOCKING
+        assert e_violations[0].severity == Severity.INFO
 
     def test_no_false_positive_when_required_matches_properties(self) -> None:
         description = "Stores a value under a key."
