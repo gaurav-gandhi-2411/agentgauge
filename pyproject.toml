@@ -4,8 +4,8 @@ build-backend = "hatchling.build"
 
 [project]
 name = "agentgauge"
-version = "0.3.0"
-description = "Deterministic defect linter for MCP tool descriptions (BLOCKING/ADVISORY severity gate) + a statistical regression harness (in active development)"
+version = "0.4.0"
+description = "Statistical regression harness for MCP tool descriptions (measures whether a change actually moved agent task success) + a deterministic defect linter as a secondary utility"
 readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "Apache-2.0" }

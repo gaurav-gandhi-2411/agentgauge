@@ -1,28 +1,48 @@
 # AgentGauge
 
-**AgentGauge is a deterministic defect linter and a statistical regression harness for MCP tool
-descriptions — and is the research program behind
+**AgentGauge is a statistical regression harness that measures whether a change to your MCP
+server's tool descriptions actually changed agent task success — plus a fast, deterministic defect
+linter as a secondary utility. It is also the research program behind
 ["Tool-Description Quality Is Not One Axis"](docs/paper/latex/main.pdf), a study of where fixing
 tool descriptions helps, does nothing, or backfires.**
 
 [![CI](https://github.com/gaurav-gandhi-2411/agentgauge/actions/workflows/ci.yml/badge.svg)](https://github.com/gaurav-gandhi-2411/agentgauge/actions/workflows/ci.yml)
 
-## `agentgauge lint` vs. an LLM judge — measured, not asserted
+## `agentgauge diff` — measured, not asserted
 
-The deterministic linter is the shipped, production-ready surface (v0.3.0). Both rows below are
-measured on the same clean corpus and defect-injection corpus in this repo — not cherry-picked.
+The harness is the primary interface: `agentgauge lint`'s static rules mostly do not have a
+validated effect on real task success on their own (see the per-rule table below) — the harness is
+what actually measures whether a change helped. Every number below is measured in this repo, not
+estimated.
 
-| | Per-tool-set false-alarm rate (BLOCKING checks, 21 clean tool sets) | Recall (defect-injection corpus) |
+| Metric | Measured value | Report |
 |---|---|---|
-| **`agentgauge lint`** (zero LLM calls) | **0%** | **100%** (`type_enum_contradiction`, `required_references_missing_property`) |
-| Single-prompt LLM judge (llama3.1:8b) | **97.1%** (169/174 clean tools flagged — a degenerate always-flag baseline) | 100% (not a meaningful number given the false-alarm rate) |
+| Minimum detectable effect, 100 tasks/arm × 1 trial/task, 80% power | **8.5 percentage points** | `reports/v2_2_optimal_allocation.md` |
+| Ship target (detect a 10-point regression at 80% power) | **MET** | same |
+| False-alarm rate under the null, by cluster-count stratum | **<5% in every stratum** (<10 tasks: 1.57%; 10–29: 0.08%; ≥30: 0.00%) | `reports/v2_2_few_clusters_correction.md` |
+| Replay determinism (identical inputs → identical verdict) | **100%** (50/50 runs) | `reports/v2_harness_evaluation.md` |
+| Abstention rate under the null (`INSUFFICIENT_SENSITIVITY`, correctly declining to call a verdict rather than over-claim) | **21.6%** | `reports/v2_1_estimator_rebuild.md` |
+| **Causal chain — does a BLOCKING linter violation actually cause task failure?** (previously assumed, now measured, re-verified on a freshly rebuilt instance) | **Yes: -13.3 to -28.9pp** task success, CI excludes zero in all 3 model families tested (gemma2:9b/llama3.1:8b/qwen2.5:7b) | `reports/v2_4_task1_blast_radius_audit.md` |
+| Single-prompt LLM-judge baseline (an alternative to this harness/linter) | **97.1% false-alarm rate** / 100% recall — a degenerate always-flag baseline, spot-checked to confirm genuine model hallucination, not a scoring bug | `reports/v2_1_cross_model_validation.md` §Task 2e |
 
-The LLM baseline's 100% recall is not a real signal: a judge that flags 97.1% of genuinely clean
-tools will trivially also flag 100% of defective ones. Spot-checked directly (not assumed): the
-model hallucinated a fabricated claim about a schema property being "missing" when the same
-prompt's JSON schema plainly contained it — confirmed as a real model failure, not a measurement
-bug. Full methodology: `reports/v2_1_linter_recall_fix.md`, `reports/v2_1_severity_gate.md`,
-`reports/v2_1_cross_model_validation.md` §Task 2e.
+### Every lint rule's measured task-success effect — including the nulls
+
+`agentgauge lint`'s rules are NOT all equally validated. Severity tier tracks measured causal
+impact × precision (v2.3 re-tiering), not just false-alarm rate — a rule with no measured effect
+is labeled as such below, not presented as if it were proven:
+
+| Rule | Tier | Measured causal effect on task success | False-alarm | Recall |
+|---|---|---|---|---|
+| `type_enum_contradiction` | **BLOCKING** | **-13.3 to -40.0pp**, CI excludes zero (pooled, all 3 models) | 0% | 100% |
+| `required_references_missing_property` | INFO (demoted from BLOCKING) | **0.0pp in all 3 models — a measured null**, despite perfect precision | 0% | 100% |
+| `described_not_in_schema` (catches `param_renamed`) | ADVISORY | **~0pp in all 3 models — a measured null** (corrected in v2.3 from a falsely-reported -76.7 to -80.0pp: a scoring bug looked up a pre-rename parameter name against post-rename arguments) | 23.81% | 81.2% |
+| `param_possibly_renamed` | ADVISORY | Not independently measured (fires alongside `described_not_in_schema`, not separated in the causal-chain design) | 0.77%/tool | part of the 81.2% combined |
+| `name_collision` | ADVISORY | **Not measured** (no defect-injection instance targets this check) | 47.62% | n/a |
+| `required_not_mentioned` | INFO (opt-in) | Not tested for causal effect (demoted on a different basis: fires at nearly the same rate on real professional docs as on bad synthetic ones) | n/a | 94.1% |
+
+Full methodology: `reports/v2_1_linter_recall_fix.md`, `reports/v2_1_severity_gate.md`,
+`reports/v2_linter_evaluation.md` (`required_not_mentioned`'s 94.1% recall),
+`reports/v2_3_task2_retiering.md`, `reports/v2_4_task1_blast_radius_audit.md`.
 
 ---
 
@@ -45,11 +65,20 @@ bug. Full methodology: `reports/v2_1_linter_recall_fix.md`, `reports/v2_1_severi
 > not the originally-reported 76.7–80.0pp drop. v2.3 re-tiered the linter by the corrected numbers:
 > `required_references_missing_property` demoted BLOCKING→INFO (zero measured task-success effect
 > in every model); `described_not_in_schema`'s false-alarm rate improved 28.57%→23.81% via real
-> precision fixes but did not clear the promotion bar. Every number in this README is measured in
-> this repo — see `reports/v2_product_readiness.md` for the full consolidated methodology, §0/§1
-> for the v2.2/v2.3 updates, and what's measured vs. assumed. v1's `scan`/`fix`/`ci`/`try` commands
-> still exist in the code but are not the recommended product surface; `lint`/`eval`/`diff`/`init`
-> are.
+> precision fixes but did not clear the promotion bar. **v2.4 audited the blast radius of that
+> scoring bug**: only `param_renamed` was ever affected (the other four defect-injection classes
+> never rename a schema key — confirmed from source, not assumed), and the ICC/variance-
+> decomposition/rho/MDE-calibration numbers above all trace to a 5,535-trial corpus the bug never
+> touched — no recomputation needed. The one surviving BLOCKING claim was re-measured on a freshly
+> rebuilt instance and holds (**-13.3 to -28.9pp**, unchanged). v2.4 also shipped `agentgauge audit`:
+> a standing pre-report gate (task/answer leakage, ceiling/floor, degenerate metrics, and — the
+> class this exact bug belongs to — scoring-reference consistency) wired into `diff`/`eval` so a
+> failing check blocks the result from being reported as a measurement, and repositioned the
+> package around the harness (`diff` is now the primary interface; `lint` a secondary utility — see
+> the per-rule table above). Every number in this README is measured in this repo — see
+> `reports/v2_product_readiness.md` for the full consolidated methodology and what's measured vs.
+> assumed. v1's `scan`/`fix`/`ci`/`try` commands still exist in the code but are not the recommended
+> product surface; `diff`/`eval`/`lint`/`init` are.
 
 ---
 
@@ -107,57 +136,24 @@ states plainly what is and isn't supported by the evidence.
 
 ---
 
-## What this actually measures (numbers, not adjectives)
+## Additional measured detail
 
-Two components, each evaluated on the task it actually does — never on correlation. Full
-methodology and every number's provenance: `reports/v2_1_linter_recall_fix.md`,
-`reports/v2_1_severity_gate.md`, `reports/v2_1_estimator_rebuild.md`,
-`reports/v2_1_cross_model_validation.md`.
+Headline harness and per-rule numbers are above. A few more measured results that don't fit that
+table:
 
-### 1. Deterministic linter (`agentgauge lint`) — zero LLM calls
-
-Detects five classes of description-vs-schema defect (a schema-required parameter that references
-a nonexistent property; description text describing a parameter as boolean when its schema type
-isn't; identifier-like tokens in a description that don't match any real parameter; a schema
-property that was renamed while the description still refers to the old name; near-duplicate tool
-names). Severity is tiered by **measured causal impact × precision**, not false-alarm rate alone
-(v2.3 re-tiering, `reports/v2_3_task2_retiering.md`): **BLOCKING** (`type_enum_contradiction` only
-— 0% false alarms AND a measured task-success drop in every model tested) fails CI; **ADVISORY**
-and **INFO** are surfaced but don't gate. `required_references_missing_property` was demoted
-BLOCKING→INFO after being causally measured to have zero effect on real task success in 3 model
-families despite its perfect 0%/100% false-alarm/recall — a naive false-alarm-only gate would have
-kept it BLOCKING forever.
-
-| Metric | Measured value | How |
+| Metric | Measured value | Report |
 |---|---|---|
-| False-alarm rate, per tool set, BLOCKING-only (21 tool sets) | **0%** | `reports/v2_1_severity_gate.md`, re-confirmed post-retiering in `reports/v2_3_task2_retiering.md` — clears the <10% target decisively |
-| False-alarm rate, per tool, BLOCKING+ADVISORY combined (521 tools) | 4.22% | `reports/v2_1_severity_gate.md`, still <5% |
-| Recall on injected `type_flipped` / `enum_dropped` (BLOCKING) defects | **100%** | `reports/v2_linter_evaluation.md` §2d |
-| Recall on injected `param_renamed` defects (48 cases) | **81.2%** via `described_not_in_schema` OR `param_possibly_renamed` (`described_not_in_schema` false-alarm rate improved 28.57%→23.81% in v2.3 via 5 targeted precision fixes, still short of the BLOCKING promotion bar) | `reports/v2_1_linter_recall_fix.md`, `reports/v2_3_task2_retiering.md` |
-| Recall vs. raw JSON-Schema structural validation baseline | Linter beats it on every defect type — baseline scores **0%** | `reports/v2_linter_evaluation.md` §2e |
-| Recall vs. single-prompt LLM baseline (llama3.1:8b, 174+138 sampled cases) | Linter beats it once precision is counted — the LLM baseline scores 100% recall but **97.1% false-alarm rate** (a degenerate always-flag baseline; spot-checked to confirm it's genuine model hallucination, not a scoring bug) | `reports/v2_1_cross_model_validation.md` §Task 2e |
+| Linter false-alarm rate, per tool, BLOCKING+ADVISORY combined (521 tools) | 4.22%, still <5% | `reports/v2_1_severity_gate.md` |
+| Linter recall vs. raw JSON-Schema structural validation baseline | Linter beats it on every defect type — baseline scores **0%** | `reports/v2_linter_evaluation.md` §2e |
+| Cross-model replication, causal chain (gemma2:9b, llama3.1:8b, qwen2.5:7b) | BLOCKING effect significant in **all 3 model families**; qwen2.5:7b measurably more robust to `type_enum_contradiction` specifically than the other two | `reports/v2_4_task1_blast_radius_audit.md` |
+| Cross-model replication, argument-degradation (a *separate* question from the causal chain above — does description quality fix argument construction?) | **Inconclusive** at the real achievable sample ceiling (n=62/model, MDE=0.106 > any observed delta) — not "no effect"; only two comparable hand-authored fixtures exist for this specific question | `reports/v2_2_task_a_reallocation.md` |
 
-### 2. Regression harness (`agentgauge diff`) — paired, task-clustered, CUPED-adjusted bootstrap test
-
-Compares real task-success rate between two tool-set variants at the **server level** (paired on
-task, cluster-robust across tasks, CUPED-adjusted), decomposed into tool-selection accuracy and
-argument-construction accuracy. Default allocation is **1 trial/task** — ICC=0.793 means repeat
-trials on the same task carry almost no independent information (`reports/v2_variance_structure.md`);
-more distinct tasks, not more trials per task, buys detection power (`reports/v2_2_optimal_allocation.md`).
-
-| Metric | Measured value | How |
-|---|---|---|
-| Minimum detectable effect at n=100 tasks/arm, 1 trial/task, 80% power | **8.48 percentage points** | `reports/v2_2_optimal_allocation.md` |
-| **Ship target — detect a 10-point regression at 80% power** | **MET** at n=100 tasks/arm, 1 trial/task (was NOT MET at the v2.1-tested n=20/5-trials allocation, MDE=18.8) | same |
-| False-alarm rate under the null, few-clusters-corrected (2200 resampled comparisons) | **<5% in every cluster-count stratum** (<10 tasks: 1.57%; 10–29: 0.08%; ≥30: 0.00%) | `reports/v2_2_few_clusters_correction.md` — a t(G-1)-adjusted CI fixes the v2.1-measured 1.71%/<10-task concentration; a wild-bootstrap fix was tried first and **measured to make it worse**, rejected before shipping |
-| **End-to-end causal chain — does a BLOCKING violation actually cause task failure?** (previously assumed, not measured) | **Yes**: BLOCKING → **-13.3 to -28.9pp** task success (CI excludes zero in all 3 models). The ADVISORY (`param_renamed`) effect originally reported here (-76.7 to -80.0pp) was audited in v2.3 and found to be ~77–100% a scoring artifact — corrected, it is a **clean null in all 3 models** (+0.0 to +6.7pp, every CI includes zero) | `reports/v2_2_causal_chain.md`, `reports/v2_2_task_b_causal_chain_multimodel.md`, `reports/v2_3_task1_advisory_audit.md` (correction) |
-| Cross-model replication, causal chain (gemma2:9b, llama3.1:8b, qwen2.5:7b) | BLOCKING effect significant in **all 3 model families**; `required_references_missing_property` shows **zero effect in all 3 models** (demoted BLOCKING→INFO in v2.3, `reports/v2_3_task2_retiering.md`); qwen2.5:7b measurably more robust to `type_enum_contradiction` specifically | `reports/v2_2_task_b_causal_chain_multimodel.md`, `reports/v2_3_task2_retiering.md` |
-| Cross-model replication, argument-degradation (separate question — does description quality fix argument construction?) | **Inconclusive** at the real achievable sample ceiling (n=62/model, MDE=0.106 > any observed delta) — not "no effect"; only two comparable hand-authored fixtures exist for this specific question | `reports/v2_2_task_a_reallocation.md` |
-
-**What's not yet measured:** determinism was not independently re-verified for the estimator
-(inherits the v2 100%/50-run result via unchanged PRNG code); the argument-degradation question
-above needs ~38 more hand-authored gold-constraint tasks (not more compute) to resolve at the
-100-task optimum — see `reports/v2_product_readiness.md` §2/§0.4 for the complete list.
+**What's not yet measured:** the argument-degradation question above needs ~38 more hand-authored
+gold-constraint tasks (not more compute) to resolve at the 100-task optimum; the shipped
+`agentgauge/constraints.py` product path shares the same scoring-reference-consistency exposure
+that caused the v2.3 ADVISORY scoring bug (now guarded by `agentgauge audit`, but not yet
+independently fuzz-tested against arbitrary user task files) — see `reports/v2_product_readiness.md`
+for the complete list.
 
 ---
 
@@ -174,37 +170,56 @@ pip install uv && uv sync
 ## Quickstart (under 5 minutes)
 
 ```bash
-# 1. Lint your server — zero LLM cost, exits 1 on a BLOCKING finding
-agentgauge lint path/to/your_server.py
-
-# 2. Scaffold a starter anti-tautology tasks file + GitHub Action
+# 1. Scaffold a starter anti-tautology tasks file + GitHub Action
 agentgauge init
 
-# 3. Edit agentgauge_tasks.json with real tasks for your tools (never quote the
+# 2. Edit agentgauge_tasks.json with real tasks for your tools (never quote the
 #    gold tool name or a required literal value in the task text -- that makes
 #    selection trivial regardless of description quality)
 
-# 4. Compare two variants of your server before merging a description change
+# 3. Compare two variants of your server before merging a description change --
+#    THIS is the number that matters: did the change move real task success?
 agentgauge diff before_server.py after_server.py --tasks agentgauge_tasks.json
+
+# 4. (Optional) fast, zero-LLM-cost static check -- exits 1 on a BLOCKING finding.
+#    Only one rule has a validated causal effect (see the per-rule table above);
+#    `diff` above is what actually tells you whether a change helped.
+agentgauge lint path/to/your_server.py
 ```
 
+`agentgauge diff` needs a live agent model (Ollama, default `gemma2:9b`) or a `--mock`/`--replay`
+run for testing without inference. See `reports/predictive_validity_study.md`'s `blind_tasks.py`
+for worked examples of anti-tautology task authoring. Every `diff`/`eval` run passes through
+`agentgauge audit` first (task leakage, ceiling/floor, degenerate metrics, scoring-reference
+consistency) — a failing check blocks the result from being reported, rather than silently
+shipping a bad measurement.
+
 `agentgauge lint` needs no LLM at all — try it right now against the bundled example fixture,
-which reproduces a real defect this linter was built to catch:
+which demonstrates the re-tiering story directly: this file's only defects are
+`required_references_missing_property` and `required_not_mentioned`, both of which measured a null
+causal effect on task success (the per-rule table above) and are demoted to INFO — so the default,
+CI-gating view is clean:
 
 ```bash
 agentgauge lint examples/call_constraints_server_fixed.py
 ```
 
 ```
-6 BLOCKING violation(s) (fails CI):
-  x  ping_server: 'host' is in the schema's required list but is not a key in properties
-  x  get_server_info: 'hostname' is in the schema's required list but is not a key in properties
-  ...
+No violations found.
 ```
 
-`agentgauge diff` needs a live agent model (Ollama, default `gemma2:9b`) or a `--mock`/`--replay`
-run for testing without inference. See `reports/predictive_validity_study.md`'s `blind_tasks.py`
-for worked examples of anti-tautology task authoring.
+```bash
+# --show-info surfaces the demoted, non-gating findings anyway (still 0% false-alarm,
+# just no longer BLOCKING now that they're measured to have zero task-success effect)
+agentgauge lint examples/call_constraints_server_fixed.py --show-info
+```
+
+```
+13 INFO-severity hint(s) (off by default):
+  -  ping_server: 'host' is in the schema's required list but is not a key in properties
+  -  get_server_info: 'hostname' is in the schema's required list but is not a key in properties
+  ...
+```
 
 ---
 
@@ -215,7 +230,7 @@ predictive-validity study found none of the 8 axes predicts real task success by
 surviving both multiple-comparison correction and length-control (`reports/
 predictive_validity_study.md`, `reports/v2_axis_triage.md`). The commands still exist and still
 work — deleting working code that some users may already depend on wasn't in scope for this
-rebuild — but `lint`/`eval`/`diff`/`init` are the supported product surface going forward.
+rebuild — but `diff`/`eval`/`lint`/`init` are the supported product surface going forward.
 
 ---
 
@@ -246,11 +261,22 @@ met) and fixed the few-clusters false-alarm concentration v2.1 found (t(G-1)-adj
 every stratum). v2.2 also measured, for the first time, that BLOCKING linter violations actually
 cause agent task failure (previously assumed) — and that ADVISORY violations cause a *larger*
 drop, in every one of the three model families tested (gemma2:9b, llama3.1:8b, qwen2.5:7b).
+v2.3 audited the largest v2.2 finding before trusting it (a scoring bug had inflated an ADVISORY
+effect to -76.7/-80.0pp; corrected to a clean null) and re-tiered the linter by the corrected
+numbers. **v2.4 audited that bug's full blast radius**: confirmed only one of five defect-injection
+classes was ever affected (the other four never rename a schema key — verified from source), traced
+the ICC/variance/rho/MDE-calibration constants to a corpus the bug never touched (no recomputation
+needed), and re-measured the one surviving BLOCKING claim on a freshly rebuilt instance (holds:
+-13.3 to -28.9pp, unchanged). v2.4 shipped `agentgauge audit` — a standing pre-report gate encoding
+every measurement-artifact class found during this project's development (task/answer leakage,
+ceiling/floor, degenerate metrics, and the scoring-reference-consistency class the v2.3 bug
+belongs to) as an automated check wired into `diff`/`eval`, with a regression test per class seeded
+with the real historical case — and repositioned the package around the harness (`diff` primary,
+`lint` secondary, every lint rule labeled with its measured causal effect or lack of one).
 Remaining, explicitly not yet done: the argument-degradation cross-model question (separate from
-the causal-chain question above) is still inconclusive — re-run at the real achievable ceiling of
-62 tasks/model (up from 16), still short of the resolving power needed; would require ~38 more
-hand-authored gold-constraint tasks, not more compute, to close — `reports/v2_product_readiness.md`
-§0 tracks the full v2.2 update and what's measured vs. assumed.
+the causal-chain question above) is still inconclusive — would require ~38 more hand-authored
+gold-constraint tasks, not more compute, to close; a >=10-fixture corpus expansion is in progress
+to address this — `reports/v2_product_readiness.md` tracks what's measured vs. assumed.
 
 ---
 
@@ -263,11 +289,14 @@ agentgauge/
   tasks.py        # Task generator: sample args from JSON schema
   runner.py       # Agent runner: LLM selects tool + constructs args, N trials
   scorer.py       # v1 rubric scoring: static analysis + LLM-as-judge (legacy surface)
-  linter.py       # v2: deterministic defect linter, zero LLM calls
-  harness.py      # v2: bootstrap-CI regression harness, MDE simulation
-  constraints.py  # v2: anti-tautology blind-task constraint checking
+  linter.py       # deterministic defect linter, zero LLM calls -- secondary utility
+  harness.py      # bootstrap-CI regression harness, MDE simulation -- PRIMARY interface
+  constraints.py  # anti-tautology blind-task constraint checking
+  audit.py        # pre-report measurement-validity gate (task leakage, ceiling/floor,
+                  # degenerate metrics, scoring-reference consistency, ...)
   report.py       # Rich text report renderer
-  cli.py          # typer CLI: lint / eval / diff / init (v2) + scan / fix / ci / try (v1)
+  cli.py          # typer CLI: diff / eval / lint / init (primary surface) +
+                  # scan / fix / ci / try (v1, legacy)
 examples/
   echo_server.py  # Minimal MCP server (good + bad tools) for local demos
 tests/            # pytest; LLM always mocked; no network; no paid calls
