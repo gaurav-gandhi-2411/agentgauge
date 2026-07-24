@@ -166,10 +166,27 @@ any prior self-report):
 
 ## Independent verification
 
-A separate verifier agent re-ran the full test suite (see checkpoint in
-`PLAN.md`/commit log for the pass count), re-ran the three WebFetch
-verifications independently against `docs.github.com`, `docs.stripe.com`,
-and `kubernetes.io` to confirm the primary-source claims in this report are
-not fabricated, and re-ran the 2f cross-fixture/anti-tautology script from
-scratch, reproducing 191/191 clean. Findings below, if any, are recorded
-verbatim.
+A separate verifier agent independently re-fetched all three primary
+sources (`docs.github.com`, `docs.stripe.com`, `kubernetes.io`) and confirmed
+each claim in 2c/2d verbatim against the live doc text, independently wrote
+and ran its own 2f cross-fixture/anti-tautology script from scratch
+(191 tasks, 0 missing constraints, 0 tool-name mismatches, 0 tautology
+violations — exact match), confirmed `check_enum_schema_fidelity` is wired
+into `run_audit` for both before/after tool sets and only ever emits `warn`
+severity, and confirmed all 4 `TestEnumSchemaFidelity` tests pass.
+**5 of 6 items: CONFIRMED, no discrepancy.**
+
+One numeric discrepancy on the 6th (test suite pass count): the verifier's
+fresh `uv run pytest -q` run reported **871 passed, 92.15% coverage**, not
+the 867/92.22% this report's earlier draft referenced. Root cause: the
+867-count run was started in the background *before*
+`check_enum_schema_fidelity`'s 4 regression tests were added to
+`tests/test_audit.py` on disk, and pytest collects test files at the moment
+it starts running, not at the moment the command was queued — so that run
+collected the test suite as it existed several tool-calls earlier. It was a
+stale number caught by the very re-run this task's "independent verifier on
+every measured number" discipline exists to catch, not a regression or a
+fabricated pass count: 871 (a superset including the 4 new tests) is the
+correct, current figure, confirmed by both the verifier and a direct local
+`uv run pytest tests/test_audit.py -q` (21/21 passed) run before this report
+was drafted.
