@@ -31,7 +31,11 @@ Four tools, each a simplified wrapper around a real Atlassian Jira REST API
   the unconfigured default.
 - **`priority` enum** (`set_issue_priority`): `Highest`, `High`, `Medium`,
   `Low`, `Lowest` are Jira's real default priority scheme values, in
-  decreasing order of urgency.
+  decreasing order of urgency. Like `issue_type` and `transition` above, this
+  is Jira's *default* scheme only — priority schemes are configurable per
+  site/project in real Jira and can have different names or additional
+  levels; this fixture models only the unconfigured default, same caveat as
+  the other two enums.
 - **`issue_key` format** (`add_issue_comment`): real Jira issue keys are the
   project key, a hyphen, and an integer (e.g. `PROJ-123`). The regex used
   here (`[A-Z][A-Z0-9]{1,9}-[0-9]+`) is a simplification chosen to match the

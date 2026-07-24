@@ -6,7 +6,9 @@ from __future__ import annotations
 # call_constraints_v2 fixture (evals/fixtures/ty2_tasks.py), modeled on GitHub's
 # real Issues REST API instead of an invented industrial-sensor domain.
 #
-# 4 tools, all constrained — 5 tasks each = 20 tasks.
+# 4 tools, all constrained — 5 tasks each, except update_issue_state which has 6
+# (a 'duplicate' state_reason case was added in v2.5 Task 2 to cover GitHub's real
+# 4th enum value, found missing during real-API validation) = 21 tasks.
 # Constraint mix (2 tools per type), mirroring ty2_tasks.py's "2 per type" design:
 #   FORMAT : create_issue (repo, "owner/repo" shape)
 #            add_assignee (assignee, GitHub username shape)
@@ -75,7 +77,7 @@ TASKS: list[Task] = [
         "add_assignee",
         "Assign the accessibility regression in the Vue.js repository to its original creator.",
     ),
-    # update_issue_state (enum constraints on `state` + `state_reason`) — 5 tasks
+    # update_issue_state (enum constraints on `state` + `state_reason`) — 6 tasks
     Task(
         "update_issue_state",
         "Close issue #45 in the payments-service repo since the reported bug has "
@@ -100,6 +102,11 @@ TASKS: list[Task] = [
         "update_issue_state",
         "Close out the stale enhancement suggestion in the cli-tool repo — the "
         "team has decided it's out of scope for this project.",
+    ),
+    Task(
+        "update_issue_state",
+        "Close issue #88 in the design-system repo since issue #61 already tracks "
+        "the exact same problem.",
     ),
     # add_label (enum constraint on `label`, standard default GitHub labels) — 5 tasks
     Task(
@@ -222,6 +229,14 @@ TASK_CONSTRAINTS: dict[tuple[str, str], list[Constraint]] = {
     ): [
         Constraint("state", "enum", gold_value="closed"),
         Constraint("state_reason", "enum", gold_value="not_planned"),
+    ],
+    (
+        "update_issue_state",
+        "Close issue #88 in the design-system repo since issue #61 already tracks "
+        "the exact same problem.",
+    ): [
+        Constraint("state", "enum", gold_value="closed"),
+        Constraint("state_reason", "enum", gold_value="duplicate"),
     ],
     # add_label — enum: standard default GitHub labels
     (

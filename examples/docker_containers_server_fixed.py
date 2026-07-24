@@ -70,9 +70,10 @@ async def list_tools() -> list[types.Tool]:
                 "stop) and timeout_seconds (how many seconds to wait for the container to shut "
                 "down gracefully before Docker force-kills it — a short value gives the "
                 "process almost no time to clean up, while a long value gives it much more "
-                "room to finish in-flight work before being killed). Unlike create_container, "
-                "this tool acts on a container that already exists and is currently running; "
-                "it does not create or start anything new."
+                "room to finish in-flight work before being killed; the Docker Engine API's own "
+                "query parameter for this is the shorter 't', renamed here for readability). "
+                "Unlike create_container, this tool acts on a container that already exists and "
+                "is currently running; it does not create or start anything new."
             ),
             inputSchema={
                 "type": "object",
@@ -88,15 +89,18 @@ async def list_tools() -> list[types.Tool]:
             name="create_network",
             description=(
                 "Creates a new Docker network that containers can be attached to. Requires "
-                "name (the network's name) and driver (which networking driver to use: "
-                "'bridge' — an isolated private network on a single host, Docker's default "
-                "for standalone containers; 'host' — removes network isolation and lets the "
-                "container share the host machine's own networking stack directly; 'overlay' "
-                "— a network spanning multiple Docker hosts, used for multi-host Swarm "
-                "services; or 'none' — disables networking for the container entirely). "
-                "Optionally accepts internal (a boolean; when true, the network has no "
-                "external connectivity outside the Docker host). Unlike create_container, this "
-                "tool provisions a network resource, not a container."
+                "name (the network's name) and driver (which networking driver to use — four "
+                "of Docker's built-in drivers are supported here: 'bridge' — an isolated "
+                "private network on a single host, Docker's default for standalone containers; "
+                "'host' — removes network isolation and lets the container share the host "
+                "machine's own networking stack directly; 'overlay' — a network spanning "
+                "multiple Docker hosts, used for multi-host Swarm services; or 'none' — "
+                "disables networking for the container entirely. Docker also ships additional "
+                "built-in drivers, e.g. 'macvlan' and 'ipvlan', and supports third-party "
+                "network plugins, not modeled by this tool). Optionally accepts internal (a "
+                "boolean; when true, the network has no external connectivity outside the "
+                "Docker host). Unlike create_container, this tool provisions a network "
+                "resource, not a container."
             ),
             inputSchema={
                 "type": "object",

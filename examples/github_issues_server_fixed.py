@@ -83,9 +83,10 @@ async def list_tools() -> list[types.Tool]:
                 "issue_number, and state ('open' or 'closed'). Optionally accepts "
                 "state_reason to record why the state changed: 'completed' (the underlying "
                 "work was finished), 'not_planned' (the issue was closed without being "
-                "addressed), or 'reopened' (the issue was reopened after previously being "
-                "closed). Unlike add_label, this tool changes the issue's lifecycle status "
-                "rather than its categorization."
+                "addressed), 'duplicate' (the issue already exists elsewhere), or "
+                "'reopened' (the issue was reopened after previously being closed). Unlike "
+                "add_label, this tool changes the issue's lifecycle status rather than its "
+                "categorization."
             ),
             inputSchema={
                 "type": "object",

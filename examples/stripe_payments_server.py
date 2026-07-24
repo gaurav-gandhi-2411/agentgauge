@@ -42,10 +42,10 @@ async def list_tools() -> list[types.Tool]:
                 "properties": {
                     "amount": {"type": "integer"},
                     "currency": {"type": "string"},
-                    "customer_id": {"type": "string"},
+                    "customer": {"type": "string"},
                     "description": {"type": "string"},
                 },
-                "required": ["amount", "currency", "customer_id"],
+                "required": ["amount", "currency"],
             },
         ),
         # ── Enum-constrained tools ────────────────────────────────────────────

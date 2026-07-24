@@ -1,15 +1,16 @@
 """Standing pre-report measurement-validity gate (AgentGauge v2.4, Task 2).
 
-Seven measurement artifacts were found during this project's own development
+Eight measurement artifacts were found during this project's own development
 (task/answer leakage, a tool-name-alone selection ceiling, a zero-vector
 embedding degeneracy, a self-descriptive-name confound, a test-subset-vs-full-
-catalog mismatch, a PRNG index-saturation bug, and a pre/post-mutation
-scoring-key mismatch -- see `reports/v2_3_task1_advisory_audit.md` and
-`reports/v2_4_task1_blast_radius_audit.md` for the seventh). Six of the seven
-were found by hand, after the fact, on results that had already been reported.
-This module encodes each artifact CLASS as a standing, automated check that
-runs BEFORE any effect size is emitted, so the same class of bug blocks the
-report instead of quietly shipping in it.
+catalog mismatch, a PRNG index-saturation bug, a pre/post-mutation
+scoring-key mismatch, and hallucinated fixture-authoring facts -- see
+`reports/v2_3_task1_advisory_audit.md`, `reports/v2_4_task1_blast_radius_audit.md`,
+and `reports/v2_5_task2_fixture_validation.md` for the seventh and eighth).
+Seven of the eight were found by hand, after the fact, on results that had
+already been reported. This module encodes each artifact CLASS as a standing,
+automated check that runs BEFORE any effect size is emitted, so the same
+class of bug blocks the report instead of quietly shipping in it.
 
 Wired into `agentgauge diff`/`agentgauge eval` (`agentgauge/cli.py`): a
 BLOCKING finding here stops the result from being reported as a measurement.
@@ -107,6 +108,58 @@ def check_scoring_reference_consistency(
                             f"in the {variant_label} variant's actual schema ({sorted(props)}) -- "
                             "every response would silently score as a failure regardless of "
                             "correctness (the artifact #7 class)"
+                        ),
+                    )
+                )
+    return findings
+
+
+def check_enum_schema_fidelity(
+    tasks: list[BlindTask], schema_by_tool: dict[str, dict[str, Any]], *, variant_label: str
+) -> list[AuditFinding]:
+    """Artifact #8 class: a task's `enum` constraint asserts a specific
+    `gold_value` as THE correct answer, but that assertion's only source is
+    whatever the fixture's author (human or LLM) believed about the real
+    domain -- there is no way for this tool, or the agent under test, to
+    verify it against anything, because `agentgauge`'s own enum-constrained
+    tool schemas are deliberately type-only (`{"type": "string"}`, no
+    `"enum": [...]` array) to test whether an agent can infer valid values
+    from a description alone. v2.5 Task 2 found exactly this: 3 of 10
+    real-API fixtures (GitHub Issues, Stripe Payments, Kubernetes Workloads)
+    had a `gold_value`/pattern that didn't match the real API, authored from
+    an LLM's memory of the domain rather than a fetched schema, and nothing
+    in the schema itself could have caught it. This check does not (and, run
+    offline, cannot) verify the gold_value against any external ground
+    truth -- it only surfaces that this class of assertion is unverifiable
+    from the schema, as a standing reminder to source-check it by hand (a
+    live official API doc/OpenAPI spec, or calibrated multi-model consensus
+    per `reports/v2_5_task2_fixture_validation.md` 2b) before trusting it."""
+    findings = []
+    seen: set[tuple[str, str]] = set()
+    for t in tasks:
+        props = schema_by_tool.get(t.tool_name)
+        if props is None:
+            continue
+        for c in t.constraints:
+            if c.kind != "enum":
+                continue
+            key = (t.tool_name, c.param)
+            if key in seen:
+                continue
+            prop_schema = props.get(c.param) or {}
+            if "enum" not in prop_schema:
+                seen.add(key)
+                findings.append(
+                    AuditFinding(
+                        check="enum_schema_fidelity",
+                        severity="warn",
+                        detail=(
+                            f"[{variant_label}] {t.tool_name!r}'s {c.param!r} carries an enum "
+                            f"constraint (gold_value={c.gold_value!r}) but the schema declares "
+                            f"no 'enum' array for it -- this gold_value cannot be verified "
+                            "against the schema and depends entirely on the constraint "
+                            "author's own knowledge of the real domain (the artifact #8 class); "
+                            "confirm it against a live official source before trusting it"
                         ),
                     )
                 )
@@ -267,6 +320,7 @@ def run_audit(
         }
         findings += check_scoring_reference_consistency(tasks, schema_by_tool, variant_label=label)
         findings += check_empty_schema(tools, tasks, variant_label=label)
+        findings += check_enum_schema_fidelity(tasks, schema_by_tool, variant_label=label)
 
     if before_tools is not None and after_tools is not None:
         findings += check_catalog_subset_mismatch(before_tools, after_tools)

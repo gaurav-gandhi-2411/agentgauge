@@ -27,10 +27,14 @@ from agentgauge.tasks import Task
 
 # Shared DNS-1123 label pattern (Kubernetes' real naming rule for Namespace names and
 # the namespace field on namespaced resources): lowercase alphanumeric characters or
-# '-', starting and ending with an alphanumeric character. Format constraints carry no
-# gold_value — any value matching the pattern counts, since the task text never
-# specifies an exact namespace string.
-_DNS_1123_LABEL_PATTERN = r"[a-z0-9]([-a-z0-9]{0,61}[a-z0-9])?"
+# '-', MUST start with a lowercase letter (not a digit -- Kubernetes' actual
+# validation requires this for both RFC 1035 and RFC 1123 labels, despite RFC 1123
+# itself technically permitting a leading digit -- see
+# https://kubernetes.io/docs/concepts/overview/working-with-objects/names/), and end
+# with an alphanumeric character. Format constraints carry no gold_value — any value
+# matching the pattern counts, since the task text never specifies an exact namespace
+# string.
+_DNS_1123_LABEL_PATTERN = r"[a-z]([-a-z0-9]{0,61}[a-z0-9])?"
 
 TASKS: list[Task] = [
     # create_pod (format: namespace, DNS-1123 label; enum: restart_policy) — 5 tasks
