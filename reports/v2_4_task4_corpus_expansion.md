@@ -102,6 +102,13 @@ discipline. Content correctness was prioritized over commit-message
 cosmetics; the mismatch is disclosed here rather than silently left
 unexplained in `git log`.
 
+**Addendum (v2.5 Task 4):** fixed. `b0b4393`/`b1587f9` (the hashes above) no
+longer exist on `feat/agentgauge-v2` — a backed-up, non-interactive rebase
+corrected only the two messages, verified byte-identical by tree hash
+against the pre-rebase state (preserved at branch `backup/pre-rebase-v2-4`).
+See `reports/v2_5_task4_rebase.md` for the full record and the new,
+correctly-labeled hashes.
+
 **Lesson for future multi-agent corpus-authoring waves:** concurrent
 executor agents must not share one working directory's git index for
 committing. Each concurrent agent should get its own `git worktree`, or the

@@ -99,6 +99,11 @@ rather than to each mutation's specific semantic content.
 
 ### 0.4 Task A (v2.2) — Cross-model argument-degradation reallocation (`reports/v2_2_task_a_reallocation.md`)
 
+**Superseded by §0-C below**: the "~38 more tasks" / n=62 ceiling described
+in this section no longer holds — v2.4 built 190 more real gold-constraint
+tasks (253 total) and v2.5 completed the MDE grid at that size (0.0537 at
+n=253). Kept here for historical record of what was true at the time.
+
 v2.1's inconclusive argument-accuracy cross-model result (§1.6, n=16/model) was re-run at the real
 achievable ceiling for this specific fixture — **62 tasks/model** (pooling the only two comparable
 gold-constraint fixtures that exist, `call_constraints_server` + `call_constraints_v2_server`; not
@@ -197,6 +202,95 @@ improved but did not clear the promotion bar. Six measurement artifacts were
 found before this session; **this is the seventh**, found by the specific
 audit the task brief called for before trusting a suspiciously large effect
 size, and corrected rather than left standing.
+
+---
+
+## 0-C. v2.4/v2.5 update — corpus expansion, a shipped-code artifact #7 gap, artifact #8, MDE completed (read this first for the current state; supersedes §0.4/§0.6's argument-degradation claim)
+
+### 0-C.1 Task 4 (v2.4) — Corpus expansion, 62 → 253 tasks (`reports/v2_4_task4_corpus_expansion.md`)
+
+The argument-degradation cross-model question (§0.4 above) was inconclusive
+specifically because only 62 real gold-constraint tasks existed. v2.4 built
+10 new bad/fixed fixture pairs modeling real public APIs (GitHub Issues,
+Stripe Payments, Google Calendar, Jira Issues, Slack Messaging, Docker
+Containers, Kubernetes Workloads, Twilio Messaging, AWS S3, Spotify
+Playlists) — 190 new anti-tautology tasks, bringing the pool to 252 (later
+253, see 0-C.3 below). A git-index race from 10 concurrently-committing
+authoring agents left two commits with a message that didn't match their
+diff content; disclosed, then fixed by a backed-up rebase (0-C.4).
+
+### 0-C.2 Task 1 (v2.5) — A gap in the artifact #7 guard, in the shipped CLI itself (`reports/v2_5_task1_shipped_fix.md`)
+
+`agentgauge audit`'s scoring-reference-consistency check (built in v2.4 to
+guard against exactly the artifact #7 scoring bug in §0-B.1) was correct in
+isolation but had a sequencing gap in the real `agentgauge diff`/`eval`
+commands: it ran *after* `_collect_trials` had already spent a full round of
+live inference, not before. A user diffing a real parameter rename with a
+stale task file would still get every response scored as a failure — the
+same bug class, live in the primary product surface. Fixed by separating
+schema introspection from trial execution and running the schema-only audit
+gate before any inference; regression-tested at the integration level (real
+`diff`/`eval` CLI commands via `CliRunner`, a mocked `call_tool` that raises
+if ever invoked, proving the block happens pre-inference) — not just at the
+`agentgauge.audit` unit level v2.4 already had.
+
+### 0-C.3 Task 2 (v2.5) — Measurement artifact #8: hallucinated fixture facts (`reports/v2_5_task2_fixture_validation.md`)
+
+The 10 new v2.4 fixtures were authored by LLM agents likely from memory, not
+fetched schemas. Validated against live official API docs: **3 of 10 (30%)
+had an outright factual defect** — GitHub's `state_reason` enum was missing
+a real 4th value (`duplicate`), Stripe's `create_charge` modeled an optional
+field (`customer`) as a required, wrongly-named one (`customer_id`), and a
+Kubernetes DNS-1123 naming regex allowed an invalid leading digit. All three
+fixed in place (no fixture removed); the GitHub fix added one task, so the
+corpus is now **253**, not 252. Logged as measurement artifact #8 (the
+eighth found in this project's own development) and closed with a new
+standing check, `agentgauge.audit.check_enum_schema_fidelity`: WARNs
+whenever an enum constraint's gold value has no corresponding schema `enum`
+declaration to verify it against — the structural condition that let this
+class of defect through undetected. Also re-verified: all 253 corpus tasks
+are anti-tautology compliant and no fixture's tasks resolve against a
+different fixture's tool set (0 violations, both checks, re-derived from
+scratch — not carried over from v2.4's own report).
+
+### 0-C.4 Task 3 (v2.5) — MDE grid completed at the full corpus (`reports/v2_5_task3_mde_completion.md`)
+
+v2.4 left the n=200/252 grid cells unmeasured to precision. Completed at the
+now-253-task corpus: **MDE=0.0605 at n=200, MDE=0.0537 at n=253** (80%
+power, same calibrated constants and 1-trial/task allocation as the existing
+62/100/150 cells). **The 10-point ship target, already met at n=100
+(0.0848), is now cleared by roughly 2× at the full corpus.** This
+establishes achievable statistical power, not a new live measurement — the
+argument-degradation cross-model effect size itself has not been re-run at
+this allocation; that remains the genuinely open next step (unchanged from
+§0.4's original framing, now with the power constraint removed).
+
+### 0-C.5 Task 4 (v2.5) — Rebase: two mislabeled v2.4 commit messages corrected (`reports/v2_5_task4_rebase.md`)
+
+The two v2.4 commits whose message didn't match their diff content (0-C.1)
+were corrected via a backed-up, non-interactive rebase (backup branch
+`backup/pre-rebase-v2-4`, pushed to origin, plus a timestamped local folder
+copy). Every one of the 10 rebased commits' Git tree hash — a content hash
+of the full file tree, not a sampled diff — was confirmed byte-identical
+pre- vs. post-rebase; only the two target messages changed, now correctly
+describing their own (unchanged) content. `feat/agentgauge-v2` force-pushed
+with `--force-with-lease` and an explicit refspec; `main` and PR #63
+(a separate branch) confirmed untouched. No product code or measurement is
+affected by this task — it is a git-history correctness fix, included here
+for completeness.
+
+### 0-C.6 v2.4/v2.5 headline claim
+
+**The argument-degradation question's power constraint is resolved, the
+question itself is not yet re-answered.** §0.4/§0.6's "inconclusive at
+n=62, MDE=0.106" is superseded: the corpus is now 253 real, validated tasks
+and MDE at that size is 0.0537 — but this is achievable power, not a new
+measured effect size. **A shipped-code gap in the primary product surface
+(artifact #7's guard not running early enough) and a fixture-authoring
+hallucination rate of 30% (artifact #8) were both found and closed this
+session** — the standing "hunt for the next artifact" instruction that has
+governed every phase since v2.3 found real issues both times it was pointed
+at v2.4's own output, not just at the original v1 scoring code.
 
 ---
 
@@ -469,6 +563,11 @@ No further measurement artifact was found in this pass.
 ---
 
 ## 5. Recommendation
+
+**v2.4/v2.5 update:** the "~38 more hand-authored tasks" lever described as "exhausted" below is
+no longer accurate — v2.4 built 190 (§0-C.1), the corpus is 253, and the MDE grid is complete at
+that size (0.0537 at n=253, §0-C.4). The open item is now the live cross-model re-measurement
+itself, not the lack of tasks or power to detect it (§0-C.6).
 
 **v2.2 update:** the ship target this section reported as NOT MET is now MET (§0.1, 0.6). The
 causal-chain gap this section didn't mention as open (v2.1 never measured that BLOCKING violations

@@ -75,10 +75,26 @@ Full methodology: `reports/v2_1_linter_recall_fix.md`, `reports/v2_1_severity_ga
 > class this exact bug belongs to — scoring-reference consistency) wired into `diff`/`eval` so a
 > failing check blocks the result from being reported as a measurement, and repositioned the
 > package around the harness (`diff` is now the primary interface; `lint` a secondary utility — see
-> the per-rule table above). Every number in this README is measured in this repo — see
-> `reports/v2_product_readiness.md` for the full consolidated methodology and what's measured vs.
-> assumed. v1's `scan`/`fix`/`ci`/`try` commands still exist in the code but are not the recommended
-> product surface; `diff`/`eval`/`lint`/`init` are.
+> the per-rule table above). **v2.4 also expanded the gold-constraint task pool** from 62 to 253
+> tasks across 10 real-API domains (GitHub, Stripe, Google Calendar, Jira, Slack, Docker,
+> Kubernetes, Twilio, AWS S3, Spotify), closing the sample-size ceiling that left the
+> argument-degradation cross-model question underpowered. **v2.5 found the audit gate's own
+> scoring-reference-consistency check (the guard against the exact bug v2.3/v2.4 found) had a gap
+> in the shipped product code path itself** — `agentgauge diff`/`eval` ran live inference before
+> checking a user's task file against the actually-connected schema, not after — closed by
+> reordering to a schema-only pre-check that runs before any inference (`reports/v2_5_task1_shipped_fix.md`).
+> **v2.5 also found that 3 of the 10 new real-API fixtures had a hallucinated fact** (GitHub's
+> `state_reason` enum was missing a real 4th value, Stripe modeled an optional field as required
+> under the wrong name, a Kubernetes naming regex allowed an invalid leading character) — all three
+> independently re-verified against live official API docs and fixed in place, logged as
+> measurement artifact #8, and closed with a new standing `agentgauge audit` check,
+> `check_enum_schema_fidelity` (`reports/v2_5_task2_fixture_validation.md`). **The MDE grid is now
+> complete across the full 253-task corpus: 0.0537 at 80% power** (`reports/v2_5_task3_mde_completion.md`)
+> — roughly half the 0.10 ship target, up from 0.0848 at the previous 100-task allocation. Every
+> number in this README is measured in this repo — see `reports/v2_product_readiness.md` for the
+> full consolidated methodology and what's measured vs. assumed. v1's `scan`/`fix`/`ci`/`try`
+> commands still exist in the code but are not the recommended product surface;
+> `diff`/`eval`/`lint`/`init` are.
 
 ---
 
@@ -146,14 +162,18 @@ table:
 | Linter false-alarm rate, per tool, BLOCKING+ADVISORY combined (521 tools) | 4.22%, still <5% | `reports/v2_1_severity_gate.md` |
 | Linter recall vs. raw JSON-Schema structural validation baseline | Linter beats it on every defect type — baseline scores **0%** | `reports/v2_linter_evaluation.md` §2e |
 | Cross-model replication, causal chain (gemma2:9b, llama3.1:8b, qwen2.5:7b) | BLOCKING effect significant in **all 3 model families**; qwen2.5:7b measurably more robust to `type_enum_contradiction` specifically than the other two | `reports/v2_4_task1_blast_radius_audit.md` |
-| Cross-model replication, argument-degradation (a *separate* question from the causal chain above — does description quality fix argument construction?) | **Inconclusive** at the real achievable sample ceiling (n=62/model, MDE=0.106 > any observed delta) — not "no effect"; only two comparable hand-authored fixtures exist for this specific question | `reports/v2_2_task_a_reallocation.md` |
+| Cross-model replication, argument-degradation (a *separate* question from the causal chain above — does description quality fix argument construction?) | **Inconclusive** at the original n=62/model sample ceiling (MDE=0.106 > any observed delta) — not "no effect." **Superseded by corpus growth, not yet re-measured**: the task pool is now 253 (v2.4 Task 4, real-API fixtures across 10 domains, validated against live official docs in v2.5), and MDE at that size is **0.0537** (v2.5 Task 3) — the power constraint that made this inconclusive is resolved, but the live cross-model comparison itself has not been re-run at the new allocation | `reports/v2_2_task_a_reallocation.md`, `reports/v2_5_task2_fixture_validation.md`, `reports/v2_5_task3_mde_completion.md` |
 
-**What's not yet measured:** the argument-degradation question above needs ~38 more hand-authored
-gold-constraint tasks (not more compute) to resolve at the 100-task optimum; the shipped
-`agentgauge/constraints.py` product path shares the same scoring-reference-consistency exposure
-that caused the v2.3 ADVISORY scoring bug (now guarded by `agentgauge audit`, but not yet
-independently fuzz-tested against arbitrary user task files) — see `reports/v2_product_readiness.md`
-for the complete list.
+**What's not yet measured:** the argument-degradation cross-model comparison itself, at the now-available
+253-task (or 100-task optimal-allocation subset) power — the corpus and the statistical power to
+resolve it both now exist, but no new live inference has been run against it. The shipped
+`agentgauge/constraints.py`/`agentgauge diff`/`agentgauge eval` product path's
+scoring-reference-consistency exposure (the class that caused the v2.3 ADVISORY scoring bug) is
+now closed in the CLI itself, not just guarded after the fact: v2.5 moved the `agentgauge audit`
+schema check to run *before* any live inference, and it is covered by integration-level regression
+tests exercising the real `diff`/`eval` commands end-to-end (`reports/v2_5_task1_shipped_fix.md`) —
+not yet independently fuzz-tested against arbitrary, adversarially-malformed user task files, which
+remains open — see `reports/v2_product_readiness.md` for the complete list.
 
 ---
 
