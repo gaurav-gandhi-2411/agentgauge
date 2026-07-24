@@ -89,7 +89,9 @@ class AuthenticatedOllamaProvider(OllamaProvider):
             return resp.json()["message"]["content"]
 
 
-async def _run_one(server_path: str, model: str, constraints_key: str, tasks: list) -> list[TrialOutcome]:
+async def _run_one(
+    server_path: str, model: str, constraints_key: str, tasks: list
+) -> list[TrialOutcome]:
     provider = AuthenticatedOllamaProvider(model)
     client, ctx = await connect_stdio(sys.executable, [server_path])
     try:
@@ -125,11 +127,13 @@ def _load_checkpoint() -> dict:
 async def main() -> None:
     results = _load_checkpoint()
     total_tasks = sum(len(t) for _, t, _, _ in TOOL_SET_PAIRS)
-    print(f"Pooled task set: {total_tasks} tasks across {len(TOOL_SET_PAIRS)} tool sets", flush=True)
+    print(
+        f"Pooled task set: {total_tasks} tasks across {len(TOOL_SET_PAIRS)} tool sets", flush=True
+    )
 
     for model in MODELS:
         results.setdefault(model, {})
-        for variant_idx, variant_name in enumerate(["before", "after"]):
+        for variant_name in ("before", "after"):
             if variant_name in results[model]:
                 print(f"Skipping model={model} variant={variant_name} (checkpointed)", flush=True)
                 continue

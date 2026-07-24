@@ -98,7 +98,9 @@ def _select_instances(defect_types: list[str]) -> list[dict]:
     return instances
 
 
-async def _run_variant(module_path: str, mutation: tuple[str, str] | None, tasks: list, model: str) -> list:
+async def _run_variant(
+    module_path: str, mutation: tuple[str, str] | None, tasks: list, model: str
+) -> list:
     if mutation is None:
         args = [module_path.replace(".", "/") + ".py"]
     else:
@@ -173,7 +175,8 @@ async def _run_for_model(model: str, state: dict) -> None:
     print("=== BLOCKING-class defect instances ===", flush=True)
     blocking_instances = _select_instances(BLOCKING_DEFECT_TYPES)
     done_keys = {
-        (r["tool_set"], r["defect_type"], r["target_tool"]) for r in model_state["blocking_instances"]
+        (r["tool_set"], r["defect_type"], r["target_tool"])
+        for r in model_state["blocking_instances"]
     }
     for inst in blocking_instances:
         key = (inst["tool_set"], inst["defect_type"], inst["target_tool"])
@@ -189,7 +192,8 @@ async def _run_for_model(model: str, state: dict) -> None:
     print("=== ADVISORY-class defect instances (param_renamed) ===", flush=True)
     advisory_instances = _select_instances(ADVISORY_DEFECT_TYPES)
     done_keys_adv = {
-        (r["tool_set"], r["defect_type"], r["target_tool"]) for r in model_state["advisory_instances"]
+        (r["tool_set"], r["defect_type"], r["target_tool"])
+        for r in model_state["advisory_instances"]
     }
     for inst in advisory_instances:
         key = (inst["tool_set"], inst["defect_type"], inst["target_tool"])

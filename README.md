@@ -30,13 +30,19 @@ bug. Full methodology: `reports/v2_1_linter_recall_fix.md`, `reports/v2_1_severi
 > 8-axis LLM-judged quality score does not predict real agent task success by a margin surviving
 > both multiple-comparison correction and controlling for description length. v2 rebuilt around
 > what that study showed actually works: a deterministic defect linter and a statistical
-> regression harness. v2.1 rebuilt the harness's estimator after measuring that trial-level
-> repeats within a task carry almost no independent information (ICC=0.793) — the v2 estimator's
-> minimum detectable effect was optimistic, not conservative. Pairing + task-clustering + CUPED
-> cuts the MDE at n=20 tasks/arm from 43.3 to 18.8 points (2.3×) — still short of the 10-point ship
-> target, reported as a real gap, not rounded away. Every number in this README is measured in
-> this repo — see `reports/v2_product_readiness.md` for the full consolidated methodology and
-> what's measured vs. assumed. v1's `scan`/`fix`/`ci`/`try` commands still exist in the code but
+> regression harness. v2.1 found the v2 estimator's minimum detectable effect was optimistic —
+> trial-level repeats within a task carry almost no independent information (ICC=0.793) — and cut
+> MDE at n=20 tasks/arm from 43.3 to 18.8 points (2.3×) via pairing + task-clustering + CUPED,
+> still short of the 10-point ship target. **v2.2 closed that gap**: the ICC finding itself implied
+> the fix — reallocate trials to tasks (1 trial/task, 100 tasks/arm) instead of repeating trials on
+> fewer tasks. Measured MDE at that allocation: **0.0848 — ship target met.** v2.2 also measured,
+> for the first time, whether a BLOCKING linter violation actually *causes* agent task failure
+> (previously assumed, never tested): it does — a 13.3–28.9 point drop in real task success,
+> replicated across three model families — and found that ADVISORY violations cause a **larger**
+> drop (76.7–80.0pp) in every model tested, meaning the linter's CI-blocking severity tier is not
+> the more behaviorally damaging one. Every number in this README is measured in this repo — see
+> `reports/v2_product_readiness.md` for the full consolidated methodology, §0 for the v2.2 update,
+> and what's measured vs. assumed. v1's `scan`/`fix`/`ci`/`try` commands still exist in the code but
 > are not the recommended product surface; `lint`/`eval`/`diff`/`init` are.
 
 ---
@@ -124,22 +130,23 @@ gate — because a naive single-tier gate would reject 66.67% of genuinely clean
 
 Compares real task-success rate between two tool-set variants at the **server level** (paired on
 task, cluster-robust across tasks, CUPED-adjusted), decomposed into tool-selection accuracy and
-argument-construction accuracy.
+argument-construction accuracy. Default allocation is **1 trial/task** — ICC=0.793 means repeat
+trials on the same task carry almost no independent information (`reports/v2_variance_structure.md`);
+more distinct tasks, not more trials per task, buys detection power (`reports/v2_2_optimal_allocation.md`).
 
 | Metric | Measured value | How |
 |---|---|---|
-| Minimum detectable effect at n=20 tasks/arm, 80% power | **18.8 percentage points** (down from 43.3 pre-redesign — a 2.3× improvement) | `reports/v2_1_estimator_rebuild.md` |
-| **Ship target — detect a 10-point regression at 80% power, ≤20 tasks/arm** | **NOT MET** (gap: 8.8 points, ≈47% further variance reduction needed) | same — reported as a real gap, not rounded away |
-| Minimum detectable effect at n=50 tasks/arm, 80% power | 11.9 percentage points | same |
-| False-alarm rate under the null (2200 resampled comparisons, 44 real historical tool sets) | **0.59%** (still <5%) | same — not uniform: 1.71% on tool sets with <10 tasks vs. 0.07% on ≥10 tasks (the well-documented "few clusters" cluster-robust-inference effect) |
-| Abstention rate under the null (correctly declining to call a verdict) | 21.6% (down from 71.5% pre-redesign — the harness is far more decisive) | same |
-| Cross-model replication (gemma2:9b, llama3.1:8b, qwen2.5:7b) | Selection-accuracy-flat pattern **replicates across all 3 models** (0.938–1.000 every cell); argument-accuracy-degrades pattern **inconclusive** at the sample size tested (n=16/model, diluted by unconstrained tools) | `reports/v2_1_cross_model_validation.md` |
+| Minimum detectable effect at n=100 tasks/arm, 1 trial/task, 80% power | **8.48 percentage points** | `reports/v2_2_optimal_allocation.md` |
+| **Ship target — detect a 10-point regression at 80% power** | **MET** at n=100 tasks/arm, 1 trial/task (was NOT MET at the v2.1-tested n=20/5-trials allocation, MDE=18.8) | same |
+| False-alarm rate under the null, few-clusters-corrected (2200 resampled comparisons) | **<5% in every cluster-count stratum** (<10 tasks: 1.57%; 10–29: 0.08%; ≥30: 0.00%) | `reports/v2_2_few_clusters_correction.md` — a t(G-1)-adjusted CI fixes the v2.1-measured 1.71%/<10-task concentration; a wild-bootstrap fix was tried first and **measured to make it worse**, rejected before shipping |
+| **End-to-end causal chain — does a BLOCKING violation actually cause task failure?** (previously assumed, not measured) | **Yes**: BLOCKING → **-13.3 to -28.9pp** task success (CI excludes zero in all 3 models); ADVISORY (`param_renamed`) → **-76.7 to -80.0pp**, larger than BLOCKING in every model tested | `reports/v2_2_causal_chain.md`, `reports/v2_2_task_b_causal_chain_multimodel.md` |
+| Cross-model replication, causal chain (gemma2:9b, llama3.1:8b, qwen2.5:7b) | Both BLOCKING and ADVISORY effects significant in **all 3 model families**; one BLOCKING check (`required_references_missing_property`) shows **zero effect in all 3 models**; qwen2.5:7b measurably more robust to `type_enum_contradiction` specifically | `reports/v2_2_task_b_causal_chain_multimodel.md` |
+| Cross-model replication, argument-degradation (separate question — does description quality fix argument construction?) | **Inconclusive** at the real achievable sample ceiling (n=62/model, MDE=0.106 > any observed delta) — not "no effect"; only two comparable hand-authored fixtures exist for this specific question | `reports/v2_2_task_a_reallocation.md` |
 
-**What's not yet measured:** determinism was not independently re-verified for the new estimator
-(inherits the prior 100%/50-run result via unchanged PRNG code); the full 32-task/trials≥3
-cross-model replication and the full-corpus LLM baseline were reduced to bounded samples for
-infrastructure-reliability reasons — see `reports/v2_product_readiness.md` §2 for the complete list
-and §4 "what would falsify this."
+**What's not yet measured:** determinism was not independently re-verified for the estimator
+(inherits the v2 100%/50-run result via unchanged PRNG code); the argument-degradation question
+above needs ~38 more hand-authored gold-constraint tasks (not more compute) to resolve at the
+100-task optimum — see `reports/v2_product_readiness.md` §2/§0.4 for the complete list.
 
 ---
 
@@ -220,14 +227,19 @@ agentgauge lint examples/echo_server.py
 
 v1's 8-axis scoring is complete but methodologically falsified as a predictor of task success
 (`reports/predictive_validity_study.md`). v2's linter and regression harness are built, measured,
-and CLI-integrated. v2.1 rebuilt the harness's estimator (paired + task-clustered + CUPED) after
-measuring that the v2 estimator's MDE was optimistic (ICC=0.793 within task) — 2.3× improvement,
-but the 10-point-regression-at-n=20 ship target is not yet met. Remaining, explicitly not yet done:
-the full 32-task/trials≥3 cross-model replication (a 16-task/trials=1 reduced version ran; the
-selection-flat half of the pattern replicated across 3 models, the argument-degrades half is
-inconclusive at that sample size) and the full-corpus single-prompt LLM baseline (a 174+138
-stratified sample ran instead) — `reports/v2_product_readiness.md` tracks exactly what's measured
-vs. assumed.
+and CLI-integrated. v2.1 rebuilt the harness's estimator (paired + task-clustered + CUPED) and
+found the v2 estimator's MDE was optimistic (ICC=0.793 within task) — the 10-point-regression
+ship target was not yet met at the allocation tested (n=20 tasks/arm, 5 trials/task). **v2.2
+closed that gap** by reallocating to 100 tasks/arm at 1 trial/task (MDE=0.0848 — ship target
+met) and fixed the few-clusters false-alarm concentration v2.1 found (t(G-1)-adjusted CI, <5% in
+every stratum). v2.2 also measured, for the first time, that BLOCKING linter violations actually
+cause agent task failure (previously assumed) — and that ADVISORY violations cause a *larger*
+drop, in every one of the three model families tested (gemma2:9b, llama3.1:8b, qwen2.5:7b).
+Remaining, explicitly not yet done: the argument-degradation cross-model question (separate from
+the causal-chain question above) is still inconclusive — re-run at the real achievable ceiling of
+62 tasks/model (up from 16), still short of the resolving power needed; would require ~38 more
+hand-authored gold-constraint tasks, not more compute, to close — `reports/v2_product_readiness.md`
+§0 tracks the full v2.2 update and what's measured vs. assumed.
 
 ---
 

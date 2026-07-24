@@ -110,7 +110,10 @@ async def main() -> None:
         results.setdefault(model, {})
         for variant_name, server_path in VARIANTS.items():
             if variant_name in results[model]:
-                print(f"Skipping model={model} variant={variant_name} (already checkpointed)", flush=True)
+                print(
+                    f"Skipping model={model} variant={variant_name} (already checkpointed)",
+                    flush=True,
+                )
                 continue
             print(f"Running model={model} variant={variant_name} ({server_path})...", flush=True)
             outcomes = await _run_one(server_path, model)
