@@ -25,6 +25,9 @@ historical case" instruction:
      confusable_server_oracle::query_records param_renamed case
      (evals/fixtures/v2_3_advisory_audit.json / reports/v2_3_task1_advisory_audit.md):
      'field' renamed to 'field_v2' in the schema.
+  8. Hallucinated fixture-authoring facts (artifact #8) -- the GitHub Issues
+     fixture's update_issue_state::state_reason enum, originally missing
+     GitHub's real 4th value 'duplicate' (reports/v2_5_task2_fixture_validation.md).
 """
 
 from __future__ import annotations
@@ -37,6 +40,7 @@ from agentgauge.audit import (
     check_degenerate_metrics,
     check_empty_schema,
     check_empty_tasks,
+    check_enum_schema_fidelity,
     check_scoring_reference_consistency,
     check_task_leakage,
     run_audit,
@@ -255,6 +259,76 @@ class TestScoringReferenceConsistency:
         report = run_audit(tasks, after_tools=after_tools)
         assert not report.passed
         assert any(f.check == "scoring_reference_consistency" for f in report.blocking)
+
+
+class TestEnumSchemaFidelity:
+    """Artifact #8, the eighth artifact: an `enum` constraint's `gold_value`
+    is only as trustworthy as whoever authored it, and nothing in a
+    type-only schema can verify it. Seeded with the real historical case --
+    the GitHub Issues fixture's `update_issue_state` tool
+    (evals/fixtures/v2_4_corpus/github_issues_fixture.py): its `state_reason`
+    enum constraints originally covered only 'completed'/'not_planned'/
+    'reopened', omitting GitHub's real 4th value 'duplicate' -- an
+    LLM-authoring gap the schema itself (type-only, no declared `enum` list)
+    gave no way to catch (reports/v2_5_task2_fixture_validation.md)."""
+
+    def test_enum_constraint_on_type_only_schema_flagged(self) -> None:
+        tasks = [
+            BlindTask(
+                tool_name="update_issue_state",
+                description="Close issue #45 since the reported bug has been fixed.",
+                constraints=[Constraint(param="state_reason", kind="enum", gold_value="completed")],
+            )
+        ]
+        schema_by_tool = {"update_issue_state": {"state_reason": {"type": "string"}}}
+        findings = check_enum_schema_fidelity(tasks, schema_by_tool, variant_label="after")
+        assert len(findings) == 1
+        assert findings[0].severity == "warn"
+        assert findings[0].check == "enum_schema_fidelity"
+        assert "state_reason" in findings[0].detail
+        assert "completed" in findings[0].detail
+
+    def test_enum_constraint_with_declared_schema_enum_not_flagged(self) -> None:
+        tasks = [
+            BlindTask(
+                tool_name="update_issue_state",
+                description="Close issue #45 since the reported bug has been fixed.",
+                constraints=[Constraint(param="state_reason", kind="enum", gold_value="completed")],
+            )
+        ]
+        schema_by_tool = {
+            "update_issue_state": {
+                "state_reason": {
+                    "type": "string",
+                    "enum": ["completed", "not_planned", "duplicate", "reopened"],
+                }
+            }
+        }
+        assert check_enum_schema_fidelity(tasks, schema_by_tool, variant_label="after") == []
+
+    def test_non_enum_constraint_not_flagged(self) -> None:
+        tasks = [
+            BlindTask(
+                tool_name="query_records",
+                description="Get all orders where the status field is set to 'pending'",
+                constraints=[Constraint(param="field", kind="contains", gold_value="status")],
+            )
+        ]
+        schema_by_tool = {"query_records": {"field": {"type": "string"}}}
+        assert check_enum_schema_fidelity(tasks, schema_by_tool, variant_label="after") == []
+
+    def test_wired_through_run_audit_warns_without_blocking(self) -> None:
+        tasks = [
+            BlindTask(
+                tool_name="update_issue_state",
+                description="Close issue #45 since the reported bug has been fixed.",
+                constraints=[Constraint(param="state_reason", kind="enum", gold_value="completed")],
+            )
+        ]
+        after_tools = [_tool("update_issue_state", "d", {"state_reason": {"type": "string"}})]
+        report = run_audit(tasks, after_tools=after_tools)
+        assert report.passed  # WARN only, never blocks a measurement
+        assert any(f.check == "enum_schema_fidelity" for f in report.warnings)
 
 
 class TestAuditReport:

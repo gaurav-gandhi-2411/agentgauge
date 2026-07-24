@@ -29,8 +29,13 @@ are snake_case, following the convention used elsewhere in this repo's
 constraint fixtures (`sensor_id`, `channel_ref`, etc.) and consistent with how
 an MCP tool wrapper typically re-cases a REST API's camelCase JSON keys
 (`timeZone`, `responseStatus`) for a tool-call interface. These map 1:1 to the
-real Calendar API v3 field names described above; only the casing convention
-is a wrapper-layer paraphrase, not an invented semantic.
+real Calendar API v3 field *semantics* described above, but the wrapper-layer
+paraphrase is not casing-only: the real API nests `dateTime`/`timeZone` inside
+a `start`/`end` object (`{"start": {"dateTime": "...", "timeZone": "..."}}`),
+which this fixture additionally flattens to standalone `start_time`/
+`time_zone` string fields for a simpler tool-call interface — a deliberate
+structural simplification on top of the casing convention, not an invented
+field.
 
 ## Accuracy and honesty about sourcing
 

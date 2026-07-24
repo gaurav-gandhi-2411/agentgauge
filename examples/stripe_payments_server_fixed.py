@@ -41,21 +41,22 @@ async def list_tools() -> list[types.Tool]:
                 "Parameters: amount (integer) — the amount to charge expressed in the smallest "
                 "unit of the currency (e.g. cents for usd/eur, pence for gbp; $20.00 is "
                 "expressed as 2000); currency (string) — the three-letter ISO currency code "
-                "for the charge, one of 'usd', 'eur', or 'gbp'; customer_id (string) — the ID "
-                "of the existing customer being charged; description (string, optional) — an "
-                "arbitrary internal note attached to the charge, shown in the Dashboard but not "
-                "to the customer. Unlike tools that update or reverse existing subscriptions or "
-                "charges, this tool always creates a brand-new, one-time payment."
+                "for the charge, one of 'usd', 'eur', or 'gbp'; customer (string, optional) — "
+                "the ID of the existing customer being charged; description (string, "
+                "optional) — an arbitrary internal note attached to the charge, shown in the "
+                "Dashboard but not to the customer. Unlike tools that update or reverse "
+                "existing subscriptions or charges, this tool always creates a brand-new, "
+                "one-time payment."
             ),
             inputSchema={
                 "type": "object",
                 "properties": {
                     "amount": {"type": "integer"},
                     "currency": {"type": "string"},
-                    "customer_id": {"type": "string"},
+                    "customer": {"type": "string"},
                     "description": {"type": "string"},
                 },
-                "required": ["amount", "currency", "customer_id"],
+                "required": ["amount", "currency"],
             },
         ),
         # ── Enum-constrained tools ────────────────────────────────────────────
