@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "project": "agentgauge",
+  "docs": "https://github.com/gaurav-gandhi-2411/gg-portfolio#autonomous-metric-refresh",
+  "metrics": [
+    {
+      "id": "agentgauge:blocking-causal",
+      "label": "Measured causal effect of one BLOCKING description defect on agent task success",
+      "value": "−13.3 to −28.9pp across 3 model families",
+      "source_file": "reports/v2_4_task1_blast_radius_audit.md",
+      "source_line": null,
+      "commit_sha": "78fff2ff6cdba3219a48fbc685a4f217ee488d6c",
+      "measured_at": "2026-07-25"
+    }
+  ]
+}
