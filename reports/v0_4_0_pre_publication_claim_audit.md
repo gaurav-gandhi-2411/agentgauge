@@ -85,6 +85,17 @@ narrative claims of its own to be stale or wrong.
 
 ## Causal-claim confirmation (second part of this task)
 
+> **CORRECTION (later same phase, `reports/v0_4_0_effect_size_reconciliation.md`):**
+> the "-13.3 to -40.0pp" figure quoted below was itself wrong — a range
+> constructed by min/max-ing across two different measurements (a
+> twice-verified pooled-per-model figure and an unverified single-defect-
+> subtype/single-model figure). The correct, verified range is
+> **-13.3 to -28.9pp**. This section is preserved as originally written for
+> the historical record of what this audit checked at the time; the
+> confirmation's *structure* (only one rule carries a causal claim, every
+> other rule is labeled null/unmeasured) still holds — only the specific
+> number was wrong, and is corrected in the reconciliation report.
+
 Confirmed the only causal claim stated anywhere in the named artifacts is
 `type_enum_contradiction` (-13.3 to -40.0pp, 3 model families, CI excludes
 zero in every model), and every other lint rule is explicitly labeled with

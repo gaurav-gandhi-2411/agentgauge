@@ -176,7 +176,7 @@ to them.
 
 | Check | Corrected effect | False-alarm (per tool set) | Recall | Tier change |
 |---|---|---|---|---|
-| `type_enum_contradiction` | -13.3 to -40.0pp | 0% | 100% | BLOCKING (unchanged) |
+| `type_enum_contradiction` | -13.3 to -28.9pp (gemma2:9b -25.2, llama3.1:8b -28.9, qwen2.5:7b -13.3; corrected in v0.4.0, see `reports/v0_4_0_effect_size_reconciliation.md` — -40.0pp was a different, narrower per-defect-subtype/single-model measurement, not the pooled 3-model figure) | 0% | 100% | BLOCKING (unchanged) |
 | `required_references_missing_property` | 0.0pp, all 3 models | 0% | 100% | **BLOCKING → INFO** (zero measured impact despite perfect precision) |
 | `described_not_in_schema` (`param_renamed`) | ~0pp, all 3 models (§0-B.1) | 28.57%→**23.81%** (5 targeted precision fixes) | 81.2% | ADVISORY (unchanged — false-alarm bar not cleared even after real improvement; impact no longer justifies promotion either) |
 | `name_collision` | not causally measured (no injector exists for this defect class) | 47.62%, 86% is the documented-irreducible verb-differentiated class | n/a | ADVISORY (unchanged) |
@@ -337,6 +337,25 @@ checkpoint was never wrong, only the first offline aggregation was;
 re-deriving the correct summary required zero new inference.
 
 **Every product claim in this README/readiness report is now measured.**
+
+---
+
+## 0-E. Effect-size reconciliation (`reports/v0_4_0_effect_size_reconciliation.md`)
+
+The `type_enum_contradiction` BLOCKING effect had two figures in circulation
+with no stated relationship: the twice-verified pooled per-model figure
+(-25.2/-28.9/-13.3pp, gemma2:9b/llama3.1:8b/qwen2.5:7b, re-measured
+byte-near-identical in v2.4) and "-13.3 to -40.0pp" (introduced during the
+v0.4.0 claim audit). Traced: -40.0pp is real data, but from a *different*
+measurement — one defect subtype (`enum_dropped`), one model (gemma2:9b),
+n=15, never independently re-verified, and explicitly flagged in its own
+source document as not uniformly significant at that granularity across
+models. Constructing a range from two different pooling levels' min/max
+was a category error, not a re-run or a genuine alternate figure. **Reverted
+to the verified per-model figures** (-13.3pp to -28.9pp) everywhere it
+appeared: this document (§0-B.2), README.md, `reports/capability_statement.md`,
+and PR #64's description. `agentgauge/cli.py` needed no change (never cited
+a specific number).
 
 ---
 

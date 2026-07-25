@@ -33,7 +33,7 @@ is labeled as such below, not presented as if it were proven:
 
 | Rule | Tier | Measured causal effect on task success | False-alarm | Recall |
 |---|---|---|---|---|
-| `type_enum_contradiction` | **BLOCKING** | **-13.3 to -40.0pp**, CI excludes zero (pooled, all 3 models) | 0% | 100% |
+| `type_enum_contradiction` | **BLOCKING** | **-13.3 to -28.9pp** (gemma2:9b -25.2, llama3.1:8b -28.9, qwen2.5:7b -13.3), CI excludes zero in all 3 models | 0% | 100% |
 | `required_references_missing_property` | INFO (demoted from BLOCKING) | **0.0pp in all 3 models — a measured null**, despite perfect precision | 0% | 100% |
 | `described_not_in_schema` (catches `param_renamed`) | ADVISORY | **~0pp in all 3 models — a measured null** (corrected in v2.3 from a falsely-reported -76.7 to -80.0pp: a scoring bug looked up a pre-rename parameter name against post-rename arguments) | 23.81% | 81.2% |
 | `param_possibly_renamed` | ADVISORY | Not independently measured (fires alongside `described_not_in_schema`, not separated in the causal-chain design) | 0.77%/tool | part of the 81.2% combined |

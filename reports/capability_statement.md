@@ -13,9 +13,10 @@ single-number quality score.
 |---|---|---|
 | Minimum detectable regression, 80% power, full 253-task corpus | 5.37 percentage points | `reports/v2_5_task3_mde_completion.md` |
 | Ship target (detect a 10-point regression at 80% power) | met, ~2x margin | same |
-| Causal effect of a BLOCKING lint violation on real task success, 3 model families (gemma2:9b/llama3.1:8b/qwen2.5:7b) | -13.3 to -40.0 percentage points, 95% CI excludes zero in every model | `reports/v2_4_task1_blast_radius_audit.md` |
+| Causal effect of a BLOCKING lint violation on real task success (gemma2:9b -25.2pp / llama3.1:8b -28.9pp / qwen2.5:7b -13.3pp) | -13.3 to -28.9 percentage points, 95% CI excludes zero in every model | `reports/v2_4_task1_blast_radius_audit.md` |
 | Lint false-alarm rate, 521 tools, BLOCKING+ADVISORY combined | 4.22% | `reports/v2_1_severity_gate.md` |
 | Replay determinism (identical inputs -> identical verdict) | 100%, 50/50 runs | `reports/v2_harness_evaluation.md` |
+| Effect of improved tool descriptions on argument construction, 253 tasks x 3 model families (gemma2:9b/llama3.1:8b/qwen2.5:7b), MDE=5.37pp | no practically significant effect in any model | `reports/v0_4_0_task1_argument_degradation.md` |
 
 ## The differentiated claim
 
@@ -29,6 +30,14 @@ this get worse?" — false-alarms 97.1% of the time at 100% recall on the same t
 corpus: a degenerate always-flag baseline (`reports/v2_1_cross_model_validation.md`
 Task 2e). AgentGauge's linter false-alarm rate on the same class of question is
 4.22%.
+
+A separate live measurement (253 tasks, 3 model families, 1 trial/task, MDE=5.37pp)
+found no practically significant effect from improving tool descriptions on
+argument-construction accuracy in any of the 3 models tested
+(`reports/v0_4_0_task1_argument_degradation.md`). Reported as measured, not
+smoothed into a general "better descriptions help" claim: the one causal effect
+this repo can support is BLOCKING-violation detection (row above), not a general
+claim about description quality.
 
 ## Who it's for
 
