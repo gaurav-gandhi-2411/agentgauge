@@ -155,7 +155,7 @@ class TestDiffFromTrials:
         assert result.before_decomposed.selection_accuracy == 1.0
         assert result.after_decomposed.selection_accuracy == 1.0
         assert result.before_decomposed.argument_accuracy_given_correct_selection == 1.0
-        assert result.after_decomposed.argument_accuracy_given_correct_selection == 0.3
+        assert result.after_decomposed.argument_accuracy_given_correct_selection == pytest.approx(0.3)
         assert result.verdict == Verdict.REGRESSION
 
 
