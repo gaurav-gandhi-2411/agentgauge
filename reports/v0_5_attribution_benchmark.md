@@ -14,9 +14,9 @@ but measured on a **synthetic benchmark with an unusually clean ground-truth sig
 "MEASURED vs NOT MEASURED" section below) — this is not yet validated against a real agent.
 
 All numbers below are reproducible: `uv run python scripts/attribution_benchmark_report.py`,
-seed=42, commit `460b2de` (this commit bundles Component 1.2's library/benchmark/test code
-together with a concurrently-committed Component 1.1 change from a parallel session on the same
-branch — see the "Provenance note" at the end of this report).
+seed=42, commit `2976893` (`feat(attribution): failure attribution / regression localization
+(v0.5 Wave 1, 1.2)`) — see the "Provenance note" at the end of this report for a git-workflow
+collision this commit's history records and how it was resolved.
 
 ## 1. What was measured, and how
 
@@ -159,12 +159,16 @@ pass.
 
 This report's code (`agentgauge/attribution.py`, `agentgauge/attribution_benchmark.py`,
 `scripts/attribution_benchmark_report.py`, `tests/test_attribution.py`,
-`tests/test_attribution_benchmark.py`) was staged and committed as its own change, but a
+`tests/test_attribution_benchmark.py`, this report) is committed as its own change in commit
+`2976893`. A git-workflow collision occurred first and is worth recording honestly: a
 concurrently-running session on the same `feat/v0-5-wave1` branch committed its own (unrelated,
-Component 1.1 provider-config) work at effectively the same moment, and that commit's `git commit`
-swept up this task's already-staged files into commit `460b2de` alongside its own. The content of
-every file listed above is exactly as authored for this task — nothing from Component 1.1's work
-was written or edited by this task, and nothing here touched `agentgauge/cli.py`,
-`agentgauge/providers.py`, `agentgauge/cassette.py`, `agentgauge/provider_config.py`, `configs/`,
-`tests/test_cassette.py`, `tests/test_cli_provider_cost.py`, or `tests/test_provider_config.py`.
-Flagged here rather than silently left unremarked, per this repo's honest-documentation standard.
+Component 1.1 provider-config) work at effectively the same moment as this task's first commit
+attempt, and that session's `git commit` swept this task's already-staged files into commit
+`460b2de` alongside its own. That session then itself detected the collision and issued a
+follow-up commit (`7cfce82`, `git rm --cached` only, on-disk content untouched) restoring this
+task's files to an untracked state so they could be committed independently — which they then were,
+cleanly, as `2976893`. The content of every file above is exactly as authored for this task —
+nothing from Component 1.1's work was written or edited by this task, and nothing here touches
+`agentgauge/cli.py`, `agentgauge/providers.py`, `agentgauge/cassette.py`,
+`agentgauge/provider_config.py`, `configs/`, `tests/test_cassette.py`,
+`tests/test_cli_provider_cost.py`, or `tests/test_provider_config.py`.
