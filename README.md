@@ -3,7 +3,7 @@
 **AgentGauge is a statistical regression harness that measures whether a change to your MCP
 server's tool descriptions actually changed agent task success — plus a fast, deterministic defect
 linter as a secondary utility. It is also the research program behind
-["Tool-Description Quality Is Not One Axis"](docs/paper/latex/main.pdf), a study of where fixing
+["Tool-Description Quality Is Not One Axis"](https://github.com/gaurav-gandhi-2411/agentgauge/blob/main/docs/paper/latex/main.pdf), a study of where fixing
 tool descriptions helps, does nothing, or backfires.**
 
 [![CI](https://github.com/gaurav-gandhi-2411/agentgauge/actions/workflows/ci.yml/badge.svg)](https://github.com/gaurav-gandhi-2411/agentgauge/actions/workflows/ci.yml)
@@ -105,7 +105,7 @@ Full methodology: `reports/v2_1_linter_recall_fix.md`, `reports/v2_1_severity_ga
 ## The paper
 
 **["Tool-Description Quality Is Not One Axis: A Regime Analysis of Where It Helps and Where It
-Backfires"](docs/paper/latex/main.pdf)** — arXiv:XXXX.XXXXX *(TO FILL after upload)*.
+Backfires"](https://github.com/gaurav-gandhi-2411/agentgauge/blob/main/docs/paper/latex/main.pdf)** — arXiv:XXXX.XXXXX *(TO FILL after upload)*.
 
 Tool-description quality is widely treated as a broadly-applicable lever for agent tool-use —
 but it is not a single better/worse axis: the precision that helps an agent disambiguate within
@@ -132,16 +132,16 @@ results were produced with, not a separately validated general instrument.
 
 Every experiment in the paper runs under a single frozen evaluation protocol — one classifier,
 one judge, one generator family, pre-registered thresholds:
-[`docs/research/frozen_protocol.md`](docs/research/frozen_protocol.md). Every figure in the
+[`docs/research/frozen_protocol.md`](https://github.com/gaurav-gandhi-2411/agentgauge/blob/main/docs/research/frozen_protocol.md). Every figure in the
 paper traces to a committed, hash-verified fixture:
-[`docs/paper/evidence_table.md`](docs/paper/evidence_table.md). `./scripts/verify.sh` runs the
+[`docs/paper/evidence_table.md`](https://github.com/gaurav-gandhi-2411/agentgauge/blob/main/docs/paper/evidence_table.md). `./scripts/verify.sh` runs the
 same test suite (LLM always mocked, no network, no credentials) that gates every
 research-program pull request.
 
 ### Building the PDF
 
-[`docs/paper/paper.md`](docs/paper/paper.md) is the canonical source; the LaTeX build in
-[`docs/paper/latex/`](docs/paper/latex/) is a maintained mirror (CI fails if a commit changes
+[`docs/paper/paper.md`](https://github.com/gaurav-gandhi-2411/agentgauge/blob/main/docs/paper/paper.md) is the canonical source; the LaTeX build in
+[`docs/paper/latex/`](https://github.com/gaurav-gandhi-2411/agentgauge/tree/main/docs/paper/latex) is a maintained mirror (CI fails if a commit changes
 one without the other). To rebuild the PDF:
 
 ```bash
@@ -332,4 +332,4 @@ tests/            # pytest; LLM always mocked; no network; no paid calls
 
 ## License
 
-Apache License 2.0 — see [LICENSE](LICENSE).
+Apache License 2.0 — see [LICENSE](https://github.com/gaurav-gandhi-2411/agentgauge/blob/main/LICENSE).
