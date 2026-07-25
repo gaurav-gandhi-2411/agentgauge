@@ -1,0 +1,50 @@
+{
+  "gemma2:9b": {
+    "n_before_trials": 253,
+    "n_after_trials": 253,
+    "before_rate": 0.4881422924901186,
+    "after_rate": 0.5098814229249012,
+    "n_tasks_matched": 253,
+    "unmatched_task_names": [],
+    "delta": 0.021739130434782605,
+    "ci_lo": -0.004180912559661577,
+    "ci_hi": 0.05050942861184659,
+    "verdict": "no_change",
+    "message": "No detectable change (delta=+0.022, 95% CI [-0.004, +0.051] does not clear the 0.050 threshold in either direction) across 253 matched tasks. Descriptions are not the bottleneck for this server's task success at the task count used here.",
+    "cuped_theta": -0.11055728060140547,
+    "cuped_variance_reduction_pct": 5.851353491382472,
+    "used_few_clusters_correction": false
+  },
+  "llama3.1:8b": {
+    "n_before_trials": 253,
+    "n_after_trials": 253,
+    "before_rate": 0.41304347826086957,
+    "after_rate": 0.4683794466403162,
+    "n_tasks_matched": 253,
+    "unmatched_task_names": [],
+    "delta": 0.05533596837944664,
+    "ci_lo": 0.0232331779129488,
+    "ci_hi": 0.08853562637570707,
+    "verdict": "no_change",
+    "message": "No detectable change (delta=+0.055, 95% CI [+0.023, +0.089] does not clear the 0.050 threshold in either direction) across 253 matched tasks. Descriptions are not the bottleneck for this server's task success at the task count used here.",
+    "cuped_theta": -0.15550149700598803,
+    "cuped_variance_reduction_pct": 7.305916859229744,
+    "used_few_clusters_correction": false
+  },
+  "qwen2.5:7b": {
+    "n_before_trials": 253,
+    "n_after_trials": 253,
+    "before_rate": 0.4505928853754941,
+    "after_rate": 0.45454545454545453,
+    "n_tasks_matched": 253,
+    "unmatched_task_names": [],
+    "delta": 0.003952569169960471,
+    "ci_lo": -0.021145774755290756,
+    "ci_hi": 0.02922771380523636,
+    "verdict": "no_change",
+    "message": "No detectable change (delta=+0.004, 95% CI [-0.021, +0.029] does not clear the 0.050 threshold in either direction) across 253 matched tasks. Descriptions are not the bottleneck for this server's task success at the task count used here.",
+    "cuped_theta": -0.08946115927248002,
+    "cuped_variance_reduction_pct": 4.231075496504866,
+    "used_few_clusters_correction": false
+  }
+}

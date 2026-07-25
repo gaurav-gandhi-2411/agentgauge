@@ -295,10 +295,17 @@ async def main() -> None:
         for line in f:
             rec = json.loads(line.strip())
             unique_key = f"{rec['fixture']}::{rec['task_key']}"
+            # TrialOutcome.selection_correct is `selected_tool == task_tool_name` --
+            # task_tool_name here is the unique CLUSTERING key (not the bare tool
+            # name), so the real selection-correctness (selected_tool == the
+            # actual gold tool_name recorded in the checkpoint) must be evaluated
+            # separately and encoded via selected_tool matching unique_key exactly
+            # when correct, and a sentinel that can never match otherwise.
+            really_correct = rec["selected_tool"] == rec["tool_name"]
             by_model[rec["model"]][rec["variant"]].append(
                 TrialOutcome(
                     task_tool_name=unique_key,
-                    selected_tool=rec["selected_tool"],
+                    selected_tool=unique_key if really_correct else "__WRONG_TOOL__",
                     constraint_satisfaction=rec["constraint_satisfaction"],
                 )
             )
