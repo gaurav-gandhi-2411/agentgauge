@@ -138,4 +138,29 @@ to reproduce the delta/CI/verdict, sanity-checked the raw checkpoint (record
 count, per-group counts, no duplicates), confirmed the verdict-logic
 explanation by reading `diff_server_level`'s actual condition, and confirmed
 the current aggregation code genuinely derives selection-correctness from
-`tool_name`, not the clustering key. Results appended below once it returns.
+`tool_name`, not the clustering key.
+
+**Result: all 5 items CONFIRMED, no discrepancies.**
+
+1. Raw joint-success rates independently recomputed from the raw JSONL:
+   exact match to all 6 claimed before/after values (e.g. gemma2:9b
+   bad=0.488142/fixed=0.509881).
+2. Full paired/CUPED/bootstrap CI independently rebuilt (same globally-unique
+   clustering key) and run through the real, unmodified
+   `agentgauge.harness.diff_server_level` (seed=42): delta/ci_lo/ci_hi/verdict
+   matched the claimed summary to <1e-9 for all 3 models —
+   bit-identical reproduction, not just "close."
+3. Raw checkpoint sanity: 1518 total records, exactly 253 per each of the 6
+   (model, variant) groups, 0 duplicate (model, fixture, variant, task_key)
+   keys.
+4. Verdict-logic quoted directly from `agentgauge/harness.py`:
+   `elif ci_lo > threshold: verdict = Verdict.IMPROVEMENT` (else `NO_CHANGE`)
+   — confirmed llama3.1:8b's `ci_lo=+0.0232` genuinely falls short of
+   `threshold=0.05`, landing in `NO_CHANGE` exactly as reported; CI-excludes-
+   zero alone is confirmed insufficient by the actual code, not an invented
+   explanation.
+5. Confirmed by direct diff read (`git show 117225a`) that the fix's
+   mechanism is real: pre-fix, `selected_tool` (bare name) was compared
+   against `task_tool_name` (unique key) and could never match; post-fix,
+   real selection-correctness is derived from `tool_name` first, then
+   encoded relative to the unique key.

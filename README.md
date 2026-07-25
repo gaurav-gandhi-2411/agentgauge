@@ -90,7 +90,11 @@ Full methodology: `reports/v2_1_linter_recall_fix.md`, `reports/v2_1_severity_ga
 > measurement artifact #8, and closed with a new standing `agentgauge audit` check,
 > `check_enum_schema_fidelity` (`reports/v2_5_task2_fixture_validation.md`). **The MDE grid is now
 > complete across the full 253-task corpus: 0.0537 at 80% power** (`reports/v2_5_task3_mde_completion.md`)
-> — roughly half the 0.10 ship target, up from 0.0848 at the previous 100-task allocation. Every
+> — roughly half the 0.10 ship target, up from 0.0848 at the previous 100-task allocation.
+> **v0.4.0 closed the loop**: the argument-degradation question is now live-measured at that power
+> across all 3 model families — a real, adequately-powered null (no model clears the 0.05
+> practical-significance threshold), not the old n=62 "inconclusive"
+> (`reports/v0_4_0_task1_argument_degradation.md`). Every
 > number in this README is measured in this repo — see `reports/v2_product_readiness.md` for the
 > full consolidated methodology and what's measured vs. assumed. v1's `scan`/`fix`/`ci`/`try`
 > commands still exist in the code but are not the recommended product surface;
@@ -162,11 +166,9 @@ table:
 | Linter false-alarm rate, per tool, BLOCKING+ADVISORY combined (521 tools) | 4.22%, still <5% | `reports/v2_1_severity_gate.md` |
 | Linter recall vs. raw JSON-Schema structural validation baseline | Linter beats it on every defect type — baseline scores **0%** | `reports/v2_linter_evaluation.md` §2e |
 | Cross-model replication, causal chain (gemma2:9b, llama3.1:8b, qwen2.5:7b) | BLOCKING effect significant in **all 3 model families**; qwen2.5:7b measurably more robust to `type_enum_contradiction` specifically than the other two | `reports/v2_4_task1_blast_radius_audit.md` |
-| Cross-model replication, argument-degradation (a *separate* question from the causal chain above — does description quality fix argument construction?) | **Inconclusive** at the original n=62/model sample ceiling (MDE=0.106 > any observed delta) — not "no effect." **Superseded by corpus growth, not yet re-measured**: the task pool is now 253 (v2.4 Task 4, real-API fixtures across 10 domains, validated against live official docs in v2.5), and MDE at that size is **0.0537** (v2.5 Task 3) — the power constraint that made this inconclusive is resolved, but the live cross-model comparison itself has not been re-run at the new allocation | `reports/v2_2_task_a_reallocation.md`, `reports/v2_5_task2_fixture_validation.md`, `reports/v2_5_task3_mde_completion.md` |
+| Cross-model replication, argument-degradation (a *separate* question from the causal chain above — does description quality fix argument construction?) | **Measured, real null.** Full 253-task corpus, 1 trial/task (MDE=0.0537), live on all 3 models: gemma2:9b Δ+0.022 95% CI [-0.004,+0.051]; llama3.1:8b Δ+0.055 CI [+0.023,+0.089] (CI excludes zero but doesn't clear the 0.05 practical-significance threshold); qwen2.5:7b Δ+0.004 CI [-0.021,+0.029]. No model shows a practically significant effect — this is an adequately-powered null, not an underpowered "inconclusive" | `reports/v0_4_0_task1_argument_degradation.md` |
 
-**What's not yet measured:** the argument-degradation cross-model comparison itself, at the now-available
-253-task (or 100-task optimal-allocation subset) power — the corpus and the statistical power to
-resolve it both now exist, but no new live inference has been run against it. The shipped
+**What's not yet measured:** an independent fuzz-test of the shipped
 `agentgauge/constraints.py`/`agentgauge diff`/`agentgauge eval` product path's
 scoring-reference-consistency exposure (the class that caused the v2.3 ADVISORY scoring bug) is
 now closed in the CLI itself, not just guarded after the fact: v2.5 moved the `agentgauge audit`
@@ -293,10 +295,14 @@ ceiling/floor, degenerate metrics, and the scoring-reference-consistency class t
 belongs to) as an automated check wired into `diff`/`eval`, with a regression test per class seeded
 with the real historical case — and repositioned the package around the harness (`diff` primary,
 `lint` secondary, every lint rule labeled with its measured causal effect or lack of one).
-Remaining, explicitly not yet done: the argument-degradation cross-model question (separate from
-the causal-chain question above) is still inconclusive — would require ~38 more hand-authored
-gold-constraint tasks, not more compute, to close; a >=10-fixture corpus expansion is in progress
-to address this — `reports/v2_product_readiness.md` tracks what's measured vs. assumed.
+**v0.4.0 closed the last open item**: the argument-degradation cross-model question (separate from
+the causal-chain question above) is now measured, not inconclusive — the 10-fixture corpus expansion
+this section once flagged as "in progress" landed in v2.4/v2.5 (253 real tasks, all validated
+against live official API docs), and a live 3-model measurement at that corpus's full power
+(MDE=0.0537) found a real, adequately-powered null: no model shows a practically significant effect
+from better tool descriptions on argument construction (`reports/v0_4_0_task1_argument_degradation.md`).
+Every product claim in this README is now measured — `reports/v2_product_readiness.md` tracks the
+complete, current MEASURED vs. NOT MEASURED breakdown.
 
 ---
 

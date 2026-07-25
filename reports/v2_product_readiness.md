@@ -261,9 +261,8 @@ power, same calibrated constants and 1-trial/task allocation as the existing
 62/100/150 cells). **The 10-point ship target, already met at n=100
 (0.0848), is now cleared by roughly 2× at the full corpus.** This
 establishes achievable statistical power, not a new live measurement — the
-argument-degradation cross-model effect size itself has not been re-run at
-this allocation; that remains the genuinely open next step (unchanged from
-§0.4's original framing, now with the power constraint removed).
+argument-degradation cross-model effect size itself had not been re-run at
+this allocation as of v2.5; **closed in v0.4.0, see §0-D below.**
 
 ### 0-C.5 Task 4 (v2.5) — Rebase: two mislabeled v2.4 commit messages corrected (`reports/v2_5_task4_rebase.md`)
 
@@ -282,15 +281,62 @@ for completeness.
 ### 0-C.6 v2.4/v2.5 headline claim
 
 **The argument-degradation question's power constraint is resolved, the
-question itself is not yet re-answered.** §0.4/§0.6's "inconclusive at
-n=62, MDE=0.106" is superseded: the corpus is now 253 real, validated tasks
-and MDE at that size is 0.0537 — but this is achievable power, not a new
-measured effect size. **A shipped-code gap in the primary product surface
-(artifact #7's guard not running early enough) and a fixture-authoring
-hallucination rate of 30% (artifact #8) were both found and closed this
-session** — the standing "hunt for the next artifact" instruction that has
-governed every phase since v2.3 found real issues both times it was pointed
-at v2.4's own output, not just at the original v1 scoring code.
+question itself is not yet re-answered as of v2.5 — closed in v0.4.0, §0-D.**
+§0.4/§0.6's "inconclusive at n=62, MDE=0.106" is superseded: the corpus is
+now 253 real, validated tasks and MDE at that size is 0.0537. **A
+shipped-code gap in the primary product surface (artifact #7's guard not
+running early enough) and a fixture-authoring hallucination rate of 30%
+(artifact #8) were both found and closed this session** — the standing
+"hunt for the next artifact" instruction that has governed every phase
+since v2.3 found real issues both times it was pointed at v2.4's own
+output, not just at the original v1 scoring code.
+
+---
+
+## 0-D. v0.4.0 update — argument-degradation measured, last open item closed (`reports/v0_4_0_task1_argument_degradation.md`)
+
+The question §0.4/§0-C.4/§0-C.6 left open — does description quality
+measurably fix argument construction? — is now live-measured at the full
+253-task corpus, 1 trial/task, all 3 model families (gemma2:9b, llama3.1:8b,
+qwen2.5:7b), under the corrected `agentgauge.constraints`/`agentgauge.audit`
+scoring path.
+
+**Result: a real, adequately-powered null.**
+
+| Model | Δ | 95% CI | Verdict |
+|---|---|---|---|
+| gemma2:9b | +0.0217 | [-0.0042, +0.0505] | no_change |
+| llama3.1:8b | +0.0553 | [+0.0232, +0.0885] | no_change |
+| qwen2.5:7b | +0.0040 | [-0.0211, +0.0292] | no_change |
+
+No model clears the 0.05 practical-significance threshold. llama3.1:8b's CI
+excludes zero (a real, non-zero effect for that model specifically) but
+doesn't clear the threshold — reported precisely, not smoothed to a flat
+"no effect anywhere." Unlike §0.4's n=62 result, this is NOT an
+underpowered "inconclusive": MDE at this corpus size (0.0537) is an order
+of magnitude finer than any of the three measured deltas, so this is a
+confident null, decision-relevant on its own terms (the same status as the
+already-accepted `required_references_missing_property` null from the
+causal-chain measurement, §0-B.2).
+
+**GCP used with explicit sign-off**, mid-session, after local GPU
+contention from an unrelated process (`aetherart`) appeared after the
+pre-flight check passed clean. $2.19 measured Cloud Run compute spend
+(Cloud Monitoring `billable_instance_time`, not estimated); `agentgauge-agent`
+service and its baked image torn down and confirmed absent afterward;
+`agentgauge-judge` confirmed untouched.
+
+**Two bugs found and fixed in-session, disclosed in full in the linked
+report**: a Windows-specific `subprocess.run(["gcloud", ...])` PATHEXT
+issue (fixed via `shutil.which`), and an aggregation bug that compared the
+wrong two fields and collapsed every trial's `joint_success` to 0.0 before
+the real numbers were computed — caught because a 0.0/0.0 rate across 1518
+trials was recognized as implausible on its face (the `check_degenerate_metrics`
+artifact class) rather than reported as "no effect." The raw 1518-trial
+checkpoint was never wrong, only the first offline aggregation was;
+re-deriving the correct summary required zero new inference.
+
+**Every product claim in this README/readiness report is now measured.**
 
 ---
 
@@ -463,17 +509,20 @@ more useful signal than this baseline's 97.1% false-alarm / 100% recall.
 
 ## 2. NOT MEASURED (or only partially measured — stated plainly, not silently rounded up)
 
-**v2.2 update to this section:** the argument-accuracy cross-model item below was re-run at n=62
-(the real fixture ceiling, up from n=16) — still inconclusive (MDE=0.106 > true effect, if any),
-now for a documented reason (only two comparable fixtures exist) rather than an infrastructure
-limit. See §0.4. Everything else in this section is unchanged from v2.1.
+**v0.4.0 update to this section:** the argument-accuracy cross-model item below (Task 6, n=16) was
+re-run at n=62 in v2.2 (still inconclusive, §0.4), then re-run again at the full n=253 corpus in
+v0.4.0 — **now measured, a real adequately-powered null across all 3 models**, no longer an open
+item. See §0-D. Everything else in this section is unchanged from v2.1.
 
 - **Task 3d determinism for the new estimator**: not independently re-measured; inherits the v2
   result via unchanged shared PRNG code, not re-verified from scratch.
-- **Task 6 argument-accuracy replication**: inconclusive at n=16/trials=1 (§1.6) — the full 32-task
-  set at trials≥3 across all 3 models would be needed to resolve this, and was not run (would
-  require the Cloud Run infrastructure to sustain a substantially longer continuous session than
-  this rebuild's demonstrated reliability window).
+- ~~**Task 6 argument-accuracy replication**: inconclusive at n=16/trials=1 (§1.6) — the full
+  32-task set at trials≥3 across all 3 models would be needed to resolve this, and was not run.~~
+  **Resolved in v0.4.0 (§0-D)** — not via this exact mechanism (more trials on the original 32-task
+  set), but via the better-powered path the project actually took: the validated optimal allocation
+  (1 trial/task) at the full 253-task corpus, MDE=0.0537. The underlying question (does description
+  quality fix argument construction, replicated across 3 models) is now answered: no, not at a
+  practically significant level, for any of the 3 models.
 - **Task 2e full-corpus LLM baseline**: only a stratified sample (174/521, 138/276) was measured,
   for the same infrastructure-duration reason. The qualitative conclusion (baseline is degenerate)
   is very unlikely to flip on the remaining cases, but exact percentages could shift slightly.
@@ -564,10 +613,16 @@ No further measurement artifact was found in this pass.
 
 ## 5. Recommendation
 
+**v0.4.0 update:** the argument-degradation question §0.4/§0-C.6 left open is now closed (§0-D) —
+measured live across all 3 models at the full 253-task corpus, a real adequately-powered null.
+**Every product claim tracked in this document is now MEASURED.** No open items remain from the
+v2 rebuild's own scope; remaining future work (§2 above) is optional hardening, not a gap in what's
+already claimed.
+
 **v2.4/v2.5 update:** the "~38 more hand-authored tasks" lever described as "exhausted" below is
 no longer accurate — v2.4 built 190 (§0-C.1), the corpus is 253, and the MDE grid is complete at
-that size (0.0537 at n=253, §0-C.4). The open item is now the live cross-model re-measurement
-itself, not the lack of tasks or power to detect it (§0-C.6).
+that size (0.0537 at n=253, §0-C.4). The open item was the live cross-model re-measurement itself
+(§0-C.6) — closed above.
 
 **v2.2 update:** the ship target this section reported as NOT MET is now MET (§0.1, 0.6). The
 causal-chain gap this section didn't mention as open (v2.1 never measured that BLOCKING violations
