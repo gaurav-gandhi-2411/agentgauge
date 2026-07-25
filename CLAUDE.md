@@ -207,3 +207,38 @@ If local VRAM is unavailable, use the remote judge above instead.
 - Server: `mcp.server.Server`, `mcp.server.stdio.stdio_server`,
   `mcp.server.models.InitializationOptions`
 - SDK API paths can shift across minor versions; check import paths after upgrade.
+
+## Orchestrator discipline — stale-monitor / redundant-rerun loops (v0.4.0, Task 2a)
+
+Multiple sessions in this repo's v2.5/v0.4.0 phases burned compute on orchestration
+mistakes, not measurement work. Fixed forward as discipline, not code (there is no
+"orchestrator" module — this governs how a session drives long-running background work):
+
+1. **A subagent dispatched to "wait for a background job and report" must read that
+   job's actual completed output before ending its turn.** Two verifier agents this
+   phase ended their turn with "standing by for the monitor notification" instead of
+   checking whether their own background script had already finished — a stalled,
+   contentless "completion." If a subagent's job is to report on a background command
+   IT launched, its prompt must say so explicitly: check the command's output now: do
+   not end the turn on "waiting."
+2. **Don't resume a stalled subagent more than once.** One resume with a corrective
+   instruction is reasonable; a second stall means the deterministic, cheap part of
+   the task (re-running a pure-Python, no-LLM, no-network computation; grepping a
+   constant; diffing two commits) is faster to do directly than to debug further
+   subagent turns. This is *especially* true for anything already known to be
+   deterministic — reproducing it directly is itself a valid, sufficient verification.
+3. **A `ScheduleWakeup` prompt is a plan, not a fact.** By the time a scheduled wakeup
+   fires, the work it describes may already be done via a different path (a subagent
+   returned in the meantime, a duplicate notification arrived). Re-check current state
+   (the relevant file, `git log`, the checkpoint) before acting on a wakeup's cached
+   instructions — do not blindly redo or re-verify something already closed out.
+4. **The same task-id can notify more than once** (documented tool behavior, not a
+   bug) — a second notification for an already-fully-handled task carries no new
+   information; recognize it as a duplicate from its content matching a prior
+   notification, not from the task-id alone (ids get reused across genuine
+   resume-with-new-findings too).
+5. **For genuinely long (30min+) local computations, prefer a single directly-launched
+   background job with a durable checkpoint file** (JSONL, one record per unit of
+   work, flushed immediately) over a subagent asked to "run and wait" — progress is
+   then checkable at any time via the checkpoint file's line count without depending
+   on any agent's turn timing, and the job is trivially resumable if interrupted.
