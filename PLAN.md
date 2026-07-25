@@ -5,29 +5,35 @@ Branch for all v0.4.0 work: `feat/agentgauge-v2`. No merges to `main` without ex
 
 ## v0.4.0 — close the measurement gap, then ship
 
-Two tasks, no new hardening/fixtures/axes (explicit constraint this phase).
+**Status: COMPLETE.** Both tasks done, verified, pushed. No new hardening/fixtures/axes
+was added (explicit constraint this phase) — the one candidate product fix found
+(the `TrialOutcome.task_tool_name` clustering-key collision, Task 1b) was disclosed,
+not applied, per that constraint.
 
 ### Task 1 — argument-degradation live re-measurement
 
 - [x] 1a. GPU contention check: RTX 3070 fully free (8020/8192 MiB free, 0% util,
       no resident Ollama model, no "aetherart" process found) — proceeded locally,
       no GCP needed, no sign-off required.
-- [ ] 1b. **BLOCKED on GPU contention.** First launch attempt crashed on the very
-      first Ollama call (`httpx.ReadTimeout`) when an unrelated local process,
-      `aetherart` (`envs/aetherart/python.exe scripts/_pattachitra_ab_base_comparison.py
-      --checkpoint curated500`), claimed the entire GPU (100% util, <100 MiB free)
-      sometime after the 1a check (which found it fully free). No checkpoint data was
-      written before the crash — safe to resume, no corruption. Per the standing "no
-      GCP without sign-off" gate, reported the block + a bounded GCP cost estimate
-      (~$3-7 for the full run on a new Cloud Run L4 instance) and is waiting for either
-      `aetherart` to finish or explicit sign-off to use GCP — not deploying unprompted.
-      `scripts/v2_5_argument_degradation_live.py`, resumable via
-      `evals/fixtures/v2_5_argument_degradation_live.jsonl` checkpoint (one JSON record
-      per trial, flushed immediately). Full 253-task corpus (62 original + 191
-      v2.4/v2.5 real-API), 1 trial/task, bad vs. fixed variant, gemma2:9b / llama3.1:8b
-      / qwen2.5:7b. Uses the CORRECTED `agentgauge.constraints`/`agentgauge.audit`
-      scoring path (post v2.5 Task 1 fix), gated by a real `run_audit` schema-only
-      pre-check per fixture before any inference.
+- [x] 1b. **Done, via GCP with explicit sign-off** after `aetherart` contention never
+      cleared. Rebuilt+redeployed `agentgauge-agent` (torn down since last cycle),
+      called directly over HTTPS with per-request identity-token auth (NOT
+      `gcloud run services proxy` — this repo's memory records that dying within
+      minutes on this machine for multi-hour jobs). 1518 live trials (253 tasks x 2
+      variants x 3 models), all checkpointed to
+      `evals/fixtures/v2_5_argument_degradation_live.jsonl` (committed as provenance).
+      **Result: a real, adequately-powered null across all 3 models** (MDE=0.0537,
+      no model clears the 0.05 practical-significance threshold) —
+      `reports/v0_4_0_task1_argument_degradation.md`. Independently verified,
+      bit-identical reproduction, all 5 checks CONFIRMED.
+  - **Two bugs found and fixed in-session**: (1) `subprocess.run(["gcloud", ...])`
+    raised `FileNotFoundError` on Windows (`.cmd` wrapper, no PATHEXT resolution
+    without `shell=True`) — fixed via `shutil.which`. (2) The first post-run
+    aggregation compared the wrong two fields (unique clustering key vs. bare tool
+    name), collapsing every trial's `joint_success` to 0.0 — caught because
+    before=after=0.0 across 1518 trials was recognized as implausible, not reported
+    as "no effect"; fixed with zero new inference needed (checkpoint data was
+    always correct, only the offline aggregation was wrong).
   - **Finding surfaced while designing this (disclosed, not fixed this phase — see
     CLAUDE.md "no new hardening" constraint)**: `agentgauge/cli.py`'s `_collect_trials`
     sets `TrialOutcome.task_tool_name = r.task.tool_name` (bare tool name), which is
@@ -35,10 +41,16 @@ Two tasks, no new hardening/fixtures/axes (explicit constraint this phase).
     Every fixture in this corpus has multiple tasks per tool, so the *shipped*
     `agentgauge diff`/`eval` would silently collapse same-tool tasks into one cluster
     (253 tasks → ~48 tool-level clusters), understating true cluster count. This
-    script works around it locally (task-unique clustering key), does not touch
+    script worked around it locally (task-unique clustering key), does not touch
     `cli.py`/`harness.py`. Candidate product fix for a future pass, not v0.4.0.
-- [ ] 1c. Update README.md / reports/v2_product_readiness.md: move argument-degradation
-      from NOT MEASURED to MEASURED once 1b completes and is independently verified.
+  - GCP teardown confirmed: `agentgauge-agent` service + baked image deleted,
+    `agentgauge-judge` confirmed untouched. Spend: $2.19 Cloud Run compute
+    (measured via Cloud Monitoring), plus a small unquantified Cloud Build cost
+    (~19min rebuild, likely within free tier, not separately itemized).
+- [x] 1c. README.md and reports/v2_product_readiness.md updated — every stale
+      "inconclusive at n=62" reference replaced with the measured result; §0-D added
+      to the readiness report. Every product claim tracked in either document is now
+      MEASURED.
 
 ### Task 2 — ship-readiness finalization
 
