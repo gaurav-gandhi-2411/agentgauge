@@ -104,3 +104,32 @@ not applied, per that constraint.
   (shell → uv wrapper → venv python → any subprocess the script itself spawns,
   e.g. an MCP stdio server) — check `ParentProcessId` to confirm a real single
   chain before assuming a launch was accidentally duplicated.
+- **Never compare a locally-built (Windows) wheel's file hashes against a
+  CI-built (Linux) wheel's file hashes directly** — every file will differ,
+  including static files like LICENSE, purely from CRLF (Windows git checkout)
+  vs LF (Linux) line endings. This looks alarming (100% of files "differ") but
+  is not a real content discrepancy. The correct verification is comparing the
+  published artifact's file contents against `git show <tag>:<path> | sha256sum`
+  (the raw git blob, immune to local checkout line-ending conversion) — this
+  is what actually proves "the publish matches the tagged commit."
+- **`git tag -d` + recreate on a tag name that already has a GitHub Release
+  attached can silently flip that release to `draft: true` with a broken
+  "untagged-..." URL**, even though the release's `tag_name` field still
+  correctly says the right thing internally. Always re-check
+  `gh release view <tag> --json isDraft,url` after any tag delete+recreate on
+  a name with an existing release, and `gh api --method PATCH .../releases/<id>
+  -f draft=false` to fix it if needed — `gh release edit` alone did not fix
+  this; the API PATCH did.
+
+## v0.4.0 — final status
+
+Published: **`agentgauge-harness` 0.4.0 is live on PyPI**
+(https://pypi.org/project/agentgauge-harness/0.4.0/), built via Trusted
+Publishing (OIDC, no token ever handled) from tag `v0.4.0` (commit `e41f7b5`
+on `main`). Distribution name is `agentgauge-harness` (PyPI rejected bare
+`agentgauge` as too similar to an existing project); the import package and
+CLI command are both still `agentgauge`, unchanged. GitHub Release published
+at the same tag. Every published file's content independently verified
+against the tagged commit's raw git blobs (not a local rebuild — see gotcha
+above). Fresh `pip install agentgauge-harness` in an isolated venv confirmed
+working end-to-end (`--version`, `init`, `lint`).
