@@ -3,6 +3,8 @@ from __future__ import annotations
 import asyncio
 import json
 import sys
+import time
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Annotated, Any
 
@@ -24,7 +26,8 @@ from agentgauge.fixer import (
 )
 from agentgauge.harness import DecomposedRate, DiffResult, TrialOutcome, Verdict, diff_from_trials
 from agentgauge.linter import LintReport, lint_tool_set
-from agentgauge.providers import MockProvider, OllamaProvider
+from agentgauge.provider_config import create_provider, load_provider_config
+from agentgauge.providers import MockProvider, OllamaProvider, Provider
 from agentgauge.report import render_html, render_json_stable, render_text
 from agentgauge.runner import RunResult, run_tasks
 from agentgauge.scorer import score_all
@@ -118,6 +121,19 @@ def diff(
     replay_before: Annotated[Path | None, typer.Option("--replay-before")] = None,
     replay_after: Annotated[Path | None, typer.Option("--replay-after")] = None,
     model: Annotated[str, typer.Option("--model", "-m", help="Ollama agent model")] = "gemma2:9b",
+    provider_config: Annotated[
+        Path | None,
+        typer.Option(
+            "--provider-config",
+            help=(
+                "YAML provider config (see configs/provider.*.yaml) -- alternative to "
+                "--model for non-Ollama adapters (Anthropic, OpenAI-compatible, Bedrock, "
+                "Vertex, custom endpoint). Ignored when --mock is set; overrides --model "
+                "otherwise. Existing --model/Ollama-default behavior is unchanged when "
+                "this is not given."
+            ),
+        ),
+    ] = None,
     trials: Annotated[
         int,
         typer.Option(
@@ -162,6 +178,7 @@ def diff(
             replay_before=replay_before,
             replay_after=replay_after,
             model=model,
+            provider_config=provider_config,
             trials=trials,
             threshold=threshold,
             mock=mock,
@@ -178,6 +195,7 @@ async def _diff_async(
     replay_before: Path | None,
     replay_after: Path | None,
     model: str,
+    provider_config: Path | None = None,
     trials: int,
     threshold: float,
     mock: bool,
@@ -186,6 +204,8 @@ async def _diff_async(
     console = Console()
     before_tools: list[Any] | None = None
     after_tools: list[Any] | None = None
+    before_stats: TrialCollectionStats | None = None
+    after_stats: TrialCollectionStats | None = None
     if replay_before is not None and replay_after is not None:
         before_trials = _load_replay_trials(replay_before)
         after_trials = _load_replay_trials(replay_after)
@@ -205,8 +225,12 @@ async def _diff_async(
             json_output=json_output,
             fail_message="Audit failed -- refusing to run live trials. Fix the flagged issue(s) and re-run.",
         )
-        before_trials = await _collect_trials(before, tasks, model=model, trials=trials, mock=mock)
-        after_trials = await _collect_trials(after, tasks, model=model, trials=trials, mock=mock)
+        before_trials, before_stats = await _collect_trials(
+            before, tasks, model=model, trials=trials, mock=mock, provider_config=provider_config
+        )
+        after_trials, after_stats = await _collect_trials(
+            after, tasks, model=model, trials=trials, mock=mock, provider_config=provider_config
+        )
         audit_report = run_audit(
             tasks,
             before_tools=before_tools,
@@ -259,12 +283,17 @@ async def _diff_async(
                 "argument_accuracy_given_correct_selection": result.after_decomposed.argument_accuracy_given_correct_selection,
                 "joint_success_rate": result.after_decomposed.joint_success_rate,
             },
+            "before_cost": _cost_payload(before_stats),
+            "after_cost": _cost_payload(after_stats),
         }
         typer.echo(json.dumps(payload, indent=2))
     else:
         _print_decomposed("before", result.before_decomposed, console)
         console.print()
         _print_decomposed("after", result.after_decomposed, console)
+        console.print()
+        _print_cost_summary("before", before_stats, console)
+        _print_cost_summary("after", after_stats, console)
         console.print()
         verdict_color = {
             Verdict.REGRESSION: "red",
@@ -302,9 +331,44 @@ async def _introspect_tools(target: str) -> list[Any]:
         await cleanup_connection(ctx)
 
 
+@dataclass
+class TrialCollectionStats:
+    """Cost/timing metadata for one live `_collect_trials` call (spec-agentgauge-
+    v0.5.md S4.1: "cost accounting per run ... surfaced in the diff output").
+    `tokens_in`/`tokens_out`/`cost_usd` are `None` when the wrapped provider does not
+    expose them (e.g. `OllamaProvider` has no cost tracking today -- matches
+    `cassette.CassetteEntry`'s existing `tokens_in`/`tokens_out` optionality)."""
+
+    provider_label: str
+    duration_s: float
+    tokens_in: int | None
+    tokens_out: int | None
+    cost_usd: float | None
+
+
+def _resolve_provider(
+    *, model: str, mock: bool, provider_config: Path | None
+) -> tuple[Provider, str]:
+    """Pick the live-run provider + a human-readable label for it. Precedence:
+    `--mock` > `--provider-config` > `--model`/Ollama-default -- this is additive to
+    the pre-existing `--model` contract, never a breaking change to it."""
+    if mock:
+        return MockProvider(), "mock"
+    if provider_config is not None:
+        config = load_provider_config(provider_config)
+        return create_provider(config), f"{config.provider}:{config.model}"
+    return OllamaProvider(model), f"ollama:{model}"
+
+
 async def _collect_trials(
-    target: str, tasks: list[BlindTask], *, model: str, trials: int, mock: bool
-) -> list[TrialOutcome]:
+    target: str,
+    tasks: list[BlindTask],
+    *,
+    model: str,
+    trials: int,
+    mock: bool,
+    provider_config: Path | None = None,
+) -> tuple[list[TrialOutcome], TrialCollectionStats]:
     """Live trial collection: connects, runs each task `trials` times, scores
     argument correctness against any user-supplied constraints (1.0 default for
     unconstrained tasks — see agentgauge.constraints' documented limitation).
@@ -313,8 +377,15 @@ async def _collect_trials(
     scoring-reference mismatch (the artifact #7 class -- a task's constraints
     authored against a different schema than the one connected here) is
     caught before live inference runs, not just before its result is
-    reported."""
-    provider = MockProvider() if mock else OllamaProvider(model)
+    reported.
+
+    Returns `(outcomes, stats)` -- `stats` carries wall-clock duration + token/cost
+    accounting for the run, surfaced by `_diff_async`/`_eval_async` in the CLI output.
+    """
+    provider, provider_label = _resolve_provider(
+        model=model, mock=mock, provider_config=provider_config
+    )
+    start = time.perf_counter()
     client, ctx, _ = await _connect(target)
     try:
         task_objs = [Task(tool_name=t.tool_name, description=t.description) for t in tasks]
@@ -336,9 +407,50 @@ async def _collect_trials(
                     constraint_satisfaction=score,
                 )
             )
-        return outcomes
     finally:
         await cleanup_connection(ctx)
+
+    stats = TrialCollectionStats(
+        provider_label=provider_label,
+        duration_s=time.perf_counter() - start,
+        tokens_in=getattr(provider, "tokens_in", None),
+        tokens_out=getattr(provider, "tokens_out", None),
+        cost_usd=getattr(provider, "total_cost_usd", None),
+    )
+    return outcomes, stats
+
+
+def _cost_payload(stats: TrialCollectionStats | None) -> dict[str, Any]:
+    """JSON-mode cost/timing block. `stats is None` means replay mode was used --
+    explicit `"live": false` + a note, never zeros that would look like a real
+    zero-cost run (spec-agentgauge-v0.5.md S4.1)."""
+    if stats is None:
+        return {"live": False, "note": "replay mode -- no live cost to report"}
+    return {
+        "live": True,
+        "provider": stats.provider_label,
+        "duration_s": round(stats.duration_s, 3),
+        "tokens_in": stats.tokens_in,
+        "tokens_out": stats.tokens_out,
+        "cost_usd": stats.cost_usd,
+    }
+
+
+def _print_cost_summary(label: str, stats: TrialCollectionStats | None, console: Console) -> None:
+    """Text-mode cost/timing line. Replay mode says so explicitly rather than
+    printing a real-looking zero (spec-agentgauge-v0.5.md S4.1)."""
+    if stats is None:
+        console.print(f"[dim]{label} cost: replay mode -- no live cost to report.[/dim]")
+        return
+    if stats.tokens_in is not None and stats.tokens_out is not None:
+        tokens_str = f"{stats.tokens_in} in / {stats.tokens_out} out"
+    else:
+        tokens_str = "n/a (provider has no token accounting)"
+    cost_str = f"${stats.cost_usd:.6f}" if stats.cost_usd is not None else "n/a"
+    console.print(
+        f"[dim]{label} cost: provider={stats.provider_label} "
+        f"duration={stats.duration_s:.2f}s tokens={tokens_str} est_spend={cost_str}[/dim]"
+    )
 
 
 def _schema_audit_or_exit(
@@ -411,6 +523,18 @@ def eval_cmd(
         ),
     ] = None,
     model: Annotated[str, typer.Option("--model", "-m", help="Ollama agent model")] = "gemma2:9b",
+    provider_config: Annotated[
+        Path | None,
+        typer.Option(
+            "--provider-config",
+            help=(
+                "YAML provider config (see configs/provider.*.yaml) -- alternative to "
+                "--model for non-Ollama adapters. Ignored when --mock is set; overrides "
+                "--model otherwise. Existing --model/Ollama-default behavior is unchanged "
+                "when this is not given."
+            ),
+        ),
+    ] = None,
     trials: Annotated[
         int,
         typer.Option(
@@ -436,6 +560,7 @@ def eval_cmd(
             tasks_file=tasks_file,
             replay=replay,
             model=model,
+            provider_config=provider_config,
             trials=trials,
             mock=mock,
             json_output=json_output,
@@ -449,6 +574,7 @@ async def _eval_async(
     tasks_file: Path | None,
     replay: Path | None,
     model: str,
+    provider_config: Path | None = None,
     trials: int,
     mock: bool,
     json_output: bool,
@@ -465,6 +591,7 @@ async def _eval_async(
         _print_lint_report(lint_report, console, show_info=False)
 
     tools: list[Any] | None = None
+    stats: TrialCollectionStats | None = None
     if replay is not None:
         outcomes = _load_replay_trials(replay)
     elif tasks_file is not None:
@@ -480,7 +607,9 @@ async def _eval_async(
             json_output=json_output,
             fail_message="Audit failed -- refusing to run live trials. Fix the flagged issue(s) and re-run.",
         )
-        outcomes = await _collect_trials(target, tasks, model=model, trials=trials, mock=mock)
+        outcomes, stats = await _collect_trials(
+            target, tasks, model=model, trials=trials, mock=mock, provider_config=provider_config
+        )
         audit_report = run_audit(tasks, before_tools=tools, before_trials=outcomes)
         if not json_output:
             _print_audit_report(audit_report, console)
@@ -530,10 +659,12 @@ async def _eval_async(
             "selection_accuracy": rate.selection_accuracy,
             "argument_accuracy_given_correct_selection": rate.argument_accuracy_given_correct_selection,
             "joint_success_rate": rate.joint_success_rate,
+            "cost": _cost_payload(stats),
         }
         typer.echo(json.dumps(payload, indent=2))
     else:
         _print_decomposed(target, rate, console)
+        _print_cost_summary(target, stats, console)
     if lint_report.flagged:
         raise typer.Exit(1)
 
