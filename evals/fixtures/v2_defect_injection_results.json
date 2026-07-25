@@ -1,0 +1,1961 @@
+{
+  "n_base_tool_sets": 21,
+  "n_injected_instances": 276,
+  "n_total_defects": 276,
+  "per_defect_type": {
+    "param_renamed": {
+      "n": 48,
+      "detected": 11
+    },
+    "type_flipped": {
+      "n": 57,
+      "detected": 57
+    },
+    "enum_dropped": {
+      "n": 57,
+      "detected": 57
+    },
+    "required_unmentioned_prose": {
+      "n": 51,
+      "detected": 48
+    },
+    "contradictory_required_claim": {
+      "n": 63,
+      "detected": 63
+    }
+  },
+  "results_detail": [
+    {
+      "base_tool_set": "confusable_server_oracle",
+      "defect_type": "param_renamed",
+      "expected_check": "described_not_in_schema",
+      "expected_tool": "query_records",
+      "detected": false
+    },
+    {
+      "base_tool_set": "confusable_server_oracle",
+      "defect_type": "param_renamed",
+      "expected_check": "described_not_in_schema",
+      "expected_tool": "send_message",
+      "detected": true
+    },
+    {
+      "base_tool_set": "confusable_server_oracle",
+      "defect_type": "param_renamed",
+      "expected_check": "described_not_in_schema",
+      "expected_tool": "enumerate_all",
+      "detected": false
+    },
+    {
+      "base_tool_set": "confusable_server_oracle",
+      "defect_type": "type_flipped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "search_documents",
+      "detected": true
+    },
+    {
+      "base_tool_set": "confusable_server_oracle",
+      "defect_type": "type_flipped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "query_records",
+      "detected": true
+    },
+    {
+      "base_tool_set": "confusable_server_oracle",
+      "defect_type": "type_flipped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "send_message",
+      "detected": true
+    },
+    {
+      "base_tool_set": "confusable_server_oracle",
+      "defect_type": "enum_dropped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "search_documents",
+      "detected": true
+    },
+    {
+      "base_tool_set": "confusable_server_oracle",
+      "defect_type": "enum_dropped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "query_records",
+      "detected": true
+    },
+    {
+      "base_tool_set": "confusable_server_oracle",
+      "defect_type": "enum_dropped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "send_message",
+      "detected": true
+    },
+    {
+      "base_tool_set": "confusable_server_oracle",
+      "defect_type": "required_unmentioned_prose",
+      "expected_check": "required_not_mentioned",
+      "expected_tool": "query_records",
+      "detected": true
+    },
+    {
+      "base_tool_set": "confusable_server_oracle",
+      "defect_type": "required_unmentioned_prose",
+      "expected_check": "required_not_mentioned",
+      "expected_tool": "send_message",
+      "detected": true
+    },
+    {
+      "base_tool_set": "confusable_server_oracle",
+      "defect_type": "required_unmentioned_prose",
+      "expected_check": "required_not_mentioned",
+      "expected_tool": "enumerate_all",
+      "detected": true
+    },
+    {
+      "base_tool_set": "confusable_server_oracle",
+      "defect_type": "contradictory_required_claim",
+      "expected_check": "required_references_missing_property",
+      "expected_tool": "search_documents",
+      "detected": true
+    },
+    {
+      "base_tool_set": "confusable_server_oracle",
+      "defect_type": "contradictory_required_claim",
+      "expected_check": "required_references_missing_property",
+      "expected_tool": "query_records",
+      "detected": true
+    },
+    {
+      "base_tool_set": "confusable_server_oracle",
+      "defect_type": "contradictory_required_claim",
+      "expected_check": "required_references_missing_property",
+      "expected_tool": "send_message",
+      "detected": true
+    },
+    {
+      "base_tool_set": "grounded_server_oracle",
+      "defect_type": "required_unmentioned_prose",
+      "expected_check": "required_not_mentioned",
+      "expected_tool": "transform_scale",
+      "detected": false
+    },
+    {
+      "base_tool_set": "grounded_server_oracle",
+      "defect_type": "required_unmentioned_prose",
+      "expected_check": "required_not_mentioned",
+      "expected_tool": "transform_normalize",
+      "detected": false
+    },
+    {
+      "base_tool_set": "grounded_server_oracle",
+      "defect_type": "required_unmentioned_prose",
+      "expected_check": "required_not_mentioned",
+      "expected_tool": "transform_clip",
+      "detected": false
+    },
+    {
+      "base_tool_set": "grounded_server_oracle",
+      "defect_type": "contradictory_required_claim",
+      "expected_check": "required_references_missing_property",
+      "expected_tool": "transform_scale",
+      "detected": true
+    },
+    {
+      "base_tool_set": "grounded_server_oracle",
+      "defect_type": "contradictory_required_claim",
+      "expected_check": "required_references_missing_property",
+      "expected_tool": "transform_normalize",
+      "detected": true
+    },
+    {
+      "base_tool_set": "grounded_server_oracle",
+      "defect_type": "contradictory_required_claim",
+      "expected_check": "required_references_missing_property",
+      "expected_tool": "transform_clip",
+      "detected": true
+    },
+    {
+      "base_tool_set": "call_constraints_server_oracle",
+      "defect_type": "param_renamed",
+      "expected_check": "described_not_in_schema",
+      "expected_tool": "set_acquisition_mode",
+      "detected": false
+    },
+    {
+      "base_tool_set": "call_constraints_server_oracle",
+      "defect_type": "param_renamed",
+      "expected_check": "described_not_in_schema",
+      "expected_tool": "configure_output_codec",
+      "detected": false
+    },
+    {
+      "base_tool_set": "call_constraints_server_oracle",
+      "defect_type": "param_renamed",
+      "expected_check": "described_not_in_schema",
+      "expected_tool": "schedule_maintenance",
+      "detected": false
+    },
+    {
+      "base_tool_set": "call_constraints_server_oracle",
+      "defect_type": "type_flipped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "set_acquisition_mode",
+      "detected": true
+    },
+    {
+      "base_tool_set": "call_constraints_server_oracle",
+      "defect_type": "type_flipped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "configure_output_codec",
+      "detected": true
+    },
+    {
+      "base_tool_set": "call_constraints_server_oracle",
+      "defect_type": "type_flipped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "schedule_maintenance",
+      "detected": true
+    },
+    {
+      "base_tool_set": "call_constraints_server_oracle",
+      "defect_type": "enum_dropped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "set_acquisition_mode",
+      "detected": true
+    },
+    {
+      "base_tool_set": "call_constraints_server_oracle",
+      "defect_type": "enum_dropped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "configure_output_codec",
+      "detected": true
+    },
+    {
+      "base_tool_set": "call_constraints_server_oracle",
+      "defect_type": "enum_dropped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "schedule_maintenance",
+      "detected": true
+    },
+    {
+      "base_tool_set": "call_constraints_server_oracle",
+      "defect_type": "required_unmentioned_prose",
+      "expected_check": "required_not_mentioned",
+      "expected_tool": "set_acquisition_mode",
+      "detected": true
+    },
+    {
+      "base_tool_set": "call_constraints_server_oracle",
+      "defect_type": "required_unmentioned_prose",
+      "expected_check": "required_not_mentioned",
+      "expected_tool": "configure_output_codec",
+      "detected": true
+    },
+    {
+      "base_tool_set": "call_constraints_server_oracle",
+      "defect_type": "required_unmentioned_prose",
+      "expected_check": "required_not_mentioned",
+      "expected_tool": "schedule_maintenance",
+      "detected": true
+    },
+    {
+      "base_tool_set": "call_constraints_server_oracle",
+      "defect_type": "contradictory_required_claim",
+      "expected_check": "required_references_missing_property",
+      "expected_tool": "ping_server",
+      "detected": true
+    },
+    {
+      "base_tool_set": "call_constraints_server_oracle",
+      "defect_type": "contradictory_required_claim",
+      "expected_check": "required_references_missing_property",
+      "expected_tool": "get_server_info",
+      "detected": true
+    },
+    {
+      "base_tool_set": "call_constraints_server_oracle",
+      "defect_type": "contradictory_required_claim",
+      "expected_check": "required_references_missing_property",
+      "expected_tool": "list_channels",
+      "detected": true
+    },
+    {
+      "base_tool_set": "call_constraints_v2_server_oracle",
+      "defect_type": "param_renamed",
+      "expected_check": "described_not_in_schema",
+      "expected_tool": "register_channel",
+      "detected": true
+    },
+    {
+      "base_tool_set": "call_constraints_v2_server_oracle",
+      "defect_type": "param_renamed",
+      "expected_check": "described_not_in_schema",
+      "expected_tool": "log_fault",
+      "detected": true
+    },
+    {
+      "base_tool_set": "call_constraints_v2_server_oracle",
+      "defect_type": "param_renamed",
+      "expected_check": "described_not_in_schema",
+      "expected_tool": "set_output_encoding",
+      "detected": false
+    },
+    {
+      "base_tool_set": "call_constraints_v2_server_oracle",
+      "defect_type": "type_flipped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "register_channel",
+      "detected": true
+    },
+    {
+      "base_tool_set": "call_constraints_v2_server_oracle",
+      "defect_type": "type_flipped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "log_fault",
+      "detected": true
+    },
+    {
+      "base_tool_set": "call_constraints_v2_server_oracle",
+      "defect_type": "type_flipped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "set_output_encoding",
+      "detected": true
+    },
+    {
+      "base_tool_set": "call_constraints_v2_server_oracle",
+      "defect_type": "enum_dropped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "register_channel",
+      "detected": true
+    },
+    {
+      "base_tool_set": "call_constraints_v2_server_oracle",
+      "defect_type": "enum_dropped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "log_fault",
+      "detected": true
+    },
+    {
+      "base_tool_set": "call_constraints_v2_server_oracle",
+      "defect_type": "enum_dropped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "set_output_encoding",
+      "detected": true
+    },
+    {
+      "base_tool_set": "call_constraints_v2_server_oracle",
+      "defect_type": "required_unmentioned_prose",
+      "expected_check": "required_not_mentioned",
+      "expected_tool": "register_channel",
+      "detected": true
+    },
+    {
+      "base_tool_set": "call_constraints_v2_server_oracle",
+      "defect_type": "required_unmentioned_prose",
+      "expected_check": "required_not_mentioned",
+      "expected_tool": "log_fault",
+      "detected": true
+    },
+    {
+      "base_tool_set": "call_constraints_v2_server_oracle",
+      "defect_type": "required_unmentioned_prose",
+      "expected_check": "required_not_mentioned",
+      "expected_tool": "set_output_encoding",
+      "detected": true
+    },
+    {
+      "base_tool_set": "call_constraints_v2_server_oracle",
+      "defect_type": "contradictory_required_claim",
+      "expected_check": "required_references_missing_property",
+      "expected_tool": "register_channel",
+      "detected": true
+    },
+    {
+      "base_tool_set": "call_constraints_v2_server_oracle",
+      "defect_type": "contradictory_required_claim",
+      "expected_check": "required_references_missing_property",
+      "expected_tool": "log_fault",
+      "detected": true
+    },
+    {
+      "base_tool_set": "call_constraints_v2_server_oracle",
+      "defect_type": "contradictory_required_claim",
+      "expected_check": "required_references_missing_property",
+      "expected_tool": "set_output_encoding",
+      "detected": true
+    },
+    {
+      "base_tool_set": "t18_q2b_server",
+      "defect_type": "param_renamed",
+      "expected_check": "described_not_in_schema",
+      "expected_tool": "get_record",
+      "detected": false
+    },
+    {
+      "base_tool_set": "t18_q2b_server",
+      "defect_type": "param_renamed",
+      "expected_check": "described_not_in_schema",
+      "expected_tool": "fetch_record",
+      "detected": false
+    },
+    {
+      "base_tool_set": "t18_q2b_server",
+      "defect_type": "param_renamed",
+      "expected_check": "described_not_in_schema",
+      "expected_tool": "read_entry",
+      "detected": false
+    },
+    {
+      "base_tool_set": "t18_q2b_server",
+      "defect_type": "type_flipped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "get_record",
+      "detected": true
+    },
+    {
+      "base_tool_set": "t18_q2b_server",
+      "defect_type": "type_flipped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "fetch_record",
+      "detected": true
+    },
+    {
+      "base_tool_set": "t18_q2b_server",
+      "defect_type": "type_flipped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "read_entry",
+      "detected": true
+    },
+    {
+      "base_tool_set": "t18_q2b_server",
+      "defect_type": "enum_dropped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "get_record",
+      "detected": true
+    },
+    {
+      "base_tool_set": "t18_q2b_server",
+      "defect_type": "enum_dropped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "fetch_record",
+      "detected": true
+    },
+    {
+      "base_tool_set": "t18_q2b_server",
+      "defect_type": "enum_dropped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "read_entry",
+      "detected": true
+    },
+    {
+      "base_tool_set": "t18_q2b_server",
+      "defect_type": "required_unmentioned_prose",
+      "expected_check": "required_not_mentioned",
+      "expected_tool": "get_record",
+      "detected": true
+    },
+    {
+      "base_tool_set": "t18_q2b_server",
+      "defect_type": "required_unmentioned_prose",
+      "expected_check": "required_not_mentioned",
+      "expected_tool": "fetch_record",
+      "detected": true
+    },
+    {
+      "base_tool_set": "t18_q2b_server",
+      "defect_type": "required_unmentioned_prose",
+      "expected_check": "required_not_mentioned",
+      "expected_tool": "read_entry",
+      "detected": true
+    },
+    {
+      "base_tool_set": "t18_q2b_server",
+      "defect_type": "contradictory_required_claim",
+      "expected_check": "required_references_missing_property",
+      "expected_tool": "get_record",
+      "detected": true
+    },
+    {
+      "base_tool_set": "t18_q2b_server",
+      "defect_type": "contradictory_required_claim",
+      "expected_check": "required_references_missing_property",
+      "expected_tool": "fetch_record",
+      "detected": true
+    },
+    {
+      "base_tool_set": "t18_q2b_server",
+      "defect_type": "contradictory_required_claim",
+      "expected_check": "required_references_missing_property",
+      "expected_tool": "read_entry",
+      "detected": true
+    },
+    {
+      "base_tool_set": "t18_oracle_server",
+      "defect_type": "param_renamed",
+      "expected_check": "described_not_in_schema",
+      "expected_tool": "retrieve_row",
+      "detected": false
+    },
+    {
+      "base_tool_set": "t18_oracle_server",
+      "defect_type": "param_renamed",
+      "expected_check": "described_not_in_schema",
+      "expected_tool": "query_records",
+      "detected": false
+    },
+    {
+      "base_tool_set": "t18_oracle_server",
+      "defect_type": "type_flipped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "get_record",
+      "detected": true
+    },
+    {
+      "base_tool_set": "t18_oracle_server",
+      "defect_type": "type_flipped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "fetch_record",
+      "detected": true
+    },
+    {
+      "base_tool_set": "t18_oracle_server",
+      "defect_type": "type_flipped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "read_entry",
+      "detected": true
+    },
+    {
+      "base_tool_set": "t18_oracle_server",
+      "defect_type": "enum_dropped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "get_record",
+      "detected": true
+    },
+    {
+      "base_tool_set": "t18_oracle_server",
+      "defect_type": "enum_dropped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "fetch_record",
+      "detected": true
+    },
+    {
+      "base_tool_set": "t18_oracle_server",
+      "defect_type": "enum_dropped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "read_entry",
+      "detected": true
+    },
+    {
+      "base_tool_set": "t18_oracle_server",
+      "defect_type": "required_unmentioned_prose",
+      "expected_check": "required_not_mentioned",
+      "expected_tool": "retrieve_row",
+      "detected": true
+    },
+    {
+      "base_tool_set": "t18_oracle_server",
+      "defect_type": "required_unmentioned_prose",
+      "expected_check": "required_not_mentioned",
+      "expected_tool": "query_records",
+      "detected": true
+    },
+    {
+      "base_tool_set": "t18_oracle_server",
+      "defect_type": "contradictory_required_claim",
+      "expected_check": "required_references_missing_property",
+      "expected_tool": "get_record",
+      "detected": true
+    },
+    {
+      "base_tool_set": "t18_oracle_server",
+      "defect_type": "contradictory_required_claim",
+      "expected_check": "required_references_missing_property",
+      "expected_tool": "fetch_record",
+      "detected": true
+    },
+    {
+      "base_tool_set": "t18_oracle_server",
+      "defect_type": "contradictory_required_claim",
+      "expected_check": "required_references_missing_property",
+      "expected_tool": "read_entry",
+      "detected": true
+    },
+    {
+      "base_tool_set": "exp1_datalayer_jupyter_mcp_server_mirror",
+      "defect_type": "param_renamed",
+      "expected_check": "described_not_in_schema",
+      "expected_tool": "use_notebook",
+      "detected": true
+    },
+    {
+      "base_tool_set": "exp1_datalayer_jupyter_mcp_server_mirror",
+      "defect_type": "param_renamed",
+      "expected_check": "described_not_in_schema",
+      "expected_tool": "read_notebook",
+      "detected": false
+    },
+    {
+      "base_tool_set": "exp1_datalayer_jupyter_mcp_server_mirror",
+      "defect_type": "param_renamed",
+      "expected_check": "described_not_in_schema",
+      "expected_tool": "overwrite_cell_source",
+      "detected": false
+    },
+    {
+      "base_tool_set": "exp1_datalayer_jupyter_mcp_server_mirror",
+      "defect_type": "type_flipped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "list_files",
+      "detected": true
+    },
+    {
+      "base_tool_set": "exp1_datalayer_jupyter_mcp_server_mirror",
+      "defect_type": "type_flipped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "use_notebook",
+      "detected": true
+    },
+    {
+      "base_tool_set": "exp1_datalayer_jupyter_mcp_server_mirror",
+      "defect_type": "type_flipped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "restart_notebook",
+      "detected": true
+    },
+    {
+      "base_tool_set": "exp1_datalayer_jupyter_mcp_server_mirror",
+      "defect_type": "enum_dropped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "list_files",
+      "detected": true
+    },
+    {
+      "base_tool_set": "exp1_datalayer_jupyter_mcp_server_mirror",
+      "defect_type": "enum_dropped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "use_notebook",
+      "detected": true
+    },
+    {
+      "base_tool_set": "exp1_datalayer_jupyter_mcp_server_mirror",
+      "defect_type": "enum_dropped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "restart_notebook",
+      "detected": true
+    },
+    {
+      "base_tool_set": "exp1_datalayer_jupyter_mcp_server_mirror",
+      "defect_type": "required_unmentioned_prose",
+      "expected_check": "required_not_mentioned",
+      "expected_tool": "use_notebook",
+      "detected": true
+    },
+    {
+      "base_tool_set": "exp1_datalayer_jupyter_mcp_server_mirror",
+      "defect_type": "required_unmentioned_prose",
+      "expected_check": "required_not_mentioned",
+      "expected_tool": "read_notebook",
+      "detected": true
+    },
+    {
+      "base_tool_set": "exp1_datalayer_jupyter_mcp_server_mirror",
+      "defect_type": "required_unmentioned_prose",
+      "expected_check": "required_not_mentioned",
+      "expected_tool": "overwrite_cell_source",
+      "detected": true
+    },
+    {
+      "base_tool_set": "exp1_datalayer_jupyter_mcp_server_mirror",
+      "defect_type": "contradictory_required_claim",
+      "expected_check": "required_references_missing_property",
+      "expected_tool": "list_files",
+      "detected": true
+    },
+    {
+      "base_tool_set": "exp1_datalayer_jupyter_mcp_server_mirror",
+      "defect_type": "contradictory_required_claim",
+      "expected_check": "required_references_missing_property",
+      "expected_tool": "list_kernels",
+      "detected": true
+    },
+    {
+      "base_tool_set": "exp1_datalayer_jupyter_mcp_server_mirror",
+      "defect_type": "contradictory_required_claim",
+      "expected_check": "required_references_missing_property",
+      "expected_tool": "use_notebook",
+      "detected": true
+    },
+    {
+      "base_tool_set": "exp1_datalayer_jupyter_mcp_server_mirror_oracle",
+      "defect_type": "param_renamed",
+      "expected_check": "described_not_in_schema",
+      "expected_tool": "use_notebook",
+      "detected": true
+    },
+    {
+      "base_tool_set": "exp1_datalayer_jupyter_mcp_server_mirror_oracle",
+      "defect_type": "param_renamed",
+      "expected_check": "described_not_in_schema",
+      "expected_tool": "overwrite_cell_source",
+      "detected": false
+    },
+    {
+      "base_tool_set": "exp1_datalayer_jupyter_mcp_server_mirror_oracle",
+      "defect_type": "param_renamed",
+      "expected_check": "described_not_in_schema",
+      "expected_tool": "edit_cell_source",
+      "detected": true
+    },
+    {
+      "base_tool_set": "exp1_datalayer_jupyter_mcp_server_mirror_oracle",
+      "defect_type": "type_flipped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "list_files",
+      "detected": true
+    },
+    {
+      "base_tool_set": "exp1_datalayer_jupyter_mcp_server_mirror_oracle",
+      "defect_type": "type_flipped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "use_notebook",
+      "detected": true
+    },
+    {
+      "base_tool_set": "exp1_datalayer_jupyter_mcp_server_mirror_oracle",
+      "defect_type": "type_flipped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "restart_notebook",
+      "detected": true
+    },
+    {
+      "base_tool_set": "exp1_datalayer_jupyter_mcp_server_mirror_oracle",
+      "defect_type": "enum_dropped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "list_files",
+      "detected": true
+    },
+    {
+      "base_tool_set": "exp1_datalayer_jupyter_mcp_server_mirror_oracle",
+      "defect_type": "enum_dropped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "use_notebook",
+      "detected": true
+    },
+    {
+      "base_tool_set": "exp1_datalayer_jupyter_mcp_server_mirror_oracle",
+      "defect_type": "enum_dropped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "restart_notebook",
+      "detected": true
+    },
+    {
+      "base_tool_set": "exp1_datalayer_jupyter_mcp_server_mirror_oracle",
+      "defect_type": "required_unmentioned_prose",
+      "expected_check": "required_not_mentioned",
+      "expected_tool": "use_notebook",
+      "detected": true
+    },
+    {
+      "base_tool_set": "exp1_datalayer_jupyter_mcp_server_mirror_oracle",
+      "defect_type": "required_unmentioned_prose",
+      "expected_check": "required_not_mentioned",
+      "expected_tool": "overwrite_cell_source",
+      "detected": true
+    },
+    {
+      "base_tool_set": "exp1_datalayer_jupyter_mcp_server_mirror_oracle",
+      "defect_type": "required_unmentioned_prose",
+      "expected_check": "required_not_mentioned",
+      "expected_tool": "edit_cell_source",
+      "detected": true
+    },
+    {
+      "base_tool_set": "exp1_datalayer_jupyter_mcp_server_mirror_oracle",
+      "defect_type": "contradictory_required_claim",
+      "expected_check": "required_references_missing_property",
+      "expected_tool": "list_files",
+      "detected": true
+    },
+    {
+      "base_tool_set": "exp1_datalayer_jupyter_mcp_server_mirror_oracle",
+      "defect_type": "contradictory_required_claim",
+      "expected_check": "required_references_missing_property",
+      "expected_tool": "list_kernels",
+      "detected": true
+    },
+    {
+      "base_tool_set": "exp1_datalayer_jupyter_mcp_server_mirror_oracle",
+      "defect_type": "contradictory_required_claim",
+      "expected_check": "required_references_missing_property",
+      "expected_tool": "use_notebook",
+      "detected": true
+    },
+    {
+      "base_tool_set": "exp1_blazickjp_arxiv_mcp_server_mirror",
+      "defect_type": "contradictory_required_claim",
+      "expected_check": "required_references_missing_property",
+      "expected_tool": "check_alerts",
+      "detected": true
+    },
+    {
+      "base_tool_set": "exp1_blazickjp_arxiv_mcp_server_mirror",
+      "defect_type": "contradictory_required_claim",
+      "expected_check": "required_references_missing_property",
+      "expected_tool": "citation_graph",
+      "detected": true
+    },
+    {
+      "base_tool_set": "exp1_blazickjp_arxiv_mcp_server_mirror",
+      "defect_type": "contradictory_required_claim",
+      "expected_check": "required_references_missing_property",
+      "expected_tool": "download_paper",
+      "detected": true
+    },
+    {
+      "base_tool_set": "exp1_stickerdaniel_linkedin_mcp_server_mirror",
+      "defect_type": "param_renamed",
+      "expected_check": "described_not_in_schema",
+      "expected_tool": "get_company_profile",
+      "detected": true
+    },
+    {
+      "base_tool_set": "exp1_stickerdaniel_linkedin_mcp_server_mirror",
+      "defect_type": "param_renamed",
+      "expected_check": "described_not_in_schema",
+      "expected_tool": "get_company_posts",
+      "detected": true
+    },
+    {
+      "base_tool_set": "exp1_stickerdaniel_linkedin_mcp_server_mirror",
+      "defect_type": "param_renamed",
+      "expected_check": "described_not_in_schema",
+      "expected_tool": "search_companies",
+      "detected": false
+    },
+    {
+      "base_tool_set": "exp1_stickerdaniel_linkedin_mcp_server_mirror",
+      "defect_type": "type_flipped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "get_company_profile",
+      "detected": true
+    },
+    {
+      "base_tool_set": "exp1_stickerdaniel_linkedin_mcp_server_mirror",
+      "defect_type": "type_flipped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "get_company_posts",
+      "detected": true
+    },
+    {
+      "base_tool_set": "exp1_stickerdaniel_linkedin_mcp_server_mirror",
+      "defect_type": "type_flipped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "search_companies",
+      "detected": true
+    },
+    {
+      "base_tool_set": "exp1_stickerdaniel_linkedin_mcp_server_mirror",
+      "defect_type": "enum_dropped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "get_company_profile",
+      "detected": true
+    },
+    {
+      "base_tool_set": "exp1_stickerdaniel_linkedin_mcp_server_mirror",
+      "defect_type": "enum_dropped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "get_company_posts",
+      "detected": true
+    },
+    {
+      "base_tool_set": "exp1_stickerdaniel_linkedin_mcp_server_mirror",
+      "defect_type": "enum_dropped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "search_companies",
+      "detected": true
+    },
+    {
+      "base_tool_set": "exp1_stickerdaniel_linkedin_mcp_server_mirror",
+      "defect_type": "required_unmentioned_prose",
+      "expected_check": "required_not_mentioned",
+      "expected_tool": "get_company_profile",
+      "detected": true
+    },
+    {
+      "base_tool_set": "exp1_stickerdaniel_linkedin_mcp_server_mirror",
+      "defect_type": "required_unmentioned_prose",
+      "expected_check": "required_not_mentioned",
+      "expected_tool": "get_company_posts",
+      "detected": true
+    },
+    {
+      "base_tool_set": "exp1_stickerdaniel_linkedin_mcp_server_mirror",
+      "defect_type": "required_unmentioned_prose",
+      "expected_check": "required_not_mentioned",
+      "expected_tool": "search_companies",
+      "detected": true
+    },
+    {
+      "base_tool_set": "exp1_stickerdaniel_linkedin_mcp_server_mirror",
+      "defect_type": "contradictory_required_claim",
+      "expected_check": "required_references_missing_property",
+      "expected_tool": "close_session",
+      "detected": true
+    },
+    {
+      "base_tool_set": "exp1_stickerdaniel_linkedin_mcp_server_mirror",
+      "defect_type": "contradictory_required_claim",
+      "expected_check": "required_references_missing_property",
+      "expected_tool": "get_company_profile",
+      "detected": true
+    },
+    {
+      "base_tool_set": "exp1_stickerdaniel_linkedin_mcp_server_mirror",
+      "defect_type": "contradictory_required_claim",
+      "expected_check": "required_references_missing_property",
+      "expected_tool": "get_company_posts",
+      "detected": true
+    },
+    {
+      "base_tool_set": "rw1_github_mirror",
+      "defect_type": "param_renamed",
+      "expected_check": "described_not_in_schema",
+      "expected_tool": "get_file_contents",
+      "detected": false
+    },
+    {
+      "base_tool_set": "rw1_github_mirror",
+      "defect_type": "param_renamed",
+      "expected_check": "described_not_in_schema",
+      "expected_tool": "create_or_update_file",
+      "detected": false
+    },
+    {
+      "base_tool_set": "rw1_github_mirror",
+      "defect_type": "param_renamed",
+      "expected_check": "described_not_in_schema",
+      "expected_tool": "push_files",
+      "detected": false
+    },
+    {
+      "base_tool_set": "rw1_github_mirror",
+      "defect_type": "type_flipped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "get_pull_request",
+      "detected": true
+    },
+    {
+      "base_tool_set": "rw1_github_mirror",
+      "defect_type": "type_flipped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "get_pull_request_diff",
+      "detected": true
+    },
+    {
+      "base_tool_set": "rw1_github_mirror",
+      "defect_type": "type_flipped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "get_pull_request_files",
+      "detected": true
+    },
+    {
+      "base_tool_set": "rw1_github_mirror",
+      "defect_type": "enum_dropped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "get_pull_request",
+      "detected": true
+    },
+    {
+      "base_tool_set": "rw1_github_mirror",
+      "defect_type": "enum_dropped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "get_pull_request_diff",
+      "detected": true
+    },
+    {
+      "base_tool_set": "rw1_github_mirror",
+      "defect_type": "enum_dropped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "get_pull_request_files",
+      "detected": true
+    },
+    {
+      "base_tool_set": "rw1_github_mirror",
+      "defect_type": "required_unmentioned_prose",
+      "expected_check": "required_not_mentioned",
+      "expected_tool": "get_file_contents",
+      "detected": true
+    },
+    {
+      "base_tool_set": "rw1_github_mirror",
+      "defect_type": "required_unmentioned_prose",
+      "expected_check": "required_not_mentioned",
+      "expected_tool": "create_or_update_file",
+      "detected": true
+    },
+    {
+      "base_tool_set": "rw1_github_mirror",
+      "defect_type": "required_unmentioned_prose",
+      "expected_check": "required_not_mentioned",
+      "expected_tool": "push_files",
+      "detected": true
+    },
+    {
+      "base_tool_set": "rw1_github_mirror",
+      "defect_type": "contradictory_required_claim",
+      "expected_check": "required_references_missing_property",
+      "expected_tool": "get_pull_request",
+      "detected": true
+    },
+    {
+      "base_tool_set": "rw1_github_mirror",
+      "defect_type": "contradictory_required_claim",
+      "expected_check": "required_references_missing_property",
+      "expected_tool": "get_pull_request_diff",
+      "detected": true
+    },
+    {
+      "base_tool_set": "rw1_github_mirror",
+      "defect_type": "contradictory_required_claim",
+      "expected_check": "required_references_missing_property",
+      "expected_tool": "get_pull_request_files",
+      "detected": true
+    },
+    {
+      "base_tool_set": "rw1_arm_guardb",
+      "defect_type": "param_renamed",
+      "expected_check": "described_not_in_schema",
+      "expected_tool": "search_code",
+      "detected": false
+    },
+    {
+      "base_tool_set": "rw1_arm_guardb",
+      "defect_type": "param_renamed",
+      "expected_check": "described_not_in_schema",
+      "expected_tool": "get_file_contents",
+      "detected": false
+    },
+    {
+      "base_tool_set": "rw1_arm_guardb",
+      "defect_type": "param_renamed",
+      "expected_check": "described_not_in_schema",
+      "expected_tool": "create_or_update_file",
+      "detected": false
+    },
+    {
+      "base_tool_set": "rw1_arm_guardb",
+      "defect_type": "type_flipped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "get_pull_request",
+      "detected": true
+    },
+    {
+      "base_tool_set": "rw1_arm_guardb",
+      "defect_type": "type_flipped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "get_pull_request_diff",
+      "detected": true
+    },
+    {
+      "base_tool_set": "rw1_arm_guardb",
+      "defect_type": "type_flipped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "get_pull_request_files",
+      "detected": true
+    },
+    {
+      "base_tool_set": "rw1_arm_guardb",
+      "defect_type": "enum_dropped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "get_pull_request",
+      "detected": true
+    },
+    {
+      "base_tool_set": "rw1_arm_guardb",
+      "defect_type": "enum_dropped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "get_pull_request_diff",
+      "detected": true
+    },
+    {
+      "base_tool_set": "rw1_arm_guardb",
+      "defect_type": "enum_dropped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "get_pull_request_files",
+      "detected": true
+    },
+    {
+      "base_tool_set": "rw1_arm_guardb",
+      "defect_type": "required_unmentioned_prose",
+      "expected_check": "required_not_mentioned",
+      "expected_tool": "search_code",
+      "detected": true
+    },
+    {
+      "base_tool_set": "rw1_arm_guardb",
+      "defect_type": "required_unmentioned_prose",
+      "expected_check": "required_not_mentioned",
+      "expected_tool": "get_file_contents",
+      "detected": true
+    },
+    {
+      "base_tool_set": "rw1_arm_guardb",
+      "defect_type": "required_unmentioned_prose",
+      "expected_check": "required_not_mentioned",
+      "expected_tool": "create_or_update_file",
+      "detected": true
+    },
+    {
+      "base_tool_set": "rw1_arm_guardb",
+      "defect_type": "contradictory_required_claim",
+      "expected_check": "required_references_missing_property",
+      "expected_tool": "get_pull_request",
+      "detected": true
+    },
+    {
+      "base_tool_set": "rw1_arm_guardb",
+      "defect_type": "contradictory_required_claim",
+      "expected_check": "required_references_missing_property",
+      "expected_tool": "get_pull_request_diff",
+      "detected": true
+    },
+    {
+      "base_tool_set": "rw1_arm_guardb",
+      "defect_type": "contradictory_required_claim",
+      "expected_check": "required_references_missing_property",
+      "expected_tool": "get_pull_request_files",
+      "detected": true
+    },
+    {
+      "base_tool_set": "rw1_arm_oracle",
+      "defect_type": "param_renamed",
+      "expected_check": "described_not_in_schema",
+      "expected_tool": "search_repositories",
+      "detected": false
+    },
+    {
+      "base_tool_set": "rw1_arm_oracle",
+      "defect_type": "param_renamed",
+      "expected_check": "described_not_in_schema",
+      "expected_tool": "search_code",
+      "detected": false
+    },
+    {
+      "base_tool_set": "rw1_arm_oracle",
+      "defect_type": "param_renamed",
+      "expected_check": "described_not_in_schema",
+      "expected_tool": "search_issues",
+      "detected": false
+    },
+    {
+      "base_tool_set": "rw1_arm_oracle",
+      "defect_type": "type_flipped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "get_pull_request",
+      "detected": true
+    },
+    {
+      "base_tool_set": "rw1_arm_oracle",
+      "defect_type": "type_flipped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "get_pull_request_diff",
+      "detected": true
+    },
+    {
+      "base_tool_set": "rw1_arm_oracle",
+      "defect_type": "type_flipped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "get_pull_request_files",
+      "detected": true
+    },
+    {
+      "base_tool_set": "rw1_arm_oracle",
+      "defect_type": "enum_dropped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "get_pull_request",
+      "detected": true
+    },
+    {
+      "base_tool_set": "rw1_arm_oracle",
+      "defect_type": "enum_dropped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "get_pull_request_diff",
+      "detected": true
+    },
+    {
+      "base_tool_set": "rw1_arm_oracle",
+      "defect_type": "enum_dropped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "get_pull_request_files",
+      "detected": true
+    },
+    {
+      "base_tool_set": "rw1_arm_oracle",
+      "defect_type": "required_unmentioned_prose",
+      "expected_check": "required_not_mentioned",
+      "expected_tool": "search_repositories",
+      "detected": true
+    },
+    {
+      "base_tool_set": "rw1_arm_oracle",
+      "defect_type": "required_unmentioned_prose",
+      "expected_check": "required_not_mentioned",
+      "expected_tool": "search_code",
+      "detected": true
+    },
+    {
+      "base_tool_set": "rw1_arm_oracle",
+      "defect_type": "required_unmentioned_prose",
+      "expected_check": "required_not_mentioned",
+      "expected_tool": "search_issues",
+      "detected": true
+    },
+    {
+      "base_tool_set": "rw1_arm_oracle",
+      "defect_type": "contradictory_required_claim",
+      "expected_check": "required_references_missing_property",
+      "expected_tool": "get_pull_request",
+      "detected": true
+    },
+    {
+      "base_tool_set": "rw1_arm_oracle",
+      "defect_type": "contradictory_required_claim",
+      "expected_check": "required_references_missing_property",
+      "expected_tool": "get_pull_request_diff",
+      "detected": true
+    },
+    {
+      "base_tool_set": "rw1_arm_oracle",
+      "defect_type": "contradictory_required_claim",
+      "expected_check": "required_references_missing_property",
+      "expected_tool": "get_pull_request_files",
+      "detected": true
+    },
+    {
+      "base_tool_set": "rw2_aws_iam_mirror",
+      "defect_type": "type_flipped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "attach_user_policy",
+      "detected": true
+    },
+    {
+      "base_tool_set": "rw2_aws_iam_mirror",
+      "defect_type": "type_flipped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "attach_group_policy",
+      "detected": true
+    },
+    {
+      "base_tool_set": "rw2_aws_iam_mirror",
+      "defect_type": "type_flipped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "detach_user_policy",
+      "detected": true
+    },
+    {
+      "base_tool_set": "rw2_aws_iam_mirror",
+      "defect_type": "enum_dropped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "attach_user_policy",
+      "detected": true
+    },
+    {
+      "base_tool_set": "rw2_aws_iam_mirror",
+      "defect_type": "enum_dropped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "attach_group_policy",
+      "detected": true
+    },
+    {
+      "base_tool_set": "rw2_aws_iam_mirror",
+      "defect_type": "enum_dropped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "detach_user_policy",
+      "detected": true
+    },
+    {
+      "base_tool_set": "rw2_aws_iam_mirror",
+      "defect_type": "contradictory_required_claim",
+      "expected_check": "required_references_missing_property",
+      "expected_tool": "attach_user_policy",
+      "detected": true
+    },
+    {
+      "base_tool_set": "rw2_aws_iam_mirror",
+      "defect_type": "contradictory_required_claim",
+      "expected_check": "required_references_missing_property",
+      "expected_tool": "attach_group_policy",
+      "detected": true
+    },
+    {
+      "base_tool_set": "rw2_aws_iam_mirror",
+      "defect_type": "contradictory_required_claim",
+      "expected_check": "required_references_missing_property",
+      "expected_tool": "detach_user_policy",
+      "detected": true
+    },
+    {
+      "base_tool_set": "rw2_arm_guardb",
+      "defect_type": "type_flipped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "attach_user_policy",
+      "detected": true
+    },
+    {
+      "base_tool_set": "rw2_arm_guardb",
+      "defect_type": "type_flipped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "attach_group_policy",
+      "detected": true
+    },
+    {
+      "base_tool_set": "rw2_arm_guardb",
+      "defect_type": "type_flipped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "detach_user_policy",
+      "detected": true
+    },
+    {
+      "base_tool_set": "rw2_arm_guardb",
+      "defect_type": "enum_dropped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "attach_user_policy",
+      "detected": true
+    },
+    {
+      "base_tool_set": "rw2_arm_guardb",
+      "defect_type": "enum_dropped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "attach_group_policy",
+      "detected": true
+    },
+    {
+      "base_tool_set": "rw2_arm_guardb",
+      "defect_type": "enum_dropped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "detach_user_policy",
+      "detected": true
+    },
+    {
+      "base_tool_set": "rw2_arm_guardb",
+      "defect_type": "contradictory_required_claim",
+      "expected_check": "required_references_missing_property",
+      "expected_tool": "attach_user_policy",
+      "detected": true
+    },
+    {
+      "base_tool_set": "rw2_arm_guardb",
+      "defect_type": "contradictory_required_claim",
+      "expected_check": "required_references_missing_property",
+      "expected_tool": "attach_group_policy",
+      "detected": true
+    },
+    {
+      "base_tool_set": "rw2_arm_guardb",
+      "defect_type": "contradictory_required_claim",
+      "expected_check": "required_references_missing_property",
+      "expected_tool": "detach_user_policy",
+      "detected": true
+    },
+    {
+      "base_tool_set": "p2a_internal_proxy_mirror",
+      "defect_type": "param_renamed",
+      "expected_check": "described_not_in_schema",
+      "expected_tool": "message_customer",
+      "detected": false
+    },
+    {
+      "base_tool_set": "p2a_internal_proxy_mirror",
+      "defect_type": "type_flipped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "get_order",
+      "detected": true
+    },
+    {
+      "base_tool_set": "p2a_internal_proxy_mirror",
+      "defect_type": "type_flipped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "fetch_order",
+      "detected": true
+    },
+    {
+      "base_tool_set": "p2a_internal_proxy_mirror",
+      "defect_type": "type_flipped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "load_order",
+      "detected": true
+    },
+    {
+      "base_tool_set": "p2a_internal_proxy_mirror",
+      "defect_type": "enum_dropped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "get_order",
+      "detected": true
+    },
+    {
+      "base_tool_set": "p2a_internal_proxy_mirror",
+      "defect_type": "enum_dropped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "fetch_order",
+      "detected": true
+    },
+    {
+      "base_tool_set": "p2a_internal_proxy_mirror",
+      "defect_type": "enum_dropped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "load_order",
+      "detected": true
+    },
+    {
+      "base_tool_set": "p2a_internal_proxy_mirror",
+      "defect_type": "required_unmentioned_prose",
+      "expected_check": "required_not_mentioned",
+      "expected_tool": "message_customer",
+      "detected": true
+    },
+    {
+      "base_tool_set": "p2a_internal_proxy_mirror",
+      "defect_type": "contradictory_required_claim",
+      "expected_check": "required_references_missing_property",
+      "expected_tool": "get_order",
+      "detected": true
+    },
+    {
+      "base_tool_set": "p2a_internal_proxy_mirror",
+      "defect_type": "contradictory_required_claim",
+      "expected_check": "required_references_missing_property",
+      "expected_tool": "fetch_order",
+      "detected": true
+    },
+    {
+      "base_tool_set": "p2a_internal_proxy_mirror",
+      "defect_type": "contradictory_required_claim",
+      "expected_check": "required_references_missing_property",
+      "expected_tool": "load_order",
+      "detected": true
+    },
+    {
+      "base_tool_set": "p2a_arm_guardb",
+      "defect_type": "param_renamed",
+      "expected_check": "described_not_in_schema",
+      "expected_tool": "filter_accounts",
+      "detected": false
+    },
+    {
+      "base_tool_set": "p2a_arm_guardb",
+      "defect_type": "param_renamed",
+      "expected_check": "described_not_in_schema",
+      "expected_tool": "lookup_account",
+      "detected": false
+    },
+    {
+      "base_tool_set": "p2a_arm_guardb",
+      "defect_type": "param_renamed",
+      "expected_check": "described_not_in_schema",
+      "expected_tool": "push_update",
+      "detected": false
+    },
+    {
+      "base_tool_set": "p2a_arm_guardb",
+      "defect_type": "type_flipped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "get_order",
+      "detected": true
+    },
+    {
+      "base_tool_set": "p2a_arm_guardb",
+      "defect_type": "type_flipped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "fetch_order",
+      "detected": true
+    },
+    {
+      "base_tool_set": "p2a_arm_guardb",
+      "defect_type": "type_flipped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "load_order",
+      "detected": true
+    },
+    {
+      "base_tool_set": "p2a_arm_guardb",
+      "defect_type": "enum_dropped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "get_order",
+      "detected": true
+    },
+    {
+      "base_tool_set": "p2a_arm_guardb",
+      "defect_type": "enum_dropped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "fetch_order",
+      "detected": true
+    },
+    {
+      "base_tool_set": "p2a_arm_guardb",
+      "defect_type": "enum_dropped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "load_order",
+      "detected": true
+    },
+    {
+      "base_tool_set": "p2a_arm_guardb",
+      "defect_type": "required_unmentioned_prose",
+      "expected_check": "required_not_mentioned",
+      "expected_tool": "patch_invoice",
+      "detected": true
+    },
+    {
+      "base_tool_set": "p2a_arm_guardb",
+      "defect_type": "required_unmentioned_prose",
+      "expected_check": "required_not_mentioned",
+      "expected_tool": "lookup_account",
+      "detected": true
+    },
+    {
+      "base_tool_set": "p2a_arm_guardb",
+      "defect_type": "required_unmentioned_prose",
+      "expected_check": "required_not_mentioned",
+      "expected_tool": "push_update",
+      "detected": true
+    },
+    {
+      "base_tool_set": "p2a_arm_guardb",
+      "defect_type": "contradictory_required_claim",
+      "expected_check": "required_references_missing_property",
+      "expected_tool": "get_order",
+      "detected": true
+    },
+    {
+      "base_tool_set": "p2a_arm_guardb",
+      "defect_type": "contradictory_required_claim",
+      "expected_check": "required_references_missing_property",
+      "expected_tool": "fetch_order",
+      "detected": true
+    },
+    {
+      "base_tool_set": "p2a_arm_guardb",
+      "defect_type": "contradictory_required_claim",
+      "expected_check": "required_references_missing_property",
+      "expected_tool": "load_order",
+      "detected": true
+    },
+    {
+      "base_tool_set": "p2a_arm_oracle",
+      "defect_type": "param_renamed",
+      "expected_check": "described_not_in_schema",
+      "expected_tool": "list_orders",
+      "detected": false
+    },
+    {
+      "base_tool_set": "p2a_arm_oracle",
+      "defect_type": "param_renamed",
+      "expected_check": "described_not_in_schema",
+      "expected_tool": "upsert_invoice",
+      "detected": true
+    },
+    {
+      "base_tool_set": "p2a_arm_oracle",
+      "defect_type": "param_renamed",
+      "expected_check": "described_not_in_schema",
+      "expected_tool": "filter_accounts",
+      "detected": false
+    },
+    {
+      "base_tool_set": "p2a_arm_oracle",
+      "defect_type": "type_flipped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "get_order",
+      "detected": true
+    },
+    {
+      "base_tool_set": "p2a_arm_oracle",
+      "defect_type": "type_flipped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "fetch_order",
+      "detected": true
+    },
+    {
+      "base_tool_set": "p2a_arm_oracle",
+      "defect_type": "type_flipped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "load_order",
+      "detected": true
+    },
+    {
+      "base_tool_set": "p2a_arm_oracle",
+      "defect_type": "enum_dropped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "get_order",
+      "detected": true
+    },
+    {
+      "base_tool_set": "p2a_arm_oracle",
+      "defect_type": "enum_dropped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "fetch_order",
+      "detected": true
+    },
+    {
+      "base_tool_set": "p2a_arm_oracle",
+      "defect_type": "enum_dropped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "load_order",
+      "detected": true
+    },
+    {
+      "base_tool_set": "p2a_arm_oracle",
+      "defect_type": "required_unmentioned_prose",
+      "expected_check": "required_not_mentioned",
+      "expected_tool": "create_order",
+      "detected": true
+    },
+    {
+      "base_tool_set": "p2a_arm_oracle",
+      "defect_type": "required_unmentioned_prose",
+      "expected_check": "required_not_mentioned",
+      "expected_tool": "upsert_invoice",
+      "detected": true
+    },
+    {
+      "base_tool_set": "p2a_arm_oracle",
+      "defect_type": "required_unmentioned_prose",
+      "expected_check": "required_not_mentioned",
+      "expected_tool": "patch_invoice",
+      "detected": true
+    },
+    {
+      "base_tool_set": "p2a_arm_oracle",
+      "defect_type": "contradictory_required_claim",
+      "expected_check": "required_references_missing_property",
+      "expected_tool": "get_order",
+      "detected": true
+    },
+    {
+      "base_tool_set": "p2a_arm_oracle",
+      "defect_type": "contradictory_required_claim",
+      "expected_check": "required_references_missing_property",
+      "expected_tool": "fetch_order",
+      "detected": true
+    },
+    {
+      "base_tool_set": "p2a_arm_oracle",
+      "defect_type": "contradictory_required_claim",
+      "expected_check": "required_references_missing_property",
+      "expected_tool": "load_order",
+      "detected": true
+    },
+    {
+      "base_tool_set": "q3_arm_o",
+      "defect_type": "param_renamed",
+      "expected_check": "described_not_in_schema",
+      "expected_tool": "store_item",
+      "detected": false
+    },
+    {
+      "base_tool_set": "q3_arm_o",
+      "defect_type": "param_renamed",
+      "expected_check": "described_not_in_schema",
+      "expected_tool": "persist_row",
+      "detected": false
+    },
+    {
+      "base_tool_set": "q3_arm_o",
+      "defect_type": "param_renamed",
+      "expected_check": "described_not_in_schema",
+      "expected_tool": "remove_entry",
+      "detected": false
+    },
+    {
+      "base_tool_set": "q3_arm_o",
+      "defect_type": "type_flipped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "store_item",
+      "detected": true
+    },
+    {
+      "base_tool_set": "q3_arm_o",
+      "defect_type": "type_flipped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "persist_row",
+      "detected": true
+    },
+    {
+      "base_tool_set": "q3_arm_o",
+      "defect_type": "type_flipped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "save_record",
+      "detected": true
+    },
+    {
+      "base_tool_set": "q3_arm_o",
+      "defect_type": "enum_dropped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "store_item",
+      "detected": true
+    },
+    {
+      "base_tool_set": "q3_arm_o",
+      "defect_type": "enum_dropped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "persist_row",
+      "detected": true
+    },
+    {
+      "base_tool_set": "q3_arm_o",
+      "defect_type": "enum_dropped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "save_record",
+      "detected": true
+    },
+    {
+      "base_tool_set": "q3_arm_o",
+      "defect_type": "required_unmentioned_prose",
+      "expected_check": "required_not_mentioned",
+      "expected_tool": "store_item",
+      "detected": true
+    },
+    {
+      "base_tool_set": "q3_arm_o",
+      "defect_type": "required_unmentioned_prose",
+      "expected_check": "required_not_mentioned",
+      "expected_tool": "persist_row",
+      "detected": true
+    },
+    {
+      "base_tool_set": "q3_arm_o",
+      "defect_type": "required_unmentioned_prose",
+      "expected_check": "required_not_mentioned",
+      "expected_tool": "remove_entry",
+      "detected": true
+    },
+    {
+      "base_tool_set": "q3_arm_o",
+      "defect_type": "contradictory_required_claim",
+      "expected_check": "required_references_missing_property",
+      "expected_tool": "store_item",
+      "detected": true
+    },
+    {
+      "base_tool_set": "q3_arm_o",
+      "defect_type": "contradictory_required_claim",
+      "expected_check": "required_references_missing_property",
+      "expected_tool": "persist_row",
+      "detected": true
+    },
+    {
+      "base_tool_set": "q3_arm_o",
+      "defect_type": "contradictory_required_claim",
+      "expected_check": "required_references_missing_property",
+      "expected_tool": "save_record",
+      "detected": true
+    },
+    {
+      "base_tool_set": "q6_arm_f_doc_guarded",
+      "defect_type": "param_renamed",
+      "expected_check": "described_not_in_schema",
+      "expected_tool": "store_item",
+      "detected": false
+    },
+    {
+      "base_tool_set": "q6_arm_f_doc_guarded",
+      "defect_type": "param_renamed",
+      "expected_check": "described_not_in_schema",
+      "expected_tool": "persist_row",
+      "detected": false
+    },
+    {
+      "base_tool_set": "q6_arm_f_doc_guarded",
+      "defect_type": "param_renamed",
+      "expected_check": "described_not_in_schema",
+      "expected_tool": "find_entries",
+      "detected": false
+    },
+    {
+      "base_tool_set": "q6_arm_f_doc_guarded",
+      "defect_type": "type_flipped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "store_item",
+      "detected": true
+    },
+    {
+      "base_tool_set": "q6_arm_f_doc_guarded",
+      "defect_type": "type_flipped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "persist_row",
+      "detected": true
+    },
+    {
+      "base_tool_set": "q6_arm_f_doc_guarded",
+      "defect_type": "type_flipped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "save_record",
+      "detected": true
+    },
+    {
+      "base_tool_set": "q6_arm_f_doc_guarded",
+      "defect_type": "enum_dropped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "store_item",
+      "detected": true
+    },
+    {
+      "base_tool_set": "q6_arm_f_doc_guarded",
+      "defect_type": "enum_dropped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "persist_row",
+      "detected": true
+    },
+    {
+      "base_tool_set": "q6_arm_f_doc_guarded",
+      "defect_type": "enum_dropped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "save_record",
+      "detected": true
+    },
+    {
+      "base_tool_set": "q6_arm_f_doc_guarded",
+      "defect_type": "required_unmentioned_prose",
+      "expected_check": "required_not_mentioned",
+      "expected_tool": "store_item",
+      "detected": true
+    },
+    {
+      "base_tool_set": "q6_arm_f_doc_guarded",
+      "defect_type": "required_unmentioned_prose",
+      "expected_check": "required_not_mentioned",
+      "expected_tool": "persist_row",
+      "detected": true
+    },
+    {
+      "base_tool_set": "q6_arm_f_doc_guarded",
+      "defect_type": "required_unmentioned_prose",
+      "expected_check": "required_not_mentioned",
+      "expected_tool": "find_entries",
+      "detected": true
+    },
+    {
+      "base_tool_set": "q6_arm_f_doc_guarded",
+      "defect_type": "contradictory_required_claim",
+      "expected_check": "required_references_missing_property",
+      "expected_tool": "store_item",
+      "detected": true
+    },
+    {
+      "base_tool_set": "q6_arm_f_doc_guarded",
+      "defect_type": "contradictory_required_claim",
+      "expected_check": "required_references_missing_property",
+      "expected_tool": "persist_row",
+      "detected": true
+    },
+    {
+      "base_tool_set": "q6_arm_f_doc_guarded",
+      "defect_type": "contradictory_required_claim",
+      "expected_check": "required_references_missing_property",
+      "expected_tool": "save_record",
+      "detected": true
+    },
+    {
+      "base_tool_set": "exp1_dataojitori_nocturne_memory_mirror",
+      "defect_type": "param_renamed",
+      "expected_check": "described_not_in_schema",
+      "expected_tool": "read_memory",
+      "detected": false
+    },
+    {
+      "base_tool_set": "exp1_dataojitori_nocturne_memory_mirror",
+      "defect_type": "param_renamed",
+      "expected_check": "described_not_in_schema",
+      "expected_tool": "create_memory",
+      "detected": true
+    },
+    {
+      "base_tool_set": "exp1_dataojitori_nocturne_memory_mirror",
+      "defect_type": "param_renamed",
+      "expected_check": "described_not_in_schema",
+      "expected_tool": "update_memory",
+      "detected": true
+    },
+    {
+      "base_tool_set": "exp1_dataojitori_nocturne_memory_mirror",
+      "defect_type": "type_flipped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "read_memory",
+      "detected": true
+    },
+    {
+      "base_tool_set": "exp1_dataojitori_nocturne_memory_mirror",
+      "defect_type": "type_flipped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "create_memory",
+      "detected": true
+    },
+    {
+      "base_tool_set": "exp1_dataojitori_nocturne_memory_mirror",
+      "defect_type": "type_flipped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "update_memory",
+      "detected": true
+    },
+    {
+      "base_tool_set": "exp1_dataojitori_nocturne_memory_mirror",
+      "defect_type": "enum_dropped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "read_memory",
+      "detected": true
+    },
+    {
+      "base_tool_set": "exp1_dataojitori_nocturne_memory_mirror",
+      "defect_type": "enum_dropped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "create_memory",
+      "detected": true
+    },
+    {
+      "base_tool_set": "exp1_dataojitori_nocturne_memory_mirror",
+      "defect_type": "enum_dropped",
+      "expected_check": "type_enum_contradiction",
+      "expected_tool": "update_memory",
+      "detected": true
+    },
+    {
+      "base_tool_set": "exp1_dataojitori_nocturne_memory_mirror",
+      "defect_type": "required_unmentioned_prose",
+      "expected_check": "required_not_mentioned",
+      "expected_tool": "read_memory",
+      "detected": true
+    },
+    {
+      "base_tool_set": "exp1_dataojitori_nocturne_memory_mirror",
+      "defect_type": "required_unmentioned_prose",
+      "expected_check": "required_not_mentioned",
+      "expected_tool": "create_memory",
+      "detected": true
+    },
+    {
+      "base_tool_set": "exp1_dataojitori_nocturne_memory_mirror",
+      "defect_type": "required_unmentioned_prose",
+      "expected_check": "required_not_mentioned",
+      "expected_tool": "update_memory",
+      "detected": true
+    },
+    {
+      "base_tool_set": "exp1_dataojitori_nocturne_memory_mirror",
+      "defect_type": "contradictory_required_claim",
+      "expected_check": "required_references_missing_property",
+      "expected_tool": "read_memory",
+      "detected": true
+    },
+    {
+      "base_tool_set": "exp1_dataojitori_nocturne_memory_mirror",
+      "defect_type": "contradictory_required_claim",
+      "expected_check": "required_references_missing_property",
+      "expected_tool": "create_memory",
+      "detected": true
+    },
+    {
+      "base_tool_set": "exp1_dataojitori_nocturne_memory_mirror",
+      "defect_type": "contradictory_required_claim",
+      "expected_check": "required_references_missing_property",
+      "expected_tool": "update_memory",
+      "detected": true
+    }
+  ]
+}

@@ -1,0 +1,114 @@
+[
+  {
+    "baseline_label": "real_study_mean (0.75)",
+    "baseline_rate": 0.75,
+    "n_trials": 5,
+    "power": 0.8,
+    "mde": 0.7114
+  },
+  {
+    "baseline_label": "real_study_mean (0.75)",
+    "baseline_rate": 0.75,
+    "n_trials": 5,
+    "power": 0.95,
+    "mde": 0.75
+  },
+  {
+    "baseline_label": "real_study_mean (0.75)",
+    "baseline_rate": 0.75,
+    "n_trials": 10,
+    "power": 0.8,
+    "mde": 0.598
+  },
+  {
+    "baseline_label": "real_study_mean (0.75)",
+    "baseline_rate": 0.75,
+    "n_trials": 10,
+    "power": 0.95,
+    "mde": 0.6918
+  },
+  {
+    "baseline_label": "real_study_mean (0.75)",
+    "baseline_rate": 0.75,
+    "n_trials": 20,
+    "power": 0.8,
+    "mde": 0.4327
+  },
+  {
+    "baseline_label": "real_study_mean (0.75)",
+    "baseline_rate": 0.75,
+    "n_trials": 20,
+    "power": 0.95,
+    "mde": 0.5374
+  },
+  {
+    "baseline_label": "real_study_mean (0.75)",
+    "baseline_rate": 0.75,
+    "n_trials": 50,
+    "power": 0.8,
+    "mde": 0.273
+  },
+  {
+    "baseline_label": "real_study_mean (0.75)",
+    "baseline_rate": 0.75,
+    "n_trials": 50,
+    "power": 0.95,
+    "mde": 0.3547
+  },
+  {
+    "baseline_label": "worst_case_variance (0.50)",
+    "baseline_rate": 0.5,
+    "n_trials": 5,
+    "power": 0.8,
+    "mde": 0.5
+  },
+  {
+    "baseline_label": "worst_case_variance (0.50)",
+    "baseline_rate": 0.5,
+    "n_trials": 5,
+    "power": 0.95,
+    "mde": 0.5
+  },
+  {
+    "baseline_label": "worst_case_variance (0.50)",
+    "baseline_rate": 0.5,
+    "n_trials": 10,
+    "power": 0.8,
+    "mde": 0.4749
+  },
+  {
+    "baseline_label": "worst_case_variance (0.50)",
+    "baseline_rate": 0.5,
+    "n_trials": 10,
+    "power": 0.95,
+    "mde": 0.5
+  },
+  {
+    "baseline_label": "worst_case_variance (0.50)",
+    "baseline_rate": 0.5,
+    "n_trials": 20,
+    "power": 0.8,
+    "mde": 0.3906
+  },
+  {
+    "baseline_label": "worst_case_variance (0.50)",
+    "baseline_rate": 0.5,
+    "n_trials": 20,
+    "power": 0.95,
+    "mde": 0.4531
+  },
+  {
+    "baseline_label": "worst_case_variance (0.50)",
+    "baseline_rate": 0.5,
+    "n_trials": 50,
+    "power": 0.8,
+    "mde": 0.2692
+  },
+  {
+    "baseline_label": "worst_case_variance (0.50)",
+    "baseline_rate": 0.5,
+    "n_trials": 50,
+    "power": 0.95,
+    "mde": 0.3328
+  }
+]

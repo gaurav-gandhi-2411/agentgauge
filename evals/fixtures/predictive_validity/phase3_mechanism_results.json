@@ -1,0 +1,205 @@
+[
+  {
+    "before": "t18_vague_server",
+    "after": "t18_fixer_server",
+    "n_tools": 12,
+    "mean_sim_before": 0.9999999999999998,
+    "mean_sim_after": 0.7543501482547041,
+    "delta_mean_sim": -0.24564985174529563,
+    "max_sim_before": 0.9999999999999999,
+    "max_sim_after": 0.9248877156705546,
+    "delta_max_sim": -0.07511228432944528,
+    "nearest_pair_before": [
+      "alert_contact",
+      "broadcast_message"
+    ],
+    "nearest_pair_after": [
+      "alert_contact",
+      "send_notification"
+    ],
+    "task_success_before": 0.65,
+    "task_success_after": 0.625,
+    "delta_task_success": -0.025000000000000022,
+    "wrong_tool_rate_before": 0.26666666666666666,
+    "wrong_tool_rate_after": 0.2916666666666667,
+    "delta_wrong_tool_rate": 0.025000000000000022,
+    "arg_score_given_correct_before": 0.8863636363636364,
+    "arg_score_given_correct_after": 0.8823529411764706,
+    "n_correct_tool_trials_before": 88,
+    "n_correct_tool_trials_after": 85
+  },
+  {
+    "before": "t18_vague_server",
+    "after": "t18_q2b_server",
+    "n_tools": 12,
+    "mean_sim_before": 0.9999999999999998,
+    "mean_sim_after": 0.7532983090787447,
+    "delta_mean_sim": -0.24670169092125505,
+    "max_sim_before": 0.9999999999999999,
+    "max_sim_after": 0.9559610152987249,
+    "delta_max_sim": -0.044038984701274986,
+    "nearest_pair_before": [
+      "alert_contact",
+      "broadcast_message"
+    ],
+    "nearest_pair_after": [
+      "fetch_record",
+      "get_record"
+    ],
+    "task_success_before": 0.65,
+    "task_success_after": 0.5833,
+    "delta_task_success": -0.06669999999999998,
+    "wrong_tool_rate_before": 0.26666666666666666,
+    "wrong_tool_rate_after": 0.375,
+    "delta_wrong_tool_rate": 0.10833333333333334,
+    "arg_score_given_correct_before": 0.8863636363636364,
+    "arg_score_given_correct_after": 0.9333333333333333,
+    "n_correct_tool_trials_before": 88,
+    "n_correct_tool_trials_after": 75
+  },
+  {
+    "before": "grounded_server",
+    "after": "grounded_server_fixed",
+    "n_tools": 5,
+    "mean_sim_before": 0.8126383805937719,
+    "mean_sim_after": 0.7137199746874253,
+    "delta_mean_sim": -0.0989184059063466,
+    "max_sim_before": 0.9017696390293339,
+    "max_sim_after": 0.7860636725644536,
+    "delta_max_sim": -0.1157059664648803,
+    "nearest_pair_before": [
+      "transform_clip",
+      "transform_normalize"
+    ],
+    "nearest_pair_after": [
+      "transform_round",
+      "transform_scale"
+    ],
+    "task_success_before": 0.5667,
+    "task_success_after": 0.75,
+    "delta_task_success": 0.18330000000000002,
+    "wrong_tool_rate_before": 0.2,
+    "wrong_tool_rate_after": 0.1,
+    "delta_wrong_tool_rate": -0.1,
+    "arg_score_given_correct_before": 0.7083333333333333,
+    "arg_score_given_correct_after": 0.8333333333333334,
+    "n_correct_tool_trials_before": 40,
+    "n_correct_tool_trials_after": 45
+  },
+  {
+    "before": "confusable_server",
+    "after": "confusable_server_fixed",
+    "n_tools": 16,
+    "mean_sim_before": 0.8020477117112652,
+    "mean_sim_after": 0.6179083076264408,
+    "delta_mean_sim": -0.18413940408482443,
+    "max_sim_before": 1.0,
+    "max_sim_after": 0.8595611304902133,
+    "delta_max_sim": -0.14043886950978668,
+    "nearest_pair_before": [
+      "archive_record",
+      "delete_record"
+    ],
+    "nearest_pair_after": [
+      "archive_record",
+      "delete_record"
+    ],
+    "task_success_before": 0.6406,
+    "task_success_after": 0.6094,
+    "delta_task_success": -0.031199999999999894,
+    "wrong_tool_rate_before": 0.1875,
+    "wrong_tool_rate_after": 0.25,
+    "delta_wrong_tool_rate": 0.0625,
+    "arg_score_given_correct_before": 0.7884615384615384,
+    "arg_score_given_correct_after": 0.8125,
+    "n_correct_tool_trials_before": 130,
+    "n_correct_tool_trials_after": 120
+  },
+  {
+    "before": "mediocre_server",
+    "after": "mediocre_server_fixed",
+    "n_tools": 5,
+    "mean_sim_before": 0.8779981833017736,
+    "mean_sim_after": 0.8819199011265899,
+    "delta_mean_sim": 0.003921717824816318,
+    "max_sim_before": 1.0,
+    "max_sim_after": 1.0,
+    "delta_max_sim": 0.0,
+    "nearest_pair_before": [
+      "del_a",
+      "del_b"
+    ],
+    "nearest_pair_after": [
+      "del_a",
+      "del_b"
+    ],
+    "task_success_before": 0.5333,
+    "task_success_after": 0.3833,
+    "delta_task_success": -0.15000000000000002,
+    "wrong_tool_rate_before": 0.26666666666666666,
+    "wrong_tool_rate_after": 0.5,
+    "delta_wrong_tool_rate": 0.23333333333333334,
+    "arg_score_given_correct_before": 0.7272727272727273,
+    "arg_score_given_correct_after": 0.7666666666666667,
+    "n_correct_tool_trials_before": 44,
+    "n_correct_tool_trials_after": 30
+  },
+  {
+    "before": "call_constraints_server",
+    "after": "call_constraints_server_fixed",
+    "n_tools": 8,
+    "mean_sim_before": 0.7535295423851018,
+    "mean_sim_after": 0.5904961823565181,
+    "delta_mean_sim": -0.1630333600285837,
+    "max_sim_before": 1.0,
+    "max_sim_after": 0.7579053910182473,
+    "delta_max_sim": -0.24209460898175272,
+    "nearest_pair_before": [
+      "get_server_info",
+      "list_channels"
+    ],
+    "nearest_pair_after": [
+      "get_server_info",
+      "ping_server"
+    ],
+    "task_success_before": 0.5,
+    "task_success_after": 0.5,
+    "delta_task_success": 0.0,
+    "wrong_tool_rate_before": 0.0,
+    "wrong_tool_rate_after": 0.0,
+    "delta_wrong_tool_rate": 0.0,
+    "arg_score_given_correct_before": 0.5,
+    "arg_score_given_correct_after": 0.5,
+    "n_correct_tool_trials_before": 160,
+    "n_correct_tool_trials_after": 160
+  },
+  {
+    "before": "call_constraints_v2_server",
+    "after": "call_constraints_v2_server_fixed",
+    "n_tools": 6,
+    "mean_sim_before": 0.7525150114776545,
+    "mean_sim_after": 0.6290632267262622,
+    "delta_mean_sim": -0.12345178475139229,
+    "max_sim_before": 0.8553383946570513,
+    "max_sim_after": 0.7072622398969923,
+    "delta_max_sim": -0.14807615476005898,
+    "nearest_pair_before": [
+      "set_debounce_delay",
+      "set_trigger_mode"
+    ],
+    "nearest_pair_after": [
+      "set_debounce_delay",
+      "set_trigger_mode"
+    ],
+    "task_success_before": 0.36,
+    "task_success_after": 0.34,
+    "delta_task_success": -0.019999999999999962,
+    "wrong_tool_rate_before": 0.0,
+    "wrong_tool_rate_after": 0.0,
+    "delta_wrong_tool_rate": 0.0,
+    "arg_score_given_correct_before": 0.36,
+    "arg_score_given_correct_after": 0.34,
+    "n_correct_tool_trials_before": 150,
+    "n_correct_tool_trials_after": 150
+  }
+]

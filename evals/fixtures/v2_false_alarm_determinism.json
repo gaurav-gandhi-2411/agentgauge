@@ -1,0 +1,279 @@
+{
+  "false_alarm": {
+    "n_total": 2200,
+    "n_false_alarms": 0,
+    "rate": 0.0,
+    "per_toolset": [
+      {
+        "name": "echo_server",
+        "n_trials": 40,
+        "false_alarms": 0,
+        "n_comparisons": 50
+      },
+      {
+        "name": "grounded_server",
+        "n_trials": 50,
+        "false_alarms": 0,
+        "n_comparisons": 50
+      },
+      {
+        "name": "grounded_server_oracle",
+        "n_trials": 50,
+        "false_alarms": 0,
+        "n_comparisons": 50
+      },
+      {
+        "name": "mediocre_server",
+        "n_trials": 60,
+        "false_alarms": 0,
+        "n_comparisons": 50
+      },
+      {
+        "name": "call_constraints_v2_server",
+        "n_trials": 150,
+        "false_alarms": 0,
+        "n_comparisons": 50
+      },
+      {
+        "name": "call_constraints_v2_server_oracle",
+        "n_trials": 150,
+        "false_alarms": 0,
+        "n_comparisons": 50
+      },
+      {
+        "name": "call_constraints_server",
+        "n_trials": 160,
+        "false_alarms": 0,
+        "n_comparisons": 50
+      },
+      {
+        "name": "call_constraints_server_oracle",
+        "n_trials": 160,
+        "false_alarms": 0,
+        "n_comparisons": 50
+      },
+      {
+        "name": "exp1_blazickjp_arxiv_mcp_server_mirror",
+        "n_trials": 80,
+        "false_alarms": 0,
+        "n_comparisons": 50
+      },
+      {
+        "name": "t18_vague_server",
+        "n_trials": 120,
+        "false_alarms": 0,
+        "n_comparisons": 50
+      },
+      {
+        "name": "t18_fixer_server",
+        "n_trials": 120,
+        "false_alarms": 0,
+        "n_comparisons": 50
+      },
+      {
+        "name": "t18_q2b_server",
+        "n_trials": 120,
+        "false_alarms": 0,
+        "n_comparisons": 50
+      },
+      {
+        "name": "t18_oracle_server",
+        "n_trials": 120,
+        "false_alarms": 0,
+        "n_comparisons": 50
+      },
+      {
+        "name": "confusable_server",
+        "n_trials": 160,
+        "false_alarms": 0,
+        "n_comparisons": 50
+      },
+      {
+        "name": "confusable_server_oracle",
+        "n_trials": 160,
+        "false_alarms": 0,
+        "n_comparisons": 50
+      },
+      {
+        "name": "exp1_datalayer_jupyter_mcp_server_mirror",
+        "n_trials": 170,
+        "false_alarms": 0,
+        "n_comparisons": 50
+      },
+      {
+        "name": "exp1_datalayer_jupyter_mcp_server_mirror_oracle",
+        "n_trials": 170,
+        "false_alarms": 0,
+        "n_comparisons": 50
+      },
+      {
+        "name": "exp1_stickerdaniel_linkedin_mcp_server_mirror",
+        "n_trials": 170,
+        "false_alarms": 0,
+        "n_comparisons": 50
+      },
+      {
+        "name": "rw1_github_mirror",
+        "n_trials": 105,
+        "false_alarms": 0,
+        "n_comparisons": 50
+      },
+      {
+        "name": "rw1_arm_a",
+        "n_trials": 105,
+        "false_alarms": 0,
+        "n_comparisons": 50
+      },
+      {
+        "name": "rw1_arm_guardb",
+        "n_trials": 105,
+        "false_alarms": 0,
+        "n_comparisons": 50
+      },
+      {
+        "name": "rw1_arm_oracle",
+        "n_trials": 105,
+        "false_alarms": 0,
+        "n_comparisons": 50
+      },
+      {
+        "name": "rw2_aws_iam_mirror",
+        "n_trials": 145,
+        "false_alarms": 0,
+        "n_comparisons": 50
+      },
+      {
+        "name": "rw2_arm_a",
+        "n_trials": 145,
+        "false_alarms": 0,
+        "n_comparisons": 50
+      },
+      {
+        "name": "p2a_internal_proxy_mirror",
+        "n_trials": 240,
+        "false_alarms": 0,
+        "n_comparisons": 50
+      },
+      {
+        "name": "p2a_arm_a",
+        "n_trials": 240,
+        "false_alarms": 0,
+        "n_comparisons": 50
+      },
+      {
+        "name": "p2a_arm_guardb",
+        "n_trials": 240,
+        "false_alarms": 0,
+        "n_comparisons": 50
+      },
+      {
+        "name": "p2a_arm_oracle",
+        "n_trials": 240,
+        "false_alarms": 0,
+        "n_comparisons": 50
+      },
+      {
+        "name": "q3_real_server",
+        "n_trials": 60,
+        "false_alarms": 0,
+        "n_comparisons": 50
+      },
+      {
+        "name": "q3_arm_a",
+        "n_trials": 60,
+        "false_alarms": 0,
+        "n_comparisons": 50
+      },
+      {
+        "name": "q3_arm_o",
+        "n_trials": 60,
+        "false_alarms": 0,
+        "n_comparisons": 50
+      },
+      {
+        "name": "q6_real_server",
+        "n_trials": 115,
+        "false_alarms": 0,
+        "n_comparisons": 50
+      },
+      {
+        "name": "q6_arm_a",
+        "n_trials": 115,
+        "false_alarms": 0,
+        "n_comparisons": 50
+      },
+      {
+        "name": "q6_arm_f_doc_guarded",
+        "n_trials": 115,
+        "false_alarms": 0,
+        "n_comparisons": 50
+      },
+      {
+        "name": "t18_vague_server_set2",
+        "n_trials": 120,
+        "false_alarms": 0,
+        "n_comparisons": 50
+      },
+      {
+        "name": "t18_fixer_server_set2",
+        "n_trials": 120,
+        "false_alarms": 0,
+        "n_comparisons": 50
+      },
+      {
+        "name": "t18_q2b_server_set2",
+        "n_trials": 120,
+        "false_alarms": 0,
+        "n_comparisons": 50
+      },
+      {
+        "name": "t18_oracle_server_set2",
+        "n_trials": 120,
+        "false_alarms": 0,
+        "n_comparisons": 50
+      },
+      {
+        "name": "exp1_dataojitori_nocturne_memory_mirror",
+        "n_trials": 70,
+        "false_alarms": 0,
+        "n_comparisons": 50
+      },
+      {
+        "name": "grounded_server_fixed",
+        "n_trials": 50,
+        "false_alarms": 0,
+        "n_comparisons": 50
+      },
+      {
+        "name": "confusable_server_fixed",
+        "n_trials": 160,
+        "false_alarms": 0,
+        "n_comparisons": 50
+      },
+      {
+        "name": "mediocre_server_fixed",
+        "n_trials": 60,
+        "false_alarms": 0,
+        "n_comparisons": 50
+      },
+      {
+        "name": "call_constraints_server_fixed",
+        "n_trials": 160,
+        "false_alarms": 0,
+        "n_comparisons": 50
+      },
+      {
+        "name": "call_constraints_v2_server_fixed",
+        "n_trials": 150,
+        "false_alarms": 0,
+        "n_comparisons": 50
+      }
+    ]
+  },
+  "determinism": {
+    "tool_set": "echo_server",
+    "n_runs": 50,
+    "all_identical": true,
+    "n_unique_outputs": 1
+  }
+}

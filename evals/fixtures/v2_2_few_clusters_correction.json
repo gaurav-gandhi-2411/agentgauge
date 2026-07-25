@@ -1,0 +1,125 @@
+{
+  "n_repeats_per_toolset": 50,
+  "by_stratum": {
+    "10-29 tasks": {
+      "total": 1300,
+      "false_alarms": 1,
+      "insufficient": 322,
+      "no_change": 977,
+      "false_alarm_rate_pct": 0.07692307692307693
+    },
+    "<10 tasks": {
+      "total": 700,
+      "false_alarms": 11,
+      "insufficient": 266,
+      "no_change": 423,
+      "false_alarm_rate_pct": 1.5714285714285714
+    },
+    ">=30 tasks": {
+      "total": 200,
+      "false_alarms": 0,
+      "insufficient": 0,
+      "no_change": 200,
+      "false_alarm_rate_pct": 0.0
+    }
+  },
+  "false_alarms": [
+    {
+      "tool_set": "exp1_blazickjp_arxiv_mcp_server_mirror",
+      "n_tasks": 8,
+      "seed": 1000015,
+      "verdict": "improvement",
+      "delta": 0.08750000000000001,
+      "used_few_clusters_correction": true
+    },
+    {
+      "tool_set": "exp1_blazickjp_arxiv_mcp_server_mirror",
+      "n_tasks": 8,
+      "seed": 1000031,
+      "verdict": "regression",
+      "delta": -0.06249999999999979,
+      "used_few_clusters_correction": true
+    },
+    {
+      "tool_set": "exp1_blazickjp_arxiv_mcp_server_mirror",
+      "n_tasks": 8,
+      "seed": 1000041,
+      "verdict": "regression",
+      "delta": -0.07499999999999976,
+      "used_few_clusters_correction": true
+    },
+    {
+      "tool_set": "exp1_blazickjp_arxiv_mcp_server_mirror",
+      "n_tasks": 8,
+      "seed": 1000044,
+      "verdict": "regression",
+      "delta": -0.06250000000000007,
+      "used_few_clusters_correction": true
+    },
+    {
+      "tool_set": "exp1_dataojitori_nocturne_memory_mirror",
+      "n_tasks": 7,
+      "seed": 1300009,
+      "verdict": "improvement",
+      "delta": 0.05714285714285711,
+      "used_few_clusters_correction": true
+    },
+    {
+      "tool_set": "exp1_dataojitori_nocturne_memory_mirror",
+      "n_tasks": 7,
+      "seed": 1300015,
+      "verdict": "improvement",
+      "delta": 0.07857142857142861,
+      "used_few_clusters_correction": true
+    },
+    {
+      "tool_set": "exp1_dataojitori_nocturne_memory_mirror",
+      "n_tasks": 7,
+      "seed": 1300024,
+      "verdict": "improvement",
+      "delta": 0.08571428571428573,
+      "used_few_clusters_correction": true
+    },
+    {
+      "tool_set": "exp1_dataojitori_nocturne_memory_mirror",
+      "n_tasks": 7,
+      "seed": 1300039,
+      "verdict": "regression",
+      "delta": -0.05714285714285715,
+      "used_few_clusters_correction": true
+    },
+    {
+      "tool_set": "exp1_dataojitori_nocturne_memory_mirror",
+      "n_tasks": 7,
+      "seed": 1300040,
+      "verdict": "regression",
+      "delta": -0.05714285714285715,
+      "used_few_clusters_correction": true
+    },
+    {
+      "tool_set": "exp1_dataojitori_nocturne_memory_mirror",
+      "n_tasks": 7,
+      "seed": 1300046,
+      "verdict": "regression",
+      "delta": -0.08571428571428576,
+      "used_few_clusters_correction": true
+    },
+    {
+      "tool_set": "grounded_server_oracle",
+      "n_tasks": 5,
+      "seed": 1700010,
+      "verdict": "regression",
+      "delta": -0.08000000000000002,
+      "used_few_clusters_correction": true
+    },
+    {
+      "tool_set": "t18_oracle_server",
+      "n_tasks": 12,
+      "seed": 3800034,
+      "verdict": "improvement",
+      "delta": 0.0666666666666667,
+      "used_few_clusters_correction": true
+    }
+  ],
+  "all_strata_under_5pct": true
+}

@@ -1,0 +1,44 @@
+{
+  "gemma2:9b": {
+    "before": {
+      "n_trials": 16,
+      "selection_accuracy": 1.0,
+      "argument_accuracy_given_correct_selection": 0.5,
+      "joint_success_rate": 0.5
+    },
+    "after": {
+      "n_trials": 16,
+      "selection_accuracy": 1.0,
+      "argument_accuracy_given_correct_selection": 0.5,
+      "joint_success_rate": 0.5
+    }
+  },
+  "llama3.1:8b": {
+    "before": {
+      "n_trials": 16,
+      "selection_accuracy": 0.9375,
+      "argument_accuracy_given_correct_selection": 0.5333333333333333,
+      "joint_success_rate": 0.5
+    },
+    "after": {
+      "n_trials": 16,
+      "selection_accuracy": 1.0,
+      "argument_accuracy_given_correct_selection": 0.5,
+      "joint_success_rate": 0.5
+    }
+  },
+  "qwen2.5:7b": {
+    "before": {
+      "n_trials": 16,
+      "selection_accuracy": 1.0,
+      "argument_accuracy_given_correct_selection": 0.5,
+      "joint_success_rate": 0.5
+    },
+    "after": {
+      "n_trials": 16,
+      "selection_accuracy": 0.9375,
+      "argument_accuracy_given_correct_selection": 0.4666666666666667,
+      "joint_success_rate": 0.4375
+    }
+  }
+}

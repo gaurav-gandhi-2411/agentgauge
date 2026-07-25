@@ -1,0 +1,35 @@
+# Task 4a (v2.2): bake gemma2:9b, llama3.1:8b, qwen2.5:7b into the image so a
+# Cloud Run cold start does not need to re-pull ~15GB of models over the
+# network -- repeated re-pulling was the dominant time (and therefore GPU
+# billing) cost in the v2.1 cross-model validation and LLM-baseline runs.
+#
+# Build (from repo root):
+#   docker build -f scripts/Dockerfile.agentgauge-agent -t agentgauge-agent-baked .
+#
+# Push (after `gcloud auth configure-docker`):
+#   docker tag agentgauge-agent-baked gcr.io/expense-tracker-498014/agentgauge-agent-baked
+#   docker push gcr.io/expense-tracker-498014/agentgauge-agent-baked
+#
+# Then update scripts/agentgauge-agent-service.yaml's `image:` field to point
+# at the pushed tag and `gcloud run services replace` it.
+FROM ollama/ollama:latest
+
+ENV OLLAMA_HOST=0.0.0.0:8080
+ENV OLLAMA_MODELS=/root/.ollama/models
+
+# Start the server, wait for it to be ready, pull all three models, then stop
+# the server -- the pulled model blobs remain in the image layer at
+# /root/.ollama/models, baked in permanently (not lost on container restart,
+# unlike the ephemeral-disk-only setup this replaces).
+RUN ollama serve & \
+    for i in $(seq 1 30); do \
+        curl -sf http://localhost:8080/api/tags > /dev/null 2>&1 && break; \
+        sleep 1; \
+    done && \
+    ollama pull gemma2:9b && \
+    ollama pull llama3.1:8b && \
+    ollama pull qwen2.5:7b && \
+    kill %1 || true
+
+EXPOSE 8080
+ENTRYPOINT ["ollama", "serve"]

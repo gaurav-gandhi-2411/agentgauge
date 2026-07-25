@@ -1,0 +1,101 @@
+{
+  "mde_ablation_table": [
+    {
+      "n_tasks": 5,
+      "power": 0.8,
+      "mde_v2_baseline_trial_level": 0.711,
+      "mde_task_level_unpaired": 0.6084175781250001,
+      "mde_paired": 0.36607214355468753,
+      "mde_paired_cuped": 0.33580261230468755
+    },
+    {
+      "n_tasks": 5,
+      "power": 0.95,
+      "mde_v2_baseline_trial_level": 0.75,
+      "mde_task_level_unpaired": 0.7749,
+      "mde_paired": 0.5297167968750001,
+      "mde_paired_cuped": 0.48506923828125004
+    },
+    {
+      "n_tasks": 10,
+      "power": 0.8,
+      "mde_v2_baseline_trial_level": 0.598,
+      "mde_task_level_unpaired": 0.4406108642578125,
+      "mde_paired": 0.26315573730468755,
+      "mde_paired_cuped": 0.25445324707031247
+    },
+    {
+      "n_tasks": 10,
+      "power": 0.95,
+      "mde_v2_baseline_trial_level": 0.692,
+      "mde_task_level_unpaired": 0.5558242675781251,
+      "mde_paired": 0.35339677734374997,
+      "mde_paired_cuped": 0.33523505859375
+    },
+    {
+      "n_tasks": 20,
+      "power": 0.8,
+      "mde_v2_baseline_trial_level": 0.433,
+      "mde_task_level_unpaired": 0.31272209472656254,
+      "mde_paired": 0.19126560058593753,
+      "mde_paired_cuped": 0.18786027832031252
+    },
+    {
+      "n_tasks": 20,
+      "power": 0.95,
+      "mde_v2_baseline_trial_level": 0.537,
+      "mde_task_level_unpaired": 0.38234201660156253,
+      "mde_paired": 0.2525614013671875,
+      "mde_paired_cuped": 0.2404535888671875
+    },
+    {
+      "n_tasks": 50,
+      "power": 0.8,
+      "mde_v2_baseline_trial_level": 0.273,
+      "mde_task_level_unpaired": 0.1982654296875,
+      "mde_paired": 0.12107812500000001,
+      "mde_paired_cuped": 0.1193754638671875
+    },
+    {
+      "n_tasks": 50,
+      "power": 0.95,
+      "mde_v2_baseline_trial_level": 0.355,
+      "mde_task_level_unpaired": 0.2393184814453125,
+      "mde_paired": 0.1606177001953125,
+      "mde_paired_cuped": 0.15475297851562503
+    }
+  ],
+  "ship_target": {
+    "n_tasks": 20,
+    "power": 0.8,
+    "target_mde": 0.1,
+    "measured_mde": 0.18786027832031252,
+    "met": false
+  },
+  "sequential": {
+    "under_null": {
+      "expected_n": 43.77,
+      "median_n": 50.0,
+      "pct_unresolved_at_n_max": 55.8,
+      "verdict_counts": {
+        "insufficient_sensitivity": 558,
+        "no_change": 359,
+        "improvement": 47,
+        "regression": 36
+      },
+      "n_max": 50
+    },
+    "under_10pt_regression": {
+      "expected_n": 39.97,
+      "median_n": 50.0,
+      "pct_unresolved_at_n_max": 56.4,
+      "verdict_counts": {
+        "insufficient_sensitivity": 564,
+        "no_change": 157,
+        "improvement": 5,
+        "regression": 274
+      },
+      "n_max": 50
+    }
+  }
+}

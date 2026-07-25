@@ -1,0 +1,94 @@
+{
+  "n_tool_sets_eligible": 44,
+  "n_repeats_per_toolset": 50,
+  "total_comparisons": 2200,
+  "verdict_counts": {
+    "no_change": 1711,
+    "insufficient_sensitivity": 476,
+    "improvement": 5,
+    "regression": 8
+  },
+  "false_alarm_rate_pct": 0.5909090909090909,
+  "abstention_rate_pct": 21.636363636363637,
+  "confident_no_change_rate_pct": 77.77272727272727,
+  "false_alarms": [
+    {
+      "tool_set": "exp1_blazickjp_arxiv_mcp_server_mirror",
+      "seed": 1000015,
+      "verdict": "improvement",
+      "delta": 0.08750000000000001
+    },
+    {
+      "tool_set": "exp1_blazickjp_arxiv_mcp_server_mirror",
+      "seed": 1000031,
+      "verdict": "regression",
+      "delta": -0.06249999999999979
+    },
+    {
+      "tool_set": "exp1_blazickjp_arxiv_mcp_server_mirror",
+      "seed": 1000041,
+      "verdict": "regression",
+      "delta": -0.07499999999999976
+    },
+    {
+      "tool_set": "exp1_blazickjp_arxiv_mcp_server_mirror",
+      "seed": 1000044,
+      "verdict": "regression",
+      "delta": -0.06250000000000007
+    },
+    {
+      "tool_set": "exp1_dataojitori_nocturne_memory_mirror",
+      "seed": 1300009,
+      "verdict": "improvement",
+      "delta": 0.05714285714285711
+    },
+    {
+      "tool_set": "exp1_dataojitori_nocturne_memory_mirror",
+      "seed": 1300015,
+      "verdict": "improvement",
+      "delta": 0.07857142857142861
+    },
+    {
+      "tool_set": "exp1_dataojitori_nocturne_memory_mirror",
+      "seed": 1300024,
+      "verdict": "improvement",
+      "delta": 0.08571428571428573
+    },
+    {
+      "tool_set": "exp1_dataojitori_nocturne_memory_mirror",
+      "seed": 1300039,
+      "verdict": "regression",
+      "delta": -0.05714285714285715
+    },
+    {
+      "tool_set": "exp1_dataojitori_nocturne_memory_mirror",
+      "seed": 1300040,
+      "verdict": "regression",
+      "delta": -0.05714285714285715
+    },
+    {
+      "tool_set": "exp1_dataojitori_nocturne_memory_mirror",
+      "seed": 1300046,
+      "verdict": "regression",
+      "delta": -0.08571428571428576
+    },
+    {
+      "tool_set": "grounded_server_fixed",
+      "seed": 1600048,
+      "verdict": "regression",
+      "delta": -0.07999999999999997
+    },
+    {
+      "tool_set": "grounded_server_oracle",
+      "seed": 1700010,
+      "verdict": "regression",
+      "delta": -0.08000000000000002
+    },
+    {
+      "tool_set": "t18_oracle_server",
+      "seed": 3800034,
+      "verdict": "improvement",
+      "delta": 0.0666666666666667
+    }
+  ]
+}
