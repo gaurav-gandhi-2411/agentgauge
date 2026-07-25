@@ -182,6 +182,16 @@ remains open — see `reports/v2_product_readiness.md` for the complete list.
 ## Install
 
 ```bash
+pip install agentgauge-harness
+agentgauge --version
+```
+
+The PyPI distribution is named `agentgauge-harness` (the name `agentgauge` was
+already taken); the installed CLI command is still `agentgauge`.
+
+For contributing or running from source:
+
+```bash
 git clone https://github.com/gaurav-gandhi-2411/agentgauge
 cd agentgauge
 pip install uv && uv sync

@@ -7,7 +7,7 @@ resolution-markers = [
 ]
 
 [[package]]
-name = "agentgauge"
+name = "agentgauge-harness"
 version = "0.4.0"
 source = { editable = "." }
 dependencies = [

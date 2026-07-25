@@ -643,7 +643,7 @@ jobs:
           python-version: "3.11"
 
       - name: Install agentgauge
-        run: pip install agentgauge
+        run: pip install agentgauge-harness
 
       - name: Lint (deterministic, zero LLM cost)
         id: lint
