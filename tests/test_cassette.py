@@ -4,8 +4,12 @@ Per `reports/v0_5_eval_doctrine.md` Component 1.1, this is the gate that must pa
 before any other Wave 1 work (new adapters, cost accounting, attribution) is built:
 replaying a cassette must reproduce byte-identical provider output, and feeding that
 output through the existing harness's real decision path (`diff_from_trials`) must
-reproduce an identical verdict, for every one of the three existing adapters
-(Ollama, Anthropic/ApiAgentProvider, OpenAI-compatible).
+reproduce an identical verdict, for every one of the six adapters (Ollama, Anthropic/
+ApiAgentProvider, OpenAI-compatible, AWS Bedrock, Google Vertex, generic custom
+endpoint). The three new (Bedrock/Vertex/custom-endpoint) adapters are proven against
+mocked wire-format responses only, per the doctrine's "Note on live-provider scope":
+this measures that the adapter code itself introduces no nondeterminism, not the live
+providers' own response variance (out of scope, no paid calls in this repo's tests).
 
 Wire calls are mocked with `respx` (already used this way in `tests/test_frontier.py`);
 zero network access, per project rule (LLM is always mocked in tests).
@@ -27,7 +31,15 @@ from agentgauge.cassette import (
     cassette_key,
 )
 from agentgauge.harness import DecomposedRate, TrialOutcome, diff_from_trials
-from agentgauge.providers import ApiAgentProvider, Message, OllamaProvider, OpenAICompatibleProvider
+from agentgauge.providers import (
+    ApiAgentProvider,
+    BedrockProvider,
+    CustomEndpointProvider,
+    Message,
+    OllamaProvider,
+    OpenAICompatibleProvider,
+    VertexProvider,
+)
 
 # ── fixed fixture set (content is arbitrary; only fixedness/reuse matters) ────
 
@@ -234,6 +246,49 @@ def _mock_openai_compatible(base_url: str) -> None:
     respx.post(f"{base_url}/chat/completions").mock(side_effect=side_effect)
 
 
+def _mock_bedrock(region: str = "us-east-1") -> None:
+    def side_effect(request: httpx.Request) -> httpx.Response:
+        idx = side_effect.call_count  # type: ignore[attr-defined]
+        side_effect.call_count += 1  # type: ignore[attr-defined]
+        return httpx.Response(
+            200,
+            json={
+                "content": [{"type": "text", "text": _CANNED_RESPONSES[idx]}],
+                "usage": {"input_tokens": 25, "output_tokens": 3},
+            },
+        )
+
+    side_effect.call_count = 0  # type: ignore[attr-defined]
+    respx.post(
+        url__regex=rf"https://bedrock-runtime\.{region}\.amazonaws\.com/model/.*/invoke"
+    ).mock(side_effect=side_effect)
+
+
+def _mock_vertex(region: str = "us-central1") -> None:
+    def side_effect(request: httpx.Request) -> httpx.Response:
+        idx = side_effect.call_count  # type: ignore[attr-defined]
+        side_effect.call_count += 1  # type: ignore[attr-defined]
+        return httpx.Response(
+            200,
+            json={
+                "candidates": [
+                    {
+                        "content": {
+                            "parts": [{"text": _CANNED_RESPONSES[idx]}],
+                            "role": "model",
+                        }
+                    }
+                ],
+                "usageMetadata": {"promptTokenCount": 18, "candidatesTokenCount": 4},
+            },
+        )
+
+    side_effect.call_count = 0  # type: ignore[attr-defined]
+    respx.post(
+        url__regex=rf"https://{region}-aiplatform\.googleapis\.com/v1/projects/.*:generateContent"
+    ).mock(side_effect=side_effect)
+
+
 async def _record_then_replay_and_assert_determinism(
     tmp_path: Path,
     provider_name: str,
@@ -313,6 +368,48 @@ async def test_openai_compatible_replay_determinism(tmp_path: Path) -> None:
     provider = OpenAICompatibleProvider("some-model", base_url=base_url)
     await _record_then_replay_and_assert_determinism(
         tmp_path, "openai_compatible", provider, "some-model"
+    )
+
+
+@respx.mock
+async def test_bedrock_replay_determinism(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("AWS_ACCESS_KEY_ID", "AKIAFAKE")
+    monkeypatch.setenv("AWS_SECRET_ACCESS_KEY", "secretfake")
+    _mock_bedrock()
+    model = "anthropic.claude-3-5-sonnet-20241022-v2:0"
+    provider = BedrockProvider(
+        model,
+        region="us-east-1",
+        aws_access_key_id_env="AWS_ACCESS_KEY_ID",
+        aws_secret_access_key_env="AWS_SECRET_ACCESS_KEY",
+        cost_ceiling_usd=100.0,
+    )
+    await _record_then_replay_and_assert_determinism(tmp_path, "bedrock", provider, model)
+
+
+@respx.mock
+async def test_vertex_replay_determinism(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("VERTEX_ACCESS_TOKEN", "ya29.test")
+    _mock_vertex()
+    provider = VertexProvider(
+        "gemini-1.5-flash",
+        project_id="test-project",
+        region="us-central1",
+        access_token_env="VERTEX_ACCESS_TOKEN",
+        cost_ceiling_usd=100.0,
+    )
+    await _record_then_replay_and_assert_determinism(
+        tmp_path, "vertex", provider, "gemini-1.5-flash"
+    )
+
+
+@respx.mock
+async def test_custom_endpoint_replay_determinism(tmp_path: Path) -> None:
+    base_url = "https://llm-gateway.internal.example.com/v1"
+    _mock_openai_compatible(base_url)
+    provider = CustomEndpointProvider("internal-llama-70b", base_url)
+    await _record_then_replay_and_assert_determinism(
+        tmp_path, "custom_endpoint", provider, "internal-llama-70b"
     )
 
 
