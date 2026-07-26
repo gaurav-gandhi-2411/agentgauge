@@ -1,5 +1,23 @@
 # AgentGauge v0.5 Wave 1 — effect-size sensitivity study for failure attribution (Component 1.2 follow-up)
 
+> **SECTIONS 4, 5, 6, 7, AND 8 BELOW ARE SUPERSEDED (2026-07-26).** The real implementation bug
+> section 5 below first REPORTED (but did not fix, per that task's explicit scope boundary) in
+> `agentgauge/attribution.py`'s `attribute_greedy_bisection`/`_bisect_within` — silently dropped
+> probe-cost accounting and a degenerate positional-order ranking fallback on total search
+> failure — has now been FIXED (commit `f432f5a`, `fix(attribution): stop dropping probe cost and
+> positional-order ranking on greedy_bisection failure`). **Section 11, "CORRECTION," at the end of
+> this report is the current, trustworthy version of `greedy_bisection`'s per-band numbers, the
+> mechanism investigation, the ship-bar verdict, and the cliff claim — read it, not sections
+> 4/5/6/7/8, for anything cited going forward.** The original text below is kept verbatim, not
+> deleted or silently edited, per this repo's honest-reporting convention (falsified/superseded
+> results are marked, not erased). **Headline of the correction: the "cliff at 8.0pp" claim does
+> NOT survive** — with the bug fixed, `greedy_bisection` clears the full ship bar (top-1 ≥ 0.70 AND
+> top-3 ≥ 0.90) at EVERY tested band (3.0pp-33.0pp), with no cliff anywhere in the tested range. A
+> second, previously-invisible finding also surfaces: with honest probe-cost accounting,
+> `greedy_bisection`'s mean probe cost now EXCEEDS `exhaustive_ablation`'s in 3 of 5 bands.
+> `sampled_shapley`'s numbers are entirely UNAFFECTED by this fix (it never calls the buggy code
+> path — confirmed directly, not assumed; see section 11f). See section 11.
+
 Follow-up to `reports/v0_5_attribution_benchmark.md` (Component 1.2's original localization
 benchmark, and its section 7 diff-size-bias correction — **read section 7 of that report before
 this one**, since this study is built on the CORRECTED, post-artifact-#9-fix
@@ -309,3 +327,183 @@ measurement (probe counts, prediction identities, decision-level traces), not in
 `reports/v0_5_attribution_benchmark.md`'s corrected `agentgauge/attribution_benchmark.py`
 (post-`6ae80d8`, artifact #9 fix) — running this script against a pre-fix checkout would reintroduce
 the diff-size confound this study's §3 explicitly re-verified is absent.
+
+## 11. CORRECTION (2026-07-26) — `probes_consumed` accounting + degenerate ranking fixed (supersedes sections 4, 5, 6, 7, 8 above)
+
+**This section supersedes the `greedy_bisection` rows of section 4's table, all of section 5, all
+of section 6, the `greedy_bisection` column of section 7, and section 8's "genuine CLIFF" claim.**
+Everything above this line was independently re-measured against a fixed implementation; nothing
+above was edited to match it — same convention as `reports/v0_5_attribution_benchmark.md` section 7.
+
+### 11a. What was wrong, and what changed
+
+Section 5 above REPORTED (but explicitly did not fix, per that task's scope boundary) a real bug in
+`agentgauge/attribution.py`: `_bisect_within` accumulated real `probes_used`/`elim_scores` internally
+but discarded both on every `return None` (search-failure) path, so `attribute_greedy_bisection`'s
+`probes_consumed` under-reported real cost (often to exactly `0`) and every remaining tool fell back
+to a blanket `0.0` elim-score tie, degenerating the ranking to pure `changed_tools` list order.
+
+Fixed in commit `f432f5a` (`fix(attribution): stop dropping probe cost and positional-order ranking
+on greedy_bisection failure`): `_bisect_within` now always returns
+`(culprit_or_None, probe_or_None, probes_used, elim_scores)` — both success and failure paths report
+real probe cost and real measured (if sub-threshold) marginal deltas. `attribute_greedy_bisection`
+sums `probes_consumed` unconditionally across every outer-loop iteration (including failed
+"is there a second culprit?" searches) and ranks total-failure remainders by the now-always-populated
+`elim_scores` instead of a blanket zero. Two new regression tests
+(`tests/test_attribution.py::TestAttributeGreedyBisection::
+test_probes_consumed_counts_every_real_probe_call_on_total_failure` and
+`test_total_failure_ranking_reflects_measured_deltas_not_list_position`) prove, respectively: (a)
+`probes_consumed` exactly equals a counting wrapper's real call count on a guaranteed-total-failure
+probe function, and (b) reversing the input tool-list order does not flip the top-2 ranking, because
+that ranking is driven by genuinely measured deltas, not list position. Two pre-existing tests
+(`test_ranks_true_culprit_first_with_sub_exhaustive_budget`, `test_probe_budget_scales_logarithmically`)
+had assertions that depended on the bug's silently-dropped second-search cost keeping
+`probes_consumed` artificially low — both were updated to assert against honestly-measured probe
+counts (see 11e below for why the honest counts are meaningfully higher), not silently left in place.
+
+### 11b. Corrected per-band table (n=24 cases/band, IDENTICAL cases/seeds to section 4 — only the
+strategy's own implementation changed, nothing about case generation)
+
+| Band | Metric | Pre-fix (section 4) | Post-fix (corrected) |
+|---|---|---|---|
+| below_mde (3.0-5.0pp) | top-1 | 54.17% | **75.00%** |
+| | top-3 | 83.33% | **100.00%** |
+| | mean probes | 0.00 (undercounted) | **3.25** |
+| straddle_mde (5.0-8.0pp) | top-1 | 41.67% | **83.33%** |
+| | top-3 | 91.67% | **100.00%** |
+| | mean probes | 0.58 (undercounted) | **3.71** |
+| moderate (8.0-13.3pp) | top-1 | 95.83% | 95.83% (unchanged) |
+| | top-3 | 100.00% | 100.00% (unchanged) |
+| | mean probes | 2.83 | **5.33** |
+| original (13.3-28.9pp) | top-1 | 100.00% | 100.00% (unchanged) |
+| | top-3 | 100.00% | 100.00% (unchanged) |
+| | mean probes | 2.96 | **5.75** |
+| beyond (28.9-33.0pp) | top-1 | 100.00% | 100.00% (unchanged) |
+| | top-3 | 100.00% | 100.00% (unchanged) |
+| | mean probes | 2.71 | **5.08** |
+
+`exhaustive_ablation` and `sampled_shapley` rows are numerically identical pre/post-fix in every
+band (confirmed directly against the rerun's raw output, not assumed) — see 11f.
+
+### 11c. Ship-bar verdict, corrected (top-1 ≥ 0.70 AND top-3 ≥ 0.90)
+
+| Band | greedy_bisection (pre-fix, section 7) | greedy_bisection (post-fix) |
+|---|---|---|
+| below_mde (3.0-5.0pp) | does not clear (54.17%/83.33%) | **CLEARS** (75.00%/100.00%) |
+| straddle_mde (5.0-8.0pp) | does not clear (41.67%/91.67%) | **CLEARS** (83.33%/100.00%) |
+| moderate (8.0-13.3pp) | CLEARS (95.83%/100.00%) | CLEARS (95.83%/100.00%) |
+| original (13.3-28.9pp) | CLEARS (100.00%/100.00%) | CLEARS (100.00%/100.00%) |
+| beyond (28.9-33.0pp) | CLEARS (100.00%/100.00%) | CLEARS (100.00%/100.00%) |
+
+`sampled_shapley`'s ship-bar verdict is unchanged in every band (does not clear except `original`,
+70.83%/95.83%) — again, it never touches the fixed code path; see 11f.
+
+### 11d. Does the "cliff at 8.0pp" claim survive?
+
+**NO — it does not survive, and the shape changes entirely, not just the threshold.** With the bug
+fixed, `greedy_bisection` clears the FULL ship bar (top-1 ≥ 0.70 AND top-3 ≥ 0.90) at **every**
+tested band, from `below_mde` (3.0-5.0pp, below the doctrine's own n=253 MDE of 5.37pp) through
+`beyond` (28.9-33.0pp). There is no band in the tested 3.0-33.0pp range where `greedy_bisection`
+fails the ship bar. Instead of a cliff, top-1 shows a gentle, monotonic improvement with effect size
+that never drops below the bar: 75.00% → 83.33% → 95.83% → 100.00% → 100.00%. Section 8's claim that
+`below_mde` and `straddle_mde` were "non-monotonic with each other... evidence both sub-8.0pp bands
+have collapsed into the same no-real-signal regime" is falsified directly by this monotonic
+post-fix ordering — that non-monotonicity was itself an artifact of positional-luck noise (13/24 and
+6/20 lucky positional hits respectively, per section 5's own table), not a property of the real
+signal. **The prior "cliff at 8.0pp" was ENTIRELY an artifact of the bug's degenerate positional-order
+fallback swamping real, if statistically sub-threshold, measured signal at low effect sizes with
+near-random noise** — once that signal is preserved and used, there is no cliff to report in this
+range at all.
+
+### 11e. A second, previously-invisible finding: honest probe-cost accounting shows `greedy_bisection` is NOT reliably sub-exhaustive once its own multi-culprit search cost is included
+
+This is a genuine new finding surfaced by the fix, not merely a restatement of 11b — reported
+plainly per this task's instruction to report what was actually measured, not what would be
+convenient:
+
+| Band | greedy_bisection mean probes (post-fix) | exhaustive_ablation mean probes | greedy vs. exhaustive |
+|---|---|---|---|
+| below_mde | 3.25 | 4.04 | sub-exhaustive (−19.6%) |
+| straddle_mde | 3.71 | 3.92 | sub-exhaustive, barely (−5.4%) |
+| moderate | 5.33 | 3.92 | **MORE expensive (+36.0%)** |
+| original | 5.75 | 4.29 | **MORE expensive (+34.0%)** |
+| beyond | 5.08 | 3.62 | **MORE expensive (+40.3%)** |
+
+In 3 of 5 bands — precisely the bands where `greedy_bisection` reliably finds the single injected
+culprit — its honestly-measured total probe cost now EXCEEDS `exhaustive_ablation`'s. Mechanism:
+`attribute_greedy_bisection`'s outer `while remaining:` loop, per its own docstring, always attempts
+to find ADDITIONAL culprits after isolating the first one, costing a second `_bisect_within` search
+over the remainder at roughly the same order of cost (`~ceil(log2 n) + 1`) as the first. Since this
+benchmark (like most real single-defect regressions) injects exactly one true culprit, that second
+search always fails — and its real cost was exactly what section 5's bug was silently dropping from
+`probes_consumed`. This is precisely why the pre-fix "sub-exhaustive" numbers in the higher bands
+(2.83-2.96 mean probes) looked favorable: they only ever counted the first, successful search.
+`agentgauge/attribution.py`'s own module docstring states the doctrine's kill-bar explicitly: "must
+be genuinely sub-exhaustive to be worth building." With honest accounting, `attribute_greedy_bisection`
+AS CURRENTLY IMPLEMENTED does not meet that bar whenever the caller doesn't know in advance that
+only one culprit exists (the realistic case) and a real culprit is confidently found — it is
+sub-exhaustive only in the low-signal bands, where it is failing to isolate anything. **This is
+reported here as a newly measured fact, not fixed** — redesigning the multi-culprit search's
+stopping behavior (e.g., bailing out of the second search more cheaply, or letting the caller opt
+out of multi-culprit search entirely) is a strategy-design change, out of scope for a probe-accounting
+bug fix, and is flagged here as follow-up work for whoever picks up Component 1.2 next.
+
+### 11f. Mechanism investigation (section 6), corrected — and confirmation that `sampled_shapley` is unaffected
+
+Rerunning `scripts/effect_size_sensitivity_report.py::trace_greedy_bisection_decisions` against the
+fixed `attribute_greedy_bisection` (same probe function, same cases, same seeds as section 6):
+
+| Band | Miss cases (pre-fix) | Miss cases (post-fix) | Mode A (post-fix) | Mode B (post-fix) |
+|---|---|---|---|---|
+| below_mde | 11/24 | **6/24** | 6 | **0** |
+| straddle_mde | 14/24 | **4/24** | 4 | **0** |
+| moderate | 1/24 | 1/24 | 1 | 0 |
+| original | 0/24 | 0/24 | — | — |
+| beyond | 0/24 | 0/24 | — | — |
+| **Total** | **26** | **11** | **11** | **0** |
+
+**The qualitative conclusion is unchanged: Mode A (genuine detection-power failure) still dominates
+completely, and Mode B (false-positive noise) is still never observed, in any band.** What changed
+is the DENOMINATOR: the fixed ranking recovers real signal for cases the pre-fix bug was previously
+also counting as "misses" via positional bad luck, so the total number of genuine top-1 misses drops
+from 26 to 11 — but every single one of those 11 remaining misses is still a real, mechanistically
+confirmed case of the CI failing to certify a genuinely-present recovery effect at this trial count
+(`n_tasks=24`), exactly as section 6 originally found. The residual statistical detection-power limit
+this section documents is real and did not go away; only the noise stacked on top of it (from the
+now-fixed ranking bug) is gone.
+
+**`sampled_shapley` confirmed unaffected, directly — not assumed.** `attribute_sampled_shapley`
+never calls `_bisect_within` (confirmed via `grep -rn "_bisect_within" agentgauge/` — its only real
+call site in the entire package is the one inside `attribute_greedy_bisection`; every other match is
+`_bisect_within`'s own definition or its docstring/comments referring to itself); it uses
+`_lcg_random`-driven coalition sampling with its own independent `probes_consumed`/`cache` accounting
+that this bug never touched. This is also confirmed
+empirically: every `sampled_shapley` top-1/top-3/mean-probes figure in the section 11f rerun output
+is byte-identical to section 4's original numbers in every band (54.17/95.83/2.12 for `below_mde`,
+62.50/95.83/2.04 for `straddle_mde`, 58.33/100.00/1.92 for `moderate`, 70.83/95.83/2.42 for
+`original`, 58.33/100.00/1.83 for `beyond`) — section 4, 7, and 8's `sampled_shapley` findings
+(including its "no clean cliff, 54-71% flat/noisy" characterization) all stand unchanged.
+
+### 11g. MEASURED vs. NOT MEASURED (this correction)
+
+**MEASURED:** every number in 11b/11c/11e/11f comes from re-running
+`uv run python scripts/effect_size_sensitivity_report.py` against the fixed
+`agentgauge/attribution.py` (commit `f432f5a`), using the IDENTICAL band definitions, seeds, and
+`agentgauge.attribution_benchmark.generate_benchmark` cases as sections 1-9 above — only the
+strategy's own implementation changed, so this is a clean before/after comparison, not a re-draw of
+different cases. Zero live LLM calls. `scripts/effect_size_sensitivity_report.py` itself was not
+modified for this rerun (its own "implementation finding" instrumentation, e.g. counting
+`probes_consumed == 0` cases, now correctly reports `0/24` in every band post-fix, serving as an
+independent confirmation the bug is gone rather than requiring new instrumentation).
+
+**NOT MEASURED / still open:**
+- Every "NOT MEASURED" caveat in section 9 above still applies unchanged (no live-agent validation,
+  `n=24`/band sampling noise, the probe-regime MDE lower-bound caveat).
+- 11e's finding (honest cost now exceeds exhaustive in 3/5 bands) is reported, not designed around —
+  no alternative stopping rule for the outer multi-culprit search was implemented or measured here;
+  that is explicitly out of this task's scope (a probe-accounting/ranking bug fix, not a strategy
+  redesign).
+- The exact statistical detection-power boundary (the point at which Mode A failures start
+  appearing at all) is not more precisely isolated by this correction than by section 6 — the
+  correction changes which cases are counted as misses, not the underlying `n_tasks=24` estimator's
+  intrinsic sensitivity.
