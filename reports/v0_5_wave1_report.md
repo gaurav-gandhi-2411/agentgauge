@@ -199,3 +199,150 @@ attribution against a real local-Ollama agent run before calling 1.2 done, (b) s
 Wave 2, or (c) ship Wave 1 as v0.5.0 first and treat real-agent attribution validation
 as a fast-follow. This report takes no position on that sequencing choice — it is a
 product/roadmap call, not an engineering one.
+
+---
+
+## 8. Wave 1.5 — attribution validation (2026-07-26), consolidated
+
+Six tasks were run against exactly the question section 7 above left open: does
+Component 1.2 (failure attribution) hold up under scrutiny, or was the original
+50-case benchmark's "2 of 3 strategies clear the ship bar" headline an artifact of an
+under-tested benchmark? **It was an artifact — twice over, in two different ways —
+and the corrected picture is a genuine rescope, not a simple ship/kill binary.**
+Every number below is independently re-verified by the orchestrating session (test
+suite re-run, key scripts re-executed, commits checked for clean trailers), not
+solely subagent-reported. Full detail lives in the four reports this section
+consolidates: `reports/v0_5_attribution_benchmark.md`, `reports/
+v0_5_effect_size_sensitivity.md`, `reports/v0_5_scale_curve.md`, `reports/
+v0_5_real_agent_validation.md`.
+
+### 8.1 Two real bugs found, not one
+
+1. **Measurement artifact #9** (Task 3): the injected culprit's textual diff size was
+   systematically correlated with its role (culprit vs. decoy) by construction, not
+   randomized independently — the exact class of confound the doctrine's guard was
+   supposed to catch and didn't, because the guard checked two edge conditions, not
+   the underlying distribution. Fixed; logged as artifact #9 in `agentgauge/audit.py`;
+   a standing check (`check_benchmark_construction_diffsize_bias`) now runs as part of
+   `run_audit` whenever benchmark cases are supplied.
+2. **A real implementation bug in `agentgauge/attribution.py`** (found investigating
+   Task 1, fixed as its own unit of work, commit `f432f5a`): `attribute_greedy_bisection`
+   silently dropped the probe cost of every failed bisection sub-search from its
+   reported `probes_consumed`, and degenerated to positional-list-order ranking (not
+   measured signal) on total search failure. This was not a benchmark artifact — it
+   was a bug in the shipped strategy code itself, invisible in the original benchmark
+   only because search never happened to fail there.
+
+Both were found by *using* the feature under conditions (near-MDE effect sizes; a
+generator built to specifically test the doctrine's stated confound requirement) that
+the original single-scenario benchmark never exercised — exactly the value a
+dedicated validation pass is supposed to provide, and exactly why spec section 8's
+own risk list flagged attribution's probe budget as the thing most likely to fail an
+honest look.
+
+### 8.2 The corrected picture: accurate almost everywhere, but the *budget* claim is scale-dependent
+
+With both bugs fixed, `greedy_bisection`'s **accuracy** was never in question — it is
+100% top-1/top-3 in every single-culprit configuration tested, at every effect size
+from 3.0pp (below the doctrine's own n=253 MDE of 5.37pp) to 33.0pp, and at every
+candidate-set size from 4 to 40 tools. What collapses and re-emerges, twice, is the
+**sub-exhaustive budget** requirement — the third, equally mandatory leg of the
+doctrine's ship bar:
+
+| Regime | Accuracy | Budget vs. exhaustive | Clears full ship bar? |
+|---|---|---|---|
+| Original benchmark (2-6 tools, 1 culprit, favorable 13.3-28.9pp effect) | 100%/100% | **+34% (more expensive)** | **No** |
+| Same small scale, effect swept 3-33pp | 100%/100% at every band | **+34% to +40% in 3 of 5 bands** (only cheap in bands where it's *failing* to find anything) | **No**, anywhere in this scale regime |
+| Single culprit, ≥10 changed tools | 100%/100% | **-6% to -66%**, improving with scale | **Yes**, at every size ≥10 |
+| 2 simultaneous culprits, 20 tools | 100%/100% | -17% | **Yes** |
+| 3 simultaneous culprits, 20 tools | 98.9% recall / 96.7% top-3 | **+9% (more expensive)** | No (budget only — accuracy is fine) |
+| 3 simultaneous culprits, 40 tools | 100%/100% | -33% | **Yes** |
+
+The mechanism is fully diagnosed, not hand-waved (`v0_5_scale_curve.md` section 5):
+`greedy_bisection`'s outer loop always pays for one extra, always-failing "confirm
+there's no additional culprit" search once every real culprit is found. That fixed,
+`~⌈log2(n_changed)⌉`-cost pass is genuinely wasted overhead in every case — it never
+stops being wasted — but it shrinks as a *fraction* of total cost as `n_changed`
+grows, while `exhaustive_ablation`'s cost grows linearly in `n_changed`. Below
+roughly 10 changed tools, the fixed overhead dominates and the strategy loses to
+exhaustive ablation despite being perfectly accurate. Above it, log-scaling wins.
+
+`sampled_shapley` is sub-exhaustive everywhere by construction (fixed ~50% budget),
+but its accuracy is the limiting factor: inconsistent at small single-culprit scale
+(54-90% depending on effect size), solid at moderate-to-large single-culprit scale
+(90-100% at n≥20), and it **never once clears `top3_strict ≥ 90%` at any tested
+multi-culprit configuration**, regardless of candidate-set size. Its multi-culprit
+failure mode was measured but not mechanistically diagnosed (out of scope for this
+wave) — flagged as open follow-up work, not resolved.
+
+### 8.3 Real-agent data point (Task 4): consistent in direction, not statistically informative
+
+One real case, on live local `gemma2:9b`, no paid provider, ran end-to-end after two
+infrastructure stalls (both disclosed with evidence in `v0_5_real_agent_validation.md`
+section 3, not smoothed over) — `exhaustive_ablation` and `greedy_bisection` both hit
+top-1/top-3 on the true culprit. This is a genuine "the real pipeline runs end-to-end
+against a real agent" data point, and its direction doesn't contradict the synthetic
+findings — but n=1 carries zero population-level statistical information, and
+`sampled_shapley` has no real-agent data at all. This remains the single biggest gap
+before the feature could be shipped with full confidence, exactly as flagged in the
+original Wave 1 report's NOT MEASURED section.
+
+### 8.4 Recommendation: RESCOPE, not ship-as-originally-claimed, not kill
+
+Neither extreme fits the evidence:
+
+- **Not "ship as Wave 1 originally reported."** The original claim ("2 of 3
+  strategies clear the ship bar") does not hold at the small candidate-set scale that
+  benchmark actually tested, under honest measurement. Shipping that claim
+  unqualified would be exactly the kind of uncorrected, discovered-by-a-customer
+  bound this validation wave's Task 1 instruction explicitly warned against.
+- **Not "kill it."** `greedy_bisection` has a real, decisively-clearing, mechanistically
+  understood operating regime — and that regime (candidate-set size ≥ 10 changed
+  tools) is closer to the target buyer's actual stated pain point (spec section 2:
+  "a platform team with a 40-tool server and a 12-file PR") than the original 2-6-tool
+  test benchmark ever was. The feature's real value proposition may be *stronger* at
+  realistic enterprise scale than the initial small-benchmark evaluation suggested.
+
+Concretely, before this ships as a product surface:
+
+1. **Ship `greedy_bisection` only**, with an explicit, README-documented operating
+   envelope: recommended at candidate-set sizes ≥ 10 changed tools; below that,
+   recommend exhaustive ablation directly (it's cheap enough at small n to not need a
+   probe-budget optimization anyway). This bound must appear in the README per this
+   validation wave's own Task 1 instruction — not left for a customer to discover.
+2. **Demote or exclude `sampled_shapley`** from the shipped feature surface until its
+   multi-culprit accuracy collapse is understood — currently it would silently
+   under-perform on exactly the multi-file-PR scenario the feature exists to serve.
+3. **Fix the wasted "confirm no additional culprit" pass before general release**,
+   not just document around it — a caller-specified "assume single culprit" mode (or
+   a cheaper confirmation strategy) would extend the sub-exhaustive regime below
+   n_changed=10 and likely rescue the one remaining multi-culprit budget failure
+   (3 culprits @ 20 tools) as well. This is diagnosed, not yet fixed — flagged as
+   required follow-up, not optional polish.
+4. **Do not claim real-agent validation** beyond "the pipeline runs end-to-end
+   against a real local model, on one case" until a larger real-agent pass (5-10
+   cases, at the ≥10-tool scale where the feature is actually recommended) is run.
+   This is the natural next real-inference task, budgeted and gated the same way
+   Task 4 was.
+
+This recommendation is an engineering/measurement synthesis, not a final product
+decision — per this report's own section 7, sequencing (ship narrowed Wave 1 now vs.
+close the real-agent-at-scale gap first vs. fix the wasted-pass design issue first)
+is GG's call to make, not decided unilaterally here.
+
+### 8.5 MEASURED vs. NOT MEASURED (Wave 1.5, consolidated)
+
+**MEASURED:** two real bugs found and fixed with regression tests; accuracy and
+probe-budget curves across effect size (3-33pp, 5 bands), candidate-set size
+(4/10/20/40 tools), and culprit count (1/2/3 simultaneous), all against the real
+`agentgauge.harness.diff_server_level` estimator; one real end-to-end case against a
+live local agent. Full test suite green throughout (1034 passed at time of writing,
+93%+ coverage, independently re-run after every task in this wave, not solely
+subagent-reported).
+
+**NOT MEASURED:** real-agent validation beyond n=1; `sampled_shapley` against any
+real agent; the multi-culprit accuracy collapse's root cause; whether the
+"confirm no additional culprit" pass's proposed fix actually rescues the affected
+regime (a design change, not yet attempted); any of this against a candidate-set size
+above 40 tools or a culprit count above 3; any live paid-provider adapter's real
+response-variance behavior (unchanged from Wave 1 section 5).
