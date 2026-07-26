@@ -1,5 +1,16 @@
 # AgentGauge v0.5 Wave 1 — failure attribution / regression localization benchmark (Component 1.2)
 
+> **SECTIONS 2, 3, AND 5 BELOW ARE SUPERSEDED (2026-07-26).** A benchmark-construction bug
+> (measurement artifact #9: the injected culprit's textual diff size was systematically correlated
+> with its role, not randomized independently of it) was found in the generator these sections
+> describe, and fixed. **Section 7, "CORRECTION," at the end of this report is the current,
+> trustworthy version of this benchmark's numbers and ship-bar verdict — read it, not sections 2/3/5,
+> for anything cited going forward.** The original text below is kept verbatim, not deleted or
+> silently edited, per this repo's honest-reporting convention (falsified/superseded results are
+> marked, not erased). **Headline of the correction: the ship-bar conclusion CHANGES** —
+> `sampled_shapley` no longer clears the doctrine's bar on the corrected benchmark (68.0% top-1,
+> below the 70% bar); only `greedy_bisection` still clears it. See section 7.
+
 Per `reports/v0_5_eval_doctrine.md` (Component 1.2) / `spec-agentgauge-v0.5.md` sec 4.2: localization
 accuracy is measured against **known injected culprits**, at a **paired (accuracy, probe-budget)**
 curve per strategy, against three zero-probe baselines, with a mandatory benchmark-construction
@@ -172,3 +183,175 @@ nothing from Component 1.1's work was written or edited by this task, and nothin
 `agentgauge/cli.py`, `agentgauge/providers.py`, `agentgauge/cassette.py`,
 `agentgauge/provider_config.py`, `configs/`, `tests/test_cassette.py`,
 `tests/test_cli_provider_cost.py`, or `tests/test_provider_config.py`.
+
+---
+
+## 7. CORRECTION (2026-07-26) — measurement artifact #9: benchmark-construction diff-size bias
+
+**This section supersedes sections 2, 3, and 5 above.** Everything below was independently
+re-measured after fixing the bug described here; nothing above this line was edited to match it.
+
+### 7a. What was wrong (Task 3a measurement)
+
+Section 5's "disclosed asymmetry" paragraph reported the culprit's mean diff-size fractional rank
+as "≈0.66, measured in development on a larger sample" and argued this was a disclosed, acceptable
+property, not a guard violation, because the guard only requires "not always biggest" and "some
+decoy sometimes bigger" — both of which passed. That framing was too weak: **both edge-condition
+checks pass even when there is a real, systematic DISTRIBUTIONAL correlation between diff size and
+culprit-vs-decoy role**, and there was one here.
+
+Re-measured directly against the code as it existed before this fix (`generate_benchmark`,
+seed=42):
+
+| Sample | culprit diff_chars (mean / median / min / max) | decoy diff_chars (mean / median / min / max) | mean culprit fractional rank (0=biggest, 1=smallest) |
+|---|---|---|---|
+| n=50 | 37.22 / 37.00 / 32 / 47 | 98.33 / 61.00 / 6 / 276 | **0.7333** |
+| n=300 | 37.21 / 37.00 / 32 / 47 | 109.97 / 61.00 / 6 / 276 | **0.6600** |
+
+The culprit's diff was **tightly bounded to 32-47 characters in every single case** (the fixed-
+length defect sentence `f" Set {pname} to true/false as needed."`), while 2 of the 3 decoy tiers
+("medium" ~65 chars, "large" ~230 chars) unconditionally exceed that range by construction. This is
+not sampling noise — it is a deterministic consequence of the tier-size choices, and it is the
+direct, mechanistic explanation for `baseline_largest_textual_diff`'s previously reported 4.0%
+top-1 (below the 26.7% random floor): the benchmark was systematically pointing that heuristic at
+the wrong tool.
+
+### 7b. The fix (Task 3b)
+
+`agentgauge/attribution_benchmark.py`, commit `6c4571d`: the true culprit now ALSO draws an
+independent camouflage tier from the same `_DECOY_TIERS` distribution decoys use, appended after
+the mandatory (unchanged, verbatim) defect sentence. A first attempt at exactly this — append-only,
+no other change — was measured and rejected before shipping: it moved the bias to the *other*
+direction (mean fractional rank 0.34-0.36 at n=50/n=300) because the defect sentence's own ~32-47
+char floor has no decoy-side counterpart, making the culprit's total diff systematically bigger
+instead of smaller. The shipped fix additionally gives every decoy a matching fixed-length,
+zero-causal-effect floor sentence (`_DECOY_FLOOR_FILLER`, 38 chars, sized inside the defect
+sentence's measured 32-47 char range) before its own tier suffix, so both culprit and decoy start
+from a comparable floor before the same independently-drawn tier is layered on top. This
+camouflage/floor mechanism is disclosed in the module docstring as exactly what it is: synthetic
+benchmark-construction plumbing bolted onto the real, causally-validated `type_enum_contradiction`
+defect for decorrelation purposes, not part of the real defect itself — the defect-triggering
+sentence (type flip + boolean phrase) is present verbatim in every case, unchanged by this fix.
+
+Re-measured post-fix (`fractional_rank_from_diffs`, same methodology as 7a):
+
+| Sample | culprit diff_chars (mean / median / min / max) | decoy diff_chars (mean / median / min / max) | mean culprit fractional rank |
+|---|---|---|---|
+| n=50 | 144.42 / 96.00 / 38 / 316 | 154.20 / 99.00 / 44 / 314 | **0.6113** |
+| n=300 | 144.35 / 96.00 / 38 / 317 | 152.41 / 99.00 / 44 / 314 | **0.5536** |
+
+Both mean and median diffs are now close between culprit and decoy pool (vs. a ~2.6-3x mean gap
+pre-fix), and the mean fractional rank sits much closer to the 0.5 null than the pre-fix
+0.66-0.73 — not exactly 0.5 (the residual gap is sampling noise in the tier draw counts at these
+sample sizes, not a remaining structural bias; see the commit `6c4571d` message for the exact
+tier-count diagnostic). `TestConfoundGuard::test_culprit_diff_size_distribution_not_correlated_with_role`
+(band [0.35, 0.65]) and `agentgauge.audit.check_benchmark_construction_diffsize_bias` (same band,
+BLOCK severity, commit `6ae80d8`) both pass on the corrected generator and both fail on the
+pre-fix numbers above — verified directly, not asserted.
+
+### 7c. Corrected confound-guard report (n=50, seed=42, post-fix)
+
+| Check | Pre-fix (original report, section 5) | Post-fix (corrected) |
+|---|---|---|
+| Distinct culprit positions observed | 6 | 6 |
+| Cases where culprit IS max-diff tool | 2/50 (4.0%) | 12/50 (24.0%) |
+| Cases where >=1 decoy diff EXCEEDS culprit | 48/50 (96.0%) | 38/50 (76.0%) |
+| Mean culprit fractional rank | ~0.66-0.73 (dev-time estimate; 7a gives the real number) | **0.6113** |
+
+The "culprit is max-diff tool" rate moving from an artificially low 4.0% to a more plausible 24.0%
+(roughly what a role-independent 1-of-~4-changed-tools process would produce) is itself evidence
+the fix worked as intended, not just the fractional-rank statistic in isolation.
+
+### 7d. Corrected 6-method accuracy/budget table (n=50, seed=42, post-fix; `scripts/attribution_benchmark_report.py`)
+
+| Method | top-1 | top-3 | mean probes | vs. exhaustive | Pre-fix top-1 (section 2) |
+|---|---|---|---|---|---|
+| exhaustive_ablation (a) | 100.0% | 100.0% | 3.96 | reference | 100.0% |
+| **sampled_shapley (b)** | **68.0%** | 98.0% | 1.92 | sub-exhaustive | 74.0% |
+| greedy_bisection (c) | 100.0% | 100.0% | 2.78 | sub-exhaustive | 100.0% |
+| largest_textual_diff (i) | 24.0% | 72.0% | 0 | — | 4.0% |
+| most_lint_violations (ii) | 62.0% | 82.0% | 0 | — | 64.0% |
+| uniform_random (iii), one draw | 26.0% | 76.0% | 0 | — | 30.0% |
+| uniform_random (iii), analytic expectation | 30.1% | 78.2% | 0 | — | 26.7% |
+
+`largest_textual_diff` moving from 4.0% (below-random, the direct symptom of the bug) to 24.0%
+(close to the ~26-30% random floor, as a role-independent diff-size heuristic should measure on
+this corpus) is the single clearest confirmation that the confound is gone — a heuristic that
+previously performed *worse than chance by construction* now performs *approximately at chance*,
+which is what "diff size carries no real localization signal in this specific injected-defect
+class" should actually look like.
+
+### 7e. Ship-bar verdict — CHANGED (headline)
+
+**`sampled_shapley` no longer clears the doctrine's ship bar** (top-1 ≥ 0.70 AND top-3 ≥ 0.90 AND
+sub-exhaustive budget): 68.0% top-1 is below the 70% bar. Only **`greedy_bisection`** still clears
+it (100.0%/100.0%/2.78 mean probes, sub-exhaustive).
+
+| Strategy | top-1 | top-3 | mean probes | sub-exhaustive? | Verdict (corrected) | Verdict (original, section 3) |
+|---|---|---|---|---|---|---|
+| exhaustive_ablation | 100.0% | 100.0% | 3.96 | No (reference) | does not clear (reference) | does not clear (reference) |
+| sampled_shapley | 68.0% | 98.0% | 1.92 | Yes | **does NOT clear** (top-1 < 0.70) | CLEARS |
+| greedy_bisection | 100.0% | 100.0% | 2.78 | Yes | **CLEARS** | CLEARS |
+
+This is reported plainly as the headline of this correction, per the task's explicit instruction:
+**the corrected benchmark still shows one strategy (`greedy_bisection`) clearing the doctrine's
+ship bar, but the number of clearing strategies dropped from two to one.** `sampled_shapley`'s
+68.0% top-1 is close to the 70% bar (a 2-percentage-point miss, i.e. 1 case out of 50) — this
+should be read as "does not currently clear," not "structurally cannot," and is a candidate for a
+larger-n re-measurement or a budget increase (`_sampled_shapley_budget` is deliberately capped at
+~half of `n_changed`) before being written off, but that follow-up is out of this task's scope and
+is not performed here. The doctrine's own bar is binary; softening it after seeing this specific
+number would be exactly the "fitting the metric after seeing the results" this repo's doctrine
+forbids, so it is reported as a miss, not rounded up.
+
+### 7f. Task 3c — `most_lint_violations` recheck
+
+Re-measured on the corrected 50-case benchmark: **62.0% top-1 / 82.0% top-3** — within noise of
+the original 64.0%/80.0% (moved -2pp top-1, +2pp top-3; the diff-size fix does not touch this
+baseline's own logic or its inputs' schema content, so this small movement is expected sampling
+variance from the regenerated corpus, not a real effect of the fix).
+
+The more important finding, from directly investigating the mechanism (not just re-running the
+number): **68% of the 50 cases (34/50) have a TIE at the top of the raw violation-count ranking.**
+The true culprit's mandatory defect sentence both (a) triggers the new BLOCKING
+`type_enum_contradiction` violation and (b) newly MENTIONS the flipped parameter's name, which
+simultaneously satisfies the pre-existing INFO-severity `required_not_mentioned` check for that
+same property — netting the culprit's raw violation-COUNT delta to exactly **0** in 34/50 cases,
+despite a real, guaranteed BLOCKING-severity gain in every case. Decoys never trigger
+`type_enum_contradiction` (confirmed directly: only `required_references_missing_property` /
+`required_not_mentioned` ever fire on decoys, and only as incidental *decreases*, never increases —
+they never out-rank the culprit via a genuine competing blocking signal). With the raw count tied
+at 0 in most cases, `baseline_most_lint_violations`'s ranking falls back to `changed_tools` list
+order (Python's stable sort), so a large share of its "hits" are position luck, not a real
+count-based signal.
+
+**This is reported as a finding about the heuristic, not fixed by redefining the baseline**, per
+the task's explicit instruction. A trivial severity-aware check (does the tool carry >=1 BLOCKING
+violation at all, ignoring count) identifies the true culprit in **100% of the same 50 cases** —
+confirming this is a genuine property of raw-count ranking's severity-blindness (a real limitation
+of the heuristic as specified), not primarily a construction artifact of this specific benchmark
+(decoys do not spuriously trip the blocking check; the offset is a real side effect of the defect
+sentence needing to *name* the parameter it mutates, interacting with a real INFO-severity check).
+`baseline_most_lint_violations`'s implementation is unchanged. Locked in by
+`tests/test_attribution_benchmark.py::TestBaselineMostLintViolationsRawCountOffsetOnBenchmark`
+(commit `10d977b`).
+
+### 7g. Artifact log and standing check
+
+Logged as **measurement artifact #9** in `agentgauge/audit.py`'s module docstring and
+`tests/test_audit.py`'s enumerated historical-case list (both updated, commit `6ae80d8`), matching
+this repo's established eight-artifact-class format. `agentgauge.audit.check_benchmark_construction_diffsize_bias`
+is a new, standalone, duck-typed standing check (mean fractional rank vs. the 0.5 null, band
+[0.35, 0.65], BLOCK severity) that any injected-culprit benchmark generator's case output can be
+run through before its accuracy numbers are trusted — tested against a deliberately-biased fixture
+(fires), an unbiased fixture (does not fire), and the real corrected `generate_benchmark()` output
+(does not fire). **Not yet wired into `run_audit`'s top-level dispatcher** — that reshaping is
+scoped separately (v0.5 Wave 1 Task 5a), since `run_audit`'s current signature is built around
+`BlindTask`/tool-based `diff`/`eval` inputs, not benchmark-generator case objects.
+
+### 7h. Reproduction
+
+`uv run python scripts/attribution_benchmark_report.py`, seed=42, commit `6ae80d8` (this
+correction's final commit) or later. Task 3a's pre-fix numbers in 7a are reproducible by checking
+out commit `2976893` (or any commit before `6c4571d`) and running the same script / the analysis in
+`6c4571d`'s commit message.

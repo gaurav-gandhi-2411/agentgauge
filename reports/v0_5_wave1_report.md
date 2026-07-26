@@ -49,6 +49,14 @@ MEASURED (see section 5).
 
 ## 3. Attribution accuracy / budget table (Component 1.2 ship bar: top-1≥0.70, top-3≥0.90, sub-exhaustive budget)
 
+> **SUPERSEDED (2026-07-26).** The table and confound-guard numbers below were measured against a
+> benchmark generator later found to have a construction bug (measurement artifact #9: the injected
+> culprit's textual diff size correlated with its role instead of being independent of it — see
+> `reports/v0_5_attribution_benchmark.md` section 7, "CORRECTION"). **The corrected numbers change
+> the ship-bar conclusion: `sampled_shapley` no longer clears the bar (68.0% top-1, was 74.0%);
+> only `greedy_bisection` still clears it** (was 2 of 3 strategies, now 1 of 3). Read
+> `reports/v0_5_attribution_benchmark.md` section 7 for the corrected table, not this section.
+
 **Verified by:** independently re-read `reports/v0_5_attribution_benchmark.md` in full
 (not just its summary) and cross-checked its confound-guard numbers and MEASURED/NOT
 MEASURED section against the doctrine's requirements before accepting the table below.
