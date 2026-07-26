@@ -203,12 +203,20 @@ def _bisect_within(
     base: frozenset[str],
     base_delta: float,
     threshold: float,
-) -> tuple[str, ProbeResult, int, dict[str, float]] | None:
+) -> tuple[str | None, ProbeResult | None, int, dict[str, float]]:
     """Binary-search for a single tool with a significant marginal recovery effect within
-    `tools`, holding `base` (already-identified culprits, already reverted) fixed. Returns
-    (culprit, its final marginal ProbeResult, probes used, elimination scores for ruled-out
-    tools) or None if no tool in `tools` shows a significant marginal effect. `base_delta` is the
-    already-measured probe(base) delta, passed in so it need not be re-probed."""
+    `tools`, holding `base` (already-identified culprits, already reverted) fixed.
+
+    Always returns a 4-tuple `(culprit, culprit_probe, probes_used, elim_scores)` -- `probes_used`
+    and `elim_scores` are populated on EVERY path (success or failure) since real `probe()` calls
+    and real (if not individually significant) marginal-delta measurements happen regardless of
+    whether the search ultimately isolates a culprit. On success, `culprit`/`culprit_probe` are the
+    isolated tool and its final marginal `ProbeResult`. On failure (no tool in `tools` shows a
+    significant marginal effect), `culprit` and `culprit_probe` are both `None`, but `probes_used`
+    still reports every real probe spent and `elim_scores` still carries every measured (if
+    sub-threshold) marginal delta gathered along the way -- the caller must not discard either.
+    `base_delta` is the already-measured probe(base) delta, passed in so it need not be re-probed.
+    """
     candidates = list(tools)
     probes_used = 0
     elim_scores: dict[str, float] = {}
@@ -228,7 +236,10 @@ def _bisect_within(
                 elim_scores[t] = marginal_delta
             candidates = half_b
     if not candidates:
-        return None
+        # Defensive only: `attribute_greedy_bisection`'s outer loop never calls this with an
+        # empty `tools` list (it only calls in when `remaining` is non-empty), so this path is
+        # unreachable via the real caller -- kept as a guard for any future/direct caller.
+        return (None, None, probes_used, elim_scores)
     culprit = candidates[0]
     final = probe(base | frozenset({culprit}))
     probes_used += 1
@@ -237,7 +248,7 @@ def _bisect_within(
     marginal_ci_hi = final.ci_hi - base_delta
     if marginal_ci_lo <= threshold:
         elim_scores[culprit] = marginal_delta
-        return None
+        return (None, None, probes_used, elim_scores)
     return (
         culprit,
         ProbeResult(marginal_delta, marginal_ci_lo, marginal_ci_hi),
@@ -261,6 +272,13 @@ def attribute_greedy_bisection(
     Tools ruled out along the way are still returned (needed for top-3 scoring), ranked by the
     marginal delta of the half they were eliminated with (higher = more suspicious even though
     not individually isolated), after all isolated culprits.
+
+    Probe-cost accounting invariant: `probes_consumed` on the returned `AttributionResult` is the
+    exact sum of every real `probe()` call made by every `_bisect_within` invocation across every
+    iteration of the outer loop below -- including invocations that fail to isolate a culprit.
+    `_bisect_within` always reports `probes_used` regardless of outcome (see its docstring), and
+    every iteration here adds it to `probes_consumed` unconditionally, before branching on whether
+    a culprit was found.
     """
     remaining = list(changed_tools)
     reverted_base: frozenset[str] = frozenset()
@@ -270,14 +288,22 @@ def attribute_greedy_bisection(
     elim_scores: dict[str, float] = {}
 
     while remaining:
-        result = _bisect_within(remaining, probe, reverted_base, base_delta, threshold)
-        if result is None:
+        culprit, culprit_probe, probes_used, this_elim = _bisect_within(
+            remaining, probe, reverted_base, base_delta, threshold
+        )
+        probes_consumed += probes_used
+        elim_scores.update(this_elim)
+        if culprit is None or culprit_probe is None:
+            # Total search failure: `_bisect_within` measured a real (if sub-threshold) marginal
+            # delta for every tool in `remaining` along the way (each round's eliminated half gets
+            # an entry -- see its docstring/loop), so `elim_scores` already covers every tool here.
+            # This `setdefault` fallback is defensive only, for a tool that was somehow never
+            # probed; tracing `_bisect_within`'s loop shows this cannot actually happen given how
+            # the outer loop only ever calls it with a non-empty `remaining`, so this never fires
+            # in practice -- kept as a guard rather than assuming the invariant always holds.
             for t in remaining:
                 elim_scores.setdefault(t, 0.0)
             break
-        culprit, culprit_probe, probes_used, this_elim = result
-        probes_consumed += probes_used
-        elim_scores.update(this_elim)
         found.append(
             AttributionCandidate(
                 tool_name=culprit,

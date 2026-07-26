@@ -110,7 +110,12 @@ class TestAttributeSampledShapley:
 
 class TestAttributeGreedyBisection:
     def test_ranks_true_culprit_first_with_sub_exhaustive_budget(self) -> None:
-        changed = [f"t{i}" for i in range(8)]
+        # n=16, not n=8: the outer loop always spends a second (failing) `_bisect_within` search
+        # over the remainder to check for additional culprits (see docstring), and with the
+        # probes_consumed accounting fix below, that second search's real cost is now honestly
+        # counted too. At small n (e.g. n=8) "find one + fail to find a second" can cost as much
+        # as exhaustive ablation itself -- n=16 is large enough to stay genuinely sub-exhaustive.
+        changed = [f"t{i}" for i in range(16)]
         probe = _fixed_effect_probe({"t5": 0.20})
         result = attribute_greedy_bisection(changed, probe, threshold=0.05)
         assert result.ranked[0].tool_name == "t5"
@@ -123,8 +128,11 @@ class TestAttributeGreedyBisection:
             changed = [f"t{i}" for i in range(n)]
             probe = _fixed_effect_probe({f"t{n // 2}": 0.20})
             result = attribute_greedy_bisection(changed, probe)
-            # ceil(log2 n) splits + 1 confirmation probe, with a little slack for parity effects.
-            assert result.probes_consumed <= math.ceil(math.log2(n)) + 2
+            # ceil(log2 n) splits + 1 confirmation probe TO FIND the one real culprit, plus a
+            # second (failing) search of the same rough cost over the remainder to check for
+            # additional culprits -- both real, both now honestly counted (probes_consumed fix
+            # below), so the budget is ~2x a single search's cost, with slack for parity effects.
+            assert result.probes_consumed <= 2 * math.ceil(math.log2(n)) + 3
 
     def test_no_culprit_found_returns_all_at_zero(self) -> None:
         changed = ["a", "b", "c"]
@@ -133,11 +141,91 @@ class TestAttributeGreedyBisection:
         assert {c.tool_name for c in result.ranked} == set(changed)
         assert all(c.attributed_effect_pp == 0.0 for c in result.ranked)
 
-    def test_bisect_within_empty_tools_returns_none(self) -> None:
+    def test_probes_consumed_counts_every_real_probe_call_on_total_failure(self) -> None:
+        """Regression test for the bug reported in reports/v0_5_effect_size_sensitivity.md sec 5:
+        `_bisect_within` used to silently drop `probes_used` on every return-None path, so
+        `attribute_greedy_bisection.probes_consumed` under-reported (often to exactly 0) whenever
+        the search failed to isolate a culprit. A counting wrapper around the probe callback
+        proves the invariant now holds unconditionally: probes_consumed == real probe() calls
+        made, even on total search failure."""
+        changed = [f"t{i}" for i in range(7)]
+        base_probe = _fixed_effect_probe({})  # no tool has any effect -> guaranteed total failure
+        call_count = 0
+
+        def counting_probe(reverted: frozenset[str]) -> ProbeResult:
+            nonlocal call_count
+            call_count += 1
+            return base_probe(reverted)
+
+        result = attribute_greedy_bisection(changed, counting_probe, threshold=0.05)
+        assert call_count > 0  # sanity: probes really were made, so a naive `== 0` would be wrong
+        assert result.probes_consumed == call_count
+
+    def test_probes_consumed_counts_every_real_probe_call_across_multiple_culprits(self) -> None:
+        """Same invariant, but exercising the outer `while remaining:` loop across more than one
+        `_bisect_within` call: one culprit is found (consuming its own probes), then the search
+        continues on the remainder and fails outright (consuming further probes that must still be
+        credited) -- probe-cost accounting must stay correct across outer-loop iterations too, not
+        just within a single `_bisect_within` call."""
+        changed = [f"t{i}" for i in range(6)]
+        # t1 has a real, clearly-significant effect; every other tool has none, so once t1 is
+        # found and reverted, bisection over the remainder is a guaranteed total failure.
+        base_probe = _fixed_effect_probe({"t1": 0.30})
+        call_count = 0
+
+        def counting_probe(reverted: frozenset[str]) -> ProbeResult:
+            nonlocal call_count
+            call_count += 1
+            return base_probe(reverted)
+
+        result = attribute_greedy_bisection(changed, counting_probe, threshold=0.05)
+        assert result.ranked[0].tool_name == "t1"
+        assert result.probes_consumed == call_count
+
+    def test_total_failure_ranking_reflects_measured_deltas_not_list_position(self) -> None:
+        """Regression test for the bug's second half: on total search failure, tools probed along
+        the way have real (if sub-threshold) measured marginal deltas -- the ranking must reflect
+        those, not degenerate to `changed_tools`' input order (the pre-fix behavior, since every
+        tool tied at a blanket 0.0). Effects are chosen so every marginal delta bisection actually
+        measures is sub-threshold (forcing total failure) but NOT equal, and so that the
+        higher-measured tools sit LATER in the input list than the positional-order fallback would
+        predict -- if the ranking merely reproduced list order, this test would fail."""
+        threshold = 0.05
+        effects = {"t0": 0.01, "t1": 0.01, "t2": 0.04, "t3": 0.03}
+        probe = _fixed_effect_probe(effects)
+
+        changed_forward = ["t0", "t1", "t2", "t3"]
+        result_fwd = attribute_greedy_bisection(changed_forward, probe, threshold=threshold)
+        assert result_fwd.probes_consumed > 0
+        # Real measured deltas: t2 (0.04) and t3 (0.03) are each isolated individually and must
+        # outrank the pair {t0, t1} (grouped delta 0.02) -- the opposite of raw list position.
+        ranked_names_fwd = [c.tool_name for c in result_fwd.ranked]
+        assert ranked_names_fwd[0] == "t2"
+        assert ranked_names_fwd[1] == "t3"
+
+        # Reverse the input list order. If ranking were driven by list position (the pre-fix bug),
+        # reversing the input would exactly reverse the output. It does not: t2/t3 still rank
+        # ahead of t0/t1 because that ordering is driven by genuinely-measured deltas, which don't
+        # depend on which order the caller happened to list the tools in.
+        changed_reversed = list(reversed(changed_forward))
+        result_rev = attribute_greedy_bisection(changed_reversed, probe, threshold=threshold)
+        ranked_names_rev = [c.tool_name for c in result_rev.ranked]
+        assert ranked_names_rev[0] == "t2"
+        assert ranked_names_rev[1] == "t3"
+        assert ranked_names_rev != list(reversed(ranked_names_fwd))
+
+    def test_bisect_within_empty_tools_returns_none_culprit_with_zero_probes(self) -> None:
         """Defensive branch: `_bisect_within` (private helper) guards against being called with
         an empty candidate list directly, even though `attribute_greedy_bisection`'s own outer
-        loop never does this (it only calls in when `remaining` is non-empty)."""
-        assert _bisect_within([], _fixed_effect_probe({}), frozenset(), 0.0, 0.05) is None
+        loop never does this (it only calls in when `remaining` is non-empty). The return shape
+        is always a 4-tuple now (never bare `None`) -- see the probe-accounting fix below."""
+        culprit, culprit_probe, probes_used, elim_scores = _bisect_within(
+            [], _fixed_effect_probe({}), frozenset(), 0.0, 0.05
+        )
+        assert culprit is None
+        assert culprit_probe is None
+        assert probes_used == 0
+        assert elim_scores == {}
 
     def test_finds_multiple_independent_culprits(self) -> None:
         """Doctrine requires handling >1 independent culprit: once one is isolated and removed,
