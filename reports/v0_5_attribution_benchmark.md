@@ -355,3 +355,18 @@ scoped separately (v0.5 Wave 1 Task 5a), since `run_audit`'s current signature i
 correction's final commit) or later. Task 3a's pre-fix numbers in 7a are reproducible by checking
 out commit `2976893` (or any commit before `6c4571d`) and running the same script / the analysis in
 `6c4571d`'s commit message.
+
+### 7i. Effect-size sensitivity follow-up (v0.5 Wave 1, 2026-07-26)
+
+Everything above (sections 2/3/5's original numbers, and this section 7's correction) was measured
+at ONE effect size: the true culprit's injected effect drawn from a fixed 13.3-28.9pp range — a
+large, well-separated signal explicitly flagged in section 4's "NOT MEASURED" caveat as favorable
+relative to the harness's own detection power. `reports/v0_5_effect_size_sensitivity.md` extends
+this same corrected benchmark generator (`agentgauge.attribution_benchmark.generate_benchmark`'s
+new `effect_min_pp`/`effect_max_pp` parameters) across five effect bands spanning 3.0-33.0pp,
+including below and straddling the harness's own measured MDE, to determine the true effect size
+below which top-1 accuracy stops clearing the doctrine's 0.70 bar for `greedy_bisection` and
+`sampled_shapley` — see that report for the per-band accuracy/budget table, the confound guard
+re-verified independently at every band, and a mechanism investigation into why accuracy degrades
+near the detection threshold (including an implementation-level finding this study surfaced that
+was invisible in the single-favorable-effect-size measurement above).
