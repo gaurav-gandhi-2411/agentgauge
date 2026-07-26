@@ -251,6 +251,7 @@ def generate_benchmark(
     seed: int = 42,
     effect_min_pp: float = CAUSAL_EFFECT_MIN_PP,
     effect_max_pp: float = CAUSAL_EFFECT_MAX_PP,
+    n_changed: int | None = None,
 ) -> list[BenchmarkCase]:
     """Generate `n_cases` injected-culprit benchmark cases, cycling deterministically through the
     real multi-tool corpus. Each case's true culprit's index within `changed_tools`, and its
@@ -276,10 +277,26 @@ def generate_benchmark(
     seed (those come from separate, sequentially-later `rng()` calls whose count and order do not
     depend on the value returned by the effect draw) -- see
     `reports/v0_5_effect_size_sensitivity.md` for the empirical confirmation of this argument
-    across multiple bands with independent seeds."""
+    across multiple bands with independent seeds.
+
+    `n_changed` (v0.5 Wave 1, scale-curve study, see `reports/v0_5_scale_curve.md`): if `None`
+    (default), the candidate-set size is drawn per-case in `[2, 6]` exactly as before -- fully
+    behavior-preserving, byte-identical to every prior caller. If an `int`, EVERY generated case
+    uses exactly that candidate-set size (a "pinned size" benchmark), and only catalogs with at
+    least `n_changed` tools total are eligible (catalogs are filtered up front; a catalog with
+    fewer tools than requested can never produce a case of that size and is skipped outright, not
+    retried per-case). This is a separate code path from the default `n_changed=None` behavior --
+    it consumes a different number/order of `rng()` calls (no per-case candidate-set-size draw),
+    so it is not expected to reproduce the default path's case sequence at the same seed, and does
+    not need to."""
     corpus = _load_corpus()
+    if n_changed is not None:
+        corpus = [e for e in corpus if len(e["tools"]) >= n_changed]
     if not corpus:
-        raise RuntimeError(f"No usable multi-tool catalogs found in {_TOOL_DEFS_PATH}")
+        raise RuntimeError(
+            f"No usable multi-tool catalogs found in {_TOOL_DEFS_PATH}"
+            + (f" with >= {n_changed} tools" if n_changed is not None else "")
+        )
 
     rng = _lcg_random(seed)
     cases: list[BenchmarkCase] = []
@@ -292,11 +309,16 @@ def generate_benchmark(
         if not eligible:
             continue
 
-        max_changed = min(_MAX_CHANGED, len(tools))
-        if max_changed < _MIN_CHANGED:
-            continue
-        n_changed = _MIN_CHANGED + int(rng() * (max_changed - _MIN_CHANGED + 1))
-        n_changed = min(n_changed, max_changed)
+        if n_changed is not None:
+            # Pinned-size path: catalogs too small to support `n_changed` were already filtered
+            # out of `corpus` above, so `len(tools) >= n_changed` holds here unconditionally.
+            n_changed_case = n_changed
+        else:
+            max_changed = min(_MAX_CHANGED, len(tools))
+            if max_changed < _MIN_CHANGED:
+                continue
+            n_changed_case = _MIN_CHANGED + int(rng() * (max_changed - _MIN_CHANGED + 1))
+            n_changed_case = min(n_changed_case, max_changed)
 
         culprit_name = eligible[int(rng() * len(eligible)) % len(eligible)]
         other_names = [t["name"] for t in tools if t["name"] != culprit_name]
@@ -305,7 +327,7 @@ def generate_benchmark(
         for i in range(len(pool) - 1, 0, -1):
             j = int(rng() * (i + 1))
             pool[i], pool[j] = pool[j], pool[i]
-        decoy_names = pool[: n_changed - 1]
+        decoy_names = pool[: n_changed_case - 1]
 
         changed = [culprit_name, *decoy_names]
         for i in range(len(changed) - 1, 0, -1):  # randomize the culprit's position too

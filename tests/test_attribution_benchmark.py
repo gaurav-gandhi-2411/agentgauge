@@ -9,6 +9,8 @@ enough to make the confound-guard's statistical assertions meaningful.
 
 from __future__ import annotations
 
+import pytest
+
 from agentgauge.attribution import (
     attribute_exhaustive,
     baseline_largest_textual_diff,
@@ -110,6 +112,66 @@ class TestConfoundGuard:
             "outside the [0.35, 0.65] band around the 0.5 null -- diff size still correlates "
             "with culprit-vs-decoy role (the artifact #9 class)"
         )
+
+
+class TestPinnedSizeGeneration:
+    """v0.5 Wave 1 scale-curve study (`reports/v0_5_scale_curve.md`): `generate_benchmark`'s new
+    `n_changed` parameter pins every case's candidate-set size instead of drawing it from [2, 6]."""
+
+    def test_default_n_changed_none_is_unaffected(self) -> None:
+        """The pinned-size code path must not change the existing default (n_changed=None)
+        behavior at all -- same case sequence, same seed, as before this parameter existed."""
+        cases_a = generate_benchmark(n_cases=10, seed=SEED)
+        cases_b = generate_benchmark(n_cases=10, seed=SEED, n_changed=None)
+        assert [c.true_culprit for c in cases_a] == [c.true_culprit for c in cases_b]
+        assert [c.changed_tools for c in cases_a] == [c.changed_tools for c in cases_b]
+
+    def test_every_case_has_exactly_the_pinned_size(self) -> None:
+        for n in (4, 10, 20, 40):
+            cases = generate_benchmark(n_cases=10, seed=SEED, n_changed=n)
+            assert len(cases) == 10
+            for case in cases:
+                assert len(case.changed_tools) == n
+
+    def test_pinned_size_is_deterministic_given_seed(self) -> None:
+        cases_a = generate_benchmark(n_cases=10, seed=SEED, n_changed=20)
+        cases_b = generate_benchmark(n_cases=10, seed=SEED, n_changed=20)
+        assert [c.true_culprit for c in cases_a] == [c.true_culprit for c in cases_b]
+        assert [c.changed_tools for c in cases_a] == [c.changed_tools for c in cases_b]
+
+    def test_true_culprit_still_among_changed_tools_at_every_size(self) -> None:
+        for n in (4, 10, 20, 40):
+            cases = generate_benchmark(n_cases=8, seed=SEED, n_changed=n)
+            for case in cases:
+                assert case.true_culprit in case.changed_tools
+
+    def test_raises_when_no_catalog_is_large_enough(self) -> None:
+        """Corpus catalogs top out at 60 tools (confirmed directly against
+        evals/fixtures/v2_tool_definitions.json, not assumed) -- requesting an unreasonably large
+        pinned size must fail loudly, not silently return fewer/smaller cases."""
+        with pytest.raises(RuntimeError):
+            generate_benchmark(n_cases=5, seed=SEED, n_changed=1000)
+
+
+class TestConfoundGuardAtPinnedSizes:
+    """Task 2a's explicit instruction: re-verify the confound guard at every pinned size, not
+    just the original default-sized benchmark -- a bias could plausibly reappear or worsen at
+    extreme sizes even if it doesn't at the sizes already tested."""
+
+    def test_confound_guard_passes_at_every_pinned_size(self) -> None:
+        for n in (4, 10, 20, 40):
+            cases = generate_benchmark(n_cases=30, seed=SEED, n_changed=n)
+            guard = confound_guard_report(cases)
+            assert guard.n_positions_observed > 1, (
+                f"n_changed={n}: true culprit occupied only one position across {len(cases)} cases"
+            )
+            assert guard.frac_cases_culprit_is_max_diff < 1.0, (
+                f"n_changed={n}: true culprit was the largest-diff tool in EVERY case"
+            )
+            assert 0.35 <= guard.mean_culprit_fractional_rank <= 0.65, (
+                f"n_changed={n}: mean culprit fractional rank "
+                f"{guard.mean_culprit_fractional_rank:.4f} is outside the [0.35, 0.65] band"
+            )
 
 
 class TestMakeProbeFn:
