@@ -5,22 +5,24 @@ A `ProviderConfig` (pydantic, validated at the boundary per project convention) 
 loaded from a YAML file and dispatched to the right `agentgauge.providers` adapter via
 `create_provider()`. See `configs/provider.*.yaml` for one worked example per adapter.
 
-**Why a hand-rolled flat-YAML parser instead of PyYAML:** this project's standing rule
-is "do not install new dependencies without asking." `ProviderConfig`'s schema is a
-single, flat mapping of scalar values (str/int/float/None/bool) -- no lists, no nesting
--- so a small bounded parser for exactly that subset avoids the new dependency while
-still satisfying "YAML for runtime config, never pyproject.toml." `_parse_flat_yaml`
-below is deliberately NOT a general YAML parser (it will raise on anything with nesting
-or block sequences); if a future config needs real nesting, that is the trigger to
-add PyYAML properly rather than growing this parser. The public API
-(`load_provider_config(path) -> ProviderConfig`) is unaffected either way.
+**PyYAML (v0.5 Wave 1 Task 5b):** `load_provider_config` parses with
+`yaml.safe_load` -- never `yaml.load` without a safe loader, since a config file is an
+untrusted-input trust boundary. This project's earlier hand-rolled `_parse_flat_yaml`
+(a small bounded parser for exactly `ProviderConfig`'s flat-scalar-mapping subset, kept
+to avoid a new dependency) has been removed: real nested mappings and YAML block
+sequences (lists) are now genuinely supported by the parsing layer, even though
+`ProviderConfig`'s pydantic schema itself is still flat scalars today (a list-typed
+field is a schema change, not a parser change, and hasn't been needed yet).
+`ProviderConfig`'s pydantic validation remains the boundary-validation layer exactly as
+before -- `yaml.safe_load` only needs to hand it a `dict`.
 """
 
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any, Literal
+from typing import Literal
 
+import yaml
 from pydantic import BaseModel, model_validator
 
 from agentgauge.providers import (
@@ -94,87 +96,16 @@ class ProviderConfig(BaseModel):
         return self
 
 
-def _strip_trailing_comment(value_part: str) -> str:
-    """Strip a `# comment` suffix from an unquoted scalar value, or return a quoted
-    value's contents verbatim (a '#' inside quotes is not a comment)."""
-    if value_part.startswith(("'", '"')):
-        quote_char = value_part[0]
-        end = value_part.find(quote_char, 1)
-        if end == -1:
-            return value_part.strip()
-        return value_part[: end + 1]
-    idx = value_part.find("#")
-    while idx != -1:
-        if idx == 0 or value_part[idx - 1].isspace():
-            return value_part[:idx].strip()
-        idx = value_part.find("#", idx + 1)
-    return value_part.strip()
-
-
-def _parse_scalar(text: str) -> Any:
-    """Parse one YAML-scalar-subset token: quoted string, null, bool, int, float,
-    special float tags (`.inf`/`-.inf`/`.nan`), or a bare (unquoted) string."""
-    if text == "" or text in ("null", "~", "Null", "NULL"):
-        return None
-    if len(text) >= 2 and text[0] == text[-1] and text[0] in ("'", '"'):
-        return text[1:-1]
-    if text in ("true", "True", "TRUE"):
-        return True
-    if text in ("false", "False", "FALSE"):
-        return False
-    lowered = text.lower()
-    if lowered in (".inf", "inf", "+.inf"):
-        return float("inf")
-    if lowered in ("-.inf", "-inf"):
-        return float("-inf")
-    if lowered in (".nan", "nan"):
-        return float("nan")
-    try:
-        return int(text)
-    except ValueError:
-        pass
-    try:
-        return float(text)
-    except ValueError:
-        pass
-    return text
-
-
-def _parse_flat_yaml(text: str) -> dict[str, Any]:
-    """Parse the bounded flat-mapping YAML subset `ProviderConfig` needs: one
-    `key: value` pair per non-blank, non-comment line, no nesting, no lists.
-
-    Raises `ValueError` (with the offending line number) on anything outside that
-    subset -- fails loudly rather than silently misinterpreting a nested structure.
-    """
-    result: dict[str, Any] = {}
-    for lineno, raw_line in enumerate(text.splitlines(), start=1):
-        stripped = raw_line.strip()
-        if not stripped or stripped.startswith("#"):
-            continue
-        if stripped.startswith("- ") or stripped == "-":
-            raise ValueError(
-                f"provider config line {lineno}: block sequences ('- item') are not "
-                "supported by this project's minimal flat-YAML parser (see "
-                "provider_config.py module docstring)."
-            )
-        if ":" not in raw_line:
-            raise ValueError(
-                f"provider config line {lineno}: expected 'key: value', got {raw_line!r}"
-            )
-        key, _, rest = raw_line.partition(":")
-        key = key.strip()
-        if not key:
-            raise ValueError(f"provider config line {lineno}: empty key in {raw_line!r}")
-        value_part = _strip_trailing_comment(rest.strip())
-        result[key] = _parse_scalar(value_part)
-    return result
-
-
 def load_provider_config(path: str | Path) -> ProviderConfig:
     """Load and validate a `ProviderConfig` from a YAML file (see `configs/` for
-    one worked example per adapter kind)."""
-    raw = _parse_flat_yaml(Path(path).read_text(encoding="utf-8"))
+    one worked example per adapter kind).
+
+    `yaml.safe_load` (never `yaml.load` without `Loader=SafeLoader`) -- a config file
+    is untrusted input at a trust boundary. An empty or comment-only file parses to
+    `None`; that is normalized to `{}` so `ProviderConfig.model_validate` sees a dict
+    and raises its own (more informative) missing-required-field error rather than a
+    raw `AttributeError`."""
+    raw = yaml.safe_load(Path(path).read_text(encoding="utf-8")) or {}
     return ProviderConfig.model_validate(raw)
 
 

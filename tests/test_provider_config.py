@@ -1,10 +1,12 @@
 """Tests for agentgauge.provider_config -- config-driven provider selection
 (spec-agentgauge-v0.5.md S4.1: "no code change to switch providers").
 
-Covers the bounded flat-YAML parser (`_parse_flat_yaml`), `ProviderConfig`
-validation (including the ANTHROPIC_API_KEY ban across every credential-env
-field), and `create_provider`'s dispatch to each of the six adapters. No network
-calls anywhere -- adapter construction only, never `.chat()`.
+Covers `load_provider_config`'s YAML parsing (now PyYAML's `yaml.safe_load`, v0.5
+Wave 1 Task 5b -- see the module docstring for why the earlier hand-rolled
+`_parse_flat_yaml` was removed), `ProviderConfig` validation (including the
+ANTHROPIC_API_KEY ban across every credential-env field), and `create_provider`'s
+dispatch to each of the six adapters. No network calls anywhere -- adapter
+construction only, never `.chat()`.
 """
 
 from __future__ import annotations
@@ -12,13 +14,10 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
+import yaml
+from pydantic import BaseModel
 
-from agentgauge.provider_config import (
-    ProviderConfig,
-    _parse_flat_yaml,
-    create_provider,
-    load_provider_config,
-)
+from agentgauge.provider_config import ProviderConfig, create_provider, load_provider_config
 from agentgauge.providers import (
     ApiAgentProvider,
     BedrockProvider,
@@ -31,36 +30,56 @@ from agentgauge.providers import (
 _CONFIGS_DIR = Path(__file__).parent.parent / "configs"
 
 
-# ── _parse_flat_yaml ──────────────────────────────────────────────────────────
+# ── load_provider_config: behavior ported forward from the old hand-rolled parser ──
+# (rule 79: test behavior, not implementation -- these assert the same end-to-end
+# outcomes the pre-PyYAML `_parse_flat_yaml` tests asserted, now through the real
+# `load_provider_config` -> ProviderConfig` path rather than a private parser function.)
 
 
-def test_parse_flat_yaml_basic_mapping() -> None:
-    text = "provider: ollama\nmodel: llama3.1:8b\ntimeout: 180.0\n"
-    assert _parse_flat_yaml(text) == {
-        "provider": "ollama",
-        "model": "llama3.1:8b",
-        "timeout": 180.0,
-    }
+def _write_config(tmp_path: Path, text: str) -> Path:
+    path = tmp_path / "provider.yaml"
+    path.write_text(text, encoding="utf-8")
+    return path
 
 
-def test_parse_flat_yaml_skips_blank_lines_and_full_line_comments() -> None:
-    text = "# a comment\nprovider: ollama\n\nmodel: llama3.2\n"
-    assert _parse_flat_yaml(text) == {"provider": "ollama", "model": "llama3.2"}
+def test_load_provider_config_basic_mapping(tmp_path: Path) -> None:
+    path = _write_config(tmp_path, "provider: ollama\nmodel: llama3.1:8b\ntimeout: 180.0\n")
+    config = load_provider_config(path)
+    assert config.provider == "ollama"
+    assert config.model == "llama3.1:8b"
+    assert config.timeout == 180.0
 
 
-def test_parse_flat_yaml_strips_trailing_unquoted_comment() -> None:
-    text = "region: us-east-1  # AWS region\n"
-    assert _parse_flat_yaml(text) == {"region": "us-east-1"}
+def test_load_provider_config_skips_blank_lines_and_full_line_comments(tmp_path: Path) -> None:
+    path = _write_config(tmp_path, "# a comment\nprovider: ollama\n\nmodel: llama3.2\n")
+    config = load_provider_config(path)
+    assert config.provider == "ollama"
+    assert config.model == "llama3.2"
 
 
-def test_parse_flat_yaml_quoted_value_preserves_hash_and_trailing_space() -> None:
-    text = 'auth_header_prefix: "Bearer "\n'
-    assert _parse_flat_yaml(text) == {"auth_header_prefix": "Bearer "}
+def test_load_provider_config_strips_trailing_unquoted_comment(tmp_path: Path) -> None:
+    path = _write_config(tmp_path, "provider: bedrock\nmodel: x\nregion: us-east-1  # AWS region\n")
+    config = load_provider_config(path)
+    assert config.region == "us-east-1"
 
 
-def test_parse_flat_yaml_quoted_value_with_internal_hash_not_treated_as_comment() -> None:
-    text = 'model: "weird#model-name"\n'
-    assert _parse_flat_yaml(text) == {"model": "weird#model-name"}
+def test_load_provider_config_quoted_value_preserves_hash_and_trailing_space(
+    tmp_path: Path,
+) -> None:
+    path = _write_config(
+        tmp_path,
+        'provider: custom_endpoint\nmodel: x\nauth_header_prefix: "Bearer "\n',
+    )
+    config = load_provider_config(path)
+    assert config.auth_header_prefix == "Bearer "
+
+
+def test_load_provider_config_quoted_value_with_internal_hash_not_treated_as_comment(
+    tmp_path: Path,
+) -> None:
+    path = _write_config(tmp_path, 'provider: ollama\nmodel: "weird#model-name"\n')
+    config = load_provider_config(path)
+    assert config.model == "weird#model-name"
 
 
 @pytest.mark.parametrize(
@@ -76,29 +95,87 @@ def test_parse_flat_yaml_quoted_value_with_internal_hash_not_treated_as_comment(
         ("-.inf", float("-inf")),
     ],
 )
-def test_parse_flat_yaml_scalar_types(raw: str, expected: object) -> None:
-    result = _parse_flat_yaml(f"value: {raw}\n")
+def test_load_provider_config_scalar_types(raw: str, expected: object, tmp_path: Path) -> None:
+    path = _write_config(tmp_path, f"provider: ollama\nmodel: x\ncost_ceiling_usd: {raw}\n")
+    config = load_provider_config(path)
     if expected is None:
-        assert result["value"] is None
-    elif isinstance(expected, float) and expected != expected:  # nan
-        assert result["value"] != result["value"]
+        assert config.cost_ceiling_usd is None
     else:
-        assert result["value"] == expected
+        assert config.cost_ceiling_usd == expected
 
 
-def test_parse_flat_yaml_missing_colon_raises_with_line_number() -> None:
-    with pytest.raises(ValueError, match="line 2"):
-        _parse_flat_yaml("provider: ollama\nthis has no colon\n")
+def test_load_provider_config_missing_colon_raises(tmp_path: Path) -> None:
+    path = _write_config(tmp_path, "provider: ollama\nthis has no colon\n")
+    with pytest.raises(yaml.YAMLError):
+        load_provider_config(path)
 
 
-def test_parse_flat_yaml_block_sequence_rejected() -> None:
-    with pytest.raises(ValueError, match="block sequences"):
-        _parse_flat_yaml("items:\n  - one\n  - two\n")
+def test_load_provider_config_empty_file_raises_pydantic_missing_field_error(
+    tmp_path: Path,
+) -> None:
+    """An empty/comment-only file parses to `None` via `yaml.safe_load`, normalized to
+    `{}` -- `ProviderConfig.model_validate({})` then raises its own missing-required-
+    field error (`provider`/`model`), not a raw `AttributeError` on `None`."""
+    path = _write_config(tmp_path, "# just a comment\n")
+    with pytest.raises(Exception, match="provider"):
+        load_provider_config(path)
 
 
-def test_parse_flat_yaml_empty_key_raises() -> None:
-    with pytest.raises(ValueError, match="empty key"):
-        _parse_flat_yaml(": value\n")
+# ── Real-YAML capabilities the old hand-rolled parser explicitly could NOT support ──
+# (v0.5 Wave 1 Task 5b -- the actual point of the PyYAML swap, not just fewer lines.)
+
+
+class _ListAcceptingModel(BaseModel):
+    """Throwaway test-only model with a list field: `ProviderConfig` itself has no
+    list-typed field today (its schema is still flat scalars, per the module
+    docstring), so this is the most direct way to demonstrate that the PARSING layer
+    (`yaml.safe_load`) now genuinely supports YAML block sequences, independent of
+    whether any current `ProviderConfig` field happens to use one yet."""
+
+    tags: list[str]
+
+
+def test_yaml_safe_load_supports_block_sequences_old_parser_rejected() -> None:
+    """The old `_parse_flat_yaml` raised `ValueError: block sequences ('- item') are
+    not supported...` on this exact input (see the removed
+    `test_parse_flat_yaml_block_sequence_rejected` test, pre-Task-5b). `yaml.safe_load`
+    parses it into a real Python list; the loaded dict validates cleanly against a
+    model with a `list[str]` field."""
+    text = "tags:\n  - fast\n  - cheap\n  - local\n"
+    raw = yaml.safe_load(text)
+    assert raw == {"tags": ["fast", "cheap", "local"]}
+    model = _ListAcceptingModel.model_validate(raw)
+    assert model.tags == ["fast", "cheap", "local"]
+
+
+def test_load_provider_config_quoted_special_characters_round_trip(tmp_path: Path) -> None:
+    """Colons, `#`, and leading/trailing whitespace inside a quoted scalar are real
+    YAML-special characters the old parser handled only via its own bespoke
+    `_strip_trailing_comment`/quote-stripping logic; PyYAML handles the full YAML
+    quoting grammar (including escapes) natively."""
+    path = _write_config(
+        tmp_path,
+        "provider: custom_endpoint\n"
+        "model: x\n"
+        'base_url: "https://example.com:8080/v1#fragment"\n'
+        'auth_header_prefix: "  Bearer  "\n',
+    )
+    config = load_provider_config(path)
+    assert config.base_url == "https://example.com:8080/v1#fragment"
+    assert config.auth_header_prefix == "  Bearer  "
+
+
+def test_load_provider_config_multiline_block_scalar_parses() -> None:
+    """YAML block scalars (`|` literal, preserving newlines) are a construct the old
+    hand-rolled parser had no concept of at all -- it parsed strictly one `key: value`
+    pair per line. `model` is reused here purely as a convenient string field to prove
+    the multi-line VALUE parses correctly; a real config would not normally put a
+    block scalar in `model`."""
+    text = "provider: ollama\nmodel: |\n  line one\n  line two\n"
+    raw = yaml.safe_load(text)
+    assert raw["model"] == "line one\nline two\n"
+    config = ProviderConfig.model_validate(raw)
+    assert config.model == "line one\nline two\n"
 
 
 # ── ProviderConfig validation ──────────────────────────────────────────────────
