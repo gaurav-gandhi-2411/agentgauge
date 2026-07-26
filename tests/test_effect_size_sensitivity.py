@@ -21,8 +21,10 @@ from __future__ import annotations
 from agentgauge.attribution_benchmark import (
     CAUSAL_EFFECT_MAX_PP,
     CAUSAL_EFFECT_MIN_PP,
+    confound_guard_report,
     generate_benchmark,
 )
+from agentgauge.audit import check_benchmark_construction_diffsize_bias
 
 N_TEST_CASES = 24
 SEED = 42
@@ -88,3 +90,64 @@ class TestEffectBandParameterization:
         assert [c.diff_chars for c in narrow] == [c.diff_chars for c in wide]
         # The only field that legitimately differs is the effect magnitude itself.
         assert [c.true_effect_pp for c in narrow] != [c.true_effect_pp for c in wide]
+
+
+class TestConfoundGuardPerBand:
+    """The mandatory benchmark-construction confound guard (doctrine Component 1.2), re-run
+    independently on each effect band with its own freshly-drawn cases (distinct per-band seed,
+    not a reuse of the original 50-case set) -- per the task's explicit instruction not to assume
+    the original set's guard pass generalizes to every band. A construction bias could in
+    principle reappear only at certain bands if band and tier draws interacted through the shared
+    RNG stream -- `TestEffectBandParameterization::
+    test_effect_band_does_not_change_non_effect_draws_at_same_seed` already shows this is
+    structurally impossible at a FIXED seed; this class is the complementary empirical check with
+    genuinely different (per-band) seeds, so it is not a foregone conclusion."""
+
+    _CASES_BY_BAND = {
+        label: generate_benchmark(
+            n_cases=N_TEST_CASES, seed=seed, effect_min_pp=min_pp, effect_max_pp=max_pp
+        )
+        for label, min_pp, max_pp, seed in _EFFECT_BANDS
+    }
+    _REPORTS = {label: confound_guard_report(cases) for label, cases in _CASES_BY_BAND.items()}
+
+    def test_audit_diffsize_bias_check_does_not_fire_in_any_band(self) -> None:
+        """`agentgauge.audit.check_benchmark_construction_diffsize_bias` (the standing, reusable
+        BLOCK-severity audit for this artifact class -- independent implementation, duck-typed,
+        does not import this module) run directly against each band's cases, not just
+        `confound_guard_report`'s own statistic."""
+        for label, cases in self._CASES_BY_BAND.items():
+            findings = check_benchmark_construction_diffsize_bias(cases)
+            assert findings == [], (
+                f"band {label}: audit check fired: {[f.detail for f in findings]}"
+            )
+
+    def test_culprit_position_not_fixed_in_every_band(self) -> None:
+        for label, guard in self._REPORTS.items():
+            assert guard.n_positions_observed > 1, (
+                f"band {label}: true culprit occupied only one position -- positional shortcut "
+                "would win by construction"
+            )
+
+    def test_culprit_not_always_max_diff_in_every_band(self) -> None:
+        for label, guard in self._REPORTS.items():
+            assert guard.frac_cases_culprit_is_max_diff < 1.0, (
+                f"band {label}: true culprit was the largest-diff tool in EVERY case"
+            )
+
+    def test_some_decoy_exceeds_culprit_diff_in_every_band(self) -> None:
+        for label, guard in self._REPORTS.items():
+            assert guard.frac_cases_a_decoy_exceeds_culprit_diff > 0.0, (
+                f"band {label}: no case had a decoy diff larger than the culprit's"
+            )
+
+    def test_diffsize_fractional_rank_not_correlated_with_role_in_every_band(self) -> None:
+        """Same [0.35, 0.65] band `TestConfoundGuard` uses on the original 50-case set
+        (`tests/test_attribution_benchmark.py`), applied independently to each effect band --
+        this is the check that would catch a diff-size confound reappearing at a specific band."""
+        for label, guard in self._REPORTS.items():
+            assert 0.35 <= guard.mean_culprit_fractional_rank <= 0.65, (
+                f"band {label}: mean culprit fractional rank "
+                f"{guard.mean_culprit_fractional_rank:.4f} is outside the [0.35, 0.65] band -- "
+                "diff size correlates with culprit-vs-decoy role at this effect band"
+            )
