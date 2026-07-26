@@ -370,3 +370,50 @@ below which top-1 accuracy stops clearing the doctrine's 0.70 bar for `greedy_bi
 re-verified independently at every band, and a mechanism investigation into why accuracy degrades
 near the detection threshold (including an implementation-level finding this study surfaced that
 was invisible in the single-favorable-effect-size measurement above).
+
+### 7j. CORRECTION (2026-07-26, same day) — the effect-size study's implementation finding also
+### changes THIS section's headline ship-bar verdict, on the original 50-case benchmark
+
+**Section 7's table above (and its "greedy_bisection clears the ship bar decisively" verdict) is
+now itself superseded.** The bug 7i's follow-up study found in `agentgauge/attribution.py`'s
+`_bisect_within`/`attribute_greedy_bisection` (probe cost silently dropped from `probes_consumed`
+on every search-failure path, including the always-failing "check for a second culprit" pass every
+single-culprit case triggers once the real culprit is found) was not specific to the low-effect
+bands it was discovered in — it fires on ANY case where a bisection sub-search fails to find a
+significant tool, which includes the guaranteed second search in every one of THIS section's
+original 50 cases too. Fixed in commit `f432f5a`; re-running `scripts/attribution_benchmark_report.py`
+against the fixed code, same seed=42, same 50 cases:
+
+| Method | top-1 | top-3 | mean probes | vs. exhaustive (3.96) | Ship bar |
+|---|---|---|---|---|---|
+| exhaustive_ablation | 100.00% | 100.00% | 3.96 | reference | does not clear (reference) |
+| sampled_shapley | 68.00% | 98.00% | 1.92 | sub-exhaustive | does not clear (top-1 < 0.70) |
+| **greedy_bisection** | 100.00% | 100.00% | **5.32** (was 2.78) | **NOT sub-exhaustive** (was "clears") | **does NOT clear** |
+| largest_textual_diff | 24.00% | 72.00% | 0 | — | baseline |
+| most_lint_violations | 62.00% | 82.00% | 0 | — | baseline |
+| uniform_random (analytic) | 30.07% | 78.20% | 0 | — | baseline (floor) |
+
+**Headline: with honest probe accounting, ZERO of the three probe-based strategies clear the
+doctrine's ship bar on this benchmark** (top-1≥0.70 AND top-3≥0.90 AND sub-exhaustive budget).
+`greedy_bisection` still finds the true culprit with perfect accuracy (100%/100%, unchanged — the
+accuracy numbers were never wrong, only the cost accounting was), but its REAL cost — including the
+"confirm there's no second culprit" pass its multi-culprit-capable design always pays for, even when
+(as in every case this benchmark generates) there is only ever one — now measures at 5.32 mean
+probes, 34% MORE than exhaustive ablation's 3.96. A localizer that costs more than a full re-eval
+has no value, per spec section 4's own framing; this is reported as exactly that finding, not
+softened. The previously reported "2.78 mean probes, decisively sub-exhaustive" figure in section 7
+above was real code, run correctly, measuring a real accuracy result — it was the *cost* half of the
+measurement that silently undercounted, not a fabricated number, but the conclusion drawn from it
+("clears the ship bar") does not survive the fix and is retracted here, not merely caveated.
+
+This does NOT necessarily mean the feature is dead: the wasted "confirm no second culprit" pass is
+overhead specifically because this benchmark only ever injects ONE true culprit — in a genuinely
+multi-culprit scenario (2-3 simultaneous real regressions, the realistic multi-file-PR shape per
+spec's own framing), that same pass is doing necessary work, not wasted work, and the cost
+comparison against exhaustive ablation could look very different. **This is exactly what the
+separately-scoped scale/multi-culprit study (Task 2 of this validation wave) is measuring next** —
+this section's corrected verdict should be read as "does not clear on THIS single-culprit
+benchmark," not yet as a final verdict on the feature. See `reports/v0_5_wave1_report.md`'s Wave 1.5
+consolidation (once written) for the overall recommendation across all of Tasks 1-4.
+
+Reproduction: `uv run python scripts/attribution_benchmark_report.py` at commit `f432f5a` or later.
