@@ -246,12 +246,37 @@ class BenchmarkCase:
         return [ToolLike(t) for t in self.all_tools_after]
 
 
-def generate_benchmark(n_cases: int = 50, seed: int = 42) -> list[BenchmarkCase]:
+def generate_benchmark(
+    n_cases: int = 50,
+    seed: int = 42,
+    effect_min_pp: float = CAUSAL_EFFECT_MIN_PP,
+    effect_max_pp: float = CAUSAL_EFFECT_MAX_PP,
+) -> list[BenchmarkCase]:
     """Generate `n_cases` injected-culprit benchmark cases, cycling deterministically through the
     real multi-tool corpus. Each case's true culprit's index within `changed_tools`, and its
     decoys' diff-size tiers, are drawn independently via `_lcg` -- see module docstring's
     "confound guard" section. Cases where the sampled base catalog has no eligible culprit
-    (no string-typed property anywhere) are skipped and re-drawn from the next corpus index."""
+    (no string-typed property anywhere) are skipped and re-drawn from the next corpus index.
+
+    `effect_min_pp`/`effect_max_pp` (v0.5 Wave 1, effect-size sensitivity study, see
+    `reports/v0_5_effect_size_sensitivity.md`): the true culprit's injected effect magnitude is
+    drawn uniformly from `[effect_min_pp, effect_max_pp]`, defaulting to the module's original
+    fixed range (`CAUSAL_EFFECT_MIN_PP`/`CAUSAL_EFFECT_MAX_PP`, the measured real-agent causal
+    range) so existing callers are behavior-preserving. Both follow this module's existing SIGNED
+    `_pp` convention (negative = task-success drop; `effect_min_pp` is the more-negative, i.e.
+    LARGER-magnitude, endpoint) -- NOT an absolute-magnitude convention. Passing a caller-specified
+    band lets accuracy be measured as the true effect shrinks toward (or below) the harness's own
+    measured minimum detectable effect, instead of only at the original benchmark's favorable,
+    well-separated 13.3-28.9pp range.
+
+    This parameter only changes which interval the SAME single per-case `rng()` draw is mapped
+    into -- it consumes exactly one PRNG state transition regardless of the interval, identically
+    to the original two-constant version. It therefore cannot, by construction, change which
+    catalog/culprit/decoy-tier/position values any other part of this function draws for a given
+    seed (those come from separate, sequentially-later `rng()` calls whose count and order do not
+    depend on the value returned by the effect draw) -- see
+    `reports/v0_5_effect_size_sensitivity.md` for the empirical confirmation of this argument
+    across multiple bands with independent seeds."""
     corpus = _load_corpus()
     if not corpus:
         raise RuntimeError(f"No usable multi-tool catalogs found in {_TOOL_DEFS_PATH}")
@@ -287,9 +312,7 @@ def generate_benchmark(n_cases: int = 50, seed: int = 42) -> list[BenchmarkCase]
             j = int(rng() * (i + 1))
             changed[i], changed[j] = changed[j], changed[i]
 
-        true_effect_pp = CAUSAL_EFFECT_MIN_PP + rng() * (
-            CAUSAL_EFFECT_MAX_PP - CAUSAL_EFFECT_MIN_PP
-        )
+        true_effect_pp = effect_min_pp + rng() * (effect_max_pp - effect_min_pp)
 
         after_tools: list[dict[str, Any]] = []
         diff_chars: dict[str, int] = {}
