@@ -513,3 +513,329 @@ def confound_guard_report(cases: list[BenchmarkCase]) -> ConfoundGuardReport:
             sum(decoy_diffs_all) / len(decoy_diffs_all) if decoy_diffs_all else 0.0
         ),
     )
+
+
+# =============================================================================
+# Multi-culprit benchmark (v0.5 Wave 1, scale-curve study, Task 2b, see
+# `reports/v0_5_scale_curve.md`). A SEPARATE dataclass/generator/probe-model/confound-guard track
+# from the single-culprit machinery above, not a variant bolted onto `BenchmarkCase` -- keeping the
+# two explicit avoids ambiguous "is `true_culprit` singular or plural here" call sites and keeps
+# every existing single-culprit caller (including `reports/v0_5_attribution_benchmark.md` and
+# `reports/v0_5_effect_size_sensitivity.md`'s reproduction scripts) byte-for-byte unaffected.
+# =============================================================================
+
+
+@dataclass
+class MultiCulpritBenchmarkCase:
+    """One injected-MULTI-culprit scenario: 2 or 3 real, independently-injected
+    `type_enum_contradiction` defects within one changed set, alongside benign decoys exactly as
+    in `BenchmarkCase`. `true_culprits` is unordered (ground truth, not a ranking);
+    `true_effects_pp` gives each culprit's own independently-drawn effect magnitude (same signed
+    `_pp` convention as `BenchmarkCase.true_effect_pp`)."""
+
+    case_id: str
+    base_tool_set: str
+    all_tools_before: list[dict[str, Any]]
+    all_tools_after: list[dict[str, Any]]
+    changed_tools: list[str]
+    true_culprits: list[str]
+    true_effects_pp: dict[str, float]
+    diff_chars: dict[str, int] = field(default_factory=dict)
+
+    def before_description(self, tool_name: str) -> str:
+        return next(t["description"] or "" for t in self.all_tools_before if t["name"] == tool_name)
+
+    def after_description(self, tool_name: str) -> str:
+        return next(t["description"] or "" for t in self.all_tools_after if t["name"] == tool_name)
+
+    def tools_before_like(self) -> list[ToolLike]:
+        return [ToolLike(t) for t in self.all_tools_before]
+
+    def tools_after_like(self) -> list[ToolLike]:
+        return [ToolLike(t) for t in self.all_tools_after]
+
+
+def generate_multi_culprit_benchmark(
+    n_cases: int,
+    n_culprits: int,
+    n_changed: int,
+    seed: int = 42,
+    effect_min_pp: float = CAUSAL_EFFECT_MIN_PP,
+    effect_max_pp: float = CAUSAL_EFFECT_MAX_PP,
+) -> list[MultiCulpritBenchmarkCase]:
+    """Generate `n_cases` benchmark cases with `n_culprits` (2 or 3) simultaneous, independently-
+    injected real `type_enum_contradiction` defects within one changed set of exactly `n_changed`
+    tools -- reusing this module's catalog-loading (`_load_corpus`), eligibility
+    (`_eligible_culprits`), and mutation (`_inject_type_enum_contradiction` /
+    `_inject_benign_decoy`) machinery unchanged, the same way `generate_benchmark` does.
+
+    Design choices, stated explicitly (per this task's instruction not to leave them implicit):
+
+    - **Effect magnitude**: each of the `n_culprits` culprits independently draws its own effect
+      from `[effect_min_pp, effect_max_pp]` (defaulting to the same measured real-agent causal
+      range `generate_benchmark` uses) -- no shared or capped total. `make_multi_probe_fn`
+      combines them additively (see its docstring); this can push a 3-culprit case's combined
+      penalty toward `CALIBRATED_BASELINE_RATE`'s floor at the extreme end of the range -- see
+      `reports/v0_5_scale_curve.md` for the measured floor-clipping rate, reported rather than
+      silently avoided by shrinking the range.
+    - **Candidate-set size**: pinned via `n_changed` (reusing the same pinning mechanism as
+      `generate_benchmark`'s `n_changed` parameter), not drawn -- multi-culprit cases need
+      `n_changed >= n_culprits + 1` (at least one decoy; a case with zero decoys has no
+      localization problem to solve) and this is enforced with a `ValueError`, not silently
+      clamped.
+    - **Culprit selection**: `n_culprits` DISTINCT eligible tools are chosen via a Fisher-Yates
+      shuffle of the catalog's eligible-culprit list (same shuffle-then-take pattern
+      `generate_benchmark` uses for decoys), so which tools become culprits is independent of
+      catalog order. Cases where a catalog has fewer than `n_culprits` eligible tools are skipped
+      and re-drawn, exactly as `generate_benchmark` skips catalogs with no eligible culprit at all.
+    - **Position randomization**: culprits and decoys are combined into one list and Fisher-Yates
+      shuffled together (not culprits-first) so culprit positions within `changed_tools` are not
+      systematically clustered -- required for the position half of the confound guard to mean
+      anything for a multi-culprit case (see `multi_confound_guard_report`).
+    """
+    if n_culprits < 2:
+        raise ValueError(
+            f"n_culprits must be >= 2 (got {n_culprits}); use generate_benchmark for the "
+            "single-culprit case"
+        )
+    if n_changed < n_culprits + 1:
+        raise ValueError(
+            f"n_changed ({n_changed}) must be >= n_culprits + 1 ({n_culprits + 1}) -- a "
+            "multi-culprit case needs at least one decoy to pose a localization problem"
+        )
+
+    corpus = [e for e in _load_corpus() if len(e["tools"]) >= n_changed]
+    if not corpus:
+        raise RuntimeError(
+            f"No usable multi-tool catalogs found in {_TOOL_DEFS_PATH} with >= {n_changed} tools"
+        )
+
+    rng = _lcg_random(seed)
+    cases: list[MultiCulpritBenchmarkCase] = []
+    attempt = 0
+    while len(cases) < n_cases and attempt < n_cases * 40:
+        attempt += 1
+        entry = corpus[int(rng() * len(corpus)) % len(corpus)]
+        tools = entry["tools"]
+        eligible = _eligible_culprits(tools)
+        if len(eligible) < n_culprits:
+            continue
+
+        elig_pool = list(eligible)
+        for i in range(len(elig_pool) - 1, 0, -1):
+            j = int(rng() * (i + 1))
+            elig_pool[i], elig_pool[j] = elig_pool[j], elig_pool[i]
+        culprit_names = elig_pool[:n_culprits]
+        culprit_set = set(culprit_names)
+
+        other_names = [t["name"] for t in tools if t["name"] not in culprit_set]
+        pool = list(other_names)
+        for i in range(len(pool) - 1, 0, -1):
+            j = int(rng() * (i + 1))
+            pool[i], pool[j] = pool[j], pool[i]
+        n_decoys = n_changed - n_culprits
+        if len(pool) < n_decoys:
+            continue
+        decoy_names = pool[:n_decoys]
+
+        changed = [*culprit_names, *decoy_names]
+        for i in range(len(changed) - 1, 0, -1):
+            j = int(rng() * (i + 1))
+            changed[i], changed[j] = changed[j], changed[i]
+
+        true_effects_pp: dict[str, float] = {
+            c: effect_min_pp + rng() * (effect_max_pp - effect_min_pp) for c in culprit_names
+        }
+
+        after_tools: list[dict[str, Any]] = []
+        diff_chars: dict[str, int] = {}
+        ok = True
+        for t in tools:
+            if t["name"] in culprit_set:
+                culprit_tier = _DECOY_TIERS[int(rng() * len(_DECOY_TIERS)) % len(_DECOY_TIERS)]
+                mutated = _inject_type_enum_contradiction(
+                    t, camouflage_suffix=_DECOY_TIER_SUFFIXES[culprit_tier]
+                )
+                if mutated is None:
+                    ok = False
+                    break
+                after_tools.append(mutated)
+                diff_chars[t["name"]] = _levenshtein(t["description"] or "", mutated["description"])
+            elif t["name"] in decoy_names:
+                tier = _DECOY_TIERS[int(rng() * len(_DECOY_TIERS)) % len(_DECOY_TIERS)]
+                mutated = _inject_benign_decoy(t, tier)
+                after_tools.append(mutated)
+                diff_chars[t["name"]] = _levenshtein(t["description"] or "", mutated["description"])
+            else:
+                after_tools.append(json.loads(json.dumps(t)))
+        if not ok:
+            continue
+
+        cases.append(
+            MultiCulpritBenchmarkCase(
+                case_id=f"multi{n_culprits}_case_{len(cases):03d}",
+                base_tool_set=entry["name"],
+                all_tools_before=json.loads(json.dumps(tools)),
+                all_tools_after=after_tools,
+                changed_tools=changed,
+                true_culprits=culprit_names,
+                true_effects_pp=true_effects_pp,
+                diff_chars=diff_chars,
+            )
+        )
+    return cases
+
+
+def make_multi_probe_fn(
+    case: MultiCulpritBenchmarkCase, n_tasks: int = 24, n_resamples: int = 500, seed: int = 42
+) -> ProbeFn:
+    """Build a `ProbeFn` for one multi-culprit benchmark case. Directly generalizes
+    `make_probe_fn`'s ground-truth model to multiple simultaneous culprits.
+
+    GROUND TRUTH MODEL, effect-combination choice stated explicitly (per this task's instruction
+    not to leave it implicit): effects combine ADDITIVELY. Each active (not-yet-reverted) culprit
+    contributes its own independently-drawn penalty; reverting a subset S removes exactly the sum
+    of the penalties of the culprits in S, leaving every other active culprit's penalty untouched.
+    This is the simplest defensible choice (each real regression is an independent cause of task
+    failure, and reverting one doesn't change how much a DIFFERENT, still-active regression still
+    hurts) and it is a direct, drop-in generalization of `make_probe_fn`'s single-culprit model:
+    with `n_culprits=1` this reduces to exactly the same arithmetic `make_probe_fn` uses (confirmed
+    by `tests/test_scale_curve.py::TestMakeMultiProbeFn::
+    test_reduces_to_single_culprit_model_at_n_culprits_1`).
+
+    As in `make_probe_fn`, the "before" arm is the CURRENT regressed state held constant (ALL
+    culprits active, nothing reverted) and the "after" arm reflects the caller-specified `reverted`
+    subset -- `delta = probe(reverted).delta` measures exactly the summed effect of the reverted
+    culprits' penalties being removed.
+
+    KNOWN LIMITATION, measured not assumed (see `reports/v0_5_scale_curve.md`): summing up to 3
+    independently-drawn penalties from the same 13.3-28.9pp range as the single-culprit benchmark
+    can push the "before" arm's rate toward/below `CALIBRATED_BASELINE_RATE`'s floor (0.0 after
+    `_clip01`), compressing the measured delta below what pure addition would predict at the
+    extreme end of the range -- reported as a caveat, not silently avoided by shrinking the range.
+    """
+    magnitudes_frac: dict[str, float] = {c: -eff / 100.0 for c, eff in case.true_effects_pp.items()}
+    total_magnitude_frac = sum(magnitudes_frac.values())
+
+    def probe(reverted: frozenset[str]) -> ProbeResult:
+        rng = _lcg_random(_stable_seed(seed, reverted))
+        active_penalty = sum(m for c, m in magnitudes_frac.items() if c not in reverted)
+        before_trials: list[TrialOutcome] = []
+        after_trials: list[TrialOutcome] = []
+        for i in range(n_tasks):
+            task_name = f"t{i}"
+            noise_before = (rng() - 0.5) * 2 * CALIBRATED_RESID_SD
+            noise_after = (rng() - 0.5) * 2 * CALIBRATED_RESID_SD
+            # "before" arm = current regressed state (nothing reverted): every culprit active.
+            rate_before = _clip01(CALIBRATED_BASELINE_RATE - total_magnitude_frac + noise_before)
+            # "after" arm = state with `reverted` applied: only still-active culprits penalize.
+            rate_after = _clip01(CALIBRATED_BASELINE_RATE - active_penalty + noise_after)
+            before_trials.append(TrialOutcome(task_name, task_name, rate_before))
+            after_trials.append(TrialOutcome(task_name, task_name, rate_after))
+        result = diff_server_level(
+            before_trials,
+            after_trials,
+            n_resamples=n_resamples,
+            seed=_stable_seed(seed, reverted),
+        )
+        return ProbeResult(result.delta, result.ci_lo, result.ci_hi)
+
+    return probe
+
+
+def before_arm_floor_clip_rate(
+    cases: list[MultiCulpritBenchmarkCase], n_tasks: int = 24, seed: int = 42
+) -> float:
+    """Diagnostic (not used by `make_multi_probe_fn` itself): the fraction of "before"-arm
+    synthetic task rates across all cases/tasks that hit `_clip01`'s 0.0 floor before noise is
+    applied -- i.e. `CALIBRATED_BASELINE_RATE - total_magnitude_frac <= 0.0`. Reported directly in
+    `reports/v0_5_scale_curve.md` per `make_multi_probe_fn`'s documented "known limitation" rather
+    than left as an unmeasured assumption."""
+    n_clipped = 0
+    n_total = 0
+    for case in cases:
+        total_magnitude_frac = sum(-eff / 100.0 for eff in case.true_effects_pp.values())
+        n_total += n_tasks
+        if CALIBRATED_BASELINE_RATE - total_magnitude_frac <= 0.0:
+            n_clipped += n_tasks
+    return n_clipped / n_total if n_total else 0.0
+
+
+@dataclass
+class MultiConfoundGuardReport:
+    """Generalized confound-guard statistics for multi-culprit cases. The single-culprit guard's
+    definitions do NOT carry over unchanged (see each field's docstring below for exactly how each
+    was generalized, per this task's explicit instruction not to silently reuse singular semantics)
+    -- this is a SEPARATE report type from `ConfoundGuardReport`, not a reinterpretation of it."""
+
+    n_cases: int
+    n_culprit_instances: int  # n_cases * n_culprits_per_case (used as the fractional-rank sample)
+    n_positions_observed: int
+    """Distinct positions (within `changed_tools`) occupied by ANY true culprit across all cases
+    -- generalizes "culprit position is not fixed" from a single index to the union of positions
+    any real culprit has occupied."""
+    frac_cases_a_culprit_is_max_diff: float
+    """Generalizes "culprit is max-diff tool" (singular) to "*A* culprit is max-diff tool": the
+    fraction of cases where the single largest-diff tool in the changed set is a MEMBER of
+    `true_culprits` (any one of them, not all). This is the natural multi-culprit analogue of the
+    single-culprit check -- it still tests whether `baseline_largest_textual_diff` could win by
+    construction (it wins outright, on any case, the instant the top-ranked tool is real)."""
+    frac_cases_a_decoy_exceeds_min_culprit_diff: float
+    """Generalizes "some decoy diff exceeds the culprit's diff" to: the fraction of cases where
+    the LARGEST decoy diff exceeds the SMALLEST culprit diff. This is the multi-culprit analogue of
+    "decoys are not systematically smaller than the true signal" -- checked against the weakest
+    (smallest-diff) culprit, since that is the one a diff-size heuristic would have to out-rank a
+    decoy against to make a genuine top-1/top-k mistake; checking only the largest culprit would
+    understate how easy it is for decoys to intrude on the ranking."""
+    mean_culprit_fractional_rank: float
+    """Per-culprit-instance (not per-case) mean fractional diff-size rank: for EACH true culprit in
+    EACH case, its rank is computed among itself + that case's DECOYS ONLY (other simultaneous
+    culprits in the same case are excluded from that one culprit's own rank computation) via the
+    same `fractional_rank_from_diffs` the single-culprit guard uses. Averaging over all
+    `n_culprit_instances` = `n_cases * n_culprits` such computations tests the same "is an
+    individual culprit's diff size correlated with being a culprit vs. a decoy" question the
+    single-culprit guard tests, applied once per real culprit rather than conflating multiple
+    simultaneous culprits' diffs against each other (a different, not-yet-relevant question)."""
+
+
+def multi_confound_guard_report(cases: list[MultiCulpritBenchmarkCase]) -> MultiConfoundGuardReport:
+    """Compute the generalized confound-guard statistics for a multi-culprit benchmark set. See
+    `MultiConfoundGuardReport`'s field docstrings for exactly how each single-culprit definition was
+    generalized -- this function does not delegate to `confound_guard_report` (that function's
+    `case.true_culprit` singular indexing does not apply here)."""
+    positions: set[int] = set()
+    n_a_culprit_is_max = 0
+    n_decoy_exceeds_min_culprit = 0
+    fractional_ranks: list[float] = []
+    n_culprit_instances = 0
+    for case in cases:
+        culprit_set = set(case.true_culprits)
+        for c in case.true_culprits:
+            positions.add(case.changed_tools.index(c))
+
+        culprit_diffs = [case.diff_chars.get(c, 0) for c in case.true_culprits]
+        decoy_diffs = [v for k, v in case.diff_chars.items() if k not in culprit_set]
+
+        max_diff_tool = max(case.diff_chars, key=lambda k: case.diff_chars[k])
+        if max_diff_tool in culprit_set:
+            n_a_culprit_is_max += 1
+        if decoy_diffs and culprit_diffs and max(decoy_diffs) > min(culprit_diffs):
+            n_decoy_exceeds_min_culprit += 1
+
+        for culprit_diff in culprit_diffs:
+            n_culprit_instances += 1
+            rank = fractional_rank_from_diffs(culprit_diff, decoy_diffs)
+            if rank is not None:
+                fractional_ranks.append(rank)
+
+    n = len(cases)
+    return MultiConfoundGuardReport(
+        n_cases=n,
+        n_culprit_instances=n_culprit_instances,
+        n_positions_observed=len(positions),
+        frac_cases_a_culprit_is_max_diff=n_a_culprit_is_max / n if n else 0.0,
+        frac_cases_a_decoy_exceeds_min_culprit_diff=(n_decoy_exceeds_min_culprit / n if n else 0.0),
+        mean_culprit_fractional_rank=(
+            sum(fractional_ranks) / len(fractional_ranks) if fractional_ranks else 0.5
+        ),
+    )
