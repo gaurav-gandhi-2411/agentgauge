@@ -73,9 +73,7 @@ def main() -> None:
     for f in audit_report.warnings:
         print(f"AUDIT WARN ({f.check}): {f.detail}")
     if not audit_report.passed:
-        print(
-            "\nAudit failed -- refusing to report accuracy. Fix the flagged issue(s) and re-run."
-        )
+        print("\nAudit failed -- refusing to report accuracy. Fix the flagged issue(s) and re-run.")
         sys.exit(2)
     print("Audit passed -- no blocking findings.")
 
