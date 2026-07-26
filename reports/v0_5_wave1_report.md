@@ -346,3 +346,30 @@ real agent; the multi-culprit accuracy collapse's root cause; whether the
 regime (a design change, not yet attempted); any of this against a candidate-set size
 above 40 tools or a culprit count above 3; any live paid-provider adapter's real
 response-variance behavior (unchanged from Wave 1 section 5).
+
+## SESSION-CLOSE (2026-07-26)
+
+Open question carried into next session, before attribution ships: section 3
+reports `greedy_bisection` at 100% top-1/top-3 down to a 3.0pp effect size, but
+the harness's own server-level MDE (n=253) is 5.37pp — a nominal effect below the
+detectable floor is being attributed perfectly. Two explanations are live and
+unresolved:
+
+1. **Probe-level power differs from server-level MDE.** The 5.37pp MDE is
+   computed for `diff_server_level`'s aggregate significance test; per-probe
+   attribution inside `greedy_bisection` may operate on a different (larger, more
+   controlled) effective sample per comparison, giving it detection power the
+   server-level headline number doesn't reflect. If so, 100% top-1 at 3pp is real
+   and the MDE comparison is apples-to-oranges.
+2. **Measurement artifact**, in the vein of the confound-guard and diff-size-bias
+   findings already logged in this wave (artifacts #9, #10-adjacent) — e.g. the
+   benchmark's ground-truth injection at 3pp may be systematically easier to
+   detect than a genuine field-observed 3pp effect, or a rounding/threshold
+   interaction in the effect-band generator.
+
+Do not resolve this by re-running the same measurement again — it replicated
+cleanly already. Next step: read `greedy_bisection`'s probe comparison logic
+against `diff_server_level`'s significance test directly and determine
+analytically whether they operate on the same statistical unit. This must be
+closed, one way or the other, before attribution ships per this report's own
+section 8.4 recommendation.
