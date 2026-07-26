@@ -76,14 +76,29 @@ One additional finding, not raised in the benchmark report itself:
   effect the harness's CI can't distinguish"). Recorded here to confirm the two
   documents' independent self-critiques agree, not to add a new caveat.
 
-No blocking finding on this result set. One gap, disclosed rather than silently
-accepted: **`run_audit` itself was not extended to cover the attribution benchmark's
-data shape this wave** — the check above was performed by direct code/report reading
-(an orchestrator-level manual pass), not by running the standing automated gate
-against this new surface. If Wave 2 builds further on the attribution benchmark
-generator, extending `run_audit` (or a sibling gate) to accept synthetic
-`TrialOutcome`-pair result sets directly is worth doing rather than repeating a manual
-review each time.
+No blocking finding on this result set.
+
+**Update (v0.5 Wave 1, Task 5a — gap closed):** `run_audit` now accepts an optional
+`benchmark_cases: list[Any] | None = None` parameter; when given a sequence of
+injected-culprit benchmark cases it additionally runs
+`check_benchmark_construction_diffsize_bias` and folds the finding into the returned
+`AuditReport`, with every existing `BlindTask`/tool-based caller unaffected by the
+default. `scripts/attribution_benchmark_report.py` now calls
+`run_audit(tasks=[], benchmark_cases=<generated cases>)` immediately after
+`generate_benchmark()` and before printing the confound-guard section or the
+accuracy/budget table, refusing to report (`sys.exit(2)`) on a BLOCKING finding — the
+same "audit gate before any effect size is emitted" pattern `cli.py`'s
+`_diff_async`/`_eval_async` already use. Verified both directions: a deliberately
+biased fixture (mean fractional rank ~0.667 over 30 cases, mirroring the real pre-fix
+generator's shape) returns `passed=False` with the `benchmark_construction_diffsize_bias`
+finding present; the real, corrected `generate_benchmark(n_cases=50, seed=42)` output
+returns `passed=True` with no findings. Regression tests:
+`tests/test_audit.py::TestRunAuditBenchmarkCases`. See `agentgauge/audit.py`,
+`scripts/attribution_benchmark_report.py` (commit closing this gap: see `git log` for
+the `feat(audit): wire benchmark-case diffsize-bias check into run_audit` commit on
+this branch). The prior manual-review gap this section originally disclosed no longer
+applies — the standing automated gate now runs on every benchmark-report invocation,
+not just as an orchestrator-level one-off read.
 
 ## 4. Ninth-artifact-class candidate actually worth naming going forward
 

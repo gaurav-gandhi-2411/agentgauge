@@ -38,6 +38,7 @@ from agentgauge.attribution_benchmark import (
     generate_benchmark,
     make_probe_fn,
 )
+from agentgauge.audit import run_audit
 
 N_CASES = 50
 SEED = 42
@@ -64,6 +65,19 @@ def main() -> None:
     t0 = time.time()
     cases = generate_benchmark(n_cases=N_CASES, seed=SEED)
     print(f"Generated {len(cases)} benchmark cases in {time.time() - t0:.1f}s")
+
+    audit_report = run_audit(tasks=[], benchmark_cases=cases)
+    print("\n--- Measurement-validity audit (agentgauge.audit.run_audit) ---")
+    for f in audit_report.blocking:
+        print(f"AUDIT BLOCK ({f.check}): {f.detail}")
+    for f in audit_report.warnings:
+        print(f"AUDIT WARN ({f.check}): {f.detail}")
+    if not audit_report.passed:
+        print(
+            "\nAudit failed -- refusing to report accuracy. Fix the flagged issue(s) and re-run."
+        )
+        sys.exit(2)
+    print("Audit passed -- no blocking findings.")
 
     guard = confound_guard_report(cases)
     print("\n--- Confound-guard check ---")

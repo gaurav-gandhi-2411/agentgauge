@@ -19,13 +19,17 @@ WARN findings are surfaced but do not block -- they flag a real limitation
 (low power, an asymmetric catalog) that doesn't make the number wrong, only
 weaker.
 
-`check_benchmark_construction_diffsize_bias` (artifact #9) is NOT wired into
-`run_audit` -- `run_audit`'s current signature is shaped around
-`BlindTask`/tool-based `diff`/`eval` inputs, not injected-culprit benchmark
-cases (`agentgauge.attribution_benchmark.BenchmarkCase`). Reshaping `run_audit`
-to dispatch on benchmark-generator output is separately scoped (v0.5 Wave 1
-Task 5a); this module only ships the standalone, independently callable and
-independently tested check function for now.
+`check_benchmark_construction_diffsize_bias` (artifact #9) is wired into
+`run_audit` via its optional `benchmark_cases` parameter (v0.5 Wave 1 Task 5a):
+when a caller passes a sequence of injected-culprit benchmark cases (duck-typed
+to `agentgauge.attribution_benchmark.BenchmarkCase`'s `.diff_chars`/`.true_culprit`
+shape, per `_case_diffsize_fractional_rank`'s docstring), `run_audit` additionally
+runs the diff-size-bias check and folds its findings in. `benchmark_cases` defaults
+to `None` so every existing `BlindTask`/tool-based caller (`agentgauge/cli.py`'s
+`diff`/`eval` commands) is unaffected. `scripts/attribution_benchmark_report.py`
+calls `run_audit(tasks=[], benchmark_cases=<generated cases>)` after generating a
+benchmark and before reporting any accuracy number, refusing to print the table on
+a BLOCKING finding -- the same gate pattern `cli.py` already uses.
 """
 
 from __future__ import annotations
@@ -404,9 +408,19 @@ def run_audit(
     after_tools: list[Any] | None = None,
     before_trials: list[TrialOutcome] | None = None,
     after_trials: list[TrialOutcome] | None = None,
+    benchmark_cases: list[Any] | None = None,
 ) -> AuditReport:
     """Run every check applicable given what's available. Called from
-    `agentgauge diff`/`agentgauge eval` before any effect size is printed."""
+    `agentgauge diff`/`agentgauge eval` before any effect size is printed, and from
+    `scripts/attribution_benchmark_report.py` before reporting benchmark accuracy.
+
+    `benchmark_cases`, if given, is any sequence of injected-culprit benchmark cases
+    (duck-typed to `agentgauge.attribution_benchmark.BenchmarkCase`'s `.diff_chars`/
+    `.true_culprit` shape) and triggers `check_benchmark_construction_diffsize_bias`
+    in addition to whatever else is computed. It is fine -- expected -- for `tasks`
+    to be `[]` and `before_tools`/`after_tools`/`before_trials`/`after_trials` to be
+    `None` when `run_audit` is called purely for a benchmark-case audit: every other
+    check here already no-ops on an empty/`None` input."""
     findings: list[AuditFinding] = []
     findings += check_task_leakage(tasks)
     findings += check_empty_tasks(tasks)
@@ -429,5 +443,8 @@ def run_audit(
             continue
         findings += check_ceiling_floor(DecomposedRate.from_trials(trials), variant_label=label)
         findings += check_degenerate_metrics(trials, variant_label=label)
+
+    if benchmark_cases is not None:
+        findings += check_benchmark_construction_diffsize_bias(benchmark_cases)
 
     return AuditReport(findings=findings)

@@ -414,3 +414,49 @@ class TestBenchmarkConstructionDiffsizeBias:
         to assess the distribution -- returns [] (not enough data), not a false pass or block."""
         cases = [self._biased_case(f"c{i}", 40, [65, 230, 6]) for i in range(5)]
         assert check_benchmark_construction_diffsize_bias(cases, min_cases=20) == []
+
+
+class TestRunAuditBenchmarkCases:
+    """v0.5 Wave 1 Task 5a: `run_audit`'s optional `benchmark_cases` parameter wires
+    `check_benchmark_construction_diffsize_bias` into the standing pre-report gate,
+    for callers (`scripts/attribution_benchmark_report.py`) auditing injected-culprit
+    benchmark cases rather than `BlindTask`/tool-based `diff`/`eval` inputs. `tasks=[]`
+    and every other `run_audit` input defaulting to `None` must not itself produce any
+    finding -- only the benchmark-case check should fire (or not) here."""
+
+    def _biased_case(
+        self, case_id: str, culprit_diff: int, decoy_diffs: list[int]
+    ) -> SimpleNamespace:
+        diff_chars = {"culprit": culprit_diff}
+        diff_chars.update({f"decoy_{i}": d for i, d in enumerate(decoy_diffs)})
+        return SimpleNamespace(case_id=case_id, true_culprit="culprit", diff_chars=diff_chars)
+
+    def test_deliberately_biased_cases_fail_the_gate(self) -> None:
+        """Same characteristic pre-fix shape as
+        TestBenchmarkConstructionDiffsizeBias.test_deliberately_biased_fixture_fires, run through
+        the full `run_audit` dispatcher rather than the standalone check function directly."""
+        cases = [self._biased_case(f"c{i}", 40, [65, 230, 6]) for i in range(30)]
+        report = run_audit(tasks=[], benchmark_cases=cases)
+        assert report.passed is False
+        assert any(
+            f.check == "benchmark_construction_diffsize_bias" and f.severity == "block"
+            for f in report.findings
+        )
+
+    def test_real_corrected_generator_output_passes_the_gate(self) -> None:
+        """The real, fixed `agentgauge.attribution_benchmark.generate_benchmark()` output
+        (n=50, seed=42) must clear `run_audit` cleanly -- this is the actual pipeline
+        `scripts/attribution_benchmark_report.py` runs before reporting accuracy."""
+        from agentgauge.attribution_benchmark import generate_benchmark
+
+        cases = generate_benchmark(n_cases=50, seed=42)
+        report = run_audit(tasks=[], benchmark_cases=cases)
+        assert report.passed is True, f"expected a clean pass, got findings: {report.findings}"
+
+    def test_benchmark_cases_none_by_default_is_unaffected(self) -> None:
+        """Existing `BlindTask`/tool-based callers that never pass `benchmark_cases` see
+        identical behavior to before this parameter existed -- no diffsize-bias finding
+        appears when `benchmark_cases` is omitted."""
+        tasks = [BlindTask(tool_name="get_item", description="Fetch the item.")]
+        report = run_audit(tasks)
+        assert not any(f.check == "benchmark_construction_diffsize_bias" for f in report.findings)
