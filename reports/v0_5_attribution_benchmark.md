@@ -417,3 +417,13 @@ benchmark," not yet as a final verdict on the feature. See `reports/v0_5_wave1_r
 consolidation (once written) for the overall recommendation across all of Tasks 1-4.
 
 Reproduction: `uv run python scripts/attribution_benchmark_report.py` at commit `f432f5a` or later.
+
+**Update (2026-07-26): the scale/multi-culprit follow-up referenced above has now been run — see
+`reports/v0_5_scale_curve.md`.** Headline: the negative verdict above is a small-candidate-set,
+single-culprit-only artifact, not a property of the feature — `greedy_bisection` clears the full
+ship bar at every tested single-culprit candidate-set size ≥ 10 tools, and at 2 of 3 tested
+multi-culprit configurations (crossing back over exhaustive's cost only at the specific combination
+of 3 simultaneous culprits and a moderate 20-tool candidate set, a failure that is rescued by a
+larger 40-tool candidate set alone, with no change to the strategy). See that report for the full
+per-bucket table, the explicit multi-culprit scoring convention, and the mechanistic explanation of
+exactly when and why the wasted "confirm no additional culprit" pass is or isn't affordable.
