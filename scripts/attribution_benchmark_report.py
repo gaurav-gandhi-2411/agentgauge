@@ -78,6 +78,12 @@ def main() -> None:
         f"cases where >=1 decoy diff EXCEEDS culprit diff: "
         f"{guard.n_cases_a_decoy_exceeds_culprit_diff} ({guard.frac_cases_a_decoy_exceeds_culprit_diff:.1%})"
     )
+    print(
+        f"mean culprit diff_chars: {guard.mean_culprit_diff_chars:.2f}  "
+        f"mean decoy diff_chars: {guard.mean_decoy_diff_chars:.2f}  "
+        f"mean culprit fractional rank (0=biggest,1=smallest, null=0.5): "
+        f"{guard.mean_culprit_fractional_rank:.4f}"
+    )
 
     strategy_names = [
         "exhaustive_ablation",

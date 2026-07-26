@@ -92,6 +92,23 @@ class TestConfoundGuard:
             "systematically smaller than the true culprit's, violating the mandatory guard"
         )
 
+    def test_culprit_diff_size_distribution_not_correlated_with_role(self) -> None:
+        """Measurement artifact #9 (found this pass, see module docstring in
+        `agentgauge.attribution_benchmark`): the two edge-condition checks above both pass even
+        when there is a real, systematic DISTRIBUTIONAL correlation between diff size and
+        culprit-vs-decoy role -- the original generator's culprit diff sat at mean fractional
+        rank ~=0.66-0.73 (measured on n=50 and n=300 samples, both well outside this band) purely
+        because its fixed-size defect sentence was smaller than 2 of the 3 decoy tiers by
+        construction. Under a role-independent generating process the expected mean fractional
+        rank is exactly 0.5; +/-0.15 is a band wide enough to absorb ordinary sampling noise at
+        this sample size (post-fix measured values: ~0.55-0.61) while still decisively rejecting
+        the pre-fix ~0.66-0.73 regime -- not fitted to make this specific run's number pass."""
+        assert 0.35 <= self._GUARD.mean_culprit_fractional_rank <= 0.65, (
+            f"mean culprit fractional rank {self._GUARD.mean_culprit_fractional_rank:.4f} is "
+            "outside the [0.35, 0.65] band around the 0.5 null -- diff size still correlates "
+            "with culprit-vs-decoy role (the artifact #9 class)"
+        )
+
 
 class TestMakeProbeFn:
     def test_reverting_true_culprit_shows_significant_recovery(self) -> None:
