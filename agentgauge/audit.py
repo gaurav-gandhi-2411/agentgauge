@@ -1,13 +1,14 @@
-"""Standing pre-report measurement-validity gate (AgentGauge v2.4, Task 2).
+"""Standing pre-report measurement-validity gate (AgentGauge v2.4, Task 2; extended v0.5 Wave 1).
 
-Eight measurement artifacts were found during this project's own development
+Nine measurement artifacts have been found during this project's own development
 (task/answer leakage, a tool-name-alone selection ceiling, a zero-vector
 embedding degeneracy, a self-descriptive-name confound, a test-subset-vs-full-
 catalog mismatch, a PRNG index-saturation bug, a pre/post-mutation
-scoring-key mismatch, and hallucinated fixture-authoring facts -- see
-`reports/v2_3_task1_advisory_audit.md`, `reports/v2_4_task1_blast_radius_audit.md`,
-and `reports/v2_5_task2_fixture_validation.md` for the seventh and eighth).
-Seven of the eight were found by hand, after the fact, on results that had
+scoring-key mismatch, hallucinated fixture-authoring facts, and a benchmark-
+construction diff-size confound -- see `reports/v2_3_task1_advisory_audit.md`,
+`reports/v2_4_task1_blast_radius_audit.md`, `reports/v2_5_task2_fixture_validation.md`
+for the seventh and eighth, and `reports/v0_5_attribution_benchmark.md` for the
+ninth). Eight of the nine were found by hand, after the fact, on results that had
 already been reported. This module encodes each artifact CLASS as a standing,
 automated check that runs BEFORE any effect size is emitted, so the same
 class of bug blocks the report instead of quietly shipping in it.
@@ -17,6 +18,14 @@ BLOCKING finding here stops the result from being reported as a measurement.
 WARN findings are surfaced but do not block -- they flag a real limitation
 (low power, an asymmetric catalog) that doesn't make the number wrong, only
 weaker.
+
+`check_benchmark_construction_diffsize_bias` (artifact #9) is NOT wired into
+`run_audit` -- `run_audit`'s current signature is shaped around
+`BlindTask`/tool-based `diff`/`eval` inputs, not injected-culprit benchmark
+cases (`agentgauge.attribution_benchmark.BenchmarkCase`). Reshaping `run_audit`
+to dispatch on benchmark-generator output is separately scoped (v0.5 Wave 1
+Task 5a); this module only ships the standalone, independently callable and
+independently tested check function for now.
 """
 
 from __future__ import annotations
@@ -292,6 +301,96 @@ def check_catalog_subset_mismatch(
                     f"before has {nb} tools, after has {na} -- a >{int((1 - ratio_threshold) * 100)}% "
                     "size asymmetry; confirm this is an intentional catalog change, not a "
                     "subset accidentally compared against the full catalog"
+                ),
+            )
+        ]
+    return []
+
+
+def _case_diffsize_fractional_rank(culprit_diff: int, decoy_diffs: list[int]) -> float | None:
+    """Independent re-implementation of `agentgauge.attribution_benchmark.
+    fractional_rank_from_diffs` (0=biggest/1=smallest, ties averaged; `None` if there are no
+    decoys to rank against). Deliberately duplicated rather than imported -- see this module's
+    docstring: a generic construction-validity gate should not import a specific benchmark
+    generator module, so any generator producing case-like objects (`.diff_chars`,
+    `.true_culprit`) can be checked without agentgauge.audit depending on
+    agentgauge.attribution_benchmark's existence or internal shape beyond that minimal contract."""
+    all_diffs = [culprit_diff, *decoy_diffs]
+    n = len(all_diffs)
+    if n <= 1:
+        return None
+    sorted_desc = sorted(all_diffs, reverse=True)
+    positions = [i for i, v in enumerate(sorted_desc) if v == culprit_diff]
+    avg_pos = sum(positions) / len(positions)
+    return avg_pos / (n - 1)
+
+
+def check_benchmark_construction_diffsize_bias(
+    cases: list[Any],
+    *,
+    min_cases: int = 20,
+    rank_deviation_threshold: float = 0.15,
+) -> list[AuditFinding]:
+    """Artifact #9 class (found and fixed, v0.5 Wave 1: see
+    `reports/v0_5_attribution_benchmark.md` and `agentgauge.attribution_benchmark`'s module
+    docstring "Measurement artifact #9" section): an injected-culprit benchmark generator can
+    satisfy simple edge-condition guards (the culprit is not ALWAYS positioned first; the culprit
+    is not ALWAYS the single largest-diff tool) while still having a real, systematic
+    DISTRIBUTIONAL correlation between a cheap structural feature (here, textual diff size) and
+    culprit-vs-decoy role -- letting a zero-probe heuristic baseline win or lose by construction
+    rather than by real localization signal. `agentgauge.attribution_benchmark`'s original
+    generator had exactly this bug: the culprit's fixed-length defect sentence was smaller than
+    2 of 3 decoy tiers by construction, giving `baseline_largest_textual_diff` a below-random 4%
+    top-1 accuracy that looked like a real (if surprising) measurement but was actually a
+    construction artifact.
+
+    `cases`: any sequence of objects exposing `.diff_chars: dict[str, int]` (tool name -> textual
+    diff size, must include the true culprit's own entry) and `.true_culprit: str` -- duck-typed
+    to `agentgauge.attribution_benchmark.BenchmarkCase`'s shape without importing that module (see
+    `_case_diffsize_fractional_rank`'s docstring). Cases with fewer than 2 diff_chars entries
+    (no decoys to rank against) are skipped.
+
+    Statistic: mean fractional rank of the true culprit's diff size among itself + its case's
+    decoys (0=biggest, 1=smallest). Under a role-independent generating process this has
+    expectation exactly 0.5; `rank_deviation_threshold` (default 0.15, i.e. a [0.35, 0.65] pass
+    band) is calibrated to the real measured pre-fix (~0.66-0.73) vs post-fix (~0.55-0.61)
+    regimes in `agentgauge.attribution_benchmark` -- wide enough to absorb ordinary sampling noise
+    at realistic benchmark sizes, narrow enough to decisively reject the pre-fix bias. BLOCK: this
+    is exactly the class of bias that made a baseline's reported accuracy number untrustworthy
+    (not just weaker) in this project's own history, so it fails closed like the other
+    construction-validity BLOCK checks (`check_scoring_reference_consistency`,
+    `check_degenerate_metrics`), not WARN.
+
+    Returns `[]` (not enough data to assess, not a pass) if fewer than `min_cases` cases have at
+    least one decoy to rank the culprit against."""
+    ranks: list[float] = []
+    for case in cases:
+        diff_chars: dict[str, int] = getattr(case, "diff_chars", {}) or {}
+        true_culprit = getattr(case, "true_culprit", None)
+        if true_culprit is None or true_culprit not in diff_chars:
+            continue
+        culprit_diff = diff_chars[true_culprit]
+        decoy_diffs = [v for k, v in diff_chars.items() if k != true_culprit]
+        rank = _case_diffsize_fractional_rank(culprit_diff, decoy_diffs)
+        if rank is not None:
+            ranks.append(rank)
+
+    if len(ranks) < min_cases:
+        return []
+
+    mean_rank = sum(ranks) / len(ranks)
+    if abs(mean_rank - 0.5) > rank_deviation_threshold:
+        return [
+            AuditFinding(
+                check="benchmark_construction_diffsize_bias",
+                severity="block",
+                detail=(
+                    f"mean culprit diff-size fractional rank {mean_rank:.4f} over {len(ranks)} "
+                    f"cases is outside the [{0.5 - rank_deviation_threshold:.2f}, "
+                    f"{0.5 + rank_deviation_threshold:.2f}] band around the 0.5 null -- the "
+                    "culprit's textual diff size is systematically correlated with its role "
+                    "(the artifact #9 class): a diff-size-based heuristic would win or lose by "
+                    "construction, not by real localization signal"
                 ),
             )
         ]

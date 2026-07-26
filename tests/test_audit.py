@@ -28,6 +28,12 @@ historical case" instruction:
   8. Hallucinated fixture-authoring facts (artifact #8) -- the GitHub Issues
      fixture's update_issue_state::state_reason enum, originally missing
      GitHub's real 4th value 'duplicate' (reports/v2_5_task2_fixture_validation.md).
+  9. Benchmark-construction diff-size confound (artifact #9) -- v0.5 Wave 1's
+     injected-culprit attribution benchmark (agentgauge/attribution_benchmark.py):
+     the true culprit's fixed-length defect sentence was smaller than 2 of 3
+     decoy tiers by construction, giving a mean fractional rank ~0.66-0.73
+     instead of the 0.5 a role-independent generator would produce
+     (reports/v0_5_attribution_benchmark.md).
 """
 
 from __future__ import annotations
@@ -35,6 +41,7 @@ from __future__ import annotations
 from types import SimpleNamespace
 
 from agentgauge.audit import (
+    check_benchmark_construction_diffsize_bias,
     check_catalog_subset_mismatch,
     check_ceiling_floor,
     check_degenerate_metrics,
@@ -350,3 +357,60 @@ class TestAuditReport:
         )
         assert not report.passed
         assert len(report.blocking) == 1
+
+
+class TestBenchmarkConstructionDiffsizeBias:
+    """Artifact #9, the ninth artifact: `agentgauge.attribution_benchmark`'s ORIGINAL
+    injected-culprit generator satisfied the two weaker confound-guard edge conditions (culprit
+    not always positioned first; culprit not always the single largest-diff tool) while still
+    having a real, systematic DISTRIBUTIONAL correlation between diff size and culprit-vs-decoy
+    role -- the culprit's fixed-length defect sentence (~32-47 chars) was smaller than 2 of 3
+    decoy tiers (medium ~65, large ~230) by construction, giving a mean fractional rank of
+    ~0.66-0.73 (measured, `reports/v0_5_attribution_benchmark.md`) instead of the 0.5 a
+    role-independent generator would produce. This check catches that class of bias directly, via
+    a case's `.diff_chars`/`.true_culprit` shape, independent of any specific generator module."""
+
+    def _biased_case(
+        self, case_id: str, culprit_diff: int, decoy_diffs: list[int]
+    ) -> SimpleNamespace:
+        diff_chars = {"culprit": culprit_diff}
+        diff_chars.update({f"decoy_{i}": d for i, d in enumerate(decoy_diffs)})
+        return SimpleNamespace(case_id=case_id, true_culprit="culprit", diff_chars=diff_chars)
+
+    def test_deliberately_biased_fixture_fires(self) -> None:
+        """Mirrors the real pre-fix generator's characteristic shape: a small, near-constant
+        culprit diff (~40 chars) against a decoy pool spanning small/medium/large tiers
+        (6/65/230 chars) -- every case has the SAME three decoy diffs, so the culprit sits at
+        fractional rank 2/3 ~= 0.667 in every one of 30 cases (matching the real measured
+        ~0.66-0.73 pre-fix regime), well outside the [0.35, 0.65] pass band."""
+        cases = [self._biased_case(f"c{i}", 40, [65, 230, 6]) for i in range(30)]
+        findings = check_benchmark_construction_diffsize_bias(cases)
+        assert len(findings) == 1
+        assert findings[0].severity == "block"
+        assert findings[0].check == "benchmark_construction_diffsize_bias"
+
+    def test_unbiased_fixture_does_not_fire(self) -> None:
+        """A generator where the culprit's diff is drawn from the SAME distribution as the
+        decoys' (no structural correlation with role) must not fire -- the culprit rotates
+        through each rank position evenly across cases."""
+        pools = [[40, 65, 230], [230, 40, 65], [65, 230, 40], [40, 6, 65], [6, 40, 65]]
+        cases = [self._biased_case(f"c{i}", pool[0], pool[1:]) for i, pool in enumerate(pools * 6)]
+        findings = check_benchmark_construction_diffsize_bias(cases)
+        assert findings == []
+
+    def test_corrected_generate_benchmark_output_does_not_fire(self) -> None:
+        """The real, fixed generator's actual output (n=50, seed=42) must not trip this check --
+        the direct regression test that the artifact #9 fix in `agentgauge.attribution_benchmark`
+        actually holds, using the check that would have caught it before this task, not just the
+        module-local test in `tests/test_attribution_benchmark.py`."""
+        from agentgauge.attribution_benchmark import generate_benchmark
+
+        cases = generate_benchmark(n_cases=50, seed=42)
+        findings = check_benchmark_construction_diffsize_bias(cases)
+        assert findings == [], f"expected no finding on the corrected generator, got: {findings}"
+
+    def test_insufficient_cases_returns_no_finding(self) -> None:
+        """Fewer than `min_cases` valid (culprit + >=1 decoy) cases means there isn't enough data
+        to assess the distribution -- returns [] (not enough data), not a false pass or block."""
+        cases = [self._biased_case(f"c{i}", 40, [65, 230, 6]) for i in range(5)]
+        assert check_benchmark_construction_diffsize_bias(cases, min_cases=20) == []
