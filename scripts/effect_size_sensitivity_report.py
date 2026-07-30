@@ -111,7 +111,22 @@ def _run_band(label: str, min_pp: float, max_pp: float, seed: int) -> BandResult
         n_cases=N_CASES_PER_BAND, seed=seed, effect_min_pp=min_pp, effect_max_pp=max_pp
     )
 
-    audit_report = run_audit(tasks=[], benchmark_cases=cases)
+    # Artifact #10 guard (v0.5 Wave 1.6): sample a raw probe CI width (true-culprit revert) per
+    # case at this band's own n_tasks, so run_audit can check the probe/ground-truth model's
+    # noise floor at every effect band, not just the original benchmark -- see
+    # reports/v0_5_mde_discrepancy.md and reports/v0_5_shapley_scaling_audit.md.
+    probe_ci_widths = []
+    for case in cases:
+        pfn = make_probe_fn(case, seed=SEED)
+        r = pfn(frozenset({case.true_culprit}))
+        probe_ci_widths.append(r.ci_hi - r.ci_lo)
+
+    audit_report = run_audit(
+        tasks=[],
+        benchmark_cases=cases,
+        probe_ci_widths=probe_ci_widths,
+        probe_n_tasks=24,
+    )
     guard = confound_guard_report(cases)
     audit_findings = [f.detail for f in audit_report.blocking]
     audit_findings += [f.detail for f in check_benchmark_construction_diffsize_bias(cases)]

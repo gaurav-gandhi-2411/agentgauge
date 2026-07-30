@@ -1,5 +1,13 @@
 # AgentGauge v0.5 — MDE discrepancy investigation and resolution (measurement artifact #10)
 
+> **Follow-up (2026-07-30, Wave 1.6): the `sampled_shapley` scale reversal this report's section 6
+> surfaces was independently audited before being acted on** — see
+> `reports/v0_5_shapley_scaling_audit.md`. Verdict: real and benign (arithmetically explained by
+> the probe budget scaling linearly with `n_changed`, cross-checked against a hidden-artifact
+> hypothesis that was tested and refuted, and reconciled against the harness's own calibrated MDE
+> table via an effective-sample-size argument), not a new artifact. This report's recommendation
+> reversal stands, now audited rather than merely re-asserted.
+
 Resolves the open question carried from `reports/v0_5_wave1_report.md`'s SESSION-CLOSE note
 (2026-07-26): `greedy_bisection` was reported at 100% top-1/top-3 down to a 3.0pp true effect size,
 while the harness's own server-level MDE (n=253) is 5.37pp — a nominal effect below the harness's

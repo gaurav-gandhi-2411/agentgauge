@@ -50,7 +50,10 @@ from agentgauge.attribution_benchmark import (  # noqa: E402
     make_probe_fn,
     multi_confound_guard_report,
 )
-from agentgauge.audit import check_benchmark_construction_diffsize_bias  # noqa: E402
+from agentgauge.audit import (  # noqa: E402
+    check_benchmark_construction_diffsize_bias,
+    check_probe_variance_calibration,
+)
 
 STRATEGY_SEED = 42  # internal RNG seed for sampled_shapley/uniform_random, uniform across buckets
 N_CASES_PER_BUCKET = 30
@@ -238,6 +241,15 @@ def _score_bucket(
 def _print_confound_guard_single(label: str, cases: list[BenchmarkCase]) -> bool:
     guard = confound_guard_report(cases)
     audit_findings = check_benchmark_construction_diffsize_bias(cases)
+    # Artifact #10 guard (v0.5 Wave 1.6): sample a raw probe CI width (true-culprit revert) per
+    # case, so this bucket's own probe/ground-truth noise floor is checked too -- see
+    # reports/v0_5_mde_discrepancy.md and reports/v0_5_shapley_scaling_audit.md.
+    probe_ci_widths = []
+    for case in cases:
+        pfn = make_probe_fn(case, seed=STRATEGY_SEED)
+        r = pfn(frozenset({case.true_culprit}))
+        probe_ci_widths.append(r.ci_hi - r.ci_lo)
+    probe_findings = check_probe_variance_calibration(probe_ci_widths, n_tasks=24)
     print(f"\n--- Confound guard: {label} (n={len(cases)}) ---")
     print(f"n_positions_observed: {guard.n_positions_observed}")
     print(
@@ -246,11 +258,13 @@ def _print_confound_guard_single(label: str, cases: list[BenchmarkCase]) -> bool
     )
     print(f"mean culprit fractional rank: {guard.mean_culprit_fractional_rank:.4f}")
     print(f"audit.check_benchmark_construction_diffsize_bias BLOCK fired: {bool(audit_findings)}")
+    print(f"audit.check_probe_variance_calibration BLOCK fired: {bool(probe_findings)}")
     passed = (
         guard.n_positions_observed > 1
         and guard.frac_cases_culprit_is_max_diff < 1.0
         and 0.35 <= guard.mean_culprit_fractional_rank <= 0.65
         and not audit_findings
+        and not probe_findings
     )
     print(f"GUARD PASSED: {passed}")
     return passed
@@ -258,6 +272,14 @@ def _print_confound_guard_single(label: str, cases: list[BenchmarkCase]) -> bool
 
 def _print_confound_guard_multi(label: str, cases: list[MultiCulpritBenchmarkCase]) -> bool:
     guard = multi_confound_guard_report(cases)
+    # Artifact #10 guard: same idea as the single-culprit guard above, reverting ALL true
+    # culprits per case (the analogue of a "full recovery" probe for a multi-culprit case).
+    probe_ci_widths = []
+    for case in cases:
+        pfn = make_multi_probe_fn(case, seed=STRATEGY_SEED)
+        r = pfn(frozenset(case.true_culprits))
+        probe_ci_widths.append(r.ci_hi - r.ci_lo)
+    probe_findings = check_probe_variance_calibration(probe_ci_widths, n_tasks=24)
     print(f"\n--- Multi-culprit confound guard: {label} (n={len(cases)}) ---")
     print(f"n_positions_observed: {guard.n_positions_observed}")
     print(
@@ -268,10 +290,12 @@ def _print_confound_guard_multi(label: str, cases: list[MultiCulpritBenchmarkCas
     print(f"mean per-culprit-instance fractional rank: {guard.mean_culprit_fractional_rank:.4f}")
     clip_rate = before_arm_floor_clip_rate(cases)
     print(f"before-arm floor-clip rate (0.0 clipping in the ground-truth model): {clip_rate:.4f}")
+    print(f"audit.check_probe_variance_calibration BLOCK fired: {bool(probe_findings)}")
     passed = (
         guard.n_positions_observed > 1
         and guard.frac_cases_a_culprit_is_max_diff < 1.0
         and 0.35 <= guard.mean_culprit_fractional_rank <= 0.65
+        and not probe_findings
     )
     print(f"GUARD PASSED: {passed}")
     return passed
