@@ -1251,3 +1251,53 @@ async def _try_async(
 
     # Step (c): apply hint
     console.print(f"\nRun `agentgauge fix {target} --apply` to apply these fixes.")
+
+
+# Measured cost finding, v0.5.0 (reports/v0_5_probe_power_fix.md section 5): at the n_tasks
+# probe-power fix requires (128, to clear an 8pp per-probe MDE target -- reports/
+# v0_5_probe_power_fix.md section 3), every tested attribution configuration costs MORE than a
+# full 253-task re-evaluation of the whole server: 1.01x at the cheapest measured case (sampled
+# Shapley, 4 changed tools) up to 20.24x at the most expensive (exhaustive ablation, 40 changed
+# tools). The crossover to "cheaper than re-measuring everything" sits at ~2-4 changed tools --
+# below the scale at which localization has any practical purpose (spec-agentgauge-v0.5.md
+# section 2: the target buyer's own scenario is "a 40-tool server with a 12-file PR"). Numbers
+# only, no adjectives, per this repo's standing convention.
+_ATTRIBUTION_COST_FINDING = (
+    "agentgauge attribute is EXPERIMENTAL and requires --experimental.\n\n"
+    "Measured cost (reports/v0_5_probe_power_fix.md, n_tasks=128, the value required to reach an "
+    "8pp per-probe minimum detectable effect):\n"
+    "  - 1.01x-20.24x the cost of a full 253-task server re-evaluation, depending on "
+    "candidate-set size.\n"
+    "  - Crossover to cheaper-than-re-evaluating-everything: ~2-4 changed tools.\n"
+    "  - Multi-culprit (2-3 simultaneous regressions) does not clear the accuracy ship bar at "
+    "any tested configuration.\n\n"
+    "This is not shipped for production use. Full findings: reports/v0_5_probe_power_fix.md, "
+    "reports/v0_5_mde_discrepancy.md, reports/v0_5_shapley_scaling_audit.md."
+)
+
+
+@app.command()
+def attribute(
+    experimental: Annotated[
+        bool,
+        typer.Option(
+            "--experimental",
+            help="Required opt-in. Attribution is measured uneconomical -- see the cost finding "
+            "printed without this flag.",
+        ),
+    ] = False,
+) -> None:
+    """Failure attribution / regression localization (Component 1.2) -- EXPERIMENTAL, NOT
+    RECOMMENDED FOR PRODUCTION. Off by default; requires --experimental. See
+    reports/v0_5_probe_power_fix.md for the measured cost finding this gate enforces."""
+    if not experimental:
+        typer.echo(_ATTRIBUTION_COST_FINDING, err=True)
+        raise typer.Exit(1)
+    typer.echo(
+        "Experimental mode acknowledged. There is no production attribution runner in this "
+        "CLI -- the feature exists as library code (agentgauge.attribution, "
+        "agentgauge.attribution_benchmark) and research scripts (scripts/attribution_*.py, "
+        "scripts/probe_mde_ablation.py, scripts/scale_curve_report.py) for research use only. "
+        "Import those modules directly; see reports/v0_5_probe_power_fix.md for what is and "
+        "is not measured before relying on any number."
+    )

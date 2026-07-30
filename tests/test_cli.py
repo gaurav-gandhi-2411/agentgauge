@@ -103,6 +103,41 @@ def test_ci_exits_one_when_below_threshold() -> None:
     assert result.exit_code == 1, result.output
 
 
+class TestAttributeExperimentalGate:
+    """v0.5.0: `agentgauge attribute` is gated experimental, off by default
+    (reports/v0_5_probe_power_fix.md's measured cost finding -- attribution costs
+    1.01x-20.24x a full re-evaluation; not shipped for production use)."""
+
+    def test_refuses_without_experimental_flag(self) -> None:
+        runner = CliRunner()
+        result = runner.invoke(app, ["attribute"])
+        assert result.exit_code == 1
+        assert "--experimental" in result.output
+
+    def test_refusal_message_states_measured_cost_numbers(self) -> None:
+        """Per Task 1b: help/refusal text must state the measured reason in numbers, no
+        adjectives."""
+        runner = CliRunner()
+        result = runner.invoke(app, ["attribute"])
+        assert "1.01x" in result.output
+        assert "20.24x" in result.output
+        assert "2-4 changed tools" in result.output
+        assert "v0_5_probe_power_fix.md" in result.output
+
+    def test_proceeds_with_experimental_flag(self) -> None:
+        runner = CliRunner()
+        result = runner.invoke(app, ["attribute", "--experimental"])
+        assert result.exit_code == 0
+        assert "Experimental mode acknowledged" in result.output
+
+    def test_help_text_mentions_experimental_gate(self) -> None:
+        runner = CliRunner()
+        result = runner.invoke(app, ["attribute", "--help"])
+        assert result.exit_code == 0
+        assert "EXPERIMENTAL" in result.output
+        assert "--experimental" in result.output
+
+
 def test_scan_echo_server_subprocess() -> None:
     """End-to-end: spawn the real CLI against the echo server using sys.executable.
 

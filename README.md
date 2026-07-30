@@ -46,6 +46,65 @@ Full methodology: `reports/v2_1_linter_recall_fix.md`, `reports/v2_1_severity_ga
 
 ---
 
+## v0.5.0 — model adapters (the headline feature this release)
+
+`agentgauge diff`/`eval` are no longer Ollama-only. Six provider adapters share one config-driven
+interface — switch providers with no code change:
+
+| Adapter | What it targets |
+|---|---|
+| `ollama` | Local Ollama (the original, still the default) |
+| `anthropic` | Anthropic Messages API |
+| `openai_compatible` | Any OpenAI-compatible HTTP endpoint |
+| `bedrock` | AWS Bedrock |
+| `vertex` | Google Vertex AI |
+| `custom_endpoint` | Generic base-URL + auth-header endpoint (internal/enterprise serving) |
+
+| Metric | Measured value | Report |
+|---|---|---|
+| Replay determinism, per adapter | **100%** on all 6 adapters (20/20 replays each, byte-identical output, identical harness verdict) | `reports/v0_5_wave1_report.md` §2 |
+| Verdict fidelity across the abstraction layer | **Zero verdict flips** attributable to the adapter/config layer | same |
+| Cost/timing accounting | Live in `diff`/`eval` output (text and JSON), correctly distinguishing `n/a`/replay-mode from a real zero-cost run | `reports/v0_5_wave1_report.md` §4 |
+
+**Scope, stated plainly**: determinism for the four non-local adapters (Anthropic, Bedrock, Vertex,
+any paid custom endpoint) is measured against recorded/mocked wire-format responses, not live paid
+calls (no paid-provider spend without an approved bounded estimate, per this repo's standing cost
+constraint) — this proves the adapter code path (parsing, hashing, cassette I/O) adds no
+nondeterminism given an identical response; it does not measure a live provider's own response
+variance, which remains open. See `agentgauge/provider_config.py` and `configs/` for example YAML
+configs — point `--provider-config` at one to switch providers.
+
+---
+
+## Experimental — failure attribution (research only, NOT shipped for production use)
+
+`agentgauge attribute` exists in the CLI and is gated `--experimental`, off by default, because it
+is **measured uneconomical**, not because it doesn't work — accuracy is genuinely solved; the
+numbers below are why it isn't a product surface:
+
+| Metric | Measured value | Report |
+|---|---|---|
+| Accuracy at the probe power needed for reliable localization (`n_tasks=128`) | Both tested strategies clear the ship bar (top-1≥70%, top-3≥90%) at every single-culprit candidate-set size ≥10 tools | `reports/v0_5_probe_power_fix.md` §4 |
+| Cost vs. simply re-running the full evaluation | **1.01x–20.24x more expensive**, at every tested configuration — the cheapest case in the whole study (4 changed tools) is already a coin flip against a full re-eval | same, §5 |
+| Crossover to cheaper-than-re-evaluating-everything | **~2-4 changed tools** — below the scale at which localization has any practical use | same |
+| Multi-culprit (2-3 simultaneous regressions — the realistic multi-file-PR shape) | Does not clear the accuracy ship bar at any tested configuration | same, §4 |
+
+**Why it isn't fixable by tuning**: minimum detectable effect scales as `1/√n_tasks` — reliable
+localization needs real per-probe task volume, and that volume is exactly the cost a localizer
+exists to avoid paying. Lower `n_tasks` is cheap but statistically unreliable; higher `n_tasks` is
+reliable but each probe alone costs a meaningful fraction of a full corpus re-evaluation. No
+`n_tasks` value clears both the accuracy and cost bars at once (`reports/v0_5_probe_power_fix.md`
+§5-6) — a structural finding, recorded for the methods paper as a negative result
+(`reports/capability_statement.md`), not a bug to be fixed in a later release.
+
+The code, benchmarks, and every measurement behind this table remain in the repo — nothing was
+deleted. Research use only, via direct library import
+(`agentgauge.attribution`/`agentgauge.attribution_benchmark`) or the scripts under `scripts/`; run
+`agentgauge attribute --help` for the gate, or `agentgauge attribute` (no flag) to see the cost
+finding printed at the command line.
+
+---
+
 > **v2.2.** A predictive-validity study (`reports/predictive_validity_study.md`) found that v1's
 > 8-axis LLM-judged quality score does not predict real agent task success by a margin surviving
 > both multiple-comparison correction and controlling for description length. v2 rebuilt around
@@ -226,6 +285,14 @@ for worked examples of anti-tautology task authoring. Every `diff`/`eval` run pa
 consistency) — a failing check blocks the result from being reported, rather than silently
 shipping a bad measurement.
 
+```bash
+# Point at a different provider with --provider-config instead of --model -- no code change.
+# See configs/provider.*.yaml for one example per adapter (ollama/anthropic/openai_compatible/
+# bedrock/vertex/custom_endpoint).
+agentgauge diff before_server.py after_server.py --tasks agentgauge_tasks.json \
+  --provider-config configs/provider.anthropic.yaml
+```
+
 `agentgauge lint` needs no LLM at all — try it right now against the bundled example fixture,
 which demonstrates the re-tiering story directly: this file's only defects are
 `required_references_missing_property` and `required_not_mentioned`, both of which measured a null
@@ -311,6 +378,15 @@ this section once flagged as "in progress" landed in v2.4/v2.5 (253 real tasks, 
 against live official API docs), and a live 3-model measurement at that corpus's full power
 (MDE=0.0537) found a real, adequately-powered null: no model shows a practically significant effect
 from better tool descriptions on argument construction (`reports/v0_4_0_task1_argument_degradation.md`).
+**v0.5.0 ships model adapters** (six providers, 100% replay determinism, config-driven — see the
+section above) as the release headline. It also built and honestly evaluated a failure-attribution
+feature (localize which tool description caused a measured regression): accuracy was fixed (both
+strategies clear the ship bar at realistic candidate-set sizes), but the cost of doing so — 1.01x
+to 20.24x a full re-evaluation, at every tested configuration — means it is **not shipped as a
+product surface**, gated `--experimental` and off by default (see the section above and
+`reports/capability_statement.md` for the negative-result writeup). Ten measurement artifacts were
+found and fixed across this project's development, each with a standing `agentgauge audit` check
+seeded from the real historical case.
 Every product claim in this README is now measured — `reports/v2_product_readiness.md` tracks the
 complete, current MEASURED vs. NOT MEASURED breakdown.
 
@@ -320,21 +396,32 @@ complete, current MEASURED vs. NOT MEASURED breakdown.
 
 ```
 agentgauge/
-  client.py       # MCP client: stdio + HTTP/SSE, introspect, call tools
-  providers.py    # Provider protocol + OllamaProvider + MockProvider
-  tasks.py        # Task generator: sample args from JSON schema
-  runner.py       # Agent runner: LLM selects tool + constructs args, N trials
-  scorer.py       # v1 rubric scoring: static analysis + LLM-as-judge (legacy surface)
-  linter.py       # deterministic defect linter, zero LLM calls -- secondary utility
-  harness.py      # bootstrap-CI regression harness, MDE simulation -- PRIMARY interface
-  constraints.py  # anti-tautology blind-task constraint checking
-  audit.py        # pre-report measurement-validity gate (task leakage, ceiling/floor,
-                  # degenerate metrics, scoring-reference consistency, ...)
-  report.py       # Rich text report renderer
-  cli.py          # typer CLI: diff / eval / lint / init (primary surface) +
-                  # scan / fix / ci / try (v1, legacy)
+  client.py                 # MCP client: stdio + HTTP/SSE, introspect, call tools
+  providers.py               # Provider protocol + 6 adapters (ollama/anthropic/
+                              # openai_compatible/bedrock/vertex/custom_endpoint) + MockProvider
+  provider_config.py         # config-driven provider selection (YAML, see configs/)
+  cassette.py                # record/replay for Provider.chat() -- proves replay determinism
+                              # survives the adapter abstraction
+  tasks.py                   # Task generator: sample args from JSON schema
+  runner.py                  # Agent runner: LLM selects tool + constructs args, N trials
+  scorer.py                  # v1 rubric scoring: static analysis + LLM-as-judge (legacy surface)
+  linter.py                  # deterministic defect linter, zero LLM calls -- secondary utility
+  harness.py                 # bootstrap-CI regression harness, MDE simulation -- PRIMARY interface
+  constraints.py             # anti-tautology blind-task constraint checking
+  audit.py                   # pre-report measurement-validity gate (task leakage, ceiling/floor,
+                              # degenerate metrics, scoring-reference consistency, probe-variance
+                              # calibration, ...) -- ten measurement-artifact classes, each with a
+                              # standing check seeded from the real historical case
+  attribution.py             # failure attribution strategies (exhaustive/Shapley/bisection) --
+                              # EXPERIMENTAL, gated `agentgauge attribute --experimental`, not a
+                              # recommended product surface (see the section above)
+  attribution_benchmark.py   # injected-culprit benchmark generator for attribution -- research use
+  report.py                  # Rich text report renderer
+  cli.py                     # typer CLI: diff / eval / lint / init (primary surface) +
+                              # attribute (experimental, gated) + scan / fix / ci / try (v1, legacy)
 examples/
   echo_server.py  # Minimal MCP server (good + bad tools) for local demos
+configs/          # example provider-config YAML files for each of the 6 adapters
 tests/            # pytest; LLM always mocked; no network; no paid calls
 ```
 
