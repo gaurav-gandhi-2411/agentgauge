@@ -1,0 +1,12 @@
+# AgentGauge provider config -- generic internal/enterprise gateway.
+# Assumes an OpenAI-chat-completions-compatible request/response shape (the shape
+# most internal enterprise LLM gateways mimic); only the auth header is configurable.
+provider: custom_endpoint
+model: internal-llama-70b
+base_url: https://llm-gateway.internal.example.com/v1
+auth_header_name: Authorization
+auth_header_value_env: INTERNAL_GATEWAY_TOKEN
+auth_header_prefix: "Bearer "
+cost_ceiling_usd: .inf
+timeout: 180.0
+max_retries: 3

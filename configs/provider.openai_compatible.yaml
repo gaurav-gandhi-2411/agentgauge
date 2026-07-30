@@ -1,0 +1,9 @@
+# AgentGauge provider config -- any OpenAI-chat-completions-shaped endpoint
+# (OpenRouter, Together AI, Groq, local vLLM/llama.cpp, Ollama's /v1 shim, ...).
+provider: openai_compatible
+model: some-model
+base_url: https://openrouter.ai/api/v1
+api_key_env: OPENROUTER_API_KEY
+cost_ceiling_usd: .inf   # unknown-model fallback rate is used for cost tracking either way
+timeout: 180.0
+max_retries: 3

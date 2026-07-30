@@ -28,6 +28,20 @@ historical case" instruction:
   8. Hallucinated fixture-authoring facts (artifact #8) -- the GitHub Issues
      fixture's update_issue_state::state_reason enum, originally missing
      GitHub's real 4th value 'duplicate' (reports/v2_5_task2_fixture_validation.md).
+  9. Benchmark-construction diff-size confound (artifact #9) -- v0.5 Wave 1's
+     injected-culprit attribution benchmark (agentgauge/attribution_benchmark.py):
+     the true culprit's fixed-length defect sentence was smaller than 2 of 3
+     decoy tiers by construction, giving a mean fractional rank ~0.66-0.73
+     instead of the 0.5 a role-independent generator would produce
+     (reports/v0_5_attribution_benchmark.md).
+  10. Probe-variance noise-floor understatement (artifact #10) -- v0.5 Wave 1's
+      MDE-discrepancy investigation (reports/v0_5_mde_discrepancy.md):
+      `agentgauge.attribution_benchmark.make_probe_fn`/`make_multi_probe_fn`'s synthetic
+      ground-truth model added only i.i.d. residual noise, never the calibrated
+      between-task variance component (`CALIBRATED_SIGMA_TASK`/`CALIBRATED_RHO`) that
+      produces this repo's own validated MDE figures -- measured CI widths at n_tasks=24
+      came in at 34% of the calibrated reference width, letting greedy_bisection detect
+      effects far below the harness's real minimum detectable effect.
 """
 
 from __future__ import annotations
@@ -35,12 +49,14 @@ from __future__ import annotations
 from types import SimpleNamespace
 
 from agentgauge.audit import (
+    check_benchmark_construction_diffsize_bias,
     check_catalog_subset_mismatch,
     check_ceiling_floor,
     check_degenerate_metrics,
     check_empty_schema,
     check_empty_tasks,
     check_enum_schema_fidelity,
+    check_probe_variance_calibration,
     check_scoring_reference_consistency,
     check_task_leakage,
     run_audit,
@@ -350,3 +366,223 @@ class TestAuditReport:
         )
         assert not report.passed
         assert len(report.blocking) == 1
+
+
+class TestBenchmarkConstructionDiffsizeBias:
+    """Artifact #9, the ninth artifact: `agentgauge.attribution_benchmark`'s ORIGINAL
+    injected-culprit generator satisfied the two weaker confound-guard edge conditions (culprit
+    not always positioned first; culprit not always the single largest-diff tool) while still
+    having a real, systematic DISTRIBUTIONAL correlation between diff size and culprit-vs-decoy
+    role -- the culprit's fixed-length defect sentence (~32-47 chars) was smaller than 2 of 3
+    decoy tiers (medium ~65, large ~230) by construction, giving a mean fractional rank of
+    ~0.66-0.73 (measured, `reports/v0_5_attribution_benchmark.md`) instead of the 0.5 a
+    role-independent generator would produce. This check catches that class of bias directly, via
+    a case's `.diff_chars`/`.true_culprit` shape, independent of any specific generator module."""
+
+    def _biased_case(
+        self, case_id: str, culprit_diff: int, decoy_diffs: list[int]
+    ) -> SimpleNamespace:
+        diff_chars = {"culprit": culprit_diff}
+        diff_chars.update({f"decoy_{i}": d for i, d in enumerate(decoy_diffs)})
+        return SimpleNamespace(case_id=case_id, true_culprit="culprit", diff_chars=diff_chars)
+
+    def test_deliberately_biased_fixture_fires(self) -> None:
+        """Mirrors the real pre-fix generator's characteristic shape: a small, near-constant
+        culprit diff (~40 chars) against a decoy pool spanning small/medium/large tiers
+        (6/65/230 chars) -- every case has the SAME three decoy diffs, so the culprit sits at
+        fractional rank 2/3 ~= 0.667 in every one of 30 cases (matching the real measured
+        ~0.66-0.73 pre-fix regime), well outside the [0.35, 0.65] pass band."""
+        cases = [self._biased_case(f"c{i}", 40, [65, 230, 6]) for i in range(30)]
+        findings = check_benchmark_construction_diffsize_bias(cases)
+        assert len(findings) == 1
+        assert findings[0].severity == "block"
+        assert findings[0].check == "benchmark_construction_diffsize_bias"
+
+    def test_unbiased_fixture_does_not_fire(self) -> None:
+        """A generator where the culprit's diff is drawn from the SAME distribution as the
+        decoys' (no structural correlation with role) must not fire -- the culprit rotates
+        through each rank position evenly across cases."""
+        pools = [[40, 65, 230], [230, 40, 65], [65, 230, 40], [40, 6, 65], [6, 40, 65]]
+        cases = [self._biased_case(f"c{i}", pool[0], pool[1:]) for i, pool in enumerate(pools * 6)]
+        findings = check_benchmark_construction_diffsize_bias(cases)
+        assert findings == []
+
+    def test_corrected_generate_benchmark_output_does_not_fire(self) -> None:
+        """The real, fixed generator's actual output (n=50, seed=42) must not trip this check --
+        the direct regression test that the artifact #9 fix in `agentgauge.attribution_benchmark`
+        actually holds, using the check that would have caught it before this task, not just the
+        module-local test in `tests/test_attribution_benchmark.py`."""
+        from agentgauge.attribution_benchmark import generate_benchmark
+
+        cases = generate_benchmark(n_cases=50, seed=42)
+        findings = check_benchmark_construction_diffsize_bias(cases)
+        assert findings == [], f"expected no finding on the corrected generator, got: {findings}"
+
+    def test_insufficient_cases_returns_no_finding(self) -> None:
+        """Fewer than `min_cases` valid (culprit + >=1 decoy) cases means there isn't enough data
+        to assess the distribution -- returns [] (not enough data), not a false pass or block."""
+        cases = [self._biased_case(f"c{i}", 40, [65, 230, 6]) for i in range(5)]
+        assert check_benchmark_construction_diffsize_bias(cases, min_cases=20) == []
+
+
+class TestRunAuditBenchmarkCases:
+    """v0.5 Wave 1 Task 5a: `run_audit`'s optional `benchmark_cases` parameter wires
+    `check_benchmark_construction_diffsize_bias` into the standing pre-report gate,
+    for callers (`scripts/attribution_benchmark_report.py`) auditing injected-culprit
+    benchmark cases rather than `BlindTask`/tool-based `diff`/`eval` inputs. `tasks=[]`
+    and every other `run_audit` input defaulting to `None` must not itself produce any
+    finding -- only the benchmark-case check should fire (or not) here."""
+
+    def _biased_case(
+        self, case_id: str, culprit_diff: int, decoy_diffs: list[int]
+    ) -> SimpleNamespace:
+        diff_chars = {"culprit": culprit_diff}
+        diff_chars.update({f"decoy_{i}": d for i, d in enumerate(decoy_diffs)})
+        return SimpleNamespace(case_id=case_id, true_culprit="culprit", diff_chars=diff_chars)
+
+    def test_deliberately_biased_cases_fail_the_gate(self) -> None:
+        """Same characteristic pre-fix shape as
+        TestBenchmarkConstructionDiffsizeBias.test_deliberately_biased_fixture_fires, run through
+        the full `run_audit` dispatcher rather than the standalone check function directly."""
+        cases = [self._biased_case(f"c{i}", 40, [65, 230, 6]) for i in range(30)]
+        report = run_audit(tasks=[], benchmark_cases=cases)
+        assert report.passed is False
+        assert any(
+            f.check == "benchmark_construction_diffsize_bias" and f.severity == "block"
+            for f in report.findings
+        )
+
+    def test_real_corrected_generator_output_passes_the_gate(self) -> None:
+        """The real, fixed `agentgauge.attribution_benchmark.generate_benchmark()` output
+        (n=50, seed=42) must clear `run_audit` cleanly -- this is the actual pipeline
+        `scripts/attribution_benchmark_report.py` runs before reporting accuracy."""
+        from agentgauge.attribution_benchmark import generate_benchmark
+
+        cases = generate_benchmark(n_cases=50, seed=42)
+        report = run_audit(tasks=[], benchmark_cases=cases)
+        assert report.passed is True, f"expected a clean pass, got findings: {report.findings}"
+
+    def test_benchmark_cases_none_by_default_is_unaffected(self) -> None:
+        """Existing `BlindTask`/tool-based callers that never pass `benchmark_cases` see
+        identical behavior to before this parameter existed -- no diffsize-bias finding
+        appears when `benchmark_cases` is omitted."""
+        tasks = [BlindTask(tool_name="get_item", description="Fetch the item.")]
+        report = run_audit(tasks)
+        assert not any(f.check == "benchmark_construction_diffsize_bias" for f in report.findings)
+
+
+class TestProbeVarianceCalibration:
+    """Artifact #10, the tenth artifact: `agentgauge.attribution_benchmark.make_probe_fn`/
+    `make_multi_probe_fn`'s ORIGINAL ground-truth model added only i.i.d. residual noise
+    (`CALIBRATED_RESID_SD`) per synthetic task and never the calibrated BETWEEN-task variance
+    component (`CALIBRATED_SIGMA_TASK`, correlated at `CALIBRATED_RHO`) that
+    `agentgauge.harness.simulate_task_level_pairs` uses to produce this repo's own validated MDE
+    figures -- making every probe's noise floor structurally narrower than a real deployment's,
+    which let `greedy_bisection` detect effects far below the harness's genuine minimum detectable
+    effect (`reports/v0_5_mde_discrepancy.md`)."""
+
+    def test_pre_fix_probe_model_fires(self) -> None:
+        """Direct reimplementation of the ORIGINAL (pre-fix) `make_probe_fn` ground-truth model
+        (residual noise only, no task_effect) -- reconstructed inline since the shipped code no
+        longer contains this formula, per this repo's convention of seeding regression tests with
+        the actual historical case. Measured CI widths at n_tasks=24 come in at ~34% of the
+        calibrated reference width, decisively below the 60% pass threshold."""
+        from agentgauge.harness import (
+            CALIBRATED_BASELINE_RATE,
+            CALIBRATED_RESID_SD,
+            TrialOutcome,
+            _lcg_random,
+            diff_server_level,
+        )
+
+        def clip01(x: float) -> float:
+            return min(1.0, max(0.0, x))
+
+        widths = []
+        for i in range(15):
+            rng = _lcg_random(i * 97 + 1)
+            before, after = [], []
+            for t in range(24):
+                name = f"t{t}"
+                nb = (rng() - 0.5) * 2 * CALIBRATED_RESID_SD
+                na = (rng() - 0.5) * 2 * CALIBRATED_RESID_SD
+                before.append(TrialOutcome(name, name, clip01(CALIBRATED_BASELINE_RATE - 0.2 + nb)))
+                after.append(TrialOutcome(name, name, clip01(CALIBRATED_BASELINE_RATE + na)))
+            result = diff_server_level(before, after, n_resamples=300, seed=i)
+            widths.append(result.ci_hi - result.ci_lo)
+
+        findings = check_probe_variance_calibration(widths, n_tasks=24)
+        assert len(findings) == 1
+        assert findings[0].severity == "block"
+        assert findings[0].check == "probe_variance_calibration"
+
+    def test_real_corrected_probe_fn_output_does_not_fire(self) -> None:
+        """The real, fixed `agentgauge.attribution_benchmark.make_probe_fn` output must clear
+        this check -- the direct regression test that the artifact #10 fix actually holds."""
+        from agentgauge.attribution_benchmark import generate_benchmark, make_probe_fn
+
+        cases = generate_benchmark(n_cases=15, seed=42)
+        widths = []
+        for case in cases:
+            probe = make_probe_fn(case, seed=42)
+            result = probe(frozenset({case.true_culprit}))
+            widths.append(result.ci_hi - result.ci_lo)
+        findings = check_probe_variance_calibration(widths, n_tasks=24)
+        assert findings == [], f"expected no finding on the corrected probe model, got: {findings}"
+
+    def test_narrow_synthetic_widths_fire(self) -> None:
+        """A deliberately narrow, constant CI width (well below any plausible calibrated
+        reference at this n_tasks) must fire -- the direct unit-level trigger, independent of any
+        specific probe implementation."""
+        findings = check_probe_variance_calibration([0.03] * 15, n_tasks=24)
+        assert len(findings) == 1
+        assert findings[0].severity == "block"
+
+    def test_insufficient_cases_returns_no_finding(self) -> None:
+        assert check_probe_variance_calibration([0.03] * 3, n_tasks=24, min_cases=10) == []
+
+    def test_n_tasks_below_two_returns_no_finding(self) -> None:
+        """A degenerate n_tasks (<2, no meaningful cluster-bootstrap reference is computable)
+        returns [] rather than dividing by a meaningless reference."""
+        assert check_probe_variance_calibration([0.03] * 15, n_tasks=1) == []
+
+
+class TestRunAuditProbeCiWidths:
+    """v0.5 Wave 1 MDE-discrepancy investigation: `run_audit`'s optional
+    `probe_ci_widths`/`probe_n_tasks` parameter pair wires `check_probe_variance_calibration`
+    into the standing pre-report gate."""
+
+    def test_narrow_widths_fail_the_gate(self) -> None:
+        report = run_audit(tasks=[], probe_ci_widths=[0.03] * 15, probe_n_tasks=24)
+        assert report.passed is False
+        assert any(
+            f.check == "probe_variance_calibration" and f.severity == "block"
+            for f in report.findings
+        )
+
+    def test_real_corrected_probe_fn_output_passes_the_gate(self) -> None:
+        from agentgauge.attribution_benchmark import generate_benchmark, make_probe_fn
+
+        cases = generate_benchmark(n_cases=15, seed=42)
+        widths = []
+        for case in cases:
+            probe = make_probe_fn(case, seed=42)
+            result = probe(frozenset({case.true_culprit}))
+            widths.append(result.ci_hi - result.ci_lo)
+        report = run_audit(tasks=[], probe_ci_widths=widths, probe_n_tasks=24)
+        assert report.passed is True, f"expected a clean pass, got findings: {report.findings}"
+
+    def test_probe_ci_widths_none_by_default_is_unaffected(self) -> None:
+        """Existing callers that never pass `probe_ci_widths`/`probe_n_tasks` see identical
+        behavior to before this parameter pair existed."""
+        tasks = [BlindTask(tool_name="get_item", description="Fetch the item.")]
+        report = run_audit(tasks)
+        assert not any(f.check == "probe_variance_calibration" for f in report.findings)
+
+    def test_only_one_of_the_pair_given_does_not_trigger_the_check(self) -> None:
+        """Both `probe_ci_widths` AND `probe_n_tasks` must be given -- passing only one must not
+        partially trigger the check with a missing/defaulted counterpart."""
+        report = run_audit(tasks=[], probe_ci_widths=[0.03] * 15)
+        assert not any(f.check == "probe_variance_calibration" for f in report.findings)
+        report2 = run_audit(tasks=[], probe_n_tasks=24)
+        assert not any(f.check == "probe_variance_calibration" for f in report2.findings)

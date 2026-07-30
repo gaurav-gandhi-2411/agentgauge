@@ -1,0 +1,12 @@
+# AgentGauge provider config -- Google Vertex AI generateContent (Gemini).
+# Scope-limited this wave: no ADC/google-auth flow. Obtain a bearer token yourself
+# (e.g. `gcloud auth print-access-token`) and export it into the env var below --
+# see agentgauge/providers.py's VertexProvider docstring for what is NOT MEASURED.
+provider: vertex
+model: gemini-1.5-flash
+project_id: your-gcp-project-id
+region: us-central1
+access_token_env: VERTEX_ACCESS_TOKEN
+cost_ceiling_usd: 5.0
+timeout: 120.0
+max_retries: 3

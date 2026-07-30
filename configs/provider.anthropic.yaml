@@ -1,0 +1,9 @@
+# AgentGauge provider config -- Anthropic Messages API.
+# NEVER set api_key_env to ANTHROPIC_API_KEY (Claude Max double-billing rule);
+# use a separately-billed key instead, e.g. a dedicated pay-per-token API key.
+provider: anthropic
+model: claude-haiku-4-5-20251001
+api_key_env: FRONTIER_API_KEY
+cost_ceiling_usd: 5.0
+timeout: 120.0
+max_retries: 3

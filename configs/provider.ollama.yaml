@@ -1,0 +1,5 @@
+# AgentGauge provider config -- local Ollama (the default; equivalent to `--model`).
+# Usage: agentgauge diff before.py after.py --tasks tasks.json --provider-config configs/provider.ollama.yaml
+provider: ollama
+model: llama3.1:8b
+timeout: 180.0

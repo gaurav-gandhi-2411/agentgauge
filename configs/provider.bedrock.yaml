@@ -1,0 +1,12 @@
+# AgentGauge provider config -- AWS Bedrock Runtime (Anthropic-on-Bedrock model).
+# Requires an IAM principal with bedrock:InvokeModel on the target model ARN.
+# Credentials are read from the two named env vars below -- never an ambient
+# default credential chain (see agentgauge/providers.py's BedrockProvider docstring).
+provider: bedrock
+model: anthropic.claude-3-5-sonnet-20241022-v2:0
+region: us-east-1
+aws_access_key_id_env: AWS_ACCESS_KEY_ID
+aws_secret_access_key_env: AWS_SECRET_ACCESS_KEY
+cost_ceiling_usd: 5.0
+timeout: 120.0
+max_retries: 3
