@@ -1,5 +1,18 @@
 # AgentGauge v0.5 Wave 1 — effect-size sensitivity study for failure attribution (Component 1.2 follow-up)
 
+> **THIS ENTIRE REPORT'S ACCURACY NUMBERS ARE SUPERSEDED AGAIN (2026-07-30, measurement artifact
+> #10).** This is the report that surfaced the open SESSION-CLOSE question (100% top-1 at a 3pp
+> effect, below the harness's own 5.37pp MDE) -- that finding is now resolved as a real measurement
+> artifact, NOT a benign probe-power difference: `make_probe_fn`'s ground-truth model omitted the
+> harness's calibrated between-task variance. See `reports/v0_5_mde_discrepancy.md` for the full
+> investigation and the recomputed per-band table (section 4b there). Headline: `greedy_bisection`'s
+> REAL accuracy at 3.0-5.0pp is **58.33% top-1** (was 100% pre-fix, then 75.00% after only the
+> separate `probes_consumed` bug fix below) -- it now correctly FAILS the ship bar at every band
+> from 3.0pp through 13.3pp, not just the two lowest bands this report's own section 11 found. The
+> mechanism trace confirms every miss is a genuine Mode-A detection-power failure (never Mode-B
+> false-positive noise), exactly what a real sub-MDE effect should look like -- this is the correct,
+> not-an-artifact behavior the original 100% figure was masking.
+
 > **SECTIONS 4, 5, 6, 7, AND 8 BELOW ARE SUPERSEDED (2026-07-26).** The real implementation bug
 > section 5 below first REPORTED (but did not fix, per that task's explicit scope boundary) in
 > `agentgauge/attribution.py`'s `attribute_greedy_bisection`/`_bisect_within` — silently dropped

@@ -61,12 +61,27 @@ def _run_baselines(case: BenchmarkCase) -> dict[str, AttributionResult]:
     }
 
 
+N_TASKS = 24
+
+
 def main() -> None:
     t0 = time.time()
     cases = generate_benchmark(n_cases=N_CASES, seed=SEED)
     print(f"Generated {len(cases)} benchmark cases in {time.time() - t0:.1f}s")
 
-    audit_report = run_audit(tasks=[], benchmark_cases=cases)
+    # Artifact #10 guard: sample a raw probe CI width (true-culprit revert) per case, at the same
+    # n_tasks every strategy below actually probes at, so run_audit can check the probe/ground-truth
+    # model's noise floor against the harness's own calibration BEFORE any accuracy number below is
+    # trusted -- see reports/v0_5_mde_discrepancy.md.
+    probe_ci_widths = []
+    for case in cases:
+        probe_fn = make_probe_fn(case, n_tasks=N_TASKS, seed=SEED)
+        r = probe_fn(frozenset({case.true_culprit}))
+        probe_ci_widths.append(r.ci_hi - r.ci_lo)
+
+    audit_report = run_audit(
+        tasks=[], benchmark_cases=cases, probe_ci_widths=probe_ci_widths, probe_n_tasks=N_TASKS
+    )
     print("\n--- Measurement-validity audit (agentgauge.audit.run_audit) ---")
     for f in audit_report.blocking:
         print(f"AUDIT BLOCK ({f.check}): {f.detail}")

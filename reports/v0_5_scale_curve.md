@@ -1,6 +1,20 @@
 # AgentGauge v0.5 Wave 1 — scale-curve + multi-culprit study for failure attribution
 ## (Component 1.2, Task 2; follow-up to `reports/v0_5_attribution_benchmark.md` section 7j)
 
+> **THIS ENTIRE REPORT'S ACCURACY/BUDGET NUMBERS ARE SUPERSEDED (2026-07-30, measurement artifact
+> #10).** `agentgauge.attribution_benchmark.make_probe_fn`/`make_multi_probe_fn`'s synthetic
+> ground-truth model understated real variance -- see `reports/v0_5_mde_discrepancy.md` section 4c
+> for the recomputed single-culprit and multi-culprit tables. **Headline of the correction: this
+> report's central claim ("greedy_bisection clears the full ship bar at every single-culprit
+> candidate-set size >= 10 tools") is FALSE under corrected noise.** Budget still improves with
+> scale as this report found, but ACCURACY now COLLAPSES with scale instead (93%->80%->73%->47%
+> top-1 as n_changed goes 4->10->20->40) -- `greedy_bisection` fails the ship bar at n=20 and n=40,
+> the sizes closest to the target buyer's real use case. `sampled_shapley` shows the OPPOSITE
+> scaling and now clears the full ship bar at every size >= 10 (including n=40, 100%/100%) --
+> exactly reversing this report's implicit "greedy_bisection over sampled_shapley at scale"
+> framing. The multi-culprit conclusion (neither strategy clears any tested configuration) is
+> unchanged in direction. Do not cite this report's numbers without reading the corrected ones.
+
 Direct follow-up to the open question `reports/v0_5_attribution_benchmark.md` section 7j leaves
 unresolved: with honest probe-cost accounting, `greedy_bisection`'s always-attempted "confirm
 there's no second culprit" pass costs MORE than exhaustive ablation (5.32 vs 3.96 mean probes) on

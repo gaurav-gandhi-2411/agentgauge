@@ -347,7 +347,23 @@ regime (a design change, not yet attempted); any of this against a candidate-set
 above 40 tools or a culprit count above 3; any live paid-provider adapter's real
 response-variance behavior (unchanged from Wave 1 section 5).
 
-## SESSION-CLOSE (2026-07-26)
+## SESSION-CLOSE (2026-07-26) — RESOLVED (2026-07-30), see `reports/v0_5_mde_discrepancy.md`
+
+**RESOLVED.** This was explanation 2, a measurement artifact (logged as #10), not explanation 1
+(benign probe-power difference). `agentgauge.attribution_benchmark.make_probe_fn`'s synthetic
+ground-truth noise model omitted the harness's own calibrated between-task variance component
+(`CALIBRATED_SIGMA_TASK`/`CALIBRATED_RHO`), giving every probe a noise floor 3-7x quieter than a
+real deployment would show at the same trial count. Fixed; standing audit check added
+(`agentgauge.audit.check_probe_variance_calibration`); every attribution accuracy/budget table in
+this repo recomputed against the fix. `greedy_bisection`'s real accuracy at 3-5pp is 58.33% top-1
+(not 100%) and correctly fails the ship bar there -- a genuine detection-power limit, confirmed
+100% Mode-A / 0% Mode-B. **The correction also inverts this report's own section 8.4
+recommendation**: at the corrected single-culprit scale curve, `greedy_bisection`'s accuracy
+collapses with candidate-set size (47% top-1 at n=40) while `sampled_shapley` now clears the full
+ship bar at every size >=10 tools including n=40 -- the opposite of "ship `greedy_bisection` only,
+demote `sampled_shapley`." See `reports/v0_5_mde_discrepancy.md` sections 4c and 6 before acting on
+any part of section 8.4 below; it is superseded, not merely caveated. Original open question
+preserved verbatim below for the record.
 
 Open question carried into next session, before attribution ships: section 3
 reports `greedy_bisection` at 100% top-1/top-3 down to a 3.0pp effect size, but

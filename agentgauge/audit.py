@@ -1,16 +1,17 @@
 """Standing pre-report measurement-validity gate (AgentGauge v2.4, Task 2; extended v0.5 Wave 1).
 
-Nine measurement artifacts have been found during this project's own development
+Ten measurement artifacts have been found during this project's own development
 (task/answer leakage, a tool-name-alone selection ceiling, a zero-vector
 embedding degeneracy, a self-descriptive-name confound, a test-subset-vs-full-
 catalog mismatch, a PRNG index-saturation bug, a pre/post-mutation
-scoring-key mismatch, hallucinated fixture-authoring facts, and a benchmark-
-construction diff-size confound -- see `reports/v2_3_task1_advisory_audit.md`,
-`reports/v2_4_task1_blast_radius_audit.md`, `reports/v2_5_task2_fixture_validation.md`
-for the seventh and eighth, and `reports/v0_5_attribution_benchmark.md` for the
-ninth). Eight of the nine were found by hand, after the fact, on results that had
-already been reported. This module encodes each artifact CLASS as a standing,
-automated check that runs BEFORE any effect size is emitted, so the same
+scoring-key mismatch, hallucinated fixture-authoring facts, a benchmark-
+construction diff-size confound, and a probe/ground-truth noise-floor understatement
+-- see `reports/v2_3_task1_advisory_audit.md`, `reports/v2_4_task1_blast_radius_audit.md`,
+`reports/v2_5_task2_fixture_validation.md` for the seventh and eighth,
+`reports/v0_5_attribution_benchmark.md` for the ninth, and
+`reports/v0_5_mde_discrepancy.md` for the tenth). Nine of the ten were found by hand, after
+the fact, on results that had already been reported. This module encodes each artifact CLASS
+as a standing, automated check that runs BEFORE any effect size is emitted, so the same
 class of bug blocks the report instead of quietly shipping in it.
 
 Wired into `agentgauge diff`/`agentgauge eval` (`agentgauge/cli.py`): a
@@ -30,6 +31,16 @@ to `None` so every existing `BlindTask`/tool-based caller (`agentgauge/cli.py`'s
 calls `run_audit(tasks=[], benchmark_cases=<generated cases>)` after generating a
 benchmark and before reporting any accuracy number, refusing to print the table on
 a BLOCKING finding -- the same gate pattern `cli.py` already uses.
+
+`check_probe_variance_calibration` (artifact #10, v0.5 Wave 1 MDE-discrepancy
+investigation, see `reports/v0_5_mde_discrepancy.md`) is wired into `run_audit` via the
+optional `probe_ci_widths`/`probe_n_tasks` parameter pair: when a caller passes the CI
+widths observed from a set of real probe calls (any `agentgauge.attribution` strategy) and
+the `n_tasks` per arm those probes were built on, `run_audit` additionally checks whether
+those widths are structurally narrower than the harness's own calibrated variance
+(`agentgauge.harness.CALIBRATED_SIGMA_TASK`/`CALIBRATED_RHO`) implies at that `n_tasks` --
+the generic signature of a synthetic ground-truth model whose noise floor is understated
+relative to a real deployment, independent of any one benchmark generator's internals.
 """
 
 from __future__ import annotations
@@ -38,7 +49,16 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from agentgauge.constraints import BlindTask
-from agentgauge.harness import DecomposedRate, TrialOutcome
+from agentgauge.harness import (
+    _FEW_CLUSTERS_THRESHOLD,
+    CALIBRATED_BASELINE_RATE,
+    DecomposedRate,
+    TrialOutcome,
+    _lcg_random,
+    cluster_bootstrap_mean_ci,
+    simulate_task_level_pairs,
+    t_adjusted_cluster_bootstrap_mean_ci,
+)
 
 
 @dataclass
@@ -401,6 +421,93 @@ def check_benchmark_construction_diffsize_bias(
     return []
 
 
+def check_probe_variance_calibration(
+    ci_widths: list[float],
+    n_tasks: int,
+    *,
+    min_cases: int = 10,
+    min_width_ratio: float = 0.6,
+    n_reference_draws: int = 30,
+    seed: int = 42,
+) -> list[AuditFinding]:
+    """Artifact #10 class (found and fixed, v0.5 Wave 1 MDE-discrepancy investigation, see
+    `reports/v0_5_mde_discrepancy.md`): a probe-based benchmark's synthetic ground-truth model can
+    look internally consistent (deterministic, seeded, feeding the real `diff_server_level`
+    estimator) while still having an understated NOISE FLOOR relative to what this repo's own
+    calibration says real measurements look like -- letting a localization strategy detect effects
+    far below the harness's genuine minimum detectable effect, not because the strategy is good but
+    because the benchmark it was measured against is quieter than reality.
+    `agentgauge.attribution_benchmark.make_probe_fn`/`make_multi_probe_fn` had exactly this bug:
+    their ground-truth model added only i.i.d. residual noise (`CALIBRATED_RESID_SD`) per synthetic
+    task and never modeled the calibrated BETWEEN-task variance component
+    (`CALIBRATED_SIGMA_TASK`, correlated at `CALIBRATED_RHO` between a task's before/after arms)
+    that `agentgauge.harness.simulate_task_level_pairs` uses to produce this repo's own validated
+    MDE figures -- since that component carries the majority of real measured variance (56.1% of
+    total, `reports/v2_variance_structure.md`), omitting it made every probe dramatically
+    lower-noise, and therefore higher-powered, than a real deployment at the same `n_tasks`.
+
+    `ci_widths`: observed `ci_hi - ci_lo` widths from a set of real probe calls (any
+    `agentgauge.attribution` strategy) made at `n_tasks` synthetic or real tasks per arm -- e.g.
+    each `ProbeResult.ci_hi - ProbeResult.ci_lo` from `attribute_exhaustive`'s per-tool probes.
+    `n_tasks`: the number of matched tasks per arm those probes were built on (must be the same
+    for every width passed in; this check does not mix `n_tasks` values).
+
+    Computes a calibrated REFERENCE width by simulating `n_reference_draws` independent null
+    (zero true effect) task-pair sets via `agentgauge.harness.simulate_task_level_pairs` at the
+    SAME `n_tasks`, run through the identical CI machinery `diff_server_level` itself uses
+    (`t_adjusted_cluster_bootstrap_mean_ci` below the few-clusters threshold, else
+    `cluster_bootstrap_mean_ci`) -- this is what a real, calibration-faithful probe's CI width
+    should look like at this `n_tasks`, independent of any one benchmark generator's internals.
+
+    BLOCK if the observed mean width is narrower than `min_width_ratio` of the calibrated
+    reference: this is the generic, benchmark-agnostic signature of the artifact #10 failure mode.
+    `min_width_ratio=0.6` is calibrated to this repo's own measured before/after gap (the pre-fix
+    `attribution_benchmark` probe's CI widths measured well under half the calibrated reference at
+    n_tasks=24 -- see `reports/v0_5_mde_discrepancy.md`), leaving headroom for a probe model that
+    legitimately differs from the harness's exact calibration (e.g. a real, non-synthetic
+    live-agent probe) without false-firing on ordinary variation.
+
+    Returns `[]` (not enough data to assess, not a pass) if fewer than `min_cases` widths are
+    given, per this module's existing convention (`check_benchmark_construction_diffsize_bias`)."""
+    if len(ci_widths) < min_cases or n_tasks < 2:
+        return []
+    observed_mean_width = sum(ci_widths) / len(ci_widths)
+
+    rng = _lcg_random(seed)
+    reference_widths: list[float] = []
+    for i in range(n_reference_draws):
+        pairs = simulate_task_level_pairs(CALIBRATED_BASELINE_RATE, 0.0, n_tasks, rng)
+        deltas = [after - before for before, after in pairs]
+        if n_tasks < _FEW_CLUSTERS_THRESHOLD:
+            _, lo, hi = t_adjusted_cluster_bootstrap_mean_ci(deltas, n_resamples=300, seed=seed + i)
+        else:
+            _, lo, hi = cluster_bootstrap_mean_ci(deltas, n_resamples=300, seed=seed + i)
+        reference_widths.append(hi - lo)
+    reference_mean_width = sum(reference_widths) / len(reference_widths)
+
+    if reference_mean_width <= 0:
+        return []
+    ratio = observed_mean_width / reference_mean_width
+    if ratio < min_width_ratio:
+        return [
+            AuditFinding(
+                check="probe_variance_calibration",
+                severity="block",
+                detail=(
+                    f"observed mean probe CI width {observed_mean_width:.4f} over {len(ci_widths)} "
+                    f"probes at n_tasks={n_tasks} is only {ratio:.0%} of the calibrated reference "
+                    f"width {reference_mean_width:.4f} (from "
+                    "agentgauge.harness.simulate_task_level_pairs' own CALIBRATED_SIGMA_TASK/"
+                    "CALIBRATED_RHO variance structure) -- the probe/ground-truth model's noise "
+                    "floor is understated relative to the harness's own calibration (the artifact "
+                    "#10 class), which inflates detection power and localization accuracy beyond "
+                    "what a real deployment would show at this n_tasks"
+                ),
+            )
+        ]
+    return []
+
+
 def run_audit(
     tasks: list[BlindTask],
     *,
@@ -409,6 +516,8 @@ def run_audit(
     before_trials: list[TrialOutcome] | None = None,
     after_trials: list[TrialOutcome] | None = None,
     benchmark_cases: list[Any] | None = None,
+    probe_ci_widths: list[float] | None = None,
+    probe_n_tasks: int | None = None,
 ) -> AuditReport:
     """Run every check applicable given what's available. Called from
     `agentgauge diff`/`agentgauge eval` before any effect size is printed, and from
@@ -420,7 +529,12 @@ def run_audit(
     in addition to whatever else is computed. It is fine -- expected -- for `tasks`
     to be `[]` and `before_tools`/`after_tools`/`before_trials`/`after_trials` to be
     `None` when `run_audit` is called purely for a benchmark-case audit: every other
-    check here already no-ops on an empty/`None` input."""
+    check here already no-ops on an empty/`None` input.
+
+    `probe_ci_widths`/`probe_n_tasks`, if BOTH given, trigger
+    `check_probe_variance_calibration` (artifact #10) in addition to whatever else is
+    computed -- `probe_ci_widths` is a list of observed `ci_hi - ci_lo` widths from real
+    probe calls at `probe_n_tasks` matched tasks per arm."""
     findings: list[AuditFinding] = []
     findings += check_task_leakage(tasks)
     findings += check_empty_tasks(tasks)
@@ -446,5 +560,8 @@ def run_audit(
 
     if benchmark_cases is not None:
         findings += check_benchmark_construction_diffsize_bias(benchmark_cases)
+
+    if probe_ci_widths is not None and probe_n_tasks is not None:
+        findings += check_probe_variance_calibration(probe_ci_widths, probe_n_tasks)
 
     return AuditReport(findings=findings)

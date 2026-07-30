@@ -55,11 +55,32 @@ standing, reusable audit function for the same class of bias in any future bench
 docstring for this repo's existing precedent for that import boundary) -- the defect-injection
 mutation below mirrors `scripts/v2_defect_injector.py`'s `inject_type_flipped` exactly but is
 reimplemented locally rather than imported.
+
+**Measurement artifact #10 (probe-variance floor, found and fixed in the v0.5 Wave 1 MDE-discrepancy
+investigation, see `reports/v0_5_mde_discrepancy.md`):** the ORIGINAL version of `make_probe_fn`/
+`make_multi_probe_fn`'s ground-truth model added ONLY per-observation, i.i.d. noise scaled to
+`CALIBRATED_RESID_SD` (0.1392) to each synthetic task's rate -- it never modeled the calibrated
+BETWEEN-task variance component (`CALIBRATED_SIGMA_TASK` = 0.3588, correlated at `CALIBRATED_RHO` =
+0.881 between the before/after arms of the same task) that `agentgauge.harness.simulate_task_level_pairs`
+uses to produce this repo's own headline, validated MDE figures (server-level 5.37pp at n=253;
+per-probe >=16.91pp at n=24, `reports/v0_5_effect_size_sensitivity.md` section 0). Since
+`CALIBRATED_SIGMA_TASK` accounts for the majority of real measured variance (`reports/
+v2_variance_structure.md`: 56.1% of total variance is between-task), omitting it made every probe's
+synthetic ground truth dramatically LOWER-noise, and therefore higher-powered, than a real deployment
+at the same `n_tasks` -- confirmed empirically (`reports/v0_5_mde_discrepancy.md`): detection power at
+5-8pp effect and n_tasks=24 measured 72-97% under the pre-fix noise model vs. 10-28% once the
+calibrated task-level variance component is included. FIX: both `probe()` closures below now draw a
+correlated `task_effect`/`after_task_effect` pair per synthetic task (mirroring
+`simulate_task_level_pairs` exactly, including its `_approx_standard_normal` noise draws in place of
+the ad hoc uniform noise the original version used), so a benchmark probe's variance is no longer
+structurally cleaner than what the harness's own calibration says a real probe would see.
+`agentgauge.audit.check_probe_variance_calibration` is the standing check for this artifact class.
 """
 
 from __future__ import annotations
 
 import json
+import math
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -68,7 +89,10 @@ from agentgauge.attribution import ProbeFn, ProbeResult
 from agentgauge.harness import (
     CALIBRATED_BASELINE_RATE,
     CALIBRATED_RESID_SD,
+    CALIBRATED_RHO,
+    CALIBRATED_SIGMA_TASK,
     TrialOutcome,
+    _approx_standard_normal,
     _lcg_random,
     diff_server_level,
 )
@@ -390,14 +414,16 @@ def make_probe_fn(
     GROUND TRUTH MODEL (synthetic, deterministic, NOT a live measurement): reverting a subset S
     recovers `-case.true_effect_pp` percentage points of task success IF AND ONLY IF
     `case.true_culprit` is in S; every decoy tool has EXACTLY zero causal effect regardless of
-    whether it is reverted. Each of `n_tasks` synthetic tasks' observed success rate is
-    `CALIBRATED_BASELINE_RATE` (the real corpus-wide grand mean from `harness.py`, not invented)
-    minus the active defect penalty, plus independent uniform noise scaled to
-    `CALIBRATED_RESID_SD` (harness.py's measured within-task residual spread) -- so bootstrap CI
-    width reflects the same measured variance structure the harness's real MDE table uses.
-    `n_resamples=500` (vs. harness's own 2000 default) is a benchmarking-speed reduction only,
-    documented here rather than silently applied; production callers of `diff_server_level` should
-    use its own default.
+    whether it is reverted. Each of `n_tasks` synthetic tasks draws a correlated
+    `task_effect`/`after_task_effect` pair (scale `CALIBRATED_SIGMA_TASK`, correlation
+    `CALIBRATED_RHO` between the before/after arms of the SAME task) plus independent residual
+    noise (scale `CALIBRATED_RESID_SD`) per arm -- exactly the variance structure
+    `agentgauge.harness.simulate_task_level_pairs` uses to produce this repo's own validated MDE
+    figures (measurement artifact #10 fix, see module docstring: the original version of this
+    function omitted `task_effect` entirely, making every probe's noise floor structurally lower
+    than the harness's own calibration). `n_resamples=500` (vs. harness's own 2000 default) is a
+    benchmarking-speed reduction only, documented here rather than silently applied; production
+    callers of `diff_server_level` should use its own default.
     """
     magnitude_frac = -case.true_effect_pp / 100.0
 
@@ -408,13 +434,23 @@ def make_probe_fn(
         after_trials: list[TrialOutcome] = []
         for i in range(n_tasks):
             task_name = f"t{i}"
-            noise_before = (rng() - 0.5) * 2 * CALIBRATED_RESID_SD
-            noise_after = (rng() - 0.5) * 2 * CALIBRATED_RESID_SD
+            task_effect = _approx_standard_normal(rng) * CALIBRATED_SIGMA_TASK
+            indep_component = _approx_standard_normal(rng) * CALIBRATED_SIGMA_TASK
+            after_task_effect = (
+                CALIBRATED_RHO * task_effect
+                + math.sqrt(max(0.0, 1 - CALIBRATED_RHO**2)) * indep_component
+            )
+            noise_before = _approx_standard_normal(rng) * CALIBRATED_RESID_SD
+            noise_after = _approx_standard_normal(rng) * CALIBRATED_RESID_SD
             # "before" arm = current regressed state (nothing reverted): defect always active.
-            rate_before = _clip01(CALIBRATED_BASELINE_RATE - magnitude_frac + noise_before)
+            rate_before = _clip01(
+                CALIBRATED_BASELINE_RATE - magnitude_frac + task_effect + noise_before
+            )
             # "after" arm = state with `reverted` applied: defect active only if culprit not reverted.
             penalty_after = magnitude_frac if defect_active_after else 0.0
-            rate_after = _clip01(CALIBRATED_BASELINE_RATE - penalty_after + noise_after)
+            rate_after = _clip01(
+                CALIBRATED_BASELINE_RATE - penalty_after + after_task_effect + noise_after
+            )
             before_trials.append(TrialOutcome(task_name, task_name, rate_before))
             after_trials.append(TrialOutcome(task_name, task_name, rate_after))
         result = diff_server_level(
@@ -713,6 +749,11 @@ def make_multi_probe_fn(
     can push the "before" arm's rate toward/below `CALIBRATED_BASELINE_RATE`'s floor (0.0 after
     `_clip01`), compressing the measured delta below what pure addition would predict at the
     extreme end of the range -- reported as a caveat, not silently avoided by shrinking the range.
+
+    Measurement artifact #10 fix (see module docstring / `make_probe_fn`): each synthetic task also
+    draws the same calibrated, correlated `task_effect`/`after_task_effect` pair `make_probe_fn`
+    does, not residual-only noise -- required for `test_reduces_to_single_culprit_model_at_n_culprits_1`
+    to keep holding (the two functions' RNG draw order/count must stay identical at `n_culprits=1`).
     """
     magnitudes_frac: dict[str, float] = {c: -eff / 100.0 for c, eff in case.true_effects_pp.items()}
     total_magnitude_frac = sum(magnitudes_frac.values())
@@ -724,12 +765,25 @@ def make_multi_probe_fn(
         after_trials: list[TrialOutcome] = []
         for i in range(n_tasks):
             task_name = f"t{i}"
-            noise_before = (rng() - 0.5) * 2 * CALIBRATED_RESID_SD
-            noise_after = (rng() - 0.5) * 2 * CALIBRATED_RESID_SD
+            # Measurement artifact #10 fix (see module docstring / `make_probe_fn`): draw the same
+            # calibrated correlated task-level variance component `make_probe_fn` does, not
+            # residual-only noise.
+            task_effect = _approx_standard_normal(rng) * CALIBRATED_SIGMA_TASK
+            indep_component = _approx_standard_normal(rng) * CALIBRATED_SIGMA_TASK
+            after_task_effect = (
+                CALIBRATED_RHO * task_effect
+                + math.sqrt(max(0.0, 1 - CALIBRATED_RHO**2)) * indep_component
+            )
+            noise_before = _approx_standard_normal(rng) * CALIBRATED_RESID_SD
+            noise_after = _approx_standard_normal(rng) * CALIBRATED_RESID_SD
             # "before" arm = current regressed state (nothing reverted): every culprit active.
-            rate_before = _clip01(CALIBRATED_BASELINE_RATE - total_magnitude_frac + noise_before)
+            rate_before = _clip01(
+                CALIBRATED_BASELINE_RATE - total_magnitude_frac + task_effect + noise_before
+            )
             # "after" arm = state with `reverted` applied: only still-active culprits penalize.
-            rate_after = _clip01(CALIBRATED_BASELINE_RATE - active_penalty + noise_after)
+            rate_after = _clip01(
+                CALIBRATED_BASELINE_RATE - active_penalty + after_task_effect + noise_after
+            )
             before_trials.append(TrialOutcome(task_name, task_name, rate_before))
             after_trials.append(TrialOutcome(task_name, task_name, rate_after))
         result = diff_server_level(

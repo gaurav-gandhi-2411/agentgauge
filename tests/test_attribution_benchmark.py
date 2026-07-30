@@ -176,14 +176,27 @@ class TestConfoundGuardAtPinnedSizes:
 
 class TestMakeProbeFn:
     def test_reverting_true_culprit_shows_significant_recovery(self) -> None:
-        cases = generate_benchmark(n_cases=8, seed=SEED)
+        """Not asserted at 100% (measurement artifact #10 fix, see
+        `agentgauge.attribution_benchmark`'s module docstring): once the probe's synthetic
+        ground-truth model includes the harness's own calibrated between-task variance
+        (`CALIBRATED_SIGMA_TASK`/`CALIBRATED_RHO`), a single n_tasks=24 probe at the low end of
+        the benchmark's 13.3-28.9pp effect range does NOT always clear CI significance -- this
+        was the whole point of the fix (the pre-fix, residual-noise-only model cleared 100% of
+        the time here, which was itself the artifact). Measured directly on this seed/n: 18/24
+        (75.0%) -- asserting >=0.6 leaves headroom for ordinary sampling noise while still
+        requiring the real, expected majority-hit behavior a genuine (if imperfect) probe should
+        show at this effect range."""
+        cases = generate_benchmark(n_cases=N_TEST_CASES, seed=SEED)
+        hits = 0
         for case in cases:
             probe = make_probe_fn(case, seed=SEED)
             result = probe(frozenset({case.true_culprit}))
-            assert result.ci_lo > 0.05, (
-                f"reverting the true culprit ({case.true_culprit}) should show a CI-significant "
-                f"recovery effect at the default 0.05 threshold"
-            )
+            if result.ci_lo > 0.05:
+                hits += 1
+        assert hits / len(cases) >= 0.6, (
+            f"reverting the true culprit should show a CI-significant recovery effect in a clear "
+            f"majority of cases at this effect range (13.3-28.9pp); got {hits}/{len(cases)}"
+        )
 
     def test_reverting_only_a_decoy_shows_no_significant_effect(self) -> None:
         cases = generate_benchmark(n_cases=8, seed=SEED)

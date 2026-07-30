@@ -1,5 +1,17 @@
 # AgentGauge v0.5 Wave 1 — failure attribution / regression localization benchmark (Component 1.2)
 
+> **THIS ENTIRE REPORT'S ACCURACY/BUDGET NUMBERS ARE SUPERSEDED AGAIN (2026-07-30, measurement
+> artifact #10).** `agentgauge.attribution_benchmark.make_probe_fn`'s synthetic ground-truth noise
+> model omitted the harness's own calibrated between-task variance component, giving every probe a
+> noise floor 3-7x quieter than a real deployment would show at the same trial count -- see
+> `reports/v0_5_mde_discrepancy.md` for the full investigation, fix, and recomputed table (section
+> 4a there is the current, trustworthy version of this report's section 7d/CORRECTION table).
+> Headline of THIS correction: `greedy_bisection` drops from 100.0%/100.0% to 96.0%/100.0% top-1/
+> top-3 and its budget moves from the prior "5.32 mean probes, 34% more expensive" to 4.60 mean
+> probes / +16.2% -- still not sub-exhaustive, so the "does not clear" verdict is unchanged in
+> direction, but every number below this banner is stale and must not be cited without reading the
+> new report first.
+
 > **SECTIONS 2, 3, AND 5 BELOW ARE SUPERSEDED (2026-07-26).** A benchmark-construction bug
 > (measurement artifact #9: the injected culprit's textual diff size was systematically correlated
 > with its role, not randomized independently of it) was found in the generator these sections
