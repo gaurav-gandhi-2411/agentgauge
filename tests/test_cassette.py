@@ -335,7 +335,9 @@ async def _record_then_replay_and_assert_determinism(
         assert diff_result.ci_hi == first_diff.ci_hi
 
     determinism_rate = determinism_hits / _N_REPLAYS
-    print(f"\n[cassette determinism] {provider_name}: {determinism_rate:.1%} ({determinism_hits}/{_N_REPLAYS})")
+    print(
+        f"\n[cassette determinism] {provider_name}: {determinism_rate:.1%} ({determinism_hits}/{_N_REPLAYS})"
+    )
     assert determinism_rate == 1.0, (
         f"{provider_name} replay determinism rate was {determinism_rate:.2%}, not 100% "
         f"({determinism_hits}/{_N_REPLAYS} byte-identical replays)"
@@ -350,7 +352,9 @@ async def test_ollama_replay_determinism(tmp_path: Path) -> None:
 
 
 @respx.mock
-async def test_anthropic_replay_determinism(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+async def test_anthropic_replay_determinism(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     monkeypatch.setenv("FRONTIER_API_KEY", "sk-test")
     _mock_anthropic()
     provider = ApiAgentProvider(

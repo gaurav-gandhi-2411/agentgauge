@@ -72,7 +72,11 @@ class CassetteEntry:
 
     def to_dict(self) -> dict[str, Any]:
         """Serialize to a JSON-safe dict."""
-        return {"response": self.response, "tokens_in": self.tokens_in, "tokens_out": self.tokens_out}
+        return {
+            "response": self.response,
+            "tokens_in": self.tokens_in,
+            "tokens_out": self.tokens_out,
+        }
 
     @classmethod
     def from_dict(cls, d: dict[str, Any]) -> CassetteEntry:

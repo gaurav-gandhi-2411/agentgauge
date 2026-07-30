@@ -72,7 +72,10 @@ async def test_introspect_catalog_returns_plain_dicts() -> None:
     names = {t["name"] for t in catalog}
     assert names == {"create_issue", "add_assignee", "update_issue_state", "add_label"}
     assert catalog[0]["description"] == "Creates a new issue."
-    assert catalog[0]["inputSchema"] == {"type": "object", "properties": {"repo": {"type": "string"}}}
+    assert catalog[0]["inputSchema"] == {
+        "type": "object",
+        "properties": {"repo": {"type": "string"}},
+    }
     cleanup.assert_awaited_once()
 
 
