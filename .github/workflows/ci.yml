@@ -83,6 +83,7 @@ jobs:
         run: uv sync --extra dev
 
       - name: Run pip-audit
-        # Non-blocking (T1 tier): findings are surfaced in logs but never fail the build.
-        continue-on-error: true
+        # Blocking (v0.5.2+): pip-audit was brought to 0 findings and every direct dependency
+        # now has an upper bound (chore/dependency-hardening) -- a new CVE surfacing here is a
+        # real regression that should fail CI, not a permanent baseline noise to suppress.
         run: uv run --with pip-audit pip-audit
