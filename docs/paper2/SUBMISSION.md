@@ -46,17 +46,22 @@ compiled PDF, and not part of the reader-facing abstract text.)
 
 ## Author / affiliation
 
-**Gaurav Gandhi** (independent researcher; per this repository's package metadata,
-`pyproject.toml`'s `authors` field — `gaurav.gandhi2411@gmail.com`).
+**Gaurav Gandhi**
+Independent Researcher, Bengaluru, India
+`https://github.com/gaurav-gandhi-2411`
 
-**Open item, not resolved by this wave:** `docs/paper2/main.tex`'s `\author{}` field is currently
-empty, matching this repo's existing convention for its companion paper
-(`docs/paper/latex/main.tex`, also `\author{}`-empty). arXiv's submission form requires a real
-name at upload time regardless of what the typeset PDF shows, so this is not a blocker for
-submission — but whoever files the submission should decide whether to also fill in
-`\author{Gaurav Gandhi}` in the LaTeX source before the final compile (a one-line, non-numeric
-change, in scope for a future wave, intentionally not made here since it wasn't requested and
-touches the rendered PDF's front matter).
+Set directly in both papers' typeset front matter (`\author{}` in `docs/paper2/main.tex` and
+`docs/paper/latex/main.tex`) as:
+
+```latex
+\author{Gaurav Gandhi \\ Independent Researcher, Bengaluru, India \\ \url{https://github.com/gaurav-gandhi-2411}}
+```
+
+No email address appears in either rendered PDF, by design — the GitHub profile is the contact
+point. (Name cross-checked against this repository's package metadata,
+`pyproject.toml`'s `authors` field, as the canonical source; not fabricated.) arXiv's own
+submission form separately requires a name/affiliation at upload time regardless of what the
+typeset PDF shows -- this section states what to enter there, matching the PDF.
 
 ## License
 
