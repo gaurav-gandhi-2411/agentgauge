@@ -242,3 +242,35 @@ mistakes, not measurement work. Fixed forward as discipline, not code (there is 
    work, flushed immediately) over a subagent asked to "run and wait" — progress is
    then checkable at any time via the checkpoint file's line count without depending
    on any agent's turn timing, and the job is trivially resumable if interrupted.
+
+## Stacked-PR merge discipline (methods-paper wave, PR #73 incident)
+
+**Never squash-merge the base of a stacked PR chain.** Squash-merging creates a brand-new
+commit on the target branch with no ancestry relationship to the original commit the next
+branch in the stack was built from — even though the file content is identical, git sees
+them as unrelated commits. Every downstream PR's diff then re-includes the base branch's
+own changes as if they were new, and `gh pr edit --base` retargeting alone does not fix
+this (the branch's actual commit history still lacks the new squashed commit as an
+ancestor).
+
+**What happened:** squash-merging PR #73 (the first branch in a 9-branch stack) broke gate 3
+(the ≤400-line size gate) for every downstream PR — the next PR's diff jumped from a
+correct 329 reviewable lines to a phantom 511 (329 + the base branch's own 182-line diff,
+re-counted). Fixed by rebasing all 8 remaining branches onto the post-squash main in one
+pass (`git rebase --onto main <original-fork-point> <stack-tip-branch>`, then re-pointing
+each intermediate branch ref to its rebased commit and force-with-lease-pushing all 8) —
+recoverable, but entirely avoidable by not squashing in the first place.
+
+**The rule going forward:** for any PR that has (or might later gain) a dependent branch
+stacked on top of it, merge with a real merge commit (`gh pr merge <N> --merge`), never
+`--squash`. Squash-merge is fine, and remains this repo's default, for standalone PRs with
+no downstream dependents. If unsure whether a branch will grow a dependent later, default
+to `--merge` — a real merge commit costs nothing extra and never needs fixing after the
+fact, unlike a mis-chosen squash.
+
+**Separately:** `gh pr edit --base` changes a PR's base but does **not** trigger CI (GitHub
+Actions' default `pull_request` trigger fires on `opened`/`synchronize`/`reopened`, not the
+`edited` action a base-branch change produces) — after any retarget, follow it with
+`gh pr close <N>` then `gh pr reopen <N>` to force a fresh, real CI run against the new
+base before merging. A merge attempted against a stale/absent CI run will be blocked by
+branch protection's required-checks gate regardless of what `gh pr checks` last reported.
