@@ -2,6 +2,12 @@
 % (DOI resolution / Crossref / dblp / arXiv API / publisher page) before being added, not
 % recalled from memory. See the end-of-wave report for the verification trail (URLs fetched,
 % what was confirmed vs. not) for each entry. No entry here is a placeholder.
+%
+% Every entry carries a `verified` field naming the primary-source TYPE used to check every
+% field (author list, title, year, venue, identifier) against the real source directly --
+% never a search-result snippet, never memory. scripts/check_bib_verified.py enforces this
+% field's presence in CI; see docs/paper2/README.md "Bibliography verification protocol" for
+% the full rationale and the allowed value set.
 
 @inproceedings{deng2013cuped,
   author    = {Deng, Alex and Xu, Ya and Kohavi, Ron and Walker, Toby},
@@ -13,7 +19,8 @@
   pages     = {123--132},
   publisher = {ACM},
   address   = {New York, NY, USA},
-  doi       = {10.1145/2433396.2433413}
+  doi       = {10.1145/2433396.2433413},
+  verified  = {doi-crossref}
 }
 
 @article{cameron2008bootstrap,
@@ -25,6 +32,7 @@
   pages   = {414--427},
   year    = {2008},
   doi     = {10.1162/rest.90.3.414},
+  verified = {doi-crossref},
   note    = {Origin of the wild cluster bootstrap for clustered-error inference; also the
              primary empirical demonstration of standard cluster-robust inference's
              small-cluster ("small-G") over-rejection problem}
@@ -38,7 +46,8 @@
   number  = {2},
   pages   = {317--372},
   year    = {2015},
-  doi     = {10.3368/jhr.50.2.317}
+  doi     = {10.3368/jhr.50.2.317},
+  verified = {doi-crossref}
 }
 
 % Year corrected to 2014 during this wave's independent verifier pass -- the researching
@@ -53,6 +62,7 @@
   address   = {New York, NY},
   year      = {2014},
   isbn      = {978-0-07-340132-4},
+  verified  = {publisher-page},
   note      = {Chapter 11, ``Variance-Reduction Techniques,'' Section 11.2 covers common
                random numbers}
 }
@@ -65,7 +75,8 @@
   number  = {3},
   pages   = {549--556},
   year    = {1979},
-  doi     = {10.2307/2530245}
+  doi     = {10.2307/2530245},
+  verified = {doi-crossref}
 }
 
 @article{lan1983discrete,
@@ -76,7 +87,8 @@
   number  = {3},
   pages   = {659--663},
   year    = {1983},
-  doi     = {10.1093/biomet/70.3.659}
+  doi     = {10.1093/biomet/70.3.659},
+  verified = {publisher-page}
 }
 
 @book{kish1965survey,
@@ -85,7 +97,8 @@
   publisher = {John Wiley \& Sons},
   address   = {New York},
   year      = {1965},
-  pages     = {643}
+  pages     = {643},
+  verified  = {publisher-page}
 }
 
 @article{shroutfleiss1979intraclass,
@@ -96,7 +109,8 @@
   number  = {2},
   pages   = {420--428},
   year    = {1979},
-  doi     = {10.1037/0033-2909.86.2.420}
+  doi     = {10.1037/0033-2909.86.2.420},
+  verified = {doi-crossref}
 }
 
 @inproceedings{zheng2023judging,
@@ -109,7 +123,8 @@
   year          = {2023},
   doi           = {10.52202/075280-2020},
   eprint        = {2306.05685},
-  archivePrefix = {arXiv}
+  archivePrefix = {arXiv},
+  verified      = {arxiv-api}
 }
 
 @misc{qin2023toolllm,
@@ -123,6 +138,7 @@
   year          = {2023},
   eprint        = {2307.16789},
   archivePrefix = {arXiv},
+  verified      = {arxiv-api},
   note          = {Introduces the ToolBench dataset/benchmark; referred to in text as
                    ToolBench}
 }
@@ -133,7 +149,8 @@
   title         = {{API-Bank}: A Comprehensive Benchmark for Tool-Augmented {LLMs}},
   year          = {2023},
   eprint        = {2304.08244},
-  archivePrefix = {arXiv}
+  archivePrefix = {arXiv},
+  verified      = {arxiv-api}
 }
 
 % This repo's own docs/paper/latex/references.bib entry for the same paper (bibkey
@@ -151,5 +168,6 @@
   year          = {2026},
   eprint        = {2604.06185},
   archivePrefix = {arXiv},
+  verified      = {arxiv-api},
   note          = {Referred to in text as WildToolBench}
 }
