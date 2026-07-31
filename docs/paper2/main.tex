@@ -281,9 +281,13 @@ differences, and 18.0\% to between-trial, within-task noise.
 % PROV: reports/v2_variance_structure.md:38-51 | SHA 78fff2f | MEASURED
 
 \textbf{Before/after task correlation.} Across 40 matched (before, after) task-mean pairs pooled
-over 5 matched description-quality-fixer pairs, Pearson $r=0.881$ (Spearman $\rho=0.869$ on the
-same pooled set -- downstream citations of "$\rho=0.881$" conflate the two; this paper uses
-$r=0.881$, per the source table's own column label).
+over 5 matched description-quality-fixer pairs, Pearson $r=0.881$.\footnote{Downstream citations
+of "$\rho=0.881$" conflate two distinct values in the same source table: Spearman
+$\rho=0.869$ and Pearson $r=0.881$. This paper uses $r=0.881$, per the source table's own column
+label. The paired-design argument this correlation supports (Section~\ref{sec:estimator}) holds
+under either statistic -- both indicate the same strong, positive before/after task-difficulty
+association; nothing in this paper's estimator or its conclusions depends on which of the two is
+reported.}
 % PROV: reports/v2_variance_structure.md:58-66 | SHA 78fff2f | MEASURED
 
 \textbf{Effective sample size.} With $\mathrm{ICC}=0.793$ and a mean group size $\bar m$, the
@@ -360,7 +364,14 @@ methodology work should surface and does not, typically, get to see.
 % PROV: reports/v2_2_few_clusters_correction.md:9-30 | SHA 78fff2f | MEASURED
 
 \textbf{Component ablation.} Table~\ref{tab:ablation} shows each component's contribution to MDE
-at $n=20$ tasks/arm, 80\% power. Moving from a trial-level to a task-level unit accounts for most
+at $n=20$ tasks/arm, 80\% power.\footnote{This table's $n=20$/80\%-power MDE for the full
+paired+CUPED stack (0.188) differs from Table~\ref{tab:allocation}'s $n=20$/80\%-power,
+$\mathrm{trials\_per\_task}=1$ cell (0.182), even though both describe an $n=20$-task, 80\%-power
+configuration. This is not an error: the two tables come from different \texttt{trials\_per\_task}
+defaults on either side of a tooling-version boundary (Table~\ref{tab:ablation}'s estimator predates
+the \texttt{trials\_per\_task} parameter introduced for Table~\ref{tab:allocation}'s grid), and each
+figure in this paper is cited only from its own source table -- the two are never mixed or averaged
+in any downstream calculation.} Moving from a trial-level to a task-level unit accounts for most
 of the improvement (0.433$\to$0.313); pairing contributes the largest single further reduction
 (0.313$\to$0.191); CUPED's marginal contribution on top of pairing is small (0.191$\to$0.188,
 $\sim$2\% relative) -- never harmful, but not a large independent lever on this corpus.
@@ -608,11 +619,16 @@ tasks (MDE$=0.106$) found flat, similarly near-zero deltas but was explicitly la
 inconclusive-underpowered rather than confirmatory, since its own resolving power was an order of
 magnitude coarser than the deltas it measured.
 % PROV: reports/v2_2_task_a_reallocation.md | SHA 78fff2f | MEASURED
-We flag for the reader (see \texttt{docs/paper2/gaps.md}) that this underpowered predecessor
-should not be conflated with the ADVISORY effect of Section~\ref{sec:artifact7} -- both are
-"initially looked different, later resolved" stories, but for two different experiments (argument
-construction under rewritten descriptions, vs.\ a causal-chain defect-injection effect), and only
-the latter was ever a large apparent effect.
+This result should not be conflated with the ADVISORY effect of Section~\ref{sec:artifact7}: the
+two are superficially similar "an earlier measurement looked different, a later one resolved it"
+stories, but they answer different questions and resolve in different directions. The
+rewriting-descriptions result here was flat and near-zero at \emph{both} the underpowered $n=62$
+predecessor and the adequately powered $n=253$ measurement -- it was never a large effect at any
+point. Section~\ref{sec:artifact7}'s ADVISORY effect, by contrast, genuinely was a large,
+statistically significant-looking effect ($-76.7$ to $-80.0$pp) before a scoring-artifact
+correction reduced it to a near-null -- a different experiment (a causal-chain defect-injection
+effect on a different lint rule), with a different kind of correction (a measurement-artifact fix,
+not additional statistical power).
 
 \subsection{The attribution impossibility result}
 \label{sec:attribution}

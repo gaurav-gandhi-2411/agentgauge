@@ -60,20 +60,39 @@ presentation choice, not a data gap):
   three-row crossover table. It does not attempt to interpolate a smooth crossover curve across
   arbitrary n_tasks values not in that table.
 
-## Framing items requiring an authorial decision (not a missing number — see provenance.md's
-"Ambiguous / needs-a-framing-decision" section for full detail)
+## Framing decisions — RESOLVED (GG ruling, this wave)
 
-1. §7.2's "underpowered predecessor that initially appeared to show a large effect" — the actual
-   source reports contain two distinct narratives (a flat-underpowered null, and a separately-
-   scoped scoring-artifact-inflated effect for a different rule). The spec's phrasing needs to
-   pick one framing; drafting proceeds with the flat-underpowered reading for §7.2 and reserves
-   the scoring-artifact story for §6's artifact #7, per provenance.md's recommendation. Flagged
-   for GG confirmation, not silently resolved.
-2. "rho=0.881" vs. "r=0.881" — using "r=0.881" in the draft, per the source table's own column
-   label (Pearson r; Spearman rho=0.869 is a distinct, uncited value).
-3. n=20 MDE: 0.188 (ablation table) vs. 0.182 (allocation grid) — different trials/task defaults
-   across a v2.1/v2.2 tooling boundary, not a contradiction. Each figure/table in the draft cites
-   only the number from its own source table, never mixing the two.
+All four items below were flagged as author judgment calls, not missing numbers (see
+provenance.md's "Ambiguous / needs-a-framing-decision" section for the original full detail).
+GG ruled on all four; the draft was correct on all four as originally written. Each ruling has
+now been made explicit in `main.tex` (a distinguishing sentence, or a footnote), not left as a
+silent editorial choice.
+
+1. **§7.2's "underpowered predecessor" framing — Option B CONFIRMED.** The source reports
+   contain two distinct narratives (a flat-underpowered null for rewriting-descriptions, and a
+   separately-scoped scoring-artifact-inflated effect for the ADVISORY rule in §6.1). Ruling: the
+   rewriting-descriptions result was flat/near-null at *both* $n=62$ and $n=253$ -- it was never a
+   large effect. The "initially large, later corrected" narrative belongs solely to §6.1's
+   ADVISORY story. `main.tex` §7.2 now states this distinction explicitly in prose (an added
+   paragraph naming both results and why they don't conflate), rather than only pointing to this
+   file.
+2. **"rho=0.881" vs. "r=0.881" — r=0.881 CONFIRMED**, cited as Pearson r per the source table's
+   own column label. `main.tex` §4 now carries this as a footnote (Spearman $\rho=0.869$ stated
+   alongside), with an added note that the paired-design argument this correlation supports holds
+   under either statistic.
+3. **n=20 MDE 0.188 vs. 0.182 — CONFIRMED acceptable**, each cited only from its own source
+   table, never reconciled or mixed. `main.tex` §5 now carries a footnote at the ablation table
+   stating the two figures come from different `trials_per_task` defaults on either side of a
+   tooling-version boundary (v2.1 estimator vs. the v2.2 grid), so the difference reads as an
+   explained methodological artifact, not an unaddressed inconsistency. Per the ruling, this was
+   NOT further investigated to reconcile the two — that would require new measurement, out of
+   scope for a no-new-numbers wave.
+4. **"Continuous partial credit" — CONFIRMED.** The phrase is spec shorthand, not a measured
+   term; no report ever states it verbatim. `main.tex` §3 already states the actual fractional
+   constraint-satisfaction formula (correct tool selected × fraction of registered
+   argument-correctness constraints satisfied) with its provenance pointer, and never uses the
+   phrase as if it were a quoted metric name. No change needed this wave beyond confirming the
+   existing text already meets the ruling.
 
 ## Citations — RESOLVED this wave (compile-and-cite pass)
 
