@@ -75,21 +75,27 @@ presentation choice, not a data gap):
    across a v2.1/v2.2 tooling boundary, not a contradiction. Each figure/table in the draft cites
    only the number from its own source table, never mixing the two.
 
-## Citations not populated (§2 Related Work)
+## Citations — RESOLVED this wave (compile-and-cite pass)
 
-`main.tex` SS2 names the methods and literatures this paper draws on and positions against (CUPED,
-common random numbers, cluster-robust/cluster-bootstrap inference, O'Brien-Fleming sequential
-testing, LLM-as-judge failure modes, agent/tool-use benchmarks) but deliberately does NOT populate
-`\citep{}` keys with specific author/year/venue metadata. This repo has a `references.bib` from
-paper 1, but its entries are all MCP/tool-description-specific (Anthropic, GitHub, ToolRet, etc.)
-and none are the general statistics/ML-systems citations SS2 needs. Populating real citations for
-CUPED (Deng et al.), cluster-robust inference, wild cluster bootstrap (Cameron/Gelbach/Miller),
-O'Brien-Fleming (1979), and the LLM-as-judge failure-mode literature requires a literature-
-verification pass — checking real author names, years, and venues against a primary source — which
-this assembly-only wave is explicitly out of scope for (spec: "no new experiments... this is
-assembly, not research"; fabricating bibliographic metadata from memory would violate the same
-zero-fabrication rule that governs every number in this paper). This is recorded here as an open
-task for whoever prepares the arXiv submission, not silently filled with unverified citation keys.
+Previously recorded here as an open gap ("citations not populated"); resolved. `docs/paper2/refs.bib`
+now has 12 entries, each verified against a real primary source (DOI resolution / Crossref / dblp /
+arXiv API / publisher page) by a dedicated research pass, then independently re-verified entry-by-
+entry by a separate verifier pass before being wired into `main.tex` via `\citep{}`. Two real errors
+were caught and fixed during the verifier pass (not left in):
+- `law2014simulation` (the CRN textbook citation): the researching agent's source (a retailer
+  listing) stated the 5th edition shipped in 2015; three independent sources (OpenLibrary, LC
+  classification, publisher ship date) place it in 2014. Bibkey and year corrected.
+- `yu2026wildtool` (WildToolBench, reused from paper 1's related-work point): the researching
+  agent's first-pass author list had the 7th author's given name wrong ("Zhang, Fan"); corrected to
+  "Zhang, Feng" against the arXiv API XML for id 2604.06185.
+
+**Separate discovery, not fixed here (flagged for whoever next touches paper 1):** this repo's
+existing `docs/paper/latex/references.bib` has systematic author-name errors — independently
+confirmed by both the researching agent and the verifier pass against primary sources. `shi2025toolret`
+and `lu2025toolde` each have incorrect given names for one author; `yu2026wildtool` in that file has
+**6 of 7** author given/family names wrong. Titles, eprint IDs, and venues in that file are correct —
+only author-name fields are affected. Out of scope for this wave (a different paper's bibliography);
+recorded here so it isn't lost.
 
 ## Candidate 11th artifact (not adopted as a numbered class)
 
