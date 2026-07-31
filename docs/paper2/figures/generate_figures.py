@@ -34,10 +34,16 @@ def fig_mde_curve() -> None:
     fig, ax = plt.subplots(figsize=(6, 4))
     ax.plot(n_tasks, mde, marker="o", color="#1f5aa6", linewidth=2)
     ax.axhline(0.10, color="#a63f1f", linestyle="--", linewidth=1, label="0.10 ship target")
+    ax.set_ylim(0.04, 0.12)
+    # Text anchored in axes-fraction coordinates so it can never force the y-axis to
+    # autoscale around it (the bug this replaced: xytext in DATA coords at y=0.16, far above
+    # the y<=0.11 data range, silently expanded the axis and squashed the real plot).
     ax.annotate(
         f"n=253\nMDE={mde[-1]}",
         xy=(253, mde[-1]),
-        xytext=(190, 0.16),
+        xycoords="data",
+        xytext=(0.62, 0.55),
+        textcoords="axes fraction",
         arrowprops={"arrowstyle": "->", "color": "gray"},
     )
     ax.set_xlabel("Tasks per arm (trials_per_task=1)")

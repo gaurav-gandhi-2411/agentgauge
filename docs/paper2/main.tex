@@ -13,8 +13,14 @@
 \usepackage{xcolor}
 \PassOptionsToPackage{hyphens}{url}
 \usepackage[colorlinks=true,linkcolor=blue!50!black,citecolor=blue!50!black,urlcolor=blue!50!black]{hyperref}
+\usepackage[round]{natbib}
 \usepackage{microtype}
 \usepackage{enumitem}
+
+% Small safety margin so a handful of long unbreakable \texttt{} identifiers/paths (already given
+% explicit \allowbreak points at their worst offenders) don't leave a residual few-point overfull
+% box -- standard, low-risk fix, no effect on ordinary paragraphs.
+\setlength{\emergencystretch}{3em}
 
 % Every number in this draft carries an inline provenance comment immediately
 % following it, of the form:
@@ -52,7 +58,8 @@ We catalogue ten measurement-artifact
 classes discovered during this project, each with an automated detector shipped in
 \texttt{agentgauge audit}, including two cases where an artifact produced a false positive the
 authors initially believed: a $-76.7$ to $-80.0$ percentage-point causal effect that a scoring bug
-corrected to a clean null, % PROV: SS0.1/SS6.1 -- reports/v2_2_task_b_causal_chain_multimodel.md (superseded) -> reports/v2_3_task1_advisory_audit.md (current) | SHA 78fff2f | MEASURED, restated SS6.1
+corrected to a near-null (clean null for two of three models, a CI-includes-zero result for the
+third), % PROV: SS0.1/SS6.1 -- reports/v2_2_task_b_causal_chain_multimodel.md (superseded) -> reports/v2_3_task1_advisory_audit.md (current) | SHA 78fff2f | MEASURED, restated SS6.1
 and a 100\% top-1 localization-accuracy claim that a probe-noise
 miscalibration corrected to 58.33\%. % PROV: SS0.3/SS6.2 -- reports/v0_5_wave1_report.md (superseded) -> reports/v0_5_mde_discrepancy.md SS4b (current) | SHA 3d79172 | MEASURED, restated SS6.2
 We report a structural negative result on regression
@@ -149,37 +156,32 @@ Section~\ref{sec:conclusion} closes with recommendations for the field.
 \section{Related work}
 \label{sec:related-work}
 
-% NOTE ON CITATIONS (see docs/paper2/gaps.md, "Citations not populated"): this
-% section is written to correctly name the methods and literatures this paper
-% draws on and positions against. It deliberately does NOT populate \citep{}
-% keys with specific author/year/venue metadata, because this wave is a
-% strict assembly job from this repo's own committed reports (spec S:
-% "no number enters the paper without a provenance pointer to a committed
-% report"), and this repo has no committed, verified bibliography entries for
-% the general statistics/ML-systems literature this section needs (CUPED,
-% common random numbers, cluster-robust/cluster-bootstrap inference,
-% O'Brien-Fleming sequential testing, LLM-as-judge failure modes, agent/tool-
-% use benchmarks). Populating real citations requires a literature-
-% verification pass this assembly wave is explicitly out of scope for (no new
-% research). This is recorded as a gap, not silently filled with unverified
-% bibkeys.
+% Citations verified against a real primary source (DOI resolution / Crossref / dblp / arXiv API
+% / publisher page) before being added -- none recalled from memory. See docs/paper2/refs.bib's
+% header comment and the end-of-wave report for the verification trail per entry.
 
 \textbf{Variance reduction in controlled experimentation.} The estimator in
-Section~\ref{sec:estimator} combines four techniques with a long history in industrial A/B
-testing: paired designs with common random numbers to remove between-unit noise that is identical
-across arms; CUPED-style covariate adjustment using a pre-period outcome to reduce residual
-variance without spending additional samples; cluster-robust (bootstrap) inference to respect the
+Section~\ref{sec:estimator} draws on techniques with a long history in industrial A/B
+testing: paired designs with common random numbers \citep{law2014simulation} to remove
+between-unit noise that is identical
+across arms; CUPED-style covariate adjustment \citep{deng2013cuped} using a pre-period outcome to
+reduce residual
+variance without spending additional samples; cluster-robust (bootstrap) inference
+\citep{cameron2015practitioner} to respect the
 correlation structure induced by repeated measurements on the same unit, with a small-cluster-count
-correction; and sequential testing with an alpha-spending boundary to allow early stopping without
+correction \citep{cameron2008bootstrap}; and sequential testing with an alpha-spending boundary
+\citep{obrien1979multiple,lan1983discrete} to allow early stopping without
 inflating the false-positive rate. None of these techniques are novel to this paper. What is
 different here is their application to agent task-outcome measurement specifically, where the
 relevant "unit" is a (tool set, task) pair rather than a user or a session, and where the paper
-additionally reports what happens when a plausible alternative (wild cluster bootstrap) is tried
+additionally reports what happens when a plausible alternative (wild cluster bootstrap
+\citep{cameron2008bootstrap}) is tried
 and measured to perform worse (Section~\ref{sec:estimator}) -- a negative result on an estimator
 choice, reported because it is useful, not because it flatters the final design.
 
 \textbf{Agent and tool-use benchmarks.} A growing body of work evaluates how well LLM agents
-select and invoke tools from a catalog, and a smaller body specifically studies how tool
+select and invoke tools from a catalog \citep{qin2023toolllm,li2023apibank,yu2026wildtool}, and a
+smaller body specifically studies how tool
 description quality affects that selection. This paper's corpus and task-construction methodology
 (Section~\ref{sec:corpus}) are built for internal statistical power rather than benchmark breadth,
 and its central empirical claim about description quality (Section~\ref{sec:applications}) is a
@@ -194,7 +196,8 @@ baseline for description/schema consistency is measured to be degenerate on this
 % PROV: reports/v2_product_readiness.md:502-516 | SHA 78fff2f | MEASURED, full detail SS7.1
 -- it flags almost every
 clean tool as inconsistent, so its recall is not informative. This is consistent with a broader,
-well-documented concern that LLM judges without calibration against a labeled null distribution
+well-documented concern \citep{zheng2023judging} that LLM judges without calibration against a
+labeled null distribution
 can look accurate on recall alone while being useless in practice.
 
 \textbf{Reproducibility and replay in ML systems.} The harness underlying every measurement in
@@ -265,7 +268,8 @@ Before designing an estimator, we measured how outcome variance is actually stru
 5,535 trials spanning 720 (tool-set, task) groups (mean 7.69 trials/group).
 % PROV: reports/v2_variance_structure.md:19 | SHA 78fff2f | MEASURED
 
-\textbf{Intraclass correlation.} One-way random-effects ICC within (tool set, task):
+\textbf{Intraclass correlation.} One-way random-effects ICC \citep{shroutfleiss1979intraclass}
+within (tool set, task):
 $\mathrm{ICC}=0.793$. 90.3\% of groups (650/720) show exactly zero within-group variance -- most
 tasks are, in practice, deterministic given a fixed tool set.
 % PROV: reports/v2_variance_structure.md:19,25-26 | SHA 78fff2f | MEASURED
@@ -283,7 +287,7 @@ $r=0.881$, per the source table's own column label).
 % PROV: reports/v2_variance_structure.md:58-66 | SHA 78fff2f | MEASURED
 
 \textbf{Effective sample size.} With $\mathrm{ICC}=0.793$ and a mean group size $\bar m$, the
-design-effect-adjusted effective sample size is
+design-effect-adjusted \citep{kish1965survey} effective sample size is
 \[
 n_{\mathrm{eff}} = \frac{n}{1 + (\bar m - 1)\,\mathrm{ICC}},
 \]
@@ -329,8 +333,9 @@ retracts as "not a value to report as measured").
 \centering
 \includegraphics[width=0.75\textwidth]{figures/allocation_grid_heatmap.png}
 \caption{MDE across the full 16-cell allocation grid at 80\% power. Generated by
-\texttt{docs/paper2/figures/generate\_figures.py} directly from
-\texttt{evals/fixtures/v2\_2\_optimal\_allocation.json} -- no new computation.
+\texttt{docs/paper2/\allowbreak figures/\allowbreak generate\_\allowbreak figures.py} directly from
+\texttt{evals/\allowbreak fixtures/\allowbreak v2\_2\_\allowbreak optimal\_\allowbreak
+allocation.json} -- no new computation.
 \label{fig:allocation-grid}}
 \end{figure}
 
@@ -446,7 +451,8 @@ Starred entries produced a false positive the authors initially believed
 \label{fig:taxonomy}}
 \end{figure}
 
-\begin{longtable}{p{2.6cm}p{4.6cm}p{4.6cm}p{2.6cm}}
+{\small
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{2.1cm}>{\raggedright\arraybackslash}p{4.4cm}>{\raggedright\arraybackslash}p{4.1cm}>{\raggedright\arraybackslash}p{3.4cm}@{}}
 \caption{The ten measurement-artifact classes.
 \label{tab:taxonomy}} \\
 \toprule
@@ -457,9 +463,9 @@ Class & Mechanism & Spurious result produced & Detector \\
   near-ceiling ground truth on first 9 tool sets & Anti-tautology task-authoring convention \\
 % PROV: reports/predictive_validity_study.md:621-626,103-105 | SHA 78fff2f | MEASURED
 2. Tool-name ceiling & Binary ground truth collapsed to name-matching; separately, a key-mismatch
-  bug forced \texttt{selection\_correct} to always False & 44\% of records tied at ceiling 1.0;
-  before=after=0.0 for all 3 models & Continuous fractional scoring; derived real
-  \texttt{selected\_tool==tool\_name} \\
+  bug forced \texttt{selection\_\allowbreak correct} to always False & 44\% of records tied at
+  ceiling 1.0; before=after=0.0 for all 3 models & Continuous fractional scoring; derived real
+  \texttt{selected\_\allowbreak tool==tool\_\allowbreak name} \\
 % PROV: reports/predictive_validity_study.md:78-86,627-635 (44%) and reports/v0_4_0_task1_argument_degradation.md:62-81 (before=after=0.0) | SHA 78fff2f | MEASURED
 3. Zero-vector empty-string embedding & Empty-string embeddings return a zero-\emph{length}
   vector, not zero-valued & Apparent +0.59 to +0.72 similarity rise in empty-description arms &
@@ -467,8 +473,8 @@ Class & Mechanism & Spurious result produced & Detector \\
 % PROV: reports/predictive_validity_study.md:259-272,636-642 | SHA 78fff2f | MEASURED
 4. Self-descriptive-name confound & Real, self-explanatory tool names let selection succeed
   regardless of description quality & Near-zero variance in one real-API family, biasing pooled
-  correlation toward the null & Explicit \texttt{INSUFFICIENT\_SENSITIVITY}/\texttt{NO\_CHANGE}
-  verdict \\
+  correlation toward the null & Explicit \texttt{INSUFFICIENT\_\allowbreak SENSITIVITY}/
+  \texttt{NO\_\allowbreak CHANGE} verdict \\
 % PROV: reports/predictive_validity_study.md:572-586,643-650 and reports/v2_harness_evaluation.md:91-102 | SHA 78fff2f | MEASURED
 5. Subset-vs-catalog mismatch & Linter run against a cost-bounded 12-tool subset, not the full
   60-tool catalog & 11 HIGH violations that vanished once corrected & Full unfiltered catalog
@@ -476,32 +482,37 @@ Class & Mechanism & Spurious result produced & Detector \\
 % PROV: reports/v2_linter_evaluation.md:36-43 | SHA 78fff2f | MEASURED
 6. LCG index saturation & Hand-rolled LCG can return exactly 1.0, one index past the resample
   list's end & Crash (IndexError) at the resample boundary & Clamped
-  \texttt{min(int(rng()*n),\,n-1)} \\
+  \texttt{min(int(rng()*n),\allowbreak\,n-1)} \\
 % PROV: reports/v2_product_readiness.md:566-570 | SHA 78fff2f | MEASURED
 7. Scoring-reference mismatch & Gold-constraint lookup authored against the pre-mutation schema;
   only one injector renames a property key & $-76.7$ to $-80.0$pp ADVISORY effect (see
-  Section~\ref{sec:artifact7}) & \texttt{constraint\_satisfaction\_renamed} \\
+  Section~\ref{sec:artifact7}) & \texttt{constraint\_\allowbreak satisfaction\_\allowbreak renamed} \\
 % PROV: reports/v2_4_task1_blast_radius_audit.md:14-33 (mechanism); see SS0.1/SS6.1 for the effect-size supersession chain | SHA 78fff2f | MEASURED
 8. Fixture-schema hallucination & Agent-authored real-API fixtures written from model memory, not
   fetched schemas & 3/10 (30\%) fixtures factually wrong (Section~\ref{sec:corpus}) &
-  \texttt{check\_enum\_schema\_fidelity} (WARN) \\
+  \texttt{check\_\allowbreak enum\_\allowbreak schema\_\allowbreak fidelity} (WARN) \\
 % PROV: reports/v2_5_task2_fixture_validation.md:34-55,62-101 | SHA 78fff2f | MEASURED
 9. Benchmark-construction bias & Injected culprit's diff size systematically smaller than 2/3
-  decoy tiers & \texttt{largest\_textual\_diff} baseline scored 4.0\% -- below the 26.7\% random
-  floor & \texttt{check\_benchmark\_construction\_diffsize\_bias} (BLOCK) \\
+  decoy tiers & \texttt{largest\_\allowbreak textual\_\allowbreak diff} baseline scored 4.0\% --
+  below the 26.7\% random floor & \texttt{check\_\allowbreak benchmark\_\allowbreak
+  construction\_\allowbreak diffsize\_\allowbreak bias} (BLOCK) \\
 % PROV: reports/v0_5_attribution_benchmark.md SS7 (lines 201-313) | SHA 3d79172 | MEASURED (superseded by SS0.3's terminal 58.33% figure for the ship-bar verdict, not for this 4.0%/26.7% pre-fix diagnostic pair itself)
 10. Probe variance mis-calibration & Synthetic probe-noise model omitted the between-task variance
   component & 100\% top-1 accuracy claim at a 3pp effect size (see
-  Section~\ref{sec:artifact10}) & \texttt{check\_probe\_variance\_calibration} (BLOCK) \\
+  Section~\ref{sec:artifact10}) & \texttt{check\_\allowbreak probe\_\allowbreak variance\_\allowbreak
+  calibration} (BLOCK) \\
 % PROV: reports/v0_5_mde_discrepancy.md (full file, esp. SS3-4); see SS0.3/SS6.2 for the terminal 58.33% figure | SHA 3d79172 | MEASURED
 \bottomrule
 \end{longtable}
+}
 
 \subsection{False positive 1: the $-80$pp ADVISORY effect that was a scoring bug}
 \label{sec:artifact7}
 
 An early causal-chain measurement reported a large, statistically significant-looking effect for
-the ADVISORY-tier \texttt{param\_renamed} defect: $-76.7$pp (gemma2:9b), $-80.0$pp (llama3.1:8b),
+the \texttt{param\_renamed} defect, one of the linter's ADVISORY-severity rules (a warning-level
+finding, as opposed to a BLOCKING-severity rule, which the linter treats as a hard failure):
+$-76.7$pp (gemma2:9b), $-80.0$pp (llama3.1:8b),
 $-76.7$pp (qwen2.5:7b), all with confidence intervals excluding zero.
 % PROV: reports/v2_2_task_b_causal_chain_multimodel.md SS B4 | SHA 78fff2f | MEASURED (superseded, do not cite as current)
 Reading this as a real, adequately powered causal effect would have been the natural conclusion.
@@ -526,12 +537,15 @@ achieved 100\% top-1 accuracy at every tested injected-effect size from 3.0pp to
 effect sizes below this paper's own measured detection floor (Section~\ref{sec:estimator}) -- a
 result the authors themselves flagged as anomalous rather than accepted at face value: detecting a
 3pp effect at a lower per-probe sample size should be \emph{harder} than the already-hard 5.37pp
+(i.e.\ $\mathrm{MDE}=0.0537$, Section~\ref{sec:estimator})
 server-level MDE bar, not something a probe-based strategy aces perfectly.
 % PROV: reports/v0_5_wave1_report.md SS8.2 | SHA 3d79172 | MEASURED (superseded, do not cite as current)
 The anomaly was real: the synthetic probe-noise model omitted the between-task variance component
 that the calibrated reference model includes, inflating detection power by 3--7$\times$. Fixed and
 re-measured, the true accuracy at the 3.0--5.0pp effect band is \textbf{58.33\% top-1} (95.83\%
-top-3, 3.25 mean probes) -- well short of the doctrine's 70\% ship bar, and exactly the shape a
+top-3, 3.25 mean probes) -- well short of this benchmark's own pre-declared ship bar (top-1
+$\geq0.70$, top-3 $\geq0.90$, sub-exhaustive probe budget; defined in full in
+Section~\ref{sec:attribution}), and exactly the shape a
 genuine detection-power limit should take: every top-1 miss traced to a real recovery signal whose
 confidence interval failed to certify it, never to false-positive noise.
 % PROV: reports/v0_5_mde_discrepancy.md SS4b | SHA 3d79172 | MEASURED (current)
@@ -569,7 +583,8 @@ mixed two different pooling levels
 % PROV: reports/v0_4_0_effect_size_reconciliation.md:18-41 | SHA 78fff2f | MEASURED (erroneous range's origin -- DO NOT CITE the -40.0pp figure itself, per provenance.md SS0.2)
 (Section~\ref{sec:taxonomy} discusses the general pattern of
 such errors, though this specific one is a citation-construction error rather than a numbered
-artifact class). \texttt{required\_references\_missing\_property} measures a clean null (0.0pp,
+artifact class). \texttt{required\_\allowbreak references\_\allowbreak missing\_\allowbreak property}
+measures a clean null (0.0pp,
 all three models); the ADVISORY-tier \texttt{param\_renamed} effect is null after correction
 (Section~\ref{sec:artifact7}); \texttt{param\_possibly\_renamed} and \texttt{name\_collision} were
 never causally measured.
@@ -666,7 +681,8 @@ Stated without hedging, per this paper's own standard for the rest of its claims
   paper's taxonomy should be read as a floor, not a ceiling, on how many such classes exist.
 \item \textbf{Attribution has never been run against a real agent and a real LLM judge.} Every
   number in Section~\ref{sec:attribution} is a synthetic-benchmark result
-  (\texttt{make\_probe\_fn}/\texttt{make\_multi\_probe\_fn}). \texttt{sampled\_shapley} in
+  (\texttt{make\_\allowbreak probe\_\allowbreak fn}/\texttt{make\_\allowbreak multi\_\allowbreak
+  probe\_\allowbreak fn}). \texttt{sampled\_\allowbreak shapley} in
   particular has zero real (live-LLM) data points anywhere in this project.
 \end{itemize}
 
@@ -692,7 +708,8 @@ was not the score it set out to sell -- it was the record of everything that tur
 wrong on the way to finding that out.
 
 \textbf{Reproducibility.} Every result in this paper is reproducible against
-\texttt{pip install agentgauge-harness==0.5.2} and the fixtures committed in this repository's
+\texttt{pip install\allowbreak\ agentgauge-\allowbreak harness==0.5.2} and the fixtures committed
+in this repository's
 \texttt{evals/} directory; see Appendix~\ref{app:repro} for exact commands.
 
 \appendix
@@ -700,22 +717,26 @@ wrong on the way to finding that out.
 \section{Full MDE grids and ablation tables}
 \label{app:grids}
 [Full 32-cell allocation grid at both 80\% and 95\% power, and the complete estimator-ablation
-table across $n\in\{5,10,20,50\}$ tasks/arm, per \texttt{docs/paper2/provenance.md} SS2--3. Omitted
+table across $n\in\{5,10,20,50\}$ tasks/arm, per \texttt{docs/paper2/\allowbreak provenance.md}
+SS2--3. Omitted
 from this draft's body for length; reproduced verbatim from the source reports at camera-ready
 time.]
 
 \section{Artifact detector pseudocode}
 \label{app:detectors}
 [Pseudocode for each of the ten \texttt{agentgauge.audit} checks in Table~\ref{tab:taxonomy},
-reproduced from \texttt{agentgauge/audit.py} at camera-ready time. Not reproduced in this draft to
+reproduced from \texttt{agentgauge/\allowbreak audit.py} at camera-ready time. Not reproduced in
+this draft to
 avoid the draft silently drifting from the shipped implementation; the verifier pass for this wave
 checked claims against \texttt{reports/}, not against a hand-copied snapshot of \texttt{audit.py}.]
 
 \section{Corpus statistics}
 \label{app:corpus-stats}
 [Full per-domain task/tool/constraint-type breakdown for all 10 real-API fixtures plus the 62
-pre-existing synthetic tasks, per \texttt{reports/v2\_4\_task4\_corpus\_expansion.md} and
-\texttt{reports/v2\_5\_task2\_fixture\_validation.md}.]
+pre-existing synthetic tasks, per \texttt{reports/\allowbreak v2\_4\_\allowbreak task4\_\allowbreak
+corpus\_\allowbreak expansion.md} and
+\texttt{reports/\allowbreak v2\_5\_\allowbreak task2\_\allowbreak fixture\_\allowbreak
+validation.md}.]
 
 \section{Reproduction instructions}
 \label{app:repro}
@@ -737,5 +758,8 @@ See \texttt{docs/paper2/provenance.md} (full ledger, every claim with report pat
 and \texttt{docs/paper2/gaps.md} (consolidated not-measured list and framing decisions flagged for
 author review) for the complete, non-redundant index. Both are companion documents to this draft
 and are not reproduced inline here to avoid a second copy silently drifting from the first.
+
+\bibliographystyle{plainnat}
+\bibliography{refs}
 
 \end{document}
