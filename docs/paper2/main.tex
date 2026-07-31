@@ -426,3 +426,131 @@ which was freshly and empirically measured at 100\% across all six adapters.
 % PROV: reports/v2_1_estimator_rebuild.md:77-83 (ASSUMED flag) | SHA 78fff2f | NOT MEASURED (fresh count)
 % PROV: reports/v2_5_task3_mde_completion.md:69-78 (code-inspection confirmation) | SHA 78fff2f | MEASURED
 
+\section{A taxonomy of measurement artifacts}
+\label{sec:taxonomy}
+
+This is the paper's core contribution. Each of the ten classes below was discovered in a real
+experiment during this project -- not constructed as a pedagogical example -- and each now has an
+automated detector shipped in \texttt{agentgauge audit}, so that a future experiment on this
+harness cannot silently reproduce it. Table~\ref{tab:taxonomy} summarizes all ten; the two
+subsections following it detail the two cases where an artifact produced a false positive the
+authors initially believed, per this paper's non-negotiable honesty requirement (Section~\ref{sec:intro}).
+See Figure~\ref{fig:taxonomy} for the visual summary used in presentation contexts.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.65\textwidth]{figures/artifact_taxonomy_table.png}
+\caption{The ten measurement-artifact classes (summary index; full detail in Table~\ref{tab:taxonomy}).
+Starred entries produced a false positive the authors initially believed
+(Sections~\ref{sec:artifact7}, \ref{sec:artifact10}).
+\label{fig:taxonomy}}
+\end{figure}
+
+\begin{longtable}{p{2.6cm}p{4.6cm}p{4.6cm}p{2.6cm}}
+\caption{The ten measurement-artifact classes.
+\label{tab:taxonomy}} \\
+\toprule
+Class & Mechanism & Spurious result produced & Detector \\
+\midrule
+\endhead
+1. Task/answer leakage & Task text quoted the gold tool's own name verbatim & Zero-variance,
+  near-ceiling ground truth on first 9 tool sets & Anti-tautology task-authoring convention \\
+% PROV: reports/predictive_validity_study.md:621-626,103-105 | SHA 78fff2f | MEASURED
+2. Tool-name ceiling & Binary ground truth collapsed to name-matching; separately, a key-mismatch
+  bug forced \texttt{selection\_correct} to always False & 44\% of records tied at ceiling 1.0;
+  before=after=0.0 for all 3 models & Continuous fractional scoring; derived real
+  \texttt{selected\_tool==tool\_name} \\
+% PROV: reports/predictive_validity_study.md:78-86,627-635 (44%) and reports/v0_4_0_task1_argument_degradation.md:62-81 (before=after=0.0) | SHA 78fff2f | MEASURED
+3. Zero-vector empty-string embedding & Empty-string embeddings return a zero-\emph{length}
+  vector, not zero-valued & Apparent +0.59 to +0.72 similarity rise in empty-description arms &
+  Re-measured on actual agent-visible prompt text \\
+% PROV: reports/predictive_validity_study.md:259-272,636-642 | SHA 78fff2f | MEASURED
+4. Self-descriptive-name confound & Real, self-explanatory tool names let selection succeed
+  regardless of description quality & Near-zero variance in one real-API family, biasing pooled
+  correlation toward the null & Explicit \texttt{INSUFFICIENT\_SENSITIVITY}/\texttt{NO\_CHANGE}
+  verdict \\
+% PROV: reports/predictive_validity_study.md:572-586,643-650 and reports/v2_harness_evaluation.md:91-102 | SHA 78fff2f | MEASURED
+5. Subset-vs-catalog mismatch & Linter run against a cost-bounded 12-tool subset, not the full
+  60-tool catalog & 11 HIGH violations that vanished once corrected & Full unfiltered catalog
+  extraction as linting input \\
+% PROV: reports/v2_linter_evaluation.md:36-43 | SHA 78fff2f | MEASURED
+6. LCG index saturation & Hand-rolled LCG can return exactly 1.0, one index past the resample
+  list's end & Crash (IndexError) at the resample boundary & Clamped
+  \texttt{min(int(rng()*n),\,n-1)} \\
+% PROV: reports/v2_product_readiness.md:566-570 | SHA 78fff2f | MEASURED
+7. Scoring-reference mismatch & Gold-constraint lookup authored against the pre-mutation schema;
+  only one injector renames a property key & $-76.7$ to $-80.0$pp ADVISORY effect (see
+  Section~\ref{sec:artifact7}) & \texttt{constraint\_satisfaction\_renamed} \\
+% PROV: reports/v2_4_task1_blast_radius_audit.md:14-33 (mechanism); see SS0.1/SS6.1 for the effect-size supersession chain | SHA 78fff2f | MEASURED
+8. Fixture-schema hallucination & Agent-authored real-API fixtures written from model memory, not
+  fetched schemas & 3/10 (30\%) fixtures factually wrong (Section~\ref{sec:corpus}) &
+  \texttt{check\_enum\_schema\_fidelity} (WARN) \\
+% PROV: reports/v2_5_task2_fixture_validation.md:34-55,62-101 | SHA 78fff2f | MEASURED
+9. Benchmark-construction bias & Injected culprit's diff size systematically smaller than 2/3
+  decoy tiers & \texttt{largest\_textual\_diff} baseline scored 4.0\% -- below the 26.7\% random
+  floor & \texttt{check\_benchmark\_construction\_diffsize\_bias} (BLOCK) \\
+% PROV: reports/v0_5_attribution_benchmark.md SS7 (lines 201-313) | SHA 3d79172 | MEASURED (superseded by SS0.3's terminal 58.33% figure for the ship-bar verdict, not for this 4.0%/26.7% pre-fix diagnostic pair itself)
+10. Probe variance mis-calibration & Synthetic probe-noise model omitted the between-task variance
+  component & 100\% top-1 accuracy claim at a 3pp effect size (see
+  Section~\ref{sec:artifact10}) & \texttt{check\_probe\_variance\_calibration} (BLOCK) \\
+% PROV: reports/v0_5_mde_discrepancy.md (full file, esp. SS3-4); see SS0.3/SS6.2 for the terminal 58.33% figure | SHA 3d79172 | MEASURED
+\bottomrule
+\end{longtable}
+
+\subsection{False positive 1: the $-80$pp ADVISORY effect that was a scoring bug}
+\label{sec:artifact7}
+
+An early causal-chain measurement reported a large, statistically significant-looking effect for
+the ADVISORY-tier \texttt{param\_renamed} defect: $-76.7$pp (gemma2:9b), $-80.0$pp (llama3.1:8b),
+$-76.7$pp (qwen2.5:7b), all with confidence intervals excluding zero.
+% PROV: reports/v2_2_task_b_causal_chain_multimodel.md SS B4 | SHA 78fff2f | MEASURED (superseded, do not cite as current)
+Reading this as a real, adequately powered causal effect would have been the natural conclusion.
+It was not one. A dedicated audit found the effect was predominantly a scoring artifact: the
+constraint checker's gold-parameter lookup was authored against the pre-mutation schema, and
+\texttt{param\_renamed} is the only defect-injector that renames a schema \emph{key} -- so the
+lookup silently failed against the post-mutation arguments, manufacturing an apparent capability
+regression that was really a broken check. Corrected effect: a clean null for gemma2:9b
+($+0.0$pp, CI $[-20.5,+20.5]$) and qwen2.5:7b ($+6.7$pp, CI $[-7.1,+20.4]$), and a
+CI-includes-zero result for llama3.1:8b ($-13.3$pp, CI $[-40.8,+14.1]$).
+% PROV: reports/v2_3_task1_advisory_audit.md | SHA 78fff2f | MEASURED (current)
+A follow-up blast-radius audit confirmed this bug is scoped only to the
+key-renaming injector; the BLOCKING-tier effects reported elsewhere in this paper
+(Section~\ref{sec:applications}) do not share it.
+% PROV: reports/v2_4_task1_blast_radius_audit.md:14-33 | SHA 78fff2f | MEASURED
+
+\subsection{False positive 2: the 100\% localization accuracy that was probe-noise miscalibration}
+\label{sec:artifact10}
+
+An early regression-localization benchmark reported that a greedy-bisection probing strategy
+achieved 100\% top-1 accuracy at every tested injected-effect size from 3.0pp to 33.0pp, including
+effect sizes below this paper's own measured detection floor (Section~\ref{sec:estimator}) -- a
+result the authors themselves flagged as anomalous rather than accepted at face value: detecting a
+3pp effect at a lower per-probe sample size should be \emph{harder} than the already-hard 5.37pp
+server-level MDE bar, not something a probe-based strategy aces perfectly.
+% PROV: reports/v0_5_wave1_report.md SS8.2 | SHA 3d79172 | MEASURED (superseded, do not cite as current)
+The anomaly was real: the synthetic probe-noise model omitted the between-task variance component
+that the calibrated reference model includes, inflating detection power by 3--7$\times$. Fixed and
+re-measured, the true accuracy at the 3.0--5.0pp effect band is \textbf{58.33\% top-1} (95.83\%
+top-3, 3.25 mean probes) -- well short of the doctrine's 70\% ship bar, and exactly the shape a
+genuine detection-power limit should take: every top-1 miss traced to a real recovery signal whose
+confidence interval failed to certify it, never to false-positive noise.
+% PROV: reports/v0_5_mde_discrepancy.md SS4b | SHA 3d79172 | MEASURED (current)
+The same correction inverts an intermediate, now-superseded finding that localization accuracy
+\emph{improved} with candidate-set size; the corrected result is that it degrades with scale
+(93\%$\to$80\%$\to$73\%$\to$47\% top-1 as the number of changed tools grows 4$\to$10$\to$20$\to$40).
+% PROV: reports/v0_5_mde_discrepancy.md SS4c | SHA 3d79172 | MEASURED (current)
+
+\subsection{A candidate eleventh class}
+Two independent extraction passes over this project's reports surfaced the same shape of problem,
+not cleanly matching any of the ten classes above: a defect-detection signal calibrated against
+synthetic "bad" fixtures fires almost as often on genuine, unremarkable real-world documentation,
+undermining its use as a quality discriminator even when each individual flag is factually correct
+(e.g.\ \texttt{required\_not\_mentioned} firing at 1.42/tool on real-world-mirror documentation
+vs.\ 1.37/tool on deliberately-bad synthetic fixtures).
+% PROV: reports/predictive_validity_study.md:530-557 | SHA 78fff2f | MEASURED
+We do not promote this to a numbered class
+in Table~\ref{tab:taxonomy}: unlike classes 1--10, it was never isolated as its own investigation
+with a named fix, and doing so here would mean characterizing it more precisely than the source
+material does. We report it in Section~\ref{sec:threats} as informal substantiation that ten
+classes found suggests an eleventh exists, and leave formalizing it to future work.
+
