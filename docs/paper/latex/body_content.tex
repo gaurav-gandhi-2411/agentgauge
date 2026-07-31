@@ -29,18 +29,18 @@ tool description text} as a primary lever for improving that selection:
 Anthropic's own tool-use engineering guidance states that ``even small
 refinements to tool descriptions can yield dramatic improvements,''
 reporting that precise refinements to tool descriptions helped Claude
-Sonnet 3.5 reach state-of-the-art on SWE-bench Verified (Anthropic
-Engineering, ``Writing tools for agents'' --- publication date not
-independently confirmed during this paper's preparation, cited for content
-only) \nocite{anthropic2026tools}. GitHub's
+Sonnet 3.5 reach state-of-the-art on SWE-bench Verified (Aizawa,
+``Writing effective tools for agents --- with agents,'' Anthropic
+Engineering blog, published September 11, 2025, cited for content
+only) \nocite{anthropic2025tools}. GitHub's
 engineering team, running an offline evaluation harness against their
 own MCP server --- the same \url{github/github-mcp-server} mirrored
 in RW1 (§4.3.1) --- reports the same sensitivity from the other side:
 ``tightening a description, adding or removing a tool, or combining a
-few similar tools can shift results a lot'' (GitHub Engineering,
+few similar tools can shift results a lot'' (Bobrova,
 ``Measuring what matters: how offline evaluation of GitHub MCP Server
-works'' --- publication date not independently confirmed during this paper's preparation,
-cited for content only) \nocite{github2026measuring}. This appears to sit in tension with RW1's own
+works,'' GitHub Engineering blog, published October 30, 2025,
+cited for content only) \nocite{github2025measuring}. This appears to sit in tension with RW1's own
 finding of zero headroom on that exact server for gemma2:9b (§4.3.1) ---
 we do not resolve this tension here, since GitHub's harness details
 (which model(s), which metric, which task distribution) were not
@@ -56,7 +56,7 @@ Descriptions Are Smelly!,'' arXiv:2602.14878, 2026) \nocite{hasan2026smelly}. Re
 collisions cause user-visible failures in production agent frameworks,
 independent of any synthetic fixture (e.g., a reported GitHub issue:
 ``Duplicate tool names across MCP servers cause errors,''
-\url{openai/openai-agents-python#464}) \nocite{openai2024issue464}. Taken together, this is real
+\url{openai/openai-agents-python#464}) \nocite{openai2025issue464}. Taken together, this is real
 evidence that description quality matters \emph{somewhere} and that even
 small edits move outcomes --- but none of these sources characterize the
 \emph{boundary} of where it matters, whether it generalizes across
@@ -1141,17 +1141,23 @@ boundary that makes ``broadly'' precise enough to check and re-test.
   \def\labelenumi{\arabic{enumi}.}
   \tightlist
   \item
-    Anthropic Engineering, ``Writing tools for agents'' (publication
-    date not independently confirmed during this paper's preparation --- content verified,
-    date not).
+    Aizawa, K., ``Writing effective tools for agents --- with agents,''
+    Anthropic Engineering blog, published September 11, 2025 (\textbf{third-pass
+    audit note:} originally recorded as author ``Anthropic Engineering,''
+    year 2026, with the date marked as unconfirmed; re-verified directly
+    against the live page's byline and metadata, both were wrong ---
+    corrected here).
     \url{https://www.anthropic.com/engineering/writing-tools-for-agents}
     --- verified: contains the quoted claim that small tool-description
     refinements yielded SOTA SWE-bench Verified results for Claude
-    Sonnet 3.5. \nocite{anthropic2026tools}
+    Sonnet 3.5. \nocite{anthropic2025tools}
   \item
-    GitHub Engineering, ``Measuring what matters: how offline evaluation
-    of GitHub MCP Server works'' (publication date not independently
-    confirmed during this paper's preparation --- content verified, date not).
+    Bobrova, K., ``Measuring what matters: how offline evaluation
+    of GitHub MCP Server works,'' GitHub Engineering blog, published
+    October 30, 2025 (\textbf{third-pass audit note:} originally recorded as
+    author ``GitHub Engineering,'' year 2026, with the date marked as
+    unconfirmed; re-verified directly against the live page's byline and
+    metadata, both were wrong --- corrected here).
     \url{https://github.blog/ai-and-ml/generative-ai/measuring-what-matters-how-offline-evaluation-of-github-mcp-server-works/}
     --- verified: contains the quoted claim that small description edits
     ``shift results a lot.'' \textbf{Second-pass audit note:} this is a
@@ -1159,7 +1165,7 @@ boundary that makes ``broadly'' precise enough to check and re-test.
     (§4.3.1), which found zero headroom for gemma2:9b on that server.
     The tension is flagged explicitly in §1.1 body text, not silently
     juxtaposed; not resolved (harness/model/metric details of GitHub's
-    own eval were not verified during this paper's preparation). \nocite{github2026measuring}
+    own eval were not verified during this paper's preparation). \nocite{github2025measuring}
   \item
     Hasan, M. M., Li, H., Rajbahadur, G. K., Adams, B., and Hassan, A.
     E., ``Model Context Protocol (MCP) Tool Descriptions Are Smelly!
@@ -1210,15 +1216,22 @@ boundary that makes ``broadly'' precise enough to check and re-test.
     excluded rather than asserted on trust. \nocite{babu2026toolchoice}
   \item
     GitHub issue, ``Duplicate tool names across MCP servers cause
-    errors,'' \url{github.com/openai/openai-agents-python#464}
-    (closed). Verified via \texttt{gh\ api} --- title and closed state
-    confirmed. \nocite{openai2024issue464}
+    errors,'' \url{github.com/openai/openai-agents-python#464},
+    opened April 9, 2025 (closed). Verified via \texttt{gh\ api} --- title,
+    creation date, and closed state confirmed. \textbf{Third-pass audit
+    note:} bibkey originally dated 2024 with no explicit year field;
+    the issue's actual creation date (confirmed via the GitHub API) is
+    2025 --- corrected here. \nocite{openai2025issue464}
   \item
     GitHub issue, ``Feedback for dynamic tool selection,''
-    \url{github.com/github/github-mcp-server#275} (closed). Verified
-    via \texttt{gh\ api} --- title and closed state confirmed;
-    referenced only in this appendix as supporting context, not cited in
-    body prose in this draft. \nocite{github2024issue275}
+    \url{github.com/github/github-mcp-server#275}, opened April 14, 2025
+    (closed). Verified
+    via \texttt{gh\ api} --- title, creation date, and closed state
+    confirmed; referenced only in this appendix as supporting context, not
+    cited in body prose in this draft. \textbf{Third-pass audit note:}
+    bibkey originally dated 2024 with no explicit year field; the issue's
+    actual creation date (confirmed via the GitHub API) is 2025 ---
+    corrected here. \nocite{github2025issue275}
   \end{enumerate}
 
   \textbf{Checked and excluded (candidate citations from prior internal
