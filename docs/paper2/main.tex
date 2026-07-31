@@ -1,0 +1,260 @@
+\documentclass[11pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{graphicx}
+\usepackage{ragged2e}
+\usepackage{xcolor}
+\PassOptionsToPackage{hyphens}{url}
+\usepackage[colorlinks=true,linkcolor=blue!50!black,citecolor=blue!50!black,urlcolor=blue!50!black]{hyperref}
+\usepackage{microtype}
+\usepackage{enumitem}
+
+% Every number in this draft carries an inline provenance comment immediately
+% following it, of the form:
+%   % PROV: reports/<file>.md[:<line>] | SHA <commit> | <MEASURED|NOT MEASURED>
+% These comments are invisible in the compiled PDF (per spec: "provenance is
+% stripped from the final PDF but kept in a companion provenance.md") and are
+% the mechanical cross-check target for the independent verifier pass. Every
+% such comment must have a matching row in docs/paper2/provenance.md -- that
+% is the verifier's job, not a claim this file makes about itself.
+
+\title{Powering Agent Evaluations: Variance Structure, Measurement Artifacts,\\
+and Minimum Detectable Effects in Tool-Use Benchmarks}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+% Every number below is restated, in full, with an inline PROV comment at its first appearance
+% in the numbered sections (SS4 for ICC/variance/MDE-baseline, SS5 for the corrected MDE/estimator
+% figures, SS6.1/6.2 for the two false-positive figures, SS7.3 for the cost-crossover). Per-clause
+% pointers are given here too so the abstract itself is not exempt from the provenance rule:
+Agent evaluations are routinely reported without a power analysis, without a stated detection
+floor, and without screening for measurement artifacts. This paper measures the variance
+structure of agent task outcomes on a 253-task, 3-model tool-use corpus (intraclass correlation
+0.793 within tool-set/task; % PROV: reports/v2_variance_structure.md:19 | SHA 78fff2f | MEASURED, restated SS4
+56.1\% of outcome variance is between-task), % PROV: reports/v2_variance_structure.md:38-42 | SHA 78fff2f | MEASURED, restated SS4
+shows the direct
+consequence for experimental design (repeated trials on the same task carry little independent
+information), and gives a paired, common-random-numbers, task-clustered-bootstrap, CUPED,
+sequential-testing estimator that reaches a minimum detectable effect of 0.0537 at $n=253$ tasks
+(from an uncorrected-baseline MDE of 0.433 at $n=20$). % PROV: reports/v2_5_task3_mde_completion.md:17-23 (0.0537) and reports/v2_1_estimator_rebuild.md:32 (0.433) | SHA 78fff2f | MEASURED, restated SS5
+We catalogue ten measurement-artifact
+classes discovered during this project, each with an automated detector shipped in
+\texttt{agentgauge audit}, including two cases where an artifact produced a false positive the
+authors initially believed: a $-76.7$ to $-80.0$ percentage-point causal effect that a scoring bug
+corrected to a clean null, % PROV: SS0.1/SS6.1 -- reports/v2_2_task_b_causal_chain_multimodel.md (superseded) -> reports/v2_3_task1_advisory_audit.md (current) | SHA 78fff2f | MEASURED, restated SS6.1
+and a 100\% top-1 localization-accuracy claim that a probe-noise
+miscalibration corrected to 58.33\%. % PROV: SS0.3/SS6.2 -- reports/v0_5_wave1_report.md (superseded) -> reports/v0_5_mde_discrepancy.md SS4b (current) | SHA 3d79172 | MEASURED, restated SS6.2
+We report a structural negative result on regression
+localization: the accuracy a localizer needs (task volume, since $\mathrm{MDE}\propto
+1/\sqrt{n}$) is precisely the cost a localizer exists to avoid, producing a real cost-crossover at
+2--4 changed tools against full re-evaluation. % PROV: reports/v0_5_probe_power_fix.md SS5, lines 170-211 | SHA 3d79172 | MEASURED, restated SS7.3
+Finally, we report a falsification record: four
+pre-registered hypotheses failed, including the authors' own product thesis that an eight-axis
+tool-description quality score predicts agent task success. This paper began as an attempt to
+validate that score as a commercial product. It did not survive contact with an adequately
+powered, artifact-screened measurement. That failure is the paper's subject, not an incidental
+footnote to it.
+\end{abstract}
+
+\section{Introduction}
+\label{sec:intro}
+
+Agent and tool-use evaluations are, as a rule, reported as a single point estimate: a success
+rate, an accuracy percentage, a win rate against a baseline. They are almost never reported
+alongside a detection floor -- the smallest true effect the measurement could have distinguished
+from noise at the sample size actually used -- and they are almost never screened for the kind of
+measurement artifact that turns a null result into an apparent large effect, or vice versa. This
+paper is the record of what happens when both of those omissions are corrected on a real project,
+not a synthetic illustration.
+
+The project that produced this paper began as an attempt to build and sell a single number: an
+eight-axis, LLM-judged tool-description quality score, marketed as a predictor of how well an AI
+agent could use a given MCP server. The working hypothesis was straightforward and commercially
+attractive -- better tool descriptions, measured on axes like schema completeness and
+discoverability, should predict higher agent task-success rates, and a vendor could sell the score
+as a pre-deployment audit. Section~\ref{sec:related-work} situates this hypothesis against the
+literature; Section~\ref{sec:corpus} describes the corpus and models used to test it. The
+hypothesis was falsified. Not softened, not partially confirmed, not "true in spirit but requiring
+refinement" -- falsified, on an adequately powered, artifact-screened re-measurement
+(Section~\ref{sec:applications}), after two earlier measurement passes had appeared to confirm it
+for reasons that turned out to be measurement artifacts rather than a real effect
+(Section~\ref{sec:taxonomy}).
+
+That falsification is why this paper exists in its current form. Once the product thesis failed,
+what remained was not nothing: it was a fully instrumented apparatus for measuring agent task
+outcomes under repeated trials, across models, before and after interventions -- and a growing list
+of ways that apparatus had, at various points, lied to its own authors. This paper reports that
+apparatus and that list, not as an apology for the failed product, but because the methods and the
+failure modes are the more durable and more general contribution. A tool-description quality score
+is a product idea that did not work. A measured account of why agent-eval variance defeats naive
+trial-scaling, an estimator that reaches usable power on a realistic budget, and a ten-class
+taxonomy of the ways synthetic and semi-synthetic agent benchmarks fool their own authors -- those
+are useful to anyone running agent evaluations, independent of whether this particular product
+ships.
+
+\paragraph{Contributions.}
+\begin{enumerate}
+\item \textbf{Variance structure.} Intraclass correlation $\mathrm{ICC}=0.793$ within (tool set,
+  task); 56.1\% of outcome variance is between-task; before/after task correlation $r=0.881$.
+  % PROV: reports/v2_variance_structure.md:19,38-42,58-66 | SHA 78fff2f | MEASURED, full detail SS4
+  Direct consequence: repeated trials on the same task carry little independent information, so
+  evaluations that scale trials rather than tasks are underpowered by construction
+  (Section~\ref{sec:variance}).
+\item \textbf{An estimator that reaches usable power.} Paired design with common random numbers,
+  task-clustered bootstrap with a small-$G$ $t(G-1)$ correction, CUPED, and O'Brien--Fleming
+  sequential testing. Minimum detectable effect (MDE) falls from 0.433 to 0.188 at $n=20$ tasks,
+  and to 0.0537 at the full $n=253$-task corpus. False-alarm rate under the null: 0.59\%.
+  % PROV: reports/v2_1_estimator_rebuild.md:32,61-75 and reports/v2_5_task3_mde_completion.md:17-23 | SHA 78fff2f | MEASURED, full detail SS5
+  Cassette-replay determinism (a distinct claim from the estimator's own bootstrap determinism,
+  see Section~\ref{sec:estimator} for that caveat): 100\%.
+  % PROV: reports/v0_5_wave1_report.md:136 | SHA 3d79172 | MEASURED
+\item \textbf{A ten-class measurement-artifact taxonomy}, each class discovered in a real
+  experiment in this project, each with an automated detector shipped in \texttt{agentgauge audit}
+  (Section~\ref{sec:taxonomy}). We are not aware of a comparable standard taxonomy for agent-eval
+  measurement artifacts in the published literature.
+\item \textbf{A structural negative result on regression localization.} Localization accuracy
+  requires task volume ($\mathrm{MDE}\propto 1/\sqrt{n}$), and task volume is precisely the cost a
+  localizer exists to avoid. The cost-crossover against full re-evaluation sits at roughly 2--4
+  changed tools; realistic buyer configurations cost 5--20$\times$ a full re-evaluation.
+  % PROV: reports/v0_5_probe_power_fix.md SS5, lines 170-211 | SHA 3d79172 | MEASURED, full detail SS7.3
+  This is
+  not a tuning miss -- it is a structural tension between the accuracy regime and the cost regime
+  (Section~\ref{sec:attribution}).
+\item \textbf{A falsification record.} Four pre-registered hypotheses failed, including the
+  authors' own product thesis that an eight-axis tool-description quality score predicts agent
+  task success (Section~\ref{sec:applications}).
+\end{enumerate}
+
+The remainder of the paper is organized as follows. Section~\ref{sec:related-work} positions this
+work against A/B-testing variance reduction, agent/tool-use benchmarks, LLM-as-judge evaluation,
+and reproducibility practice. Section~\ref{sec:corpus} describes the experimental setup.
+Section~\ref{sec:variance} measures the variance structure and its consequence for trial
+allocation. Section~\ref{sec:estimator} presents the estimator and its ablation.
+Section~\ref{sec:taxonomy} -- the paper's core contribution -- catalogues the ten artifact classes.
+Section~\ref{sec:applications} reports the causal-effect, rewriting-null, and attribution-
+impossibility results. Section~\ref{sec:threats} states threats to validity without hedging.
+Section~\ref{sec:conclusion} closes with recommendations for the field.
+
+\section{Related work}
+\label{sec:related-work}
+
+% NOTE ON CITATIONS (see docs/paper2/gaps.md, "Citations not populated"): this
+% section is written to correctly name the methods and literatures this paper
+% draws on and positions against. It deliberately does NOT populate \citep{}
+% keys with specific author/year/venue metadata, because this wave is a
+% strict assembly job from this repo's own committed reports (spec S:
+% "no number enters the paper without a provenance pointer to a committed
+% report"), and this repo has no committed, verified bibliography entries for
+% the general statistics/ML-systems literature this section needs (CUPED,
+% common random numbers, cluster-robust/cluster-bootstrap inference,
+% O'Brien-Fleming sequential testing, LLM-as-judge failure modes, agent/tool-
+% use benchmarks). Populating real citations requires a literature-
+% verification pass this assembly wave is explicitly out of scope for (no new
+% research). This is recorded as a gap, not silently filled with unverified
+% bibkeys.
+
+\textbf{Variance reduction in controlled experimentation.} The estimator in
+Section~\ref{sec:estimator} combines four techniques with a long history in industrial A/B
+testing: paired designs with common random numbers to remove between-unit noise that is identical
+across arms; CUPED-style covariate adjustment using a pre-period outcome to reduce residual
+variance without spending additional samples; cluster-robust (bootstrap) inference to respect the
+correlation structure induced by repeated measurements on the same unit, with a small-cluster-count
+correction; and sequential testing with an alpha-spending boundary to allow early stopping without
+inflating the false-positive rate. None of these techniques are novel to this paper. What is
+different here is their application to agent task-outcome measurement specifically, where the
+relevant "unit" is a (tool set, task) pair rather than a user or a session, and where the paper
+additionally reports what happens when a plausible alternative (wild cluster bootstrap) is tried
+and measured to perform worse (Section~\ref{sec:estimator}) -- a negative result on an estimator
+choice, reported because it is useful, not because it flatters the final design.
+
+\textbf{Agent and tool-use benchmarks.} A growing body of work evaluates how well LLM agents
+select and invoke tools from a catalog, and a smaller body specifically studies how tool
+description quality affects that selection. This paper's corpus and task-construction methodology
+(Section~\ref{sec:corpus}) are built for internal statistical power rather than benchmark breadth,
+and its central empirical claim about description quality (Section~\ref{sec:applications}) is a
+falsification of the hypothesis that description quality broadly predicts task success -- a
+negative result relative to the framing common in that literature, which more often reports
+positive associations without a stated detection floor.
+
+\textbf{LLM-as-judge evaluation and its failure modes.} This paper's own attempt to use an LLM
+judge as a linter baseline is reported directly as a negative result: a single-prompt LLM-judge
+baseline for description/schema consistency is measured to be degenerate on this project's corpus
+(97.1\% false-alarm rate at 100\% recall, Section~\ref{sec:applications})
+% PROV: reports/v2_product_readiness.md:502-516 | SHA 78fff2f | MEASURED, full detail SS7.1
+-- it flags almost every
+clean tool as inconsistent, so its recall is not informative. This is consistent with a broader,
+well-documented concern that LLM judges without calibration against a labeled null distribution
+can look accurate on recall alone while being useless in practice.
+
+\textbf{Reproducibility and replay in ML systems.} The harness underlying every measurement in
+this paper is built for byte-exact replay: cassette-recorded model calls, a hand-rolled
+deterministic PRNG for every stochastic draw, and fixed-order aggregation to avoid
+floating-point-order nondeterminism (Section~\ref{sec:estimator}). This paper reports the harness's
+own determinism rate rather than assuming it, in keeping with the project's overall position that
+every claim, including claims about the measurement apparatus itself, needs a provenance pointer.
+
+\textbf{Positioning the gap.} To the authors' knowledge, no prior agent-evaluation report in this
+space states a minimum detectable effect alongside its headline result, and no prior work offers a
+standard taxonomy of measurement artifacts specific to agent/tool-use benchmarking analogous to
+Section~\ref{sec:taxonomy}'s ten classes. This paper's contribution is exactly that combination:
+a power analysis and an artifact taxonomy, applied to one real project's full history, including
+its own false starts.
+
+\section{Experimental setup}
+\label{sec:corpus}
+
+\textbf{Corpus.} 253 tasks total: 62 tasks against pre-existing synthetic tool-set fixtures, plus
+191 tasks against 10 real-API gold-constraint fixtures modeled on GitHub, Stripe, Google Calendar,
+Jira, Slack, Docker, Kubernetes, Twilio, AWS S3, and Spotify % PROV: reports/v2_4_task4_corpus_expansion.md:18-30,36 | SHA 78fff2f | MEASURED
+(253 = 62 + 191, the +1 task beyond the original 190 added when a schema defect below was
+corrected). % PROV: reports/v2_5_task2_fixture_validation.md:69-71,158-165 | SHA 78fff2f | MEASURED
+
+\textbf{Fixture validation against live documentation.} Each of the 10 real-API fixtures was
+checked against live official API documentation by an independent research pass. 3 of 10 (30\%)
+had a factual defect: GitHub Issues' \texttt{state\_reason} enum was missing the real fourth value
+\texttt{'duplicate'}; Stripe's \texttt{create\_charge} fixture had the wrong parameter name and
+required/optional status (\texttt{customer\_id}, required, instead of the real \texttt{customer},
+optional); and Kubernetes' DNS-1123 label validation regex wrongly permitted a leading digit. All
+three were corrected against the primary source before use.
+% PROV: reports/v2_5_task2_fixture_validation.md:34-55,62-101 | SHA 78fff2f | MEASURED
+This is reported here as a finding in its own right (Section~\ref{sec:taxonomy}, artifact~8), not
+only as a methods footnote: agent-authored fixtures for real APIs are wrong often enough (30\% in
+this corpus) that validating them against a live primary source is not optional.
+
+\textbf{Task construction.} Tasks are authored under an explicit anti-tautology convention: task
+text never quotes the gold tool's name, required enum values, or format patterns verbatim -- a
+convention adopted directly in response to artifact~1 (Section~\ref{sec:taxonomy}), which is what
+happens when it is not followed. % PROV: reports/predictive_validity_study.md:621-626,103-105 | SHA 78fff2f | MEASURED
+
+\textbf{Models.} Three open-weight models under 10B parameters: \texttt{gemma2:9b},
+\texttt{llama3.1:8b}, \texttt{qwen2.5:7b}, run locally via Ollama.
+% PROV: reports/v2_2_task_b_causal_chain_multimodel.md (per-model tables, SS B1-B4) | SHA 78fff2f | MEASURED
+This is a threat to external validity, stated plainly in Section~\ref{sec:threats}, not minimized
+here.
+
+\textbf{Replay determinism.} All model calls are cassette-recorded and replayed byte-exactly.
+Measured determinism: 100\% across all six supported model adapters (Ollama, OpenAI-compatible,
+Anthropic Messages, AWS Bedrock, and two others), zero verdict flips across 20 replays per adapter,
+zero live network calls at measurement time.
+% PROV: reports/v0_5_wave1_report.md:136 | SHA 3d79172 | MEASURED
+
+\textbf{Outcome scoring.} Each trial's outcome is a joint task-success score decomposed into
+selection accuracy (did the agent choose the correct tool) and argument-construction accuracy (did
+it satisfy the task's registered argument constraints), computed as a fractional
+constraint-satisfaction score rather than a binary pass/fail.
+% PROV: reports/v2_harness_evaluation.md:11-16 | SHA 78fff2f | MEASURED
+This decomposition is itself a correction: an earlier binary ground-truth definition collapsed to
+near-ceiling because every example server accepted any well-formed call regardless of argument
+correctness (artifact~2, Section~\ref{sec:taxonomy}).
+
