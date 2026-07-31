@@ -554,3 +554,188 @@ with a named fix, and doing so here would mean characterizing it more precisely 
 material does. We report it in Section~\ref{sec:threats} as informal substantiation that ten
 classes found suggests an eleventh exists, and leave formalizing it to future work.
 
+\section{Applications and negative results}
+\label{sec:applications}
+
+\subsection{Which tool-description defects actually cause agent failure}
+Across every lint rule this project tested for a causal effect on agent task success, exactly one
+survives with a confidence interval excluding zero across all three model families:
+\texttt{type\_enum\_contradiction}, at $-13.3$pp to $-28.9$pp (gemma2:9b $-25.2$pp, llama3.1:8b
+$-28.9$pp, qwen2.5:7b $-13.3$pp, $n=45$/model), independently re-measured to two decimal places on
+a separately rebuilt instance.
+% PROV: reports/v0_4_0_effect_size_reconciliation.md | SHA 78fff2f | MEASURED
+This is the corrected replacement for an earlier, erroneous "$-13.3$ to $-40.0$pp" range that
+mixed two different pooling levels
+% PROV: reports/v0_4_0_effect_size_reconciliation.md:18-41 | SHA 78fff2f | MEASURED (erroneous range's origin -- DO NOT CITE the -40.0pp figure itself, per provenance.md SS0.2)
+(Section~\ref{sec:taxonomy} discusses the general pattern of
+such errors, though this specific one is a citation-construction error rather than a numbered
+artifact class). \texttt{required\_references\_missing\_property} measures a clean null (0.0pp,
+all three models); the ADVISORY-tier \texttt{param\_renamed} effect is null after correction
+(Section~\ref{sec:artifact7}); \texttt{param\_possibly\_renamed} and \texttt{name\_collision} were
+never causally measured.
+% PROV: reports/v0_4_0_pre_publication_claim_audit.md:104-111 | SHA 78fff2f | MEASURED
+
+A single-prompt LLM-judge baseline for the same detection task is degenerate: it flags 97.1\%
+(169/174) of genuinely clean tools as inconsistent while also catching 100\% (138/138) of injected
+defects -- its recall is not a meaningful signal given that false-alarm rate. Measured on a 174/521
+stratified sample of the clean corpus, not the full catalog.
+% PROV: reports/v2_product_readiness.md:502-516 | SHA 78fff2f | MEASURED
+
+\subsection{Rewriting tool descriptions has no measurable effect on argument construction}
+At the full corpus (253 tasks $\times$ 3 models, MDE$=0.0537$ at 80\% power), rewriting tool
+descriptions to be clearer has no practically significant effect on argument-construction
+accuracy: gemma2:9b $+0.0217$ (CI $[-0.0042,+0.0505]$), llama3.1:8b $+0.0553$ (CI
+$[+0.0232,+0.0885]$, excludes zero but below the 0.05 practical-significance threshold), qwen2.5:7b
+$+0.0040$ (CI $[-0.0211,+0.0292]$) -- all verdict \texttt{no\_change}.
+% PROV: reports/v0_4_0_task1_argument_degradation.md:83-114 | SHA 78fff2f | MEASURED
+This null is adequately powered, not merely absent-of-evidence: an earlier measurement at $n=62$
+tasks (MDE$=0.106$) found flat, similarly near-zero deltas but was explicitly labeled
+inconclusive-underpowered rather than confirmatory, since its own resolving power was an order of
+magnitude coarser than the deltas it measured.
+% PROV: reports/v2_2_task_a_reallocation.md | SHA 78fff2f | MEASURED
+We flag for the reader (see \texttt{docs/paper2/gaps.md}) that this underpowered predecessor
+should not be conflated with the ADVISORY effect of Section~\ref{sec:artifact7} -- both are
+"initially looked different, later resolved" stories, but for two different experiments (argument
+construction under rewritten descriptions, vs.\ a causal-chain defect-injection effect), and only
+the latter was ever a large apparent effect.
+
+\subsection{The attribution impossibility result}
+\label{sec:attribution}
+We compared three regression-localization strategies -- exhaustive ablation, sampled Shapley-value
+attribution, and greedy bisection -- on a synthetic benchmark with an injected true culprit among a
+set of changed tools. Every number in this subsection is the terminal, corrected authority
+following the probe-variance-miscalibration correction of Section~\ref{sec:artifact10}: no
+earlier report's accuracy/budget table for this benchmark may be cited without reading that
+correction first.
+% PROV: reports/v0_5_mde_discrepancy.md | SHA 3d79172 | MEASURED (terminal authority)
+Accuracy clears the benchmark's own pre-declared ship bar (top-1 $\geq0.70$, top-3 $\geq0.90$,
+sub-exhaustive probe budget) only at effect sizes at or above the original 13.3--28.9pp band; it
+fails at and below this paper's own measured detection floor, and \emph{degrades} rather than
+improves as the candidate-set size grows (Section~\ref{sec:artifact10}).
+% PROV: reports/v0_5_mde_discrepancy.md SS4a-4c (ship-bar thresholds also stated at reports/v0_5_wave1_report.md:50, unchanged by the SS0.3 correction) | SHA 3d79172 | MEASURED
+
+The deeper result is a cost-crossover, not merely an accuracy shortfall. Per-probe cost is
+proportional to task count; a strategy using $P$ probes beats a full corpus re-evaluation exactly
+when $P < (\text{full-corpus trial-equivalents}) / (\text{trial-equivalents per probe})$. At the
+task count this paper's own MDE analysis requires for adequate localization accuracy, that
+crossover falls at roughly \textbf{2--4 changed tools} -- before any interesting multi-file
+regression is even in scope -- and realistic buyer configurations (10--40 changed tools) cost
+\textbf{5--20$\times$} a full re-evaluation, at every strategy tested.
+% PROV: reports/v0_5_probe_power_fix.md SS5 (Task 2e), lines 170-211 | SHA 3d79172 | MEASURED
+See Figure~\ref{fig:cost-crossover}.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.7\textwidth]{figures/attribution_cost_crossover.png}
+\caption{Attribution cost-crossover vs. full re-evaluation, at the three tested \texttt{n\_tasks}
+allocations. Generated directly from the crossover-analysis table in
+\texttt{reports/v0\_5\_probe\_power\_fix.md} SS5.
+\label{fig:cost-crossover}}
+\end{figure}
+
+No task-count value tested, and none implied by the
+$1/\sqrt{n}$ scaling law measured in Section~\ref{sec:variance}, resolves both the accuracy
+requirement and a real cost advantage simultaneously. This is why the recommendation attached to
+this result was to hold failure attribution as unreleased research rather than ship it as a
+product feature, and to preserve the underlying measurement for this paper instead.
+% PROV: reports/v0_5_probe_power_fix.md:213-253 | SHA 3d79172 | MEASURED
+
+\section{Threats to validity}
+\label{sec:threats}
+
+Stated without hedging, per this paper's own standard for the rest of its claims:
+
+\begin{itemize}
+\item \textbf{Three open-weight models, all under 10B parameters, no frontier-model
+  replication.} Every causal-effect, variance-structure, and attribution number in this paper is
+  measured on \texttt{gemma2:9b}, \texttt{llama3.1:8b}, and \texttt{qwen2.5:7b}. None of it has
+  been replicated on a frontier-scale model. Effect sizes, and possibly even which lint rules show
+  a causal effect at all, may differ on larger or better-instruction-tuned models.
+\item \textbf{Synthetic defect injection for every causal claim.} The one measured causal effect
+  in this paper (\texttt{type\_enum\_contradiction}, Section~\ref{sec:applications}) is established
+  via synthetic schema mutation of real tool definitions, not via naturally occurring defects
+  observed in the wild. External validity of the effect size to organically authored bad tool
+  descriptions is untested.
+\item \textbf{A single corpus.} All variance-structure, estimator, and taxonomy results are
+  measured on one 253-task corpus built for this project. Generalization to other tool-use domains
+  or task distributions is untested.
+\item \textbf{Ten artifacts found suggests an eleventh exists.} Section~\ref{sec:taxonomy}
+  reports a candidate eleventh class found but not formalized. The methodology that found ten
+  artifacts by building and stress-testing one measurement apparatus over one project's lifetime
+  should be expected to keep finding more, not fewer, as the apparatus is used further -- this
+  paper's taxonomy should be read as a floor, not a ceiling, on how many such classes exist.
+\item \textbf{Attribution has never been run against a real agent and a real LLM judge.} Every
+  number in Section~\ref{sec:attribution} is a synthetic-benchmark result
+  (\texttt{make\_probe\_fn}/\texttt{make\_multi\_probe\_fn}). \texttt{sampled\_shapley} in
+  particular has zero real (live-LLM) data points anywhere in this project.
+\end{itemize}
+
+\section{Conclusion}
+\label{sec:conclusion}
+
+We measured the variance structure of agent task outcomes on a real, adequately powered corpus and
+found that it is dominated by between-task variance, not between-trial noise -- a structural fact
+that most agent-eval reporting practice implicitly ignores by scaling trials rather than tasks. We
+built an estimator that reaches a usable detection floor on a realistic compute budget, catalogued
+ten ways this project's own measurement apparatus fooled its authors before each was caught and
+fixed, and reported a structural negative result on regression localization that no amount of
+tuning resolves. We also report, without softening it, that the product thesis motivating this
+project's start -- that a tool-description quality score predicts agent task success -- did not
+survive an adequately powered, artifact-screened test.
+
+For the field, we recommend: report an MDE alongside every agent-eval result, not only a point
+estimate; when compute is fixed, allocate it to task diversity over trial repetition
+(Section~\ref{sec:variance}); screen for measurement artifacts before reporting a result, using an
+automated check where one can be written (Section~\ref{sec:taxonomy}); and publish falsifications
+of your own hypotheses with the same rigor as confirmations. This project's most durable output
+was not the score it set out to sell -- it was the record of everything that turned out to be
+wrong on the way to finding that out.
+
+\textbf{Reproducibility.} Every result in this paper is reproducible against
+\texttt{pip install agentgauge-harness==0.5.2} and the fixtures committed in this repository's
+\texttt{evals/} directory; see Appendix~\ref{app:repro} for exact commands.
+
+\appendix
+
+\section{Full MDE grids and ablation tables}
+\label{app:grids}
+[Full 32-cell allocation grid at both 80\% and 95\% power, and the complete estimator-ablation
+table across $n\in\{5,10,20,50\}$ tasks/arm, per \texttt{docs/paper2/provenance.md} SS2--3. Omitted
+from this draft's body for length; reproduced verbatim from the source reports at camera-ready
+time.]
+
+\section{Artifact detector pseudocode}
+\label{app:detectors}
+[Pseudocode for each of the ten \texttt{agentgauge.audit} checks in Table~\ref{tab:taxonomy},
+reproduced from \texttt{agentgauge/audit.py} at camera-ready time. Not reproduced in this draft to
+avoid the draft silently drifting from the shipped implementation; the verifier pass for this wave
+checked claims against \texttt{reports/}, not against a hand-copied snapshot of \texttt{audit.py}.]
+
+\section{Corpus statistics}
+\label{app:corpus-stats}
+[Full per-domain task/tool/constraint-type breakdown for all 10 real-API fixtures plus the 62
+pre-existing synthetic tasks, per \texttt{reports/v2\_4\_task4\_corpus\_expansion.md} and
+\texttt{reports/v2\_5\_task2\_fixture\_validation.md}.]
+
+\section{Reproduction instructions}
+\label{app:repro}
+\begin{verbatim}
+pip install agentgauge-harness==0.5.2
+git clone <this repository>
+cd agentgauge
+uv sync
+uv run pytest                     # full test suite, no network, no paid calls
+agentgauge scan examples/echo_server.py --mock
+\end{verbatim}
+All statistical results in this paper are reproducible from the fixtures committed under
+\texttt{evals/} and the scripts named alongside each report in
+\texttt{docs/paper2/provenance.md}; none require a live API key or a paid model call.
+
+\section{Measured vs. not measured index}
+\label{app:measured}
+See \texttt{docs/paper2/provenance.md} (full ledger, every claim with report path and commit SHA)
+and \texttt{docs/paper2/gaps.md} (consolidated not-measured list and framing decisions flagged for
+author review) for the complete, non-redundant index. Both are companion documents to this draft
+and are not reproduced inline here to avoid a second copy silently drifting from the first.
+
+\end{document}
