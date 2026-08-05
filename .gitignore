@@ -54,8 +54,9 @@ Thumbs.db
 *.whl
 *.tar.gz
 
-# Reports
-reports/
+# Reports — eval scorecards/benchmarks are the provenance record for every
+# metric claim on the portfolio site; they must be committed, not gitignored
+# (2026-08-05 audit). Only actual build/dist artifacts stay ignored below.
 *.html
 !docs/**/*.html
 
