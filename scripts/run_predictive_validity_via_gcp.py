@@ -10,6 +10,11 @@ Prerequisite: `gcloud run services proxy agentgauge-agent --port=11435 --region=
 --project=expense-tracker-498014` must already be running, and both `gemma2:9b` and
 `llama3.1:8b` must already be pulled onto that remote service.
 
+Note: `expense-tracker-498014` is intentional here, not stale — agentgauge-judge and
+agentgauge-agent still live there pending a separate migration decision for
+agentgauge-judge. Do not repoint this to another project as part of an estate-wide
+project-ID sweep; that migration is tracked independently.
+
 Usage:
     python scripts/run_predictive_validity_via_gcp.py
 """
