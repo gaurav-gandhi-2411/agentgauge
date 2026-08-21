@@ -135,9 +135,9 @@ def create_provider(config: ProviderConfig) -> Provider:
             config.model,
             config.base_url,
             config.api_key_env,
-            cost_ceiling_usd=(
-                config.cost_ceiling_usd if config.cost_ceiling_usd is not None else float("inf")
-            ),
+            cost_ceiling_usd=config.cost_ceiling_usd
+            if config.cost_ceiling_usd is not None
+            else 5.0,
             timeout=config.timeout,
             max_retries=config.max_retries,
         )
@@ -181,9 +181,9 @@ def create_provider(config: ProviderConfig) -> Provider:
             auth_header_prefix=(
                 config.auth_header_prefix if config.auth_header_prefix is not None else "Bearer "
             ),
-            cost_ceiling_usd=(
-                config.cost_ceiling_usd if config.cost_ceiling_usd is not None else float("inf")
-            ),
+            cost_ceiling_usd=config.cost_ceiling_usd
+            if config.cost_ceiling_usd is not None
+            else 5.0,
             timeout=config.timeout,
             max_retries=config.max_retries,
         )
