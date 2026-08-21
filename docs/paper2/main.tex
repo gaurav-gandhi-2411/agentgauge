@@ -66,7 +66,8 @@ We report a structural negative result on regression
 localization: the accuracy a localizer needs (task volume, since $\mathrm{MDE}\propto
 1/\sqrt{n}$) is precisely the cost a localizer exists to avoid, producing a real cost-crossover at
 2--4 changed tools against full re-evaluation. % PROV: reports/v0_5_probe_power_fix.md SS5, lines 170-211 | SHA 3d79172 | MEASURED, restated SS7.3
-Finally, we report a falsification record: four
+Finally, we report a falsification record: two
+% PROV: reports/predictive_validity_study.md:12-24 (product-thesis hypothesis, FALSIFIED) and :303 (homogenization-mechanism hypothesis, falsified as stated) | SHA 78fff2f | MEASURED
 pre-registered hypotheses failed, including the authors' own product thesis that an eight-axis
 tool-description quality score predicts agent task success. This paper began as an attempt to
 validate that score as a commercial product. It did not survive contact with an adequately
@@ -138,9 +139,10 @@ ships.
   This is
   not a tuning miss -- it is a structural tension between the accuracy regime and the cost regime
   (Section~\ref{sec:attribution}).
-\item \textbf{A falsification record.} Four pre-registered hypotheses failed, including the
+\item \textbf{A falsification record.} Two pre-registered hypotheses failed, including the
   authors' own product thesis that an eight-axis tool-description quality score predicts agent
   task success (Section~\ref{sec:applications}).
+  % PROV: reports/predictive_validity_study.md:12-24 (product-thesis hypothesis, FALSIFIED) and :303 (homogenization-mechanism hypothesis, falsified as stated) | SHA 78fff2f | MEASURED, restated from abstract
 \end{enumerate}
 
 The remainder of the paper is organized as follows. Section~\ref{sec:related-work} positions this
@@ -532,8 +534,8 @@ constraint checker's gold-parameter lookup was authored against the pre-mutation
 \texttt{param\_renamed} is the only defect-injector that renames a schema \emph{key} -- so the
 lookup silently failed against the post-mutation arguments, manufacturing an apparent capability
 regression that was really a broken check. Corrected effect: a clean null for gemma2:9b
-($+0.0$pp, CI $[-20.5,+20.5]$) and qwen2.5:7b ($+6.7$pp, CI $[-7.1,+20.4]$), and a
-CI-includes-zero result for llama3.1:8b ($-13.3$pp, CI $[-40.8,+14.1]$).
+($+0.0$pp, CI $[-20.5,+20.5]$), and a CI-includes-zero result for both llama3.1:8b
+($-13.3$pp, CI $[-40.8,+14.1]$) and qwen2.5:7b ($+6.7$pp, CI $[-7.1,+20.4]$).
 % PROV: reports/v2_3_task1_advisory_audit.md | SHA 78fff2f | MEASURED (current)
 A follow-up blast-radius audit confirmed this bug is scoped only to the
 key-renaming injector; the BLOCKING-tier effects reported elsewhere in this paper
