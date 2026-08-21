@@ -246,6 +246,23 @@ def test_create_provider_openai_compatible_missing_base_url_raises() -> None:
         create_provider(config)
 
 
+def test_create_provider_openai_compatible_default_cost_ceiling_is_finite(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """BC3: was float('inf') by default -- a user pointing this adapter at a paid
+    endpoint with no explicit cost_ceiling_usd could run unbounded by accident.
+    Now matches the other paid adapters' $5.0 default."""
+    monkeypatch.setenv("OPENROUTER_API_KEY", "or-test")
+    config = ProviderConfig(
+        provider="openai_compatible",
+        model="some-model",
+        base_url="https://openrouter.ai/api/v1",
+        api_key_env="OPENROUTER_API_KEY",
+    )
+    provider = create_provider(config)
+    assert provider._cost_ceiling_usd == 5.0
+
+
 def test_create_provider_bedrock(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("AWS_ACCESS_KEY_ID", "AKIAFAKE")
     monkeypatch.setenv("AWS_SECRET_ACCESS_KEY", "secretfake")
@@ -286,6 +303,21 @@ def test_create_provider_custom_endpoint_missing_base_url_raises() -> None:
     config = ProviderConfig(provider="custom_endpoint", model="internal-llama-70b")
     with pytest.raises(ValueError, match="base_url"):
         create_provider(config)
+
+
+def test_create_provider_custom_endpoint_default_cost_ceiling_is_finite(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """BC3: same fix as openai_compatible -- was float('inf') by default."""
+    monkeypatch.setenv("INTERNAL_GATEWAY_TOKEN", "tok-test")
+    config = ProviderConfig(
+        provider="custom_endpoint",
+        model="internal-llama-70b",
+        base_url="https://llm-gateway.internal.example.com/v1",
+        auth_header_value_env="INTERNAL_GATEWAY_TOKEN",
+    )
+    provider = create_provider(config)
+    assert provider._cost_ceiling_usd == 5.0
 
 
 # ── example configs under configs/ round-trip through load + create ─────────

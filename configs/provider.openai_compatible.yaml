@@ -4,6 +4,8 @@ provider: openai_compatible
 model: some-model
 base_url: https://openrouter.ai/api/v1
 api_key_env: OPENROUTER_API_KEY
-cost_ceiling_usd: .inf   # unknown-model fallback rate is used for cost tracking either way
+cost_ceiling_usd: 5.0   # BC3: was .inf -- not knowing the exact per-token rate for an
+                         # arbitrary endpoint's model is a reason to keep a conservative
+                         # ceiling, not to drop it. Raise this explicitly if you need to.
 timeout: 180.0
 max_retries: 3

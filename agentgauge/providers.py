@@ -228,7 +228,7 @@ class OpenAICompatibleProvider:
         base_url: str,
         api_key_env: str | None = None,
         *,
-        cost_ceiling_usd: float = float("inf"),
+        cost_ceiling_usd: float = 5.0,
         timeout: float = 180.0,
         max_retries: int = 3,
         extra_headers: dict[str, str] | None = None,
@@ -734,7 +734,7 @@ class CustomEndpointProvider:
         auth_header_name: str = "Authorization",
         auth_header_value_env: str | None = None,
         auth_header_prefix: str = "Bearer ",
-        cost_ceiling_usd: float = float("inf"),
+        cost_ceiling_usd: float = 5.0,
         timeout: float = 180.0,
         max_retries: int = 3,
     ) -> None:
