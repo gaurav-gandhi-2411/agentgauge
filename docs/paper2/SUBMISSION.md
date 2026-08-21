@@ -35,14 +35,39 @@ compiled PDF, and not part of the reader-facing abstract text.)
 
 ## arXiv categories
 
-- **Primary:** cs.SE (Software Engineering) — the paper's core contribution is a measurement
-  methodology (power analysis, artifact taxonomy) for evaluating software changes to agent
-  systems.
-- **Cross-list:** cs.LG (Machine Learning) — the estimator (paired design, CUPED, cluster-robust
-  inference, sequential testing) and the variance-structure findings are directly relevant to ML
-  evaluation methodology.
-- **Cross-list:** cs.AI (Artificial Intelligence) — the subject matter (LLM agent task-outcome
-  evaluation, tool-use benchmarks) sits squarely in agent/AI evaluation.
+**FINAL (superseding both prior passes below — do not re-litigate without new evidence).**
+
+- **Primary:** cs.LG (Machine Learning)
+- **Cross-list:** cs.AI (Artificial Intelligence)
+
+**Why, in one line:** the single closest analog by content — not just topic — is "Pre-Registering
+the Detectable Effect: A Paired-MDE Budget for 4-bit Quantization Benchmarks" (arXiv:2605.28873),
+which matches this paper's own framing almost term-for-term (paired, pre-registered, MDE budget)
+and is cs.LG primary with no cross-list at all; across a targeted 7-paper set of paired-testing/
+MDE/power-analysis papers for ML benchmarks, cs.LG was the most common CS-side primary (2/7,
+plus 3/7 in the stat.* family) and cs.SE appeared in zero of them.
+
+<details>
+<summary>Superseded reasoning (kept for the record, not for re-derivation)</summary>
+
+**Pass 1 (original):** cs.SE primary, cs.LG + cs.AI cross — reasoned from the abstract's own
+"measurement methodology for evaluating software changes to agent systems" framing, without
+checking comparable papers.
+
+**Pass 2:** cs.AI primary, cs.LG + cs.SE cross — after checking 8 *broad* agent-eval-methodology
+comparables (cs.CL primary 4/8, cs.AI 1/8, cs.SE 1/8, cs.LG 1/8, stat.ML 1/8; cs.AI appeared
+primary-or-cross on 6/8). Superseded because the comparable set was too broad — matched on topic
+("agent evaluation") rather than on this paper's actual technical content (paired MDE estimators,
+CUPED, cluster-robust bootstrap, sequential testing).
+
+**Pass 3 (final, above):** re-ran the comparable-paper check against a *tighter* set matched on
+technical content, not just topic, which reversed the cs.AI-primary call in favor of cs.LG.
+</details>
+
+No change to `main.tex`'s abstract, introduction, or conclusion is needed for any of this — the
+paper's own text never frames its contribution in software-engineering-specific terms; category
+placement has been a metadata judgment layered on top of neutral text throughout, not something
+baked into the prose.
 
 ## Author / affiliation
 
@@ -65,12 +90,10 @@ typeset PDF shows -- this section states what to enter there, matching the PDF.
 
 ## License
 
-**Apache License 2.0** (this repository's `LICENSE` file). arXiv's default distribution license
-is separate from the code license; at upload time, select an arXiv license consistent with the
-paper being a companion research artifact to Apache-2.0-licensed code — arXiv's own
-"arXiv.org perpetual, non-exclusive license" is the typical default if no stronger open license
-(e.g. CC BY 4.0) is preferred. This is an author decision at submission time, not fixed by this
-wave.
+**CC BY 4.0** — final. This repository's code remains Apache License 2.0 (`LICENSE`); arXiv's
+distribution license is a separate, independent choice made at upload time and does not need to
+match the code license. Paper 1 (`docs/paper/SUBMISSION.md`) uses the same choice for consistency
+between the two companion papers.
 
 ## Code availability
 

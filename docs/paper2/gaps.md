@@ -108,13 +108,15 @@ were caught and fixed during the verifier pass (not left in):
   agent's first-pass author list had the 7th author's given name wrong ("Zhang, Fan"); corrected to
   "Zhang, Feng" against the arXiv API XML for id 2604.06185.
 
-**Separate discovery, not fixed here (flagged for whoever next touches paper 1):** this repo's
-existing `docs/paper/latex/references.bib` has systematic author-name errors — independently
-confirmed by both the researching agent and the verifier pass against primary sources. `shi2025toolret`
-and `lu2025toolde` each have incorrect given names for one author; `yu2026wildtool` in that file has
-**6 of 7** author given/family names wrong. Titles, eprint IDs, and venues in that file are correct —
-only author-name fields are affected. Out of scope for this wave (a different paper's bibliography);
-recorded here so it isn't lost.
+**Separate discovery, RESOLVED (was flagged here for whoever next touched paper 1):** this repo's
+`docs/paper/latex/references.bib` had systematic author-name errors — independently confirmed by
+both the researching agent and the verifier pass against primary sources. `shi2025toolret` and
+`lu2025toolde` each had an incorrect given name for one author; `yu2026wildtool` in that file had
+**6 of 7** author given/family names wrong. Titles, eprint IDs, and venues in that file were correct —
+only author-name fields were affected. Fixed in commit `18e9ecd` ("fix(paper1): correct systematic
+author-name and attribution errors in bibliography," 2026-07-31), which re-verified every entry in
+that file against its primary source; the current `references.bib` carries the corrected names.
+Recorded here for the historical record, not as an open item.
 
 ## Candidate 11th artifact (not adopted as a numbered class)
 
