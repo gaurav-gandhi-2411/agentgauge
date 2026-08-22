@@ -67,11 +67,12 @@ Limitations summary, not only in a body-section subordinate clause.
   exactly) and committed as hashed fixtures: `evals/fixtures/frontier_t18_step2_result.json`
   (sha256[:12] `3ca4a25dbd25`) and `evals/fixtures/frontier_t18_step2_raw_calls.json`
   (sha256[:12] `93fb0d77262d`), plus `docs/research/frontier_t18_result.md` for the caveats
-  writeup. **Residual scope note:** the harness code itself (`agentgauge/frontier.py`,
-  `scripts/run_frontier_t18.py`) still lives only in unmerged PR #50 — a from-scratch re-run
-  requires merging that PR first, even though the reported number is now independently
-  verifiable from committed data. State this distinction in §9 (Reproducibility Artifact).
-  Full detail: `docs/paper/evidence_table.md` §1.3.
+  writeup. **Residual scope note — RESOLVED.** PR #50 merged 2026-07-12; the harness code
+  itself (`agentgauge/frontier.py`, `scripts/run_frontier_t18.py`) is now committed to `main`
+  alongside the data, so a from-scratch re-run is possible directly from this repository, with
+  no further merge required (this line was stale after the PR merged and is corrected here,
+  BL1 -- the compiled paper's own §9.2 already stated the current, correct fact and never
+  carried this stale claim). Full detail: `docs/paper/evidence_table.md` §1.3.
 
 ## 3. Measurement / judge validity
 
