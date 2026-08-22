@@ -66,7 +66,8 @@ We report a structural negative result on regression
 localization: the accuracy a localizer needs (task volume, since $\mathrm{MDE}\propto
 1/\sqrt{n}$) is precisely the cost a localizer exists to avoid, producing a real cost-crossover at
 2--4 changed tools against full re-evaluation. % PROV: reports/v0_5_probe_power_fix.md SS5, lines 170-211 | SHA 3d79172 | MEASURED, restated SS7.3
-Finally, we report a falsification record: four
+Finally, we report a falsification record: two
+% PROV: reports/predictive_validity_study.md:12-24 (product-thesis hypothesis, FALSIFIED) and :303 (homogenization-mechanism hypothesis, falsified as stated) | SHA 78fff2f | MEASURED
 pre-registered hypotheses failed, including the authors' own product thesis that an eight-axis
 tool-description quality score predicts agent task success. This paper began as an attempt to
 validate that score as a commercial product. It did not survive contact with an adequately
@@ -138,9 +139,10 @@ ships.
   This is
   not a tuning miss -- it is a structural tension between the accuracy regime and the cost regime
   (Section~\ref{sec:attribution}).
-\item \textbf{A falsification record.} Four pre-registered hypotheses failed, including the
+\item \textbf{A falsification record.} Two pre-registered hypotheses failed, including the
   authors' own product thesis that an eight-axis tool-description quality score predicts agent
   task success (Section~\ref{sec:applications}).
+  % PROV: reports/predictive_validity_study.md:12-24 (product-thesis hypothesis, FALSIFIED) and :303 (homogenization-mechanism hypothesis, falsified as stated) | SHA 78fff2f | MEASURED, restated from abstract
 \end{enumerate}
 
 The remainder of the paper is organized as follows. Section~\ref{sec:related-work} positions this
@@ -415,10 +417,11 @@ continues to fall as the corpus grows: 0.1061 at $n=62$, 0.0848 at $n=100$, 0.06
 re-verified by a separate agent to four decimal places.
 % PROV: reports/v2_1_estimator_rebuild.md:32 | SHA 78fff2f | MEASURED
 % PROV: reports/v2_5_task3_mde_completion.md:17-23,67-88 | SHA 78fff2f | MEASURED
-Aggregate false-alarm rate under the null: \textbf{0.59\%} (13/2,200); stratified, 1.57\%
-(post-$t(G-1)$-fix) for $<10$-task clusters and 0.07\% for $\geq10$-task clusters.
+Aggregate false-alarm rate under the null: \textbf{0.59\%} (13/2,200); stratified,
+post-$t(G-1)$-fix, 1.57\% for $<10$-task clusters, 0.08\% for 10--29-task clusters, and
+0.00\% for $\geq30$-task clusters.
 % PROV: reports/v2_1_estimator_rebuild.md:61-75 | SHA 78fff2f | MEASURED
-% PROV: reports/v2_2_few_clusters_correction.md:32-43 | SHA 78fff2f | MEASURED
+% PROV: reports/v2_2_few_clusters_correction.md:36-38 | SHA 78fff2f | MEASURED
 See Figure~\ref{fig:mde-curve} for the MDE-vs-$n$ curve and Appendix~\ref{app:grids} for the full
 grid.
 
@@ -532,8 +535,8 @@ constraint checker's gold-parameter lookup was authored against the pre-mutation
 \texttt{param\_renamed} is the only defect-injector that renames a schema \emph{key} -- so the
 lookup silently failed against the post-mutation arguments, manufacturing an apparent capability
 regression that was really a broken check. Corrected effect: a clean null for gemma2:9b
-($+0.0$pp, CI $[-20.5,+20.5]$) and qwen2.5:7b ($+6.7$pp, CI $[-7.1,+20.4]$), and a
-CI-includes-zero result for llama3.1:8b ($-13.3$pp, CI $[-40.8,+14.1]$).
+($+0.0$pp, CI $[-20.5,+20.5]$), and a CI-includes-zero result for both llama3.1:8b
+($-13.3$pp, CI $[-40.8,+14.1]$) and qwen2.5:7b ($+6.7$pp, CI $[-7.1,+20.4]$).
 % PROV: reports/v2_3_task1_advisory_audit.md | SHA 78fff2f | MEASURED (current)
 A follow-up blast-radius audit confirmed this bug is scoped only to the
 key-renaming injector; the BLOCKING-tier effects reported elsewhere in this paper
@@ -700,6 +703,25 @@ Stated without hedging, per this paper's own standard for the rest of its claims
   (\texttt{make\_\allowbreak probe\_\allowbreak fn}/\texttt{make\_\allowbreak multi\_\allowbreak
   probe\_\allowbreak fn}). \texttt{sampled\_\allowbreak shapley} in
   particular has zero real (live-LLM) data points anywhere in this project.
+\item \textbf{Single-pass measurement; ``independently verified'' below means computational
+  reproducibility, not a fresh experimental run.} Every quantitative result in this paper comes
+  from a single experimental campaign -- multiple trials per arm within that one campaign where
+  the design calls for it, but no independent replication under a new random seed, a fresh
+  dataset, or a second data-collection pass. Four results are an exception, each verified by a
+  second script or agent re-deriving the same statistic from the same raw data: the ICC and its
+  $N=5{,}535$ base, the corrected MDE of 0.0537 at $n=253$, the
+  \texttt{type\_\allowbreak enum\_\allowbreak contradiction} effect-size range, and the
+  tool-name-ceiling correction underlying Section~\ref{sec:taxonomy}. One further figure, the
+  bootstrap replay-determinism claim underlying Section~\ref{sec:estimator}, is explicitly assumed
+  rather than freshly measured -- inherited from an earlier measurement, confirmed only by code
+  inspection. The full per-claim provenance record (which results are single-pass and which are
+  independently recomputed, with report path and commit SHA for each) is published alongside the
+  code at \url{https://github.com/gaurav-gandhi-2411/agentgauge} (\texttt{agentgauge-harness==0.5.3}
+  on PyPI).
+\item \textbf{The 97.1\% single-prompt LLM-judge false-alarm rate (Section~\ref{sec:taxonomy}) was
+  measured on a sample, not the full corpus.} 174 of 521 tools -- a sampling-scope limitation
+  distinct from the replication caveat above; even a perfectly-replicated version of this specific
+  figure would still describe only that sampled subset.
 \end{itemize}
 
 \section{Conclusion}
@@ -724,7 +746,7 @@ was not the score it set out to sell -- it was the record of everything that tur
 wrong on the way to finding that out.
 
 \textbf{Reproducibility.} Every result in this paper is reproducible against
-\texttt{pip install\allowbreak\ agentgauge-\allowbreak harness==0.5.2} and the fixtures committed
+\texttt{pip install\allowbreak\ agentgauge-\allowbreak harness==0.5.3} and the fixtures committed
 in this repository's
 \texttt{evals/} directory; see Appendix~\ref{app:repro} for exact commands.
 
@@ -757,8 +779,8 @@ validation.md}.]
 \section{Reproduction instructions}
 \label{app:repro}
 \begin{verbatim}
-pip install agentgauge-harness==0.5.2
-git clone <this repository>
+pip install agentgauge-harness==0.5.3
+git clone https://github.com/gaurav-gandhi-2411/agentgauge
 cd agentgauge
 uv sync
 uv run pytest                     # full test suite, no network, no paid calls

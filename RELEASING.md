@@ -21,24 +21,31 @@ steps lived only in whoever ran them last time. Written after running the flow f
    `cost_ceiling_usd: .inf`, silently contradicting the other three adapters' finite default —
    found in a cross-repo audit, not by anyone re-checking the example files against the code
    they're meant to demonstrate.
-4. **Commit and open a PR.** CI (`verify`/`hygiene`/`pip-audit`) runs against the version-bumped
+4. **Every version pin in the papers and their submission docs is re-checked against the
+   version this release is about to publish.** Real incident (BL2): `docs/paper2/main.tex`'s
+   reproduction-instructions appendix and `docs/paper2/SUBMISSION.md`'s code-availability
+   section both still cited `agentgauge-harness==0.5.2` after `0.5.3` had already shipped --
+   found in a cross-repo audit, not by anyone re-checking the papers against the version they
+   were published from. Grep both papers' `.tex` files and `docs/paper2/SUBMISSION.md` for
+   `agentgauge-harness==` and `agentgauge==` before every tag.
+5. **Commit and open a PR.** CI (`verify`/`hygiene`/`pip-audit`) runs against the version-bumped
    code. Merge once green — never self-merge.
-5. **Tag the merged commit and push the tag:**
+6. **Tag the merged commit and push the tag:**
    ```bash
    git checkout main && git pull
    git tag vX.Y.Z <merged-commit-sha>   # the exact commit, not blindly HEAD
    git push origin vX.Y.Z
    ```
-6. **`release.yml` takes it from there** — triggered by the `v*` tag push, builds from that
+7. **`release.yml` takes it from there** — triggered by the `v*` tag push, builds from that
    exact tag ref (never a branch head), `twine check`s the artifact, publishes via
    `pypa/gh-action-pypi-publish@release/v1` using OIDC. Confirm it actually succeeded — read
    the log for the real upload confirmation (a Sigstore `Successfully verified SCT...` line and
    `View at: https://pypi.org/project/agentgauge-harness/X.Y.Z/`), not just a green checkmark.
-7. **Post-publish verify from a fresh environment against the real index** — PyPI index
+8. **Post-publish verify from a fresh environment against the real index** — PyPI index
    propagation can lag the workflow's own success by several minutes; a failed install
    immediately after publish is not necessarily a real failure, re-check before concluding one.
    Confirm `agentgauge --version` reports the new version, and re-run whatever specific behavior
    this release changed against the actual published artifact — not the local build.
-8. **Do not yank or delete a published version, ever.** PyPI does not allow re-uploading a
+9. **Do not yank or delete a published version, ever.** PyPI does not allow re-uploading a
    version's metadata; a wrong claim in a published README stays wrong for that version
    permanently. Ship a new version that supersedes it instead.

@@ -4,7 +4,7 @@
 Artifacts, and Minimum Detectable Effects in Tool-Use Benchmarks*
 
 **Repo:** `C:\Users\gaura\ml-projects\agentgauge`
-**Artifact:** `agentgauge-harness` v0.5.2 on PyPI (Apache-2.0)
+**Artifact:** `agentgauge-harness` v0.5.3 on PyPI (Apache-2.0)
 **Target:** arXiv cs.SE / cs.LG (cross-list cs.AI). Workshop-to-conference track.
 **Status:** every number below is already measured and committed to `reports/`. This
 is an assembly job, not a research job. Do not run new experiments to fill sections.
@@ -136,7 +136,7 @@ reporting; publish falsifications.
 
 ### Appendices
 Full MDE grids, ablation tables, artifact detector pseudocode, corpus statistics,
-reproduction instructions against `agentgauge-harness` v0.5.2.
+reproduction instructions against `agentgauge-harness` v0.5.3.
 
 ---
 
@@ -169,7 +169,8 @@ final PDF but kept in a companion `provenance.md`.
 - No new experiments. If a section needs a number that does not exist, flag the gap
   rather than generating it.
 - Reproducibility: the paper must state that every result is reproducible against
-  `pip install agentgauge-harness==0.5.2` plus the committed fixtures.
+  `pip install agentgauge-harness==0.5.3` (the currently published version -- re-check this
+  pin before every release, BL2.3) plus the committed fixtures.
 
 ---
 

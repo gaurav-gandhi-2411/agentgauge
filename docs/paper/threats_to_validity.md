@@ -67,11 +67,12 @@ Limitations summary, not only in a body-section subordinate clause.
   exactly) and committed as hashed fixtures: `evals/fixtures/frontier_t18_step2_result.json`
   (sha256[:12] `3ca4a25dbd25`) and `evals/fixtures/frontier_t18_step2_raw_calls.json`
   (sha256[:12] `93fb0d77262d`), plus `docs/research/frontier_t18_result.md` for the caveats
-  writeup. **Residual scope note:** the harness code itself (`agentgauge/frontier.py`,
-  `scripts/run_frontier_t18.py`) still lives only in unmerged PR #50 — a from-scratch re-run
-  requires merging that PR first, even though the reported number is now independently
-  verifiable from committed data. State this distinction in §9 (Reproducibility Artifact).
-  Full detail: `docs/paper/evidence_table.md` §1.3.
+  writeup. **Residual scope note — RESOLVED.** PR #50 merged 2026-07-12; the harness code
+  itself (`agentgauge/frontier.py`, `scripts/run_frontier_t18.py`) is now committed to `main`
+  alongside the data, so a from-scratch re-run is possible directly from this repository, with
+  no further merge required (this line was stale after the PR merged and is corrected here,
+  BL1 -- the compiled paper's own §9.2 already stated the current, correct fact and never
+  carried this stale claim). Full detail: `docs/paper/evidence_table.md` §1.3.
 
 ## 3. Measurement / judge validity
 
@@ -123,3 +124,20 @@ Limitations summary, not only in a body-section subordinate clause.
 - Every number drafted into paper prose must trace to a row in `docs/paper/evidence_table.md`;
   if a claim doesn't have a row, it doesn't go in the paper without first adding and sourcing
   that row.
+
+## 6. Replication scope
+
+Added BK1.6 -- the summarized copy of this item is what actually reaches a reader (see
+`body_content.tex` §8.6, "Replication scope"); `\url{docs/paper/threats_to_validity.md}`
+(§8's opening line) is not resolvable from a compiled PDF outside this repository, so this
+file is the full-list record, not the delivery mechanism.
+
+- **Single-pass measurement.** Every quantitative result in this paper's regime map and
+  follow-on experiments comes from a single experimental campaign: multiple trials per arm
+  within that one campaign (5 trials/arm for T18 and the Q-series, 3 trials/arm for
+  FRONTIER-T18 and EXP-3 -- see Section 3's trial-count-deviation item above for why), but no
+  independent replication under a new random seed or a fresh dataset.
+- **The sole exception: FRONTIER-T18.** A second, independent recount of the same 240 raw
+  per-call records reproduced the originally reported percentages exactly -- a
+  computational-reproducibility check on the same underlying data, not a fresh experimental
+  replication. Every other figure in this paper has no such second pass.
