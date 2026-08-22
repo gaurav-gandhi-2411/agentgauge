@@ -65,12 +65,12 @@ typeset PDF shows -- this section states what to enter there, matching the PDF.
 
 ## License
 
-**Apache License 2.0** (this repository's `LICENSE` file). arXiv's default distribution license
-is separate from the code license; at upload time, select an arXiv license consistent with the
-paper being a companion research artifact to Apache-2.0-licensed code — arXiv's own
-"arXiv.org perpetual, non-exclusive license" is the typical default if no stronger open license
-(e.g. CC BY 4.0) is preferred. This is an author decision at submission time, not fixed by this
-wave.
+**Code:** Apache License 2.0 (this repository's `LICENSE` file) — unaffected by the paper's
+arXiv distribution license below; the two are independent.
+
+**arXiv distribution license: CC BY 4.0.** Decided. At upload time, select "CC BY 4.0" in
+arXiv's license picker (not the "arXiv.org perpetual, non-exclusive license" default, and not
+CC BY-SA or CC BY-NC) for both papers.
 
 ## Code availability
 
