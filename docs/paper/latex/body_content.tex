@@ -1017,6 +1017,18 @@ before committing it as a hashed fixture (Section 9.2). This is now
 resolved for the reported number; the harness code that produced it
 is now merged to \texttt{main} as well (Section 9.2).
 
+\hypertarget{replication-scope}{%
+\subsection{8.6 Replication scope}\label{replication-scope}}
+
+Every quantitative result in this paper's regime map and follow-on experiments comes from a
+single experimental campaign: multiple trials per arm within that one campaign (five trials per
+arm for T18 and the Q-series, three trials per arm for FRONTIER-T18 and EXP-3), but no
+independent replication under a new random seed or a fresh dataset. The sole exception is
+FRONTIER-T18: a second, independent recount of the same 240 raw per-call records reproduced the
+originally reported percentages exactly --- a computational-reproducibility check on the same
+underlying data, not a fresh experimental replication. The full per-result evidence trace is
+published alongside the code at \url{https://github.com/gaurav-gandhi-2411/agentgauge}.
+
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
 \hypertarget{reproducibility-artifact}{%

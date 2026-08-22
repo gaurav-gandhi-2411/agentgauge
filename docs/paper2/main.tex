@@ -703,6 +703,25 @@ Stated without hedging, per this paper's own standard for the rest of its claims
   (\texttt{make\_\allowbreak probe\_\allowbreak fn}/\texttt{make\_\allowbreak multi\_\allowbreak
   probe\_\allowbreak fn}). \texttt{sampled\_\allowbreak shapley} in
   particular has zero real (live-LLM) data points anywhere in this project.
+\item \textbf{Single-pass measurement; ``independently verified'' below means computational
+  reproducibility, not a fresh experimental run.} Every quantitative result in this paper comes
+  from a single experimental campaign -- multiple trials per arm within that one campaign where
+  the design calls for it, but no independent replication under a new random seed, a fresh
+  dataset, or a second data-collection pass. Four results are an exception, each verified by a
+  second script or agent re-deriving the same statistic from the same raw data: the ICC and its
+  $N=5{,}535$ base, the corrected MDE of 0.0537 at $n=253$, the
+  \texttt{type\_\allowbreak enum\_\allowbreak contradiction} effect-size range, and the
+  tool-name-ceiling correction underlying Section~\ref{sec:taxonomy}. One further figure, the
+  bootstrap replay-determinism claim underlying Section~\ref{sec:estimator}, is explicitly assumed
+  rather than freshly measured -- inherited from an earlier measurement, confirmed only by code
+  inspection. The full per-claim provenance record (which results are single-pass and which are
+  independently recomputed, with report path and commit SHA for each) is published alongside the
+  code at \url{https://github.com/gaurav-gandhi-2411/agentgauge} (\texttt{agentgauge-harness==0.5.3}
+  on PyPI).
+\item \textbf{The 97.1\% single-prompt LLM-judge false-alarm rate (Section~\ref{sec:taxonomy}) was
+  measured on a sample, not the full corpus.} 174 of 521 tools -- a sampling-scope limitation
+  distinct from the replication caveat above; even a perfectly-replicated version of this specific
+  figure would still describe only that sampled subset.
 \end{itemize}
 
 \section{Conclusion}
@@ -727,7 +746,7 @@ was not the score it set out to sell -- it was the record of everything that tur
 wrong on the way to finding that out.
 
 \textbf{Reproducibility.} Every result in this paper is reproducible against
-\texttt{pip install\allowbreak\ agentgauge-\allowbreak harness==0.5.2} and the fixtures committed
+\texttt{pip install\allowbreak\ agentgauge-\allowbreak harness==0.5.3} and the fixtures committed
 in this repository's
 \texttt{evals/} directory; see Appendix~\ref{app:repro} for exact commands.
 
@@ -760,8 +779,8 @@ validation.md}.]
 \section{Reproduction instructions}
 \label{app:repro}
 \begin{verbatim}
-pip install agentgauge-harness==0.5.2
-git clone <this repository>
+pip install agentgauge-harness==0.5.3
+git clone https://github.com/gaurav-gandhi-2411/agentgauge
 cd agentgauge
 uv sync
 uv run pytest                     # full test suite, no network, no paid calls
