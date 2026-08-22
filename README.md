@@ -7,6 +7,9 @@ linter as a secondary utility. It is also the research program behind
 tool descriptions helps, does nothing, or backfires.**
 
 [![CI](https://github.com/gaurav-gandhi-2411/agentgauge/actions/workflows/ci.yml/badge.svg)](https://github.com/gaurav-gandhi-2411/agentgauge/actions/workflows/ci.yml)
+[![PyPI](https://img.shields.io/pypi/v/agentgauge-harness.svg)](https://pypi.org/project/agentgauge-harness/)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://pypi.org/project/agentgauge-harness/)
+[![License: Apache-2.0](https://img.shields.io/badge/License-Apache--2.0-blue.svg)](LICENSE)
 
 ## `agentgauge diff` — measured, not asserted
 
