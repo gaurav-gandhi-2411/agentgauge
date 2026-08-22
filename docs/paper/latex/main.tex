@@ -17,6 +17,12 @@
 \usepackage{microtype}
 \usepackage{enumitem}
 
+% Small safety margin so the long GitHub blob URLs added in BL1 (pinned repro links, replacing
+% repo-relative \url{} calls that didn't resolve for an arXiv reader) don't leave a residual
+% few-point overfull box -- same fix already used in the companion paper (docs/paper2/main.tex),
+% standard and low-risk, no effect on ordinary paragraphs.
+\setlength{\emergencystretch}{3em}
+
 % This paper's own section numbers (e.g. "4.2", "4.3", "4.4" -- Section 4
 % deliberately has no "4.1"; Section 8's "8.3.1" deliberately appears before
 % "8.1") are hard-coded as literal text in every heading. Disabling LaTeX's
