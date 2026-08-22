@@ -34,7 +34,7 @@ Sonnet 3.5 reach state-of-the-art on SWE-bench Verified (Aizawa,
 Engineering blog, published September 11, 2025, cited for content
 only) \nocite{anthropic2025tools}. GitHub's
 engineering team, running an offline evaluation harness against their
-own MCP server --- the same \url{github/github-mcp-server} mirrored
+own MCP server --- the same \url{https://github.com/github/github-mcp-server} mirrored
 in RW1 (§4.3.1) --- reports the same sensitivity from the other side:
 ``tightening a description, adding or removing a tool, or combining a
 few similar tools can shift results a lot'' (Bobrova,
@@ -56,7 +56,7 @@ Descriptions Are Smelly!,'' arXiv:2602.14878, 2026) \nocite{hasan2026smelly}. Re
 collisions cause user-visible failures in production agent frameworks,
 independent of any synthetic fixture (e.g., a reported GitHub issue:
 ``Duplicate tool names across MCP servers cause errors,''
-\url{openai/openai-agents-python#464}) \nocite{openai2025issue464}. Taken together, this is real
+\url{https://github.com/openai/openai-agents-python/issues/464}) \nocite{openai2025issue464}. Taken together, this is real
 evidence that description quality matters \emph{somewhere} and that even
 small edits move outcomes --- but none of these sources characterize the
 \emph{boundary} of where it matters, whether it generalizes across
@@ -232,7 +232,9 @@ risky outside it.
 Protocol}\label{methods-the-frozen-evaluation-protocol}}
 
 All results in this paper are produced under a single protocol,
-committed once (\url{docs/research/frozen_protocol.md}) and never
+committed once
+(\url{https://github.com/gaurav-gandhi-2411/agentgauge/blob/a78462f/docs/research/frozen_protocol.md})
+and never
 edited after any experiment's results were collected. This section
 states it in full; individual experiment sections do not repeat it.
 
@@ -471,8 +473,8 @@ protocol.
 RW2)}\label{no-headroom-real-servers-rw1-rw2}}
 
 Two production MCP-server mirrors --- GitHub
-(\url{github/github-mcp-server}, 21 tools, 5 confusable families,
-real docstrings) and AWS IAM (\url{awslabs/mcp}, 29 tools, 3
+(\url{https://github.com/github/github-mcp-server}, 21 tools, 5 confusable families,
+real docstrings) and AWS IAM (\url{https://github.com/awslabs/mcp}, 29 tools, 3
 confusable families, including four-way attach/detach/user/group
 confusability) --- were tested with real, unmodified docstrings. Both
 resolved \textbf{100\%} of tasks correctly, including every
@@ -568,7 +570,7 @@ GitHub's own maintainers consolidated to reduce confusion (0/2 overlap).
 On AWS IAM, the score is flat at \textasciitilde68.7/100, and does not
 flag any of the three contested families (0/3 overlap); the accompanying
 name-collision heuristic instead flags verb-antonym pairs
-(\url{attach_user_policy}/\url{detach_user_policy}) that
+(\texttt{attach\_user\_policy}/\texttt{detach\_user\_policy}) that
 caused zero real confusion. A single number per catalog is structurally
 incapable of naming \emph{which} pair is the problem --- this is the
 motivating gap for the localizer tested in Section 6, not a calibration
@@ -924,7 +926,9 @@ call.
 \section{8. Threats to Validity /
 Limitations}\label{threats-to-validity-limitations}}
 
-Full list: \url{docs/paper/threats_to_validity.md}. Summarized here
+Full list:
+\url{https://github.com/gaurav-gandhi-2411/agentgauge/blob/a78462f/docs/paper/threats_to_validity.md}.
+Summarized here
 by category; every item there traces to a specific finding already
 reported in Sections 4--6, not a hedge added at write-up time.
 \textbf{The note opening §8 is read first} --- it is the single most important threat
@@ -1017,6 +1021,18 @@ before committing it as a hashed fixture (Section 9.2). This is now
 resolved for the reported number; the harness code that produced it
 is now merged to \texttt{main} as well (Section 9.2).
 
+\hypertarget{replication-scope}{%
+\subsection{8.6 Replication scope}\label{replication-scope}}
+
+Every quantitative result in this paper's regime map and follow-on experiments comes from a
+single experimental campaign: multiple trials per arm within that one campaign (five trials per
+arm for T18 and the Q-series, three trials per arm for FRONTIER-T18 and EXP-3), but no
+independent replication under a new random seed or a fresh dataset. The sole exception is
+FRONTIER-T18: a second, independent recount of the same 240 raw per-call records reproduced the
+originally reported percentages exactly --- a computational-reproducibility check on the same
+underlying data, not a fresh experimental replication. The full per-result evidence trace is
+published alongside the code at \url{https://github.com/gaurav-gandhi-2411/agentgauge}.
+
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
 \hypertarget{reproducibility-artifact}{%
@@ -1027,10 +1043,13 @@ is now merged to \texttt{main} as well (Section 9.2).
 
 Every figure in Sections 4--6 traces to a committed file on this
 paper-writing branch, verified against a specific commit reachable from
-\texttt{HEAD} (full trace: \url{docs/paper/evidence_table.md}). Most
+\texttt{HEAD} (full trace:
+\url{https://github.com/gaurav-gandhi-2411/agentgauge/blob/a78462f/docs/paper/evidence_table.md}).
+Most
 fixture files carry SHA-256{[}:12{]} hashes recorded at pre-registration
 time, before their experiment's results were known (protocol appendix:
-\url{docs/research/frozen_protocol.md}). \textbf{The FRONTIER-T18
+\url{https://github.com/gaurav-gandhi-2411/agentgauge/blob/a78462f/docs/research/frozen_protocol.md}).
+\textbf{The FRONTIER-T18
 fixtures are the stated exception} --- see §9.2 immediately below: their
 hashes were computed post-hoc, during this paper's preparation, not at
 pre-registration time, because the original pre-registered artifact had
@@ -1043,15 +1062,16 @@ silently)}\label{frontier-t18-datacode-split-state-plainly-not-silently}}
 
 The result data underlying Section 4.2.3 is committed and independently
 re-derivable:
-\url{evals/fixtures/frontier_t18_step2_result.json} (per-task,
-sha256{[}:12{]}=\texttt{3ca4a25dbd25}) and
-\url{evals/fixtures/frontier_t18_step2_raw_calls.json} (all 240
-raw per-call LLM responses, sha256{[}:12{]}=\texttt{93fb0d77262d}) ---
+\url{https://github.com/gaurav-gandhi-2411/agentgauge/blob/a78462f/evals/fixtures/frontier_t18_step2_result.json}
+(per-task, sha256{[}:12{]}=\texttt{3ca4a25dbd25}) and
+\url{https://github.com/gaurav-gandhi-2411/agentgauge/blob/a78462f/evals/fixtures/frontier_t18_step2_raw_calls.json}
+(all 240 raw per-call LLM responses, sha256{[}:12{]}=\texttt{93fb0d77262d}) ---
 re-counting \texttt{SELECTED-CORRECT} directly from the raw calls
 reproduces 71/120 (Arm A) and 120/120 (Arm B) exactly. The
 \textbf{harness code} that produced these files
-(\url{agentgauge/frontier.py},
-\url{scripts/run_frontier_t18.py}) is now committed to \texttt{main}
+(\url{https://github.com/gaurav-gandhi-2411/agentgauge/blob/a78462f/agentgauge/frontier.py},
+\url{https://github.com/gaurav-gandhi-2411/agentgauge/blob/a78462f/scripts/run_frontier_t18.py})
+is now committed to \texttt{main}
 alongside the data --- a from-scratch re-run of this experiment is
 possible directly from this repository, with no further merge required.
 
@@ -1106,19 +1126,22 @@ boundary that makes ``broadly'' precise enough to check and re-test.
 \begin{itemize}
 \item
   \textbf{A.1} Full cross-experiment regime table:
-  \url{docs/research/exp4_regime_map.md} §Cross-Experiment Regime
-  Table.
+  \url{https://github.com/gaurav-gandhi-2411/agentgauge/blob/a78462f/docs/research/exp4_regime_map.md}
+  §Cross-Experiment Regime Table.
 \item
   \textbf{A.2} Frozen judge/generator prompts (Guard-B target-grounded
   prompt; pairwise binary/graded confusability prompts):
-  \url{agentgauge/fixer.py}
-  (\url{_DESC_GENERATOR_GUARD_B_PROMPT}),
-  \url{docs/research/exp3_pre_registration.md} §2, §7.
+  \url{https://github.com/gaurav-gandhi-2411/agentgauge/blob/a78462f/agentgauge/fixer.py}
+  (\texttt{\_DESC\_GENERATOR\_GUARD\_B\_PROMPT}),
+  \url{https://github.com/gaurav-gandhi-2411/agentgauge/blob/a78462f/docs/research/exp3_pre_registration.md}
+  §2, §7.
 \item
   \textbf{A.3} Fixture hash manifest: generate per
-  \url{docs/research/frozen_protocol.md} Appendix; the two
-  FRONTIER-T18 hashes added during this paper's preparation are recorded in Section 9.2
-  above and in \url{docs/paper/evidence_table.md} §1.3.
+  \url{https://github.com/gaurav-gandhi-2411/agentgauge/blob/a78462f/docs/research/frozen_protocol.md}
+  Appendix; the two FRONTIER-T18 hashes added during this paper's preparation are recorded in
+  Section 9.2 above and in
+  \url{https://github.com/gaurav-gandhi-2411/agentgauge/blob/a78462f/docs/paper/evidence_table.md}
+  §1.3.
 \item
   \textbf{A.4} Per-server EXP-1 table: Section 5.3 above (reproduced
   from \texttt{STATUS.md} EXP-1 section).
@@ -1129,7 +1152,7 @@ boundary that makes ``broadly'' precise enough to check and re-test.
   primary source, not copied from a prior internal desk-research doc
   without re-verification). None were invented; where a candidate
   citation from prior internal research
-  (\url{reports/frontier_phase1_research.md}, itself
+  (\texttt{reports/frontier\_phase1\_research.md}, itself
   gitignored/uncommitted and self-flagged as ``arXiv IDs not
   independently re-resolved'') could not be verified to support its
   claimed content, it was dropped rather than included on trust --- see
@@ -1171,7 +1194,7 @@ boundary that makes ``broadly'' precise enough to check and re-test.
     E., ``Model Context Protocol (MCP) Tool Descriptions Are Smelly!
     Towards Improving AI Agent Efficiency with Augmented MCP Tool
     Descriptions,'' arXiv:2602.14878, 2026. Verified via
-    \url{arxiv.org/abs/2602.14878} --- 856 tools / 103 servers,
+    \url{https://arxiv.org/abs/2602.14878} --- 856 tools / 103 servers,
     97.1\% $\geq$1 ``smell,'' 56\% unclear purpose, +5.85pp median
     task-success gain from augmentation, 16.67\% regression rate,
     +67.46\% execution-step inflation, all confirmed against the
@@ -1181,14 +1204,14 @@ boundary that makes ``broadly'' precise enough to check and re-test.
     ``Tools are under-documented: Simple Document Expansion Boosts Tool
     Retrieval'' (Tool-DE), arXiv:2510.22670, 2025 (arXiv ID year prefix
     ``25'' = 2025 --- corrected in second-pass audit; originally
-    mislabeled 2026). Verified via \url{arxiv.org/abs/2510.22670} ---
+    mislabeled 2026). Verified via \url{https://arxiv.org/abs/2510.22670} ---
     Tool-Embed/Tool-Rank, SOTA retrieval gains from LLM-driven document
     expansion, confirmed against the abstract. \nocite{lu2025toolde}
   \item
     Shi, Z., Wang, Y., Yan, L., Ren, P., Wang, S., Yin, D., and Ren, Z.,
     ``Retrieval Models Aren't Tool-Savvy: Benchmarking Tool Retrieval
     for Large Language Models'' (ToolRet), ACL 2025 Findings
-    (\url{aclanthology.org/2025.findings-acl.1258}) /
+    (\url{https://aclanthology.org/2025.findings-acl.1258}) /
     arXiv:2503.01763. Verified via web search cross-referencing the ACL
     Anthology and arXiv listings --- 7.6k tasks / 43k tools, best model
     (NV-embed-v1) 33.83 nDCG@10, both figures confirmed. \nocite{shi2025toolret}
@@ -1196,7 +1219,7 @@ boundary that makes ``broadly'' precise enough to check and re-test.
     Yu, P., Liu, W., Yang, Y., Li, J., Zhang, Z., Feng, X., and Zhang,
     F., ``Benchmarking LLM Tool-Use in the Wild'' (WildToolBench),
     arXiv:2604.06185, 2026. Verified via
-    \url{arxiv.org/abs/2604.06185v1} --- confirmed: ``no model
+    \url{https://arxiv.org/abs/2604.06185v1} --- confirmed: ``no model
     achieves an accuracy of more than 15\%'' across 57 evaluated LLMs.
     \textbf{Not cited: a specific ``Grok-4 24.07\% wrong-name error''
     figure} from the prior internal desk-research doc --- this could not
@@ -1205,7 +1228,7 @@ boundary that makes ``broadly'' precise enough to check and re-test.
   \item
     Babu, R. S., and Iyer, L. G., ``ToolChoiceConfusion: Causal Minimal
     Tool Filtering for Reliable LLM Agents,'' arXiv:2606.06284, 2026.
-    Verified via \url{arxiv.org/abs/2606.06284v1} --- confirmed:
+    Verified via \url{https://arxiv.org/abs/2606.06284v1} --- confirmed:
     Causal Minimal Tool Filtering (CMTF), 102 tasks / 100 tools / four
     LLM backends, reliability-vs-tool-menu-size problem statement.
     \textbf{Not cited: the prior internal doc's characterization of this
@@ -1216,7 +1239,7 @@ boundary that makes ``broadly'' precise enough to check and re-test.
     excluded rather than asserted on trust. \nocite{babu2026toolchoice}
   \item
     GitHub issue, ``Duplicate tool names across MCP servers cause
-    errors,'' \url{github.com/openai/openai-agents-python#464},
+    errors,'' \url{https://github.com/openai/openai-agents-python/issues/464},
     opened April 9, 2025 (closed). Verified via \texttt{gh\ api} --- title,
     creation date, and closed state confirmed. \textbf{Third-pass audit
     note:} bibkey originally dated 2024 with no explicit year field;
@@ -1224,7 +1247,7 @@ boundary that makes ``broadly'' precise enough to check and re-test.
     2025 --- corrected here. \nocite{openai2025issue464}
   \item
     GitHub issue, ``Feedback for dynamic tool selection,''
-    \url{github.com/github/github-mcp-server#275}, opened April 14, 2025
+    \url{https://github.com/github/github-mcp-server/issues/275}, opened April 14, 2025
     (closed). Verified
     via \texttt{gh\ api} --- title, creation date, and closed state
     confirmed; referenced only in this appendix as supporting context, not
@@ -1249,7 +1272,7 @@ boundary that makes ``broadly'' precise enough to check and re-test.
   \item
     Any secondary-source selection-accuracy-vs-tool-count percentages
     (e.g., ``\textgreater90\% at 5-7 tools → \textasciitilde13\% at 100+
-    tools'') from \url{docs/research/phase1-buyer-and-landscape.md}
+    tools'') from \texttt{docs/research/phase1-buyer-and-landscape.md}
     --- that document's own ``Confidence \& gaps'' section already flags
     these as ``secondary-source paraphrase, not verified against a
     primary benchmark.'' Not used in this paper for the same reason its
@@ -1283,7 +1306,8 @@ boundary that makes ``broadly'' precise enough to check and re-test.
     Python-only frame reported in §5.2. Full commit-level trail:
     \texttt{STATUS.md} EXP-1 section, ``Frame history'' paragraph;
     ratification commit \texttt{538affe};
-    \url{docs/paper/evidence_table.md} §2.
+    \url{https://github.com/gaurav-gandhi-2411/agentgauge/blob/a78462f/docs/paper/evidence_table.md}
+    §2.
   \end{itemize}
 \item
   \textbf{A.7} Full Q3→Q6 source-aware generation progression (moved
@@ -1325,7 +1349,9 @@ boundary that makes ``broadly'' precise enough to check and re-test.
   inversion: scoped + docstrings + a target-grounded, non-comparative
   prompt is safe AND 100\% recovering. Q6 confirms this holds blanket
   across a larger, 23-tool catalog with zero regressions. Full
-  narrative: \url{docs/research/exp4_regime_map.md} §Regime 2;
-  \texttt{STATUS.md} Q3/Q4/Q5/Q6 sections;
-  \url{docs/paper/evidence_table.md} §1.2.
+  narrative:
+  \url{https://github.com/gaurav-gandhi-2411/agentgauge/blob/a78462f/docs/research/exp4_regime_map.md}
+  §Regime 2; \texttt{STATUS.md} Q3/Q4/Q5/Q6 sections;
+  \url{https://github.com/gaurav-gandhi-2411/agentgauge/blob/a78462f/docs/paper/evidence_table.md}
+  §1.2.
 \end{itemize}

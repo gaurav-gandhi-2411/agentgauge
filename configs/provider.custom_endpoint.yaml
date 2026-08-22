@@ -7,6 +7,7 @@ base_url: https://llm-gateway.internal.example.com/v1
 auth_header_name: Authorization
 auth_header_value_env: INTERNAL_GATEWAY_TOKEN
 auth_header_prefix: "Bearer "
-cost_ceiling_usd: .inf
+cost_ceiling_usd: 5.0   # BC3: was .inf -- an internal gateway may still route to a real
+                         # paid model behind it; raise this explicitly if you need to.
 timeout: 180.0
 max_retries: 3
