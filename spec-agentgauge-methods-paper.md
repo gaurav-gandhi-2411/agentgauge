@@ -169,7 +169,8 @@ final PDF but kept in a companion `provenance.md`.
 - No new experiments. If a section needs a number that does not exist, flag the gap
   rather than generating it.
 - Reproducibility: the paper must state that every result is reproducible against
-  `pip install agentgauge-harness==0.5.2` plus the committed fixtures.
+  `pip install agentgauge-harness==0.5.3` (the currently published version -- re-check this
+  pin before every release, BL2.3) plus the committed fixtures.
 
 ---
 
