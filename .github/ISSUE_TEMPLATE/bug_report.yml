@@ -1,0 +1,64 @@
+name: Bug report
+description: Something in agentgauge behaved incorrectly, crashed, or produced a wrong verdict.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting. `agentgauge attribute` refuses to run without `--experimental` on
+        purpose (measured uneconomical at every tested configuration) -- if you hit that refusal,
+        it's working as intended, not a bug. This template is for genuine bugs: wrong scores,
+        unhandled crashes, or behavior that contradicts the README's measured claims.
+
+  - type: input
+    id: version
+    attributes:
+      label: agentgauge-harness version
+      description: "`agentgauge --version`"
+      placeholder: "0.5.3"
+    validations:
+      required: true
+
+  - type: input
+    id: python-version
+    attributes:
+      label: Python version
+      placeholder: "3.11.9"
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: What did you expect to happen (a specific verdict, score, or output)?
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: What actually happened -- the full traceback or the actual (wrong) output, not a summary.
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: Minimal reproduction
+      description: |
+        The smallest MCP server + task set that reproduces this -- `examples/echo_server.py` is
+        the bundled minimal server if you need a starting point. Run with `--mock` if this isn't
+        specific to a live model call, so the report doesn't depend on your provider/API key.
+      render: bash
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checklist
+      options:
+        - label: I checked that this isn't the documented `--experimental` gate on `agentgauge attribute` (see README, cost-crossover section).
+          required: true
