@@ -11,10 +11,12 @@ steps lived only in whoever ran them last time. Written after running the flow f
    - `agentgauge/__init__.py`: `__version__`
    - Run `uv sync` afterward so `uv.lock`'s own self-referential version resyncs — this exact
      class of drift has bitten the sibling `tracegauge`/`adk-tracegauge` repos before.
-2. **This repo has no `CHANGELOG.md`** — release notes are written directly as the GitHub
-   Release body at tag time (see `gh release view v0.5.2` for the existing convention: real
-   hand-authored prose sections, not auto-generated "What's Changed" text). Order findings by
-   severity, not by discovery order — a real CVE fix leads, a docs correction trails.
+2. **Move the `[Unreleased]` entries in `CHANGELOG.md` under the new version heading** (dated with the
+   tag date), then write the GitHub Release body from it (see `gh release view v0.5.2` for the
+   convention: real hand-authored prose sections, not auto-generated "What's Changed" text). Order
+   findings by severity, not by discovery order — a real CVE fix leads, a docs correction trails.
+   `CHANGELOG.md` was reconstructed from the tags and Release bodies on 2026-10-08; before that this
+   repo had none.
 3. **Every example config/doc code block presented as copy-pasteable actually reflects the
    shipped code's real defaults, and every runnable example actually runs.** Real incident:
    `configs/provider.openai_compatible.yaml`/`provider.custom_endpoint.yaml` explicitly set
