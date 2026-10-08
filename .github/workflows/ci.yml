@@ -26,6 +26,52 @@ jobs:
       - name: Run verify.sh
         run: bash scripts/verify.sh
 
+  # `verify` runs the suite on 3.11, which is the floor (requires-python >=3.11), while the classifiers
+  # also claim 3.12 and 3.13. tracegauge shipped three releases that did not import on its floor because
+  # CI only ran one version (found 2026-10-07); here the floor IS the tested version, so this closes the
+  # other direction: the claimed versions above it. A SEPARATE job, not a matrix on `verify`, because
+  # renaming that job's check would orphan the required check "verify" and block every merge. Covered
+  # by the required aggregate check "python-compat (every leg)" below.
+  python-compat:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install uv
+        run: pip install uv --quiet
+
+      - name: Install dependencies
+        run: uv sync --extra dev --python ${{ matrix.python-version }}
+
+      - name: Unit tests
+        run: uv run pytest tests/ -v
+
+  # One check that is red if ANY python-compat leg is red. Legs are named "python-compat (3.12)" etc.;
+  # requiring each by name would go stale the day a version is added or dropped, and a leg that is not
+  # required cannot block a merge (adk-tracegauge found this on its first bot-opened PR, 2026-10-08:
+  # every required check green, a new leg red, the merge gate "eligible"). This name is stable, so it
+  # can be a required check that covers every leg, present and future.
+  python-compat-all:
+    name: python-compat (every leg)
+    if: ${{ always() }}
+    needs: [python-compat]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Every python-compat leg passed
+        env:
+          COMPAT_RESULT: ${{ needs.python-compat.result }}
+        run: |
+          echo "python-compat (all legs): $COMPAT_RESULT"
+          [ "$COMPAT_RESULT" = "success" ]
+
   hygiene:
     runs-on: ubuntu-latest
     steps:
