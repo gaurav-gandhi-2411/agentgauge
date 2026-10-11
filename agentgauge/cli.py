@@ -12,7 +12,7 @@ import typer
 from rich.console import Console
 
 from agentgauge import __version__
-from agentgauge.audit import AuditReport, run_audit
+from agentgauge.audit import AuditReport, CoverageSummary, run_audit, summarize_constraint_coverage
 from agentgauge.client import cleanup_connection, connect_http, connect_stdio
 from agentgauge.constraints import BlindTask, constraint_satisfaction
 from agentgauge.fixer import (
@@ -238,6 +238,7 @@ async def _diff_async(
     after_tools: list[Any] | None = None
     before_stats: TrialCollectionStats | None = None
     after_stats: TrialCollectionStats | None = None
+    coverage: CoverageSummary | None = None  # needs the tasks file, so live runs only
     if replay_before is not None and replay_after is not None:
         before_trials = _load_replay_trials(replay_before)
         after_trials = _load_replay_trials(replay_after)
@@ -264,6 +265,7 @@ async def _diff_async(
             json_output=json_output,
             fail_message="Audit failed -- refusing to run live trials. Fix the flagged issue(s) and re-run.",
         )
+        coverage = summarize_constraint_coverage(tasks, before_tools)
         before_trials, before_stats = await _collect_trials(
             before,
             tasks,
@@ -322,6 +324,7 @@ async def _diff_async(
             },
             "before_cost": _cost_payload(before_stats),
             "after_cost": _cost_payload(after_stats),
+            "constraint_coverage": coverage.as_dict() if coverage else None,
         }
         typer.echo(json.dumps(payload, indent=2))
     else:
@@ -340,9 +343,21 @@ async def _diff_async(
             Verdict.CEILING: "yellow",
             Verdict.FLOOR: "yellow",
         }[result.verdict]
+        label = ""
+        if coverage is not None:
+            console.print(coverage.line())
+            if coverage.verdict_is_selection_only:
+                label = " (selection-only)"
         console.print(
-            f"[bold {verdict_color}]{result.verdict.value.upper()}[/bold {verdict_color}]: {result.message}"
+            f"[bold {verdict_color}]{result.verdict.value.upper()}{label}[/bold {verdict_color}]: "
+            f"{result.message}"
         )
+        if label:
+            console.print(
+                "[yellow]Selection-only: more than half the tasks register no argument "
+                "constraint, so this verdict says nothing about whether the agent built correct "
+                "arguments.[/yellow]"
+            )
 
     raise typer.Exit(result.exit_code)
 
@@ -667,11 +682,13 @@ async def _eval_async(
 
     tools: list[Any] | None = None
     stats: TrialCollectionStats | None = None
+    coverage: CoverageSummary | None = None  # needs the tasks file, so live runs only
     if replay is not None:
         outcomes = _load_replay_trials(replay)
     elif tasks_file is not None:
         tasks = _load_tasks_file(tasks_file)
         tools = list(info.tools)
+        coverage = summarize_constraint_coverage(tasks, tools)
         # Schema-only pass FIRST (reusing the introspection already done for
         # linting above) -- catches a scoring-reference mismatch before any
         # live inference runs, not just before the result is reported.
@@ -741,11 +758,19 @@ async def _eval_async(
             "argument_accuracy_given_correct_selection": rate.argument_accuracy_given_correct_selection,
             "joint_success_rate": rate.joint_success_rate,
             "cost": _cost_payload(stats),
+            "constraint_coverage": coverage.as_dict() if coverage else None,
         }
         typer.echo(json.dumps(payload, indent=2))
     else:
         _print_decomposed(target, rate, console)
         _print_cost_summary(target, stats, console)
+        if coverage is not None:
+            console.print(coverage.line())
+            if coverage.verdict_is_selection_only:
+                console.print(
+                    "[yellow]Selection-only: more than half the tasks register no argument "
+                    "constraint, so these rates say nothing about argument correctness.[/yellow]"
+                )
     if lint_report.flagged:
         raise typer.Exit(1)
 
@@ -827,9 +852,12 @@ async def _lint_async(target: str, *, show_info: bool, json_output: bool) -> Non
 _STARTER_TASKS_TEMPLATE = """[
   {
     "tool_name": "REPLACE_WITH_YOUR_TOOL_NAME",
-    "description": "Describe the user's INTENT in plain language. Never quote the tool name or any required enum/literal value verbatim -- that makes selection trivial regardless of description quality. See reports/predictive_validity_study.md's blind_tasks.py convention for worked examples.",
+    "description": "Open a high-priority ticket in the billing project titled 'Refund not received for order 4417'.",
+    "note": "WORKED EXAMPLE of FULL argument coverage -- replace it. Describe the user's INTENT; never quote the tool name. Give every required parameter of the tool a constraint, and constrain every value the task text states (here: the project, the title, the order number and the priority are all checked). A task with no constraints only checks that the right tool was picked (`agentgauge diff` reports it as selection-only). Kinds: enum, contains, format, range, numeric_equals.",
     "constraints": [
-      {"param": "some_param", "kind": "enum", "gold_value": "expected_value"}
+      {"param": "project", "kind": "enum", "gold_value": "billing"},
+      {"param": "title", "kind": "contains", "gold_value": "4417"},
+      {"param": "priority", "kind": "enum", "gold_value": "high"}
     ]
   }
 ]
