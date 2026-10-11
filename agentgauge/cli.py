@@ -189,7 +189,12 @@ def diff(
     helped, which `agentgauge lint`'s static rules mostly do not validate on
     their own (see README.md's per-rule measured-effect table).
 
-    Exits 1 on a REGRESSION verdict. See reports/v2_2_optimal_allocation.md for
+    Exit codes: 0 = IMPROVEMENT, NO_CHANGE, INSUFFICIENT_SENSITIVITY, or CEILING / FLOOR (every
+    trial in both arms scored 1.0 / 0.0: no delta is reported, the task set has no headroom or no
+    signal -- a valid finding, not a failure); 1 = REGRESSION; 2 = usage error, failed audit, or
+    backend unreachable.
+
+    See reports/v2_2_optimal_allocation.md for
     the measured minimum detectable effect at your --trials count before
     trusting a NO_CHANGE verdict as conclusive, and reports/
     v2_4_task1_blast_radius_audit.md for the causal-chain validation behind
@@ -236,6 +241,13 @@ async def _diff_async(
     if replay_before is not None and replay_after is not None:
         before_trials = _load_replay_trials(replay_before)
         after_trials = _load_replay_trials(replay_after)
+        # Same trial-level audit as a live run (a replay file carries no tasks or schemas, so
+        # only the checks that need trial outcomes apply).
+        _trial_audit_or_exit(
+            run_audit([], before_trials=before_trials, after_trials=after_trials),
+            console=console,
+            json_output=json_output,
+        )
     elif tasks_file is not None:
         tasks = _load_tasks_file(tasks_file)
         before_tools = await _introspect_tools(before)
@@ -270,32 +282,17 @@ async def _diff_async(
             provider_config=provider_config,
             seed=seed,
         )
-        audit_report = run_audit(
-            tasks,
-            before_tools=before_tools,
-            after_tools=after_tools,
-            before_trials=before_trials,
-            after_trials=after_trials,
+        _trial_audit_or_exit(
+            run_audit(
+                tasks,
+                before_tools=before_tools,
+                after_tools=after_tools,
+                before_trials=before_trials,
+                after_trials=after_trials,
+            ),
+            console=console,
+            json_output=json_output,
         )
-        if not json_output:
-            _print_audit_report(audit_report, console)
-        if not audit_report.passed:
-            if json_output:
-                typer.echo(
-                    json.dumps(
-                        {
-                            "audit_failed": True,
-                            "blocking": [f.detail for f in audit_report.blocking],
-                        },
-                        indent=2,
-                    )
-                )
-            else:
-                console.print(
-                    "[bold red]Audit failed -- refusing to report a diff. "
-                    "Fix the flagged issue(s) and re-run.[/bold red]"
-                )
-            raise typer.Exit(2)
     else:
         console.print(
             "[red]Error: provide either --tasks, or both --replay-before and --replay-after.[/red]"
@@ -305,11 +302,12 @@ async def _diff_async(
     result: DiffResult = diff_from_trials(before_trials, after_trials, threshold=threshold)
 
     if json_output:
+        no_delta = result.verdict in (Verdict.CEILING, Verdict.FLOOR)  # nothing to estimate
         payload = {
             "verdict": result.verdict.value,
-            "delta": result.delta,
-            "ci_lo": result.ci_lo,
-            "ci_hi": result.ci_hi,
+            "delta": None if no_delta else result.delta,
+            "ci_lo": None if no_delta else result.ci_lo,
+            "ci_hi": None if no_delta else result.ci_hi,
             "threshold": result.threshold,
             "message": result.message,
             "before": {
@@ -339,6 +337,8 @@ async def _diff_async(
             Verdict.IMPROVEMENT: "green",
             Verdict.NO_CHANGE: "cyan",
             Verdict.INSUFFICIENT_SENSITIVITY: "yellow",
+            Verdict.CEILING: "yellow",
+            Verdict.FLOOR: "yellow",
         }[result.verdict]
         console.print(
             f"[bold {verdict_color}]{result.verdict.value.upper()}[/bold {verdict_color}]: {result.message}"
@@ -521,6 +521,26 @@ def _schema_audit_or_exit(
                 )
             )
         raise typer.Exit(2)
+
+
+def _trial_audit_or_exit(report: AuditReport, *, console: Console, json_output: bool) -> None:
+    """Print the audit findings and raise Exit(2) on a BLOCKING one (live and replay paths)."""
+    if not json_output:
+        _print_audit_report(report, console)
+    if report.passed:
+        return
+    if json_output:
+        typer.echo(
+            json.dumps(
+                {"audit_failed": True, "blocking": [f.detail for f in report.blocking]}, indent=2
+            )
+        )
+    else:
+        console.print(
+            "[bold red]Audit failed -- refusing to report a diff. "
+            "Fix the flagged issue(s) and re-run.[/bold red]"
+        )
+    raise typer.Exit(2)
 
 
 def _print_audit_report(report: AuditReport, console: Console) -> None:

@@ -254,6 +254,24 @@ def check_degenerate_metrics(
     return []
 
 
+def check_degenerate_metrics_pooled(
+    before_trials: list[TrialOutcome], after_trials: list[TrialOutcome]
+) -> list[AuditFinding]:
+    """`check_degenerate_metrics` over both arms of a before/after comparison pooled.
+
+    One constant arm is not a degenerate metric: a perfect "after" arm next to an imperfect
+    "before" arm is the best case a description fix can produce, and the pooled outcomes still
+    vary. A pooled-constant corpus at exactly 0.0 or 1.0 is a ceiling/floor finding, which
+    `diff_from_trials` reports as the CEILING / FLOOR verdict (exit 0), so it does not block
+    here. Only a pooled-constant corpus at some other value (a scorer that returns one fixed
+    non-extreme number) is the "constant scoring function" defect and still BLOCKS."""
+    pooled = [*before_trials, *after_trials]
+    findings = check_degenerate_metrics(pooled, variant_label="before+after pooled")
+    if findings and {t.joint_success for t in pooled} <= {0.0, 1.0}:
+        return []
+    return findings
+
+
 def check_empty_tasks(tasks: list[BlindTask]) -> list[AuditFinding]:
     """Empty task text makes whatever it touches meaningless to score."""
     return [
@@ -552,11 +570,15 @@ def run_audit(
     if before_tools is not None and after_tools is not None:
         findings += check_catalog_subset_mismatch(before_tools, after_tools)
 
+    both_arms = bool(before_trials and after_trials)
     for label, trials in (("before", before_trials), ("after", after_trials)):
         if not trials:
             continue
         findings += check_ceiling_floor(DecomposedRate.from_trials(trials), variant_label=label)
-        findings += check_degenerate_metrics(trials, variant_label=label)
+        if not both_arms:  # a single-arm run (eval) has nothing to pool with
+            findings += check_degenerate_metrics(trials, variant_label=label)
+    if before_trials and after_trials:
+        findings += check_degenerate_metrics_pooled(before_trials, after_trials)
 
     if benchmark_cases is not None:
         findings += check_benchmark_construction_diffsize_bias(benchmark_cases)
