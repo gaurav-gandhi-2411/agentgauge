@@ -39,6 +39,7 @@ def installed_package_file(python: str = sys.executable) -> Path | None:
         [python, "-I", "-W", "ignore", "-c", _PROBE],
         capture_output=True,
         text=True,
+        encoding="utf-8",
         timeout=120,
         check=False,
     )

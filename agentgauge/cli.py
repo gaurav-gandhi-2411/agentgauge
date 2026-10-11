@@ -51,6 +51,20 @@ def _version_callback(value: bool) -> None:
         raise typer.Exit()
 
 
+def _pin_utf8_pipes() -> None:
+    """Write UTF-8 to redirected stdout/stderr whatever the host locale is.
+
+    Why: Rich draws tables with box-drawing characters. A pipe otherwise inherits the process codec
+    (cp1252 on Windows, or whatever PYTHONIOENCODING says), so a reader that decodes UTF-8 -- or a
+    reader using a different codec than the child -- crashed or got mojibake. Interactive consoles
+    are left alone: they render Unicode natively.
+    """
+    for stream in (sys.stdout, sys.stderr):
+        reconfigure = getattr(stream, "reconfigure", None)
+        if reconfigure is not None and not stream.isatty():
+            reconfigure(encoding="utf-8", errors="replace")
+
+
 @app.callback()
 def main(
     version: Annotated[
@@ -58,7 +72,7 @@ def main(
         typer.Option("--version", callback=_version_callback, is_eager=True),
     ] = None,
 ) -> None:
-    pass
+    _pin_utf8_pipes()
 
 
 # ─────────────────────────────────────────────────────────────────────────────

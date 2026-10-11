@@ -94,6 +94,7 @@ def test_the_probe_locates_the_package_without_executing_it(tmp_path):
         [sys.executable, "-c", plant + _PROBE],
         capture_output=True,
         text=True,
+        encoding="utf-8",
         timeout=60,
         check=False,
     )
