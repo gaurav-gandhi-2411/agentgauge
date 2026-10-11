@@ -31,7 +31,7 @@ dependency-lockfile updates only).
   false-alarm strata) are under re-measurement, see below.
 - **Packaging (5d59521).** sdist is now an allow-list (`agentgauge/`, `pyproject.toml`, `README.md`,
   `LICENSE`, `CHANGELOG.md`): the published 0.5.3 sdist carried 431 files including internal planning
-  documents; the new one has 35 members. `tests/` is deliberately not shipped (it imports `evals/`,
+  documents; the new one has 42 members (35 when first measured; the demo files and `py.typed` came later). `tests/` is deliberately not shipped (it imports `evals/`,
   `examples/` and `scripts/`). Added `agentgauge/py.typed` (the `Typing :: Typed` classifier was
   declared without it). The PyPI "Changelog" URL now points at this file. Two mypy errors in
   `fixer.py` fixed with no behaviour change and `scripts/verify.sh` no longer swallows mypy failures;
@@ -70,6 +70,21 @@ dependency-lockfile updates only).
   same score). Effective decoding temperature verified above zero
   (`decoding_temperature_check.json`). `--trials` help now quotes these figures and is guarded by a
   test against drift.
+- **Audit semantics.** `degenerate_metrics` now pools both arms (its docstring always said "across
+  every trial in a corpus"), so a perfect "after" arm next to an imperfect "before" arm passes; a
+  live run of the bundled demo pair had been refused for exactly this. If every trial in both arms
+  scores 1.0 (0.0), `diff` reports a distinct `CEILING` (`FLOOR`) verdict with no delta and exits 0.
+  `diff --replay-*` and `demo` now run the same trial-level audit as a live run. A pooled constant at
+  a non-extreme value (a scorer returning one fixed number) still blocks.
+- **Constraint-coverage check.** `diff`/`eval` print how many tasks are selection-only / partial /
+  full (zero argument constraints / a required parameter or stated value unchecked / neither) and
+  label the verdict `(selection-only)` with a warning when more than half are selection-only
+  (warn, never block). `agentgauge init` scaffolds a fully-constrained worked example. Class counts
+  for every committed corpus: `evals/fixtures/constraint_coverage_corpora.json` (the 253-task
+  argument-degradation corpus: 16 / 211 / 26).
+- **Superseded numbers.** 27 reports and paper sources that still quote the fixed-seed figures now
+  start with a "Historical" banner (`scripts/add_historical_banners.py`); the paper drafts have
+  READMEs itemising their known false or unsupported claims.
 - **UTF-8 pipe output** (975bdd7): the CLI writes UTF-8 to redirected stdout/stderr, fixing a Windows
   decode crash; a `windows-tests` CI job runs the suite without `PYTHONUTF8`.
 

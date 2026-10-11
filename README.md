@@ -28,6 +28,9 @@ agentgauge demo
 agentgauge demo: replaying 24 recorded gemma2:9b trials per arm (no model, GPU,
 keys or network used)
 
+AUDIT WARN (ceiling_floor): [after] joint success rate 1.000 is at the ceiling
+(n=24) -- little to no room for a before/after delta to show up
+
 before (n=24 trials)
   selection accuracy:          0.667
   argument accuracy | correct: 1.000
@@ -41,6 +44,7 @@ after (n=24 trials)
 before cost: replay mode -- no live cost to report.
 after cost: replay mode -- no live cost to report.
 
+constraint coverage over 24 tasks: 0 selection-only, 16 partial, 8 full
 INSUFFICIENT_SENSITIVITY: Delta point estimate is +0.333, but the 95% CI
 [+0.125, +0.500] is wider than 2x the regression threshold (0.050) -- this run
 does not have enough trials to reliably distinguish a real regression of this
@@ -56,7 +60,8 @@ needs ~100 tasks per arm.
 
 Run it live on the same pair: `agentgauge demo --extract demo_files`, then
 `agentgauge diff demo_files/before_server.py demo_files/after_server.py --tasks
-demo_files/tasks.json` (needs Ollama + gemma2:9b).
+demo_files/tasks.json` (needs Ollama + gemma2:9b). A live run is a fresh sample
+and may differ from this recording.
 ```
 
 The point estimate is large, but with 24 tasks the harness will not call it. The pair is a
@@ -94,15 +99,28 @@ agentgauge diff before_server.py after_server.py --tasks agentgauge_tasks.json
 ```
 
 - **Write your own tasks.** Never quote the gold tool name or a required literal value in the task
-  text; that makes selection trivial. The scaffold ships one placeholder task. Plan on the order of
-  100 tasks per arm, one trial each: repeat trials on one task add little, more distinct tasks add
-  power (variance and MDE table below). The demo's 24 tasks return `INSUFFICIENT_SENSITIVITY`.
+  text; that makes selection trivial. The scaffold ships one worked example with a constraint on
+  every argument. Plan on the order of 100 tasks per arm, one trial each: repeat trials on one task
+  add little, more distinct tasks add power (variance and MDE table below). The demo's 24 tasks
+  return `INSUFFICIENT_SENSITIVITY`.
+- **Constrain the arguments, not just the tool.** A task without `constraints` only checks that the
+  right tool was picked. `diff`/`eval` print how many tasks are selection-only (no argument
+  constraint), partial (a required parameter, or a value the task states, is unchecked) or full, and
+  label the verdict `(selection-only)` with a warning when more than half are selection-only. The
+  warning never blocks and never changes an exit code. The check is a heuristic: see Limitations.
 - **`--mock` cannot give a verdict.** The mock provider returns one canned reply, so `diff`/`eval`
   refuse it with exit code 2. It is for plumbing tests only.
-- **Exit codes:** `0` ok, `1` regression verdict or a blocking lint finding, `2` usage error, failed
-  pre-report audit, or the model backend is unreachable.
-- **Audit gate.** `diff`/`eval` first check task leakage, ceiling/floor, degenerate metrics and
-  scoring consistency; a failing check blocks the result.
+- **Exit codes:** `0` ok (any `diff` verdict except `REGRESSION`, including `CEILING` and `FLOOR`),
+  `1` regression verdict or a blocking lint finding, `2` usage error, failed pre-report audit, or
+  the model backend is unreachable.
+- **`CEILING` / `FLOOR`.** If every trial in both arms scores 1.0 (or every trial scores 0.0), `diff`
+  reports no delta and says the task set has no headroom (or no signal). That is a finding, not an
+  error: exit `0`. One perfect arm next to an imperfect one is an ordinary result and is reported
+  with its delta.
+- **Audit gate.** `diff`/`eval` first check task leakage, scoring consistency, ceiling/floor, and
+  degenerate metrics (zero variance pooled across both arms; a scorer that returns one fixed
+  non-extreme value blocks); a failing check blocks the result. `diff --replay-before/--replay-after`
+  and `demo` run the same trial-level checks as a live run.
 - **CI workflow from `init`** is lint-only by default. Set the repository variable
   `AGENTGAUGE_LIVE_DIFF=true` to opt in to a live `diff` job (it installs Ollama and pulls a model on
   the runner; slow on CPU-only runners).
@@ -122,11 +140,8 @@ checkout of this repository; scripts and fixtures are not in the wheel).
 | 4.22% (22 of 521 tools; 0 BLOCKING) | Tools flagged by BLOCKING + ADVISORY lint rules in the repo's "clean" corpus | 521 tools, 21 tool sets | Wilson [2.80%, 6.31%] (upper bound is above 5%) | `evals/fixtures/v2_1_severity_gate.json` | Yes, clone: `python scripts/v2_1_severity_gate_measurement.py` |
 | 50 of 50 identical outputs | The diff engine returns byte-identical results for identical input (says nothing about model determinism) | 50 reruns of one input | n/a | `evals/fixtures/v2_false_alarm_determinism.json` | Yes, clone: `python scripts/v2_false_alarm_and_determinism.py` |
 | 97.1% (169 of 174 clean tools flagged) | A single-prompt `llama3.1:8b` judge as a linter substitute; flags every defect (138 of 138) but almost every clean tool too | 174 clean tools; 138 defect cases | Wilson [93.5%, 98.8%] | `evals/fixtures/v2_1_llm_linter_baseline.json` | No (needs the 8B judge); the fixture can be re-tallied |
-| gemma2:9b +0.022, llama3.1:8b +0.055, qwen2.5:7b +0.004 | Joint-success change when empty descriptions are replaced by authored, constraint-revealing ones | 253 tasks, 1 trial, per model | [-0.004, +0.051], [+0.023, +0.089], [-0.021, +0.029] | `evals/fixtures/v2_5_argument_degradation_summary.json` | No (live models); the stored per-task results can be re-analysed |
-
-gemma2:9b and qwen2.5:7b are indistinguishable from zero; llama3.1:8b shows a small
-positive effect (point estimate above the harness's 0.05 threshold, CI excludes zero). These CIs
-treat tasks as independent although they are nested in 52 tools.
+The earlier argument-degradation row (253 tasks, three models) is under Limitations: the metric it
+used checks too few arguments for that null to mean what it appeared to.
 
 **Causal effect of the `type_enum_contradiction` defect.** Injecting this defect (a type flipped or an
 enum dropped) into an oracle-described server lowers joint task success. n=30 tasks per model
@@ -212,6 +227,30 @@ Rendered at commit: `64efda0`
 - **You need many tasks (~100 per arm).** The table above gives the MDE at 100 and 253 tasks. With fewer, expect
   `INSUFFICIENT_SENSITIVITY`; the demo shows this at 24. Writing and validating tasks is the real
   cost, not compute.
+- **The outcome metric is lenient about arguments.** A trial scores 1.0 when the right tool is
+  chosen and the registered constraints pass; an argument with no constraint is never checked.
+  In the 44-tool-set calibration corpus, of 343 all-pass tasks whose arguments differed across
+  trials, 134 had no registered constraint (any call scored 1.0), 115 were constrained but the
+  arguments that differed were not, and only 94 varied in a checked argument
+  (`evals/fixtures/recalibration_seedfix/zero_variance_audit.json`). Run through `check_constraint_coverage`
+  (`evals/fixtures/constraint_coverage_corpora.json`), the committed corpora classify as:
+
+  | Corpus | Tasks | Selection-only | Partial | Full |
+  |---|---|---|---|---|
+  | Bundled demo | 24 | 0 | 16 | 8 |
+  | Argument-degradation corpus | 253 | 16 | 211 | 26 (10.3%) |
+  | Calibration corpus (44 tool sets; overlaps the row above) | 1136 | 230 | 389 | 517 (45.5%) |
+
+  "Partial" means a required parameter, or a value stated in the task text, has no constraint
+  (detection of stated values is a heuristic: quoted strings and tokens containing a digit). Coverage
+  says which arguments are looked at, not how strict the check is.
+- **Argument-degradation result (253 tasks, 1 trial per model).** Replacing empty descriptions with
+  authored, constraint-revealing ones changed joint success by +0.022 (`gemma2:9b`, 95% CI
+  [-0.004, +0.051]), +0.055 (`llama3.1:8b`, [+0.023, +0.089]) and +0.004 (`qwen2.5:7b`,
+  [-0.021, +0.029]); source `evals/fixtures/v2_5_argument_degradation_summary.json`. Only 26 of
+  those 253 tasks (10.3%) have full constraint coverage and 16 have none, so **this null does not
+  establish that descriptions leave argument quality unaffected; the metric does not check most
+  arguments.** The CIs also treat tasks as independent although they are nested in 52 tools.
 - **Hosted APIs are not deterministic.** `--seed` applies to Ollama only; hosted adapters ignore it,
   and their replay determinism is measured on recorded responses, not live calls.
 - **Research drafts are not peer-reviewed.** Their claims are being re-verified (below).
@@ -221,8 +260,13 @@ Rendered at commit: `64efda0`
 Two drafts live under `docs/` and are **under revision: not peer-reviewed, claims being
 re-verified, no arXiv version exists.** They are kept for transparency, not as established results.
 
-- Draft 1, tool-description quality as a regime-bounded effect: `docs/paper/`.
-- Draft 2, power analysis and measurement-artifact screening for tool-description evaluation: `docs/paper2/`.
+- Draft 1, tool-description quality as a regime-bounded effect: `docs/paper/`. Known false or
+  unsupported claims are itemised in its [README](https://github.com/gaurav-gandhi-2411/agentgauge/blob/main/docs/paper/README.md).
+- Draft 2, power analysis and measurement-artifact screening for tool-description evaluation:
+  `docs/paper2/`; see its [README](https://github.com/gaurav-gandhi-2411/agentgauge/blob/main/docs/paper2/README.md).
+
+No PDF link is given here on purpose: the PDFs still contain the claims listed there. Reports under
+`reports/` that carry superseded numbers start with a "Historical" banner.
 
 Earlier framing that these experiments ran under a pre-registered, frozen protocol was wrong for
 most of them; see

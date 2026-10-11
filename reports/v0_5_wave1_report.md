@@ -1,3 +1,5 @@
+> Historical — numbers superseded; see README (re-measured 2026-10-11).
+
 # AgentGauge v0.5 Wave 1 — end-of-wave report
 
 Branch: `feat/v0-5-wave1` (off `main` @ `369eb5a`). Scope: spec-agentgauge-v0.5.md

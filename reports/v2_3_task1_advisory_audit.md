@@ -1,3 +1,5 @@
+> Historical — numbers superseded; see README (re-measured 2026-10-11).
+
 # AgentGauge v2.3 — Task 1: auditing the -80pp ADVISORY effect
 
 Local Ollama only (gemma2:9b, llama3.1:8b; qwen2.5:7b pulled locally mid-task, GPU

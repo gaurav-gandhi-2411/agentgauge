@@ -1,3 +1,5 @@
+> Historical — numbers superseded; see README (re-measured 2026-10-11).
+
 # AgentGauge v0.4.0 — reconciling the type_enum_contradiction effect-size discrepancy
 
 ## 1a. Tracing both figures to source

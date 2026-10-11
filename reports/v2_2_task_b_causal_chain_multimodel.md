@@ -1,3 +1,5 @@
+> Historical — numbers superseded; see README (re-measured 2026-10-11).
+
 # AgentGauge v2.2 — Task B: end-to-end causal chain, cross-model (reorder)
 
 > **CORRECTION (v2.3, Task 1 — `reports/v2_3_task1_advisory_audit.md`):** the

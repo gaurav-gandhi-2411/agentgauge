@@ -1,3 +1,5 @@
+> Historical — numbers superseded; see README (re-measured 2026-10-11).
+
 # AgentGauge v2.5 — Task 3: complete the MDE grid at the full corpus
 
 v2.4 Task 4 left n=200 and n=252 unmeasured to exact precision ("still

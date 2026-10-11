@@ -1,3 +1,5 @@
+> Historical — numbers superseded; see README (re-measured 2026-10-11).
+
 # AgentGauge v0.5 Wave 1.6, Task 2 — fixing probe power, and what it costs
 
 Follow-up to `reports/v0_5_mde_discrepancy.md` (measurement artifact #10) and

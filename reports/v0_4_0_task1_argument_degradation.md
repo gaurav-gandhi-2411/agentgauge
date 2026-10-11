@@ -1,3 +1,5 @@
+> Historical — numbers superseded; see README (re-measured 2026-10-11).
+
 # AgentGauge v0.4.0 — Task 1: argument-degradation live re-measurement
 
 Closes the one remaining NOT-MEASURED item: whether tool-description quality

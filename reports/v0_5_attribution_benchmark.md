@@ -1,3 +1,5 @@
+> Historical — numbers superseded; see README (re-measured 2026-10-11).
+
 # AgentGauge v0.5 Wave 1 — failure attribution / regression localization benchmark (Component 1.2)
 
 > **THIS ENTIRE REPORT'S ACCURACY/BUDGET NUMBERS ARE SUPERSEDED AGAIN (2026-07-30, measurement
