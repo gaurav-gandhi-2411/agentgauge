@@ -585,7 +585,7 @@ def _patch_source_description(source: str, tool_name: str, new_desc: str) -> str
             # replacement string (e.g. \\n in repr output → literal \n, not newline).
             patched = re.sub(
                 r'description="[^"]*"',
-                lambda _m, lit=_safe_literal: f"description={lit}",
+                lambda _m: f"description={_safe_literal}",
                 line,
                 count=1,
             )
@@ -652,13 +652,15 @@ def _patch_source_schema_props(source: str, tool_name: str, new_props: dict[str,
     for prop_name, prop_meta in new_props.items():
         escaped_name = re.escape(prop_name)
         replacement_value = json.dumps(prop_meta)
-        # Lambda prevents re.sub from treating backslashes in replacement_value
-        # as escape sequences (json.dumps can emit \\n, \\t, etc.).
-        block = re.sub(
-            rf'"{escaped_name}":\s*\{{}}',
-            lambda _m, k=prop_name, v=replacement_value: f'"{k}": {v}',
-            block,
-        )
+
+        # A callable replacement prevents re.sub from treating backslashes in replacement_value
+        # as escape sequences (json.dumps can emit \\n, \\t, etc.). A def with annotated defaults
+        # rather than a lambda: mypy cannot infer a lambda's default-bound parameter types, and the
+        # defaults bind the loop variables (ruff B023).
+        def _replace(_m: re.Match[str], k: str = prop_name, v: str = replacement_value) -> str:
+            return f'"{k}": {v}'
+
+        block = re.sub(rf'"{escaped_name}":\s*\{{}}', _replace, block)
 
     return source[:start_idx] + block + source[end_idx:]
 

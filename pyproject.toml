@@ -36,7 +36,7 @@ dependencies = [
 Homepage = "https://github.com/gaurav-gandhi-2411/agentgauge"
 Repository = "https://github.com/gaurav-gandhi-2411/agentgauge"
 Issues = "https://github.com/gaurav-gandhi-2411/agentgauge/issues"
-Changelog = "https://github.com/gaurav-gandhi-2411/agentgauge/blob/main/README.md"
+Changelog = "https://github.com/gaurav-gandhi-2411/agentgauge/blob/main/CHANGELOG.md"
 
 [project.optional-dependencies]
 dev = [
@@ -54,6 +54,19 @@ agentgauge = "agentgauge.cli:app"
 [tool.hatch.build.targets.wheel]
 packages = ["agentgauge"]
 
+# Explicit allow-list: the sdist is for downstream packagers, not a repo snapshot. tests/ is left out
+# on purpose: the suite imports evals/, examples/ and scripts/ (large fixtures, internal harness
+# code), so shipping tests without them would give packagers a suite that fails on import.
+# An include list (rather than excludes) also keeps untracked local files (.audit/, .claude/) out.
+[tool.hatch.build.targets.sdist]
+include = [
+    "/agentgauge",
+    "/pyproject.toml",
+    "/README.md",
+    "/LICENSE",
+    "/CHANGELOG.md",
+]
+
 [tool.ruff]
 line-length = 100
 target-version = "py311"
@@ -68,7 +81,7 @@ testpaths = ["tests"]
 addopts = "--cov=agentgauge --cov-report=term-missing"
 
 [tool.coverage.report]
-fail_under = 60
+fail_under = 90
 omit = ["tests/*", "examples/*", "scripts/*"]
 
 [tool.mypy]
