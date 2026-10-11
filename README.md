@@ -1,437 +1,244 @@
 # AgentGauge
 
-**AgentGauge is a statistical regression harness that measures whether a change to your MCP
-server's tool descriptions actually changed agent task success — plus a fast, deterministic defect
-linter as a secondary utility. It is also the research program behind
-["Tool-Description Quality Is Not One Axis"](https://github.com/gaurav-gandhi-2411/agentgauge/blob/main/docs/paper/latex/main.pdf), a study of where fixing
-tool descriptions helps, does nothing, or backfires.**
-
 [![CI](https://github.com/gaurav-gandhi-2411/agentgauge/actions/workflows/ci.yml/badge.svg)](https://github.com/gaurav-gandhi-2411/agentgauge/actions/workflows/ci.yml)
 [![PyPI](https://img.shields.io/pypi/v/agentgauge-harness.svg)](https://pypi.org/project/agentgauge-harness/)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://pypi.org/project/agentgauge-harness/)
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache--2.0-blue.svg)](https://github.com/gaurav-gandhi-2411/agentgauge/blob/main/LICENSE)
 
-## `agentgauge diff` — measured, not asserted
+**AgentGauge tells you whether a change to your MCP server's tool descriptions changed how well an
+agent uses it.** `agentgauge diff` runs the same task set against a "before" and an "after" server,
+compares task success with a bootstrap confidence interval, and says so plainly when it does not
+have enough data to call it (`INSUFFICIENT_SENSITIVITY`). `agentgauge lint` is a fast, zero-LLM
+defect check for tool schemas and descriptions; it is a secondary utility, and most of its rules
+have no validated effect on task success. Live runs need a local [Ollama](https://ollama.com) model
+(default `gemma2:9b`); the tooling is calibrated on 7-9B open models only. The papers in this
+repository are unreviewed research drafts (see below).
 
-The harness is the primary interface: `agentgauge lint`'s static rules mostly do not have a
-validated effect on real task success on their own (see the per-rule table below) — the harness is
-what actually measures whether a change helped. Every number below is measured in this repo, not
-estimated.
+## 60-second demo
 
-| Metric | Measured value | Report |
-|---|---|---|
-| Minimum detectable effect, 100 tasks/arm × 1 trial/task, 80% power | **8.5 percentage points** | `reports/v2_2_optimal_allocation.md` |
-| Ship target (detect a 10-point regression at 80% power) | **MET** | same |
-| False-alarm rate under the null, by cluster-count stratum | **<5% in every stratum** (<10 tasks: 1.57%; 10–29: 0.08%; ≥30: 0.00%) | `reports/v2_2_few_clusters_correction.md` |
-| Replay determinism (identical inputs → identical verdict) | **100%** (50/50 runs) | `reports/v2_harness_evaluation.md` |
-| Abstention rate under the null (`INSUFFICIENT_SENSITIVITY`, correctly declining to call a verdict rather than over-claim) | **21.6%** | `reports/v2_1_estimator_rebuild.md` |
-| **Causal chain — does a BLOCKING linter violation actually cause task failure?** (previously assumed, now measured, re-verified on a freshly rebuilt instance) | **Yes: -13.3 to -28.9pp** task success, CI excludes zero in all 3 model families tested (gemma2:9b/llama3.1:8b/qwen2.5:7b) | `reports/v2_4_task1_blast_radius_audit.md` |
-| Single-prompt LLM-judge baseline (an alternative to this harness/linter) | **97.1% false-alarm rate** / 100% recall — a degenerate always-flag baseline, spot-checked to confirm genuine model hallucination, not a scoring bug | `reports/v2_1_cross_model_validation.md` §Task 2e |
-
-### Every lint rule's measured task-success effect — including the nulls
-
-`agentgauge lint`'s rules are NOT all equally validated. Severity tier tracks measured causal
-impact × precision (v2.3 re-tiering), not just false-alarm rate — a rule with no measured effect
-is labeled as such below, not presented as if it were proven:
-
-| Rule | Tier | Measured causal effect on task success | False-alarm | Recall |
-|---|---|---|---|---|
-| `type_enum_contradiction` | **BLOCKING** | **-13.3 to -28.9pp** (gemma2:9b -25.2, llama3.1:8b -28.9, qwen2.5:7b -13.3), CI excludes zero in all 3 models | 0% | 100% |
-| `required_references_missing_property` | INFO (demoted from BLOCKING) | **0.0pp in all 3 models — a measured null**, despite perfect precision | 0% | 100% |
-| `described_not_in_schema` (catches `param_renamed`) | ADVISORY | **~0pp in all 3 models — a measured null** (corrected in v2.3 from a falsely-reported -76.7 to -80.0pp: a scoring bug looked up a pre-rename parameter name against post-rename arguments) | 23.81% | 81.2% |
-| `param_possibly_renamed` | ADVISORY | Not independently measured (fires alongside `described_not_in_schema`, not separated in the causal-chain design) | 0.77%/tool | part of the 81.2% combined |
-| `name_collision` | ADVISORY | **Not measured** (no defect-injection instance targets this check) | 47.62% | n/a |
-| `required_not_mentioned` | INFO (opt-in) | Not tested for causal effect (demoted on a different basis: fires at nearly the same rate on real professional docs as on bad synthetic ones) | n/a | 94.1% |
-
-Full methodology: `reports/v2_1_linter_recall_fix.md`, `reports/v2_1_severity_gate.md`,
-`reports/v2_linter_evaluation.md` (`required_not_mentioned`'s 94.1% recall),
-`reports/v2_3_task2_retiering.md`, `reports/v2_4_task1_blast_radius_audit.md`.
-
----
-
-## v0.5.0 — model adapters (the headline feature this release)
-
-`agentgauge diff`/`eval` are no longer Ollama-only. Six provider adapters share one config-driven
-interface — switch providers with no code change:
-
-| Adapter | What it targets |
-|---|---|
-| `ollama` | Local Ollama (the original, still the default) |
-| `anthropic` | Anthropic Messages API |
-| `openai_compatible` | Any OpenAI-compatible HTTP endpoint |
-| `bedrock` | AWS Bedrock |
-| `vertex` | Google Vertex AI |
-| `custom_endpoint` | Generic base-URL + auth-header endpoint (internal/enterprise serving) |
-
-| Metric | Measured value | Report |
-|---|---|---|
-| Replay determinism, per adapter | **100%** on all 6 adapters (20/20 replays each, byte-identical output, identical harness verdict) | `reports/v0_5_wave1_report.md` §2 |
-| Verdict fidelity across the abstraction layer | **Zero verdict flips** attributable to the adapter/config layer | same |
-| Cost/timing accounting | Live in `diff`/`eval` output (text and JSON), correctly distinguishing `n/a`/replay-mode from a real zero-cost run | `reports/v0_5_wave1_report.md` §4 |
-
-**Scope, stated plainly**: determinism for the four non-local adapters (Anthropic, Bedrock, Vertex,
-any paid custom endpoint) is measured against recorded/mocked wire-format responses, not live paid
-calls (no paid-provider spend without an approved bounded estimate, per this repo's standing cost
-constraint) — this proves the adapter code path (parsing, hashing, cassette I/O) adds no
-nondeterminism given an identical response; it does not measure a live provider's own response
-variance, which remains open. See `agentgauge/provider_config.py` and `configs/` for example YAML
-configs — point `--provider-config` at one to switch providers.
-
----
-
-## Experimental — failure attribution (research only, NOT shipped for production use)
-
-`agentgauge attribute` exists in the CLI and is gated `--experimental`, off by default, because it
-is **measured uneconomical**, not because it doesn't work — accuracy is genuinely solved; the
-numbers below are why it isn't a product surface:
-
-| Metric | Measured value | Report |
-|---|---|---|
-| Accuracy at the probe power needed for reliable localization (`n_tasks=128`) | Both tested strategies clear the ship bar (top-1≥70%, top-3≥90%) at every single-culprit candidate-set size ≥10 tools | `reports/v0_5_probe_power_fix.md` §4 |
-| Cost vs. simply re-running the full evaluation | **1.01x–20.24x more expensive**, at every tested configuration — the cheapest case in the whole study (4 changed tools) is already a coin flip against a full re-eval | same, §5 |
-| Crossover to cheaper-than-re-evaluating-everything | **~2-4 changed tools** — below the scale at which localization has any practical use | same |
-| Multi-culprit (2-3 simultaneous regressions — the realistic multi-file-PR shape) | 4 of 6 tested configurations don't clear the ship bar. `greedy_bisection` **does** clear 2-culprit/20-tool (98.33%/100.00%, a genuine first for this project) and narrowly misses 3-culprit/20-tool on the budget leg alone (21.30 probes vs. exhaustive's 20 — its accuracy there, 98.89%/96.67%, clears). `sampled_shapley` clears none. Neither strategy clears 3-culprit/40-tool. | same, §4 |
-
-**The multi-culprit result is a partial rescue, not a full one — real progress, still not a product.** `greedy_bisection`'s one genuine clear (2-culprit/20-tool) doesn't change the shipping decision: attribution stays gated `--experimental` on cost alone (the row above — 1.01x–20.24x more expensive than a full re-eval, at every tested configuration, including the cases that do clear on accuracy). A feature that's 20x more expensive than the thing it replaces isn't shippable regardless of how its accuracy numbers land.
-
-**Why it isn't fixable by tuning**: minimum detectable effect scales as `1/√n_tasks` — reliable
-localization needs real per-probe task volume, and that volume is exactly the cost a localizer
-exists to avoid paying. Lower `n_tasks` is cheap but statistically unreliable; higher `n_tasks` is
-reliable but each probe alone costs a meaningful fraction of a full corpus re-evaluation. No
-`n_tasks` value clears both the accuracy and cost bars at once (`reports/v0_5_probe_power_fix.md`
-§5-6) — a structural finding, recorded for the methods paper as a negative result
-(`reports/capability_statement.md`), not a bug to be fixed in a later release.
-
-The code, benchmarks, and every measurement behind this table remain in the repo — nothing was
-deleted. Research use only, via direct library import
-(`agentgauge.attribution`/`agentgauge.attribution_benchmark`) or the scripts under `scripts/`; run
-`agentgauge attribute --help` for the gate, or `agentgauge attribute` (no flag) to see the cost
-finding printed at the command line.
-
----
-
-> **v2.2.** A predictive-validity study (`reports/predictive_validity_study.md`) found that v1's
-> 8-axis LLM-judged quality score does not predict real agent task success by a margin surviving
-> both multiple-comparison correction and controlling for description length. v2 rebuilt around
-> what that study showed actually works: a deterministic defect linter and a statistical
-> regression harness. v2.1 found the v2 estimator's minimum detectable effect was optimistic —
-> trial-level repeats within a task carry almost no independent information (ICC=0.793) — and cut
-> MDE at n=20 tasks/arm from 43.3 to 18.8 points (2.3×) via pairing + task-clustering + CUPED,
-> still short of the 10-point ship target. **v2.2 closed that gap**: the ICC finding itself implied
-> the fix — reallocate trials to tasks (1 trial/task, 100 tasks/arm) instead of repeating trials on
-> fewer tasks. Measured MDE at that allocation: **0.0848 — ship target met.** v2.2 also measured,
-> for the first time, whether a BLOCKING linter violation actually *causes* agent task failure
-> (previously assumed, never tested): it does — a 13.3–28.9 point drop in real task success,
-> replicated across three model families. **v2.3 audited a v2.2 ADVISORY-defect finding before
-> trusting it and found the effect was ~77–100% a scoring artifact** (the checker looked up a
-> pre-rename parameter name against post-rename arguments, scoring correct agent responses as
-> failures) — corrected, the ADVISORY (`param_renamed`) effect is a clean null in all three models,
-> not the originally-reported 76.7–80.0pp drop. v2.3 re-tiered the linter by the corrected numbers:
-> `required_references_missing_property` demoted BLOCKING→INFO (zero measured task-success effect
-> in every model); `described_not_in_schema`'s false-alarm rate improved 28.57%→23.81% via real
-> precision fixes but did not clear the promotion bar. **v2.4 audited the blast radius of that
-> scoring bug**: only `param_renamed` was ever affected (the other four defect-injection classes
-> never rename a schema key — confirmed from source, not assumed), and the ICC/variance-
-> decomposition/rho/MDE-calibration numbers above all trace to a 5,535-trial corpus the bug never
-> touched — no recomputation needed. The one surviving BLOCKING claim was re-measured on a freshly
-> rebuilt instance and holds (**-13.3 to -28.9pp**, unchanged). v2.4 also shipped `agentgauge audit`:
-> a standing pre-report gate (task/answer leakage, ceiling/floor, degenerate metrics, and — the
-> class this exact bug belongs to — scoring-reference consistency) wired into `diff`/`eval` so a
-> failing check blocks the result from being reported as a measurement, and repositioned the
-> package around the harness (`diff` is now the primary interface; `lint` a secondary utility — see
-> the per-rule table above). **v2.4 also expanded the gold-constraint task pool** from 62 to 253
-> tasks across 10 real-API domains (GitHub, Stripe, Google Calendar, Jira, Slack, Docker,
-> Kubernetes, Twilio, AWS S3, Spotify), closing the sample-size ceiling that left the
-> argument-degradation cross-model question underpowered. **v2.5 found the audit gate's own
-> scoring-reference-consistency check (the guard against the exact bug v2.3/v2.4 found) had a gap
-> in the shipped product code path itself** — `agentgauge diff`/`eval` ran live inference before
-> checking a user's task file against the actually-connected schema, not after — closed by
-> reordering to a schema-only pre-check that runs before any inference (`reports/v2_5_task1_shipped_fix.md`).
-> **v2.5 also found that 3 of the 10 new real-API fixtures had a hallucinated fact** (GitHub's
-> `state_reason` enum was missing a real 4th value, Stripe modeled an optional field as required
-> under the wrong name, a Kubernetes naming regex allowed an invalid leading character) — all three
-> independently re-verified against live official API docs and fixed in place, logged as
-> measurement artifact #8, and closed with a new standing `agentgauge audit` check,
-> `check_enum_schema_fidelity` (`reports/v2_5_task2_fixture_validation.md`). **The MDE grid is now
-> complete across the full 253-task corpus: 0.0537 at 80% power** (`reports/v2_5_task3_mde_completion.md`)
-> — roughly half the 0.10 ship target, up from 0.0848 at the previous 100-task allocation.
-> **v0.4.0 closed the loop**: the argument-degradation question is now live-measured at that power
-> across all 3 model families — a real, adequately-powered null (no model clears the 0.05
-> practical-significance threshold), not the old n=62 "inconclusive"
-> (`reports/v0_4_0_task1_argument_degradation.md`). Every
-> number in this README is measured in this repo — see `reports/v2_product_readiness.md` for the
-> full consolidated methodology and what's measured vs. assumed. v1's `scan`/`fix`/`ci`/`try`
-> commands still exist in the code but are not the recommended product surface;
-> `diff`/`eval`/`lint`/`init` are.
-
----
-
-## The paper
-
-**["Tool-Description Quality Is Not One Axis: A Regime Analysis of Where It Helps and Where It
-Backfires"](https://github.com/gaurav-gandhi-2411/agentgauge/blob/main/docs/paper/latex/main.pdf)** — arXiv:XXXX.XXXXX *(TO FILL after upload)*.
-
-Tool-description quality is widely treated as a broadly-applicable lever for agent tool-use —
-but it is not a single better/worse axis: the precision that helps an agent disambiguate within
-a family of confusable tools is orthogonal to, or actively harmful for, context-rich selection
-and for tool retrieval. The effect is real but **regime-bounded**, not a general law — the paper
-maps the exact boundary (catalog density, headroom, documented source) and finds it rare in a
-pilot sample of real servers.
-
-### The practitioner takeaway: the Two-Condition Regime Test
-
-Before investing in description tooling on a given MCP server, ask two questions:
-
-1. **Fail** — does the agent fail at least one contested task under the server's real, shipped
-   descriptions?
-2. **Recover** — if it fails, does a hand-written, ground-truth description recover it?
-
-If (1) is NO, the agent already resolves the task from context — there's nothing to fix. If (1)
-is YES but (2) is also NO, the failure isn't description-shaped (functional overlap, catalog
-overwhelm) — description tooling won't help either. Only if both are YES is the server inside
-the regime where better descriptions help. This is the same two-step check the paper's own
-results were produced with, not a separately validated general instrument.
-
-### Reproducibility
-
-Every experiment in the paper runs under a single frozen evaluation protocol — one classifier,
-one judge, one generator family, pre-registered thresholds:
-[`docs/research/frozen_protocol.md`](https://github.com/gaurav-gandhi-2411/agentgauge/blob/main/docs/research/frozen_protocol.md). Every figure in the
-paper traces to a committed, hash-verified fixture:
-[`docs/paper/evidence_table.md`](https://github.com/gaurav-gandhi-2411/agentgauge/blob/main/docs/paper/evidence_table.md). `./scripts/verify.sh` runs the
-same test suite (LLM always mocked, no network, no credentials) that gates every
-research-program pull request.
-
-### Building the PDF
-
-[`docs/paper/paper.md`](https://github.com/gaurav-gandhi-2411/agentgauge/blob/main/docs/paper/paper.md) is the canonical source; the LaTeX build in
-[`docs/paper/latex/`](https://github.com/gaurav-gandhi-2411/agentgauge/tree/main/docs/paper/latex) is a maintained mirror (CI fails if a commit changes
-one without the other). To rebuild the PDF:
+No model, GPU, API key or network is used: the demo replays 24 bundled, pre-recorded `gemma2:9b`
+trials per arm.
 
 ```bash
-export PATH="$HOME/.local/tectonic:$PATH"
-cd docs/paper/latex
-tectonic main.tex
+pip install agentgauge-harness
+agentgauge demo
 ```
 
-**Scope note:** this is a pilot-scale research artifact — synthetic fixtures, two real-server
-mirrors, and a 10-server pilot sample — not a validated product claim. The paper's own Section 8
-states plainly what is and isn't supported by the evidence.
+```
+agentgauge demo: replaying 24 recorded gemma2:9b trials per arm (no model, GPU,
+keys or network used)
 
----
+before (n=24 trials)
+  selection accuracy:          0.667
+  argument accuracy | correct: 1.000
+  joint success rate:          0.667
 
-## Additional measured detail
+after (n=24 trials)
+  selection accuracy:          1.000
+  argument accuracy | correct: 1.000
+  joint success rate:          1.000
 
-Headline harness and per-rule numbers are above. A few more measured results that don't fit that
-table:
+before cost: replay mode -- no live cost to report.
+after cost: replay mode -- no live cost to report.
 
-| Metric | Measured value | Report |
-|---|---|---|
-| Linter false-alarm rate, per tool, BLOCKING+ADVISORY combined (521 tools) | 4.22%, still <5% | `reports/v2_1_severity_gate.md` |
-| Linter recall vs. raw JSON-Schema structural validation baseline | Linter beats it on every defect type — baseline scores **0%** | `reports/v2_linter_evaluation.md` §2e |
-| Cross-model replication, causal chain (gemma2:9b, llama3.1:8b, qwen2.5:7b) | BLOCKING effect significant in **all 3 model families**; qwen2.5:7b measurably more robust to `type_enum_contradiction` specifically than the other two | `reports/v2_4_task1_blast_radius_audit.md` |
-| Cross-model replication, argument-degradation (a *separate* question from the causal chain above — does description quality fix argument construction?) | **Measured, real null.** Full 253-task corpus, 1 trial/task (MDE=0.0537), live on all 3 models: gemma2:9b Δ+0.022 95% CI [-0.004,+0.051]; llama3.1:8b Δ+0.055 CI [+0.023,+0.089] (CI excludes zero but doesn't clear the 0.05 practical-significance threshold); qwen2.5:7b Δ+0.004 CI [-0.021,+0.029]. No model shows a practically significant effect — this is an adequately-powered null, not an underpowered "inconclusive" | `reports/v0_4_0_task1_argument_degradation.md` |
+INSUFFICIENT_SENSITIVITY: Delta point estimate is +0.333, but the 95% CI
+[+0.125, +0.500] is wider than 2x the regression threshold (0.050) -- this run
+does not have enough trials to reliably distinguish a real regression of this
+size from sampling noise. Descriptions may or may not be the bottleneck for
+this tool set; this result does not resolve that question. Increase trial count
+or widen the threshold.
 
-**What's not yet measured:** an independent fuzz-test of the shipped
-`agentgauge/constraints.py`/`agentgauge diff`/`agentgauge eval` product path's
-scoring-reference-consistency exposure (the class that caused the v2.3 ADVISORY scoring bug) is
-now closed in the CLI itself, not just guarded after the fact: v2.5 moved the `agentgauge audit`
-schema check to run *before* any live inference, and it is covered by integration-level regression
-tests exercising the real `diff`/`eval` commands end-to-end (`reports/v2_5_task1_shipped_fix.md`) —
-not yet independently fuzz-tested against arbitrary, adversarially-malformed user task files, which
-remains open — see `reports/v2_product_readiness.md` for the complete list.
+What happened: with identical tool names, only the descriptions changed --
+joint success went 0.67 -> 1.00 (delta +0.33, 95% CI [+0.12, +0.50], 24 tasks).
+Why this verdict: 24 tasks is too few for the CI to be narrower than 2x the
+0.05 threshold, so the harness declines to call it either way; a real gate
+needs ~100 tasks per arm.
 
----
+Run it live on the same pair: `agentgauge demo --extract demo_files`, then
+`agentgauge diff demo_files/before_server.py demo_files/after_server.py --tasks
+demo_files/tasks.json` (needs Ollama + gemma2:9b).
+```
+
+The point estimate is large, but with 24 tasks the harness will not call it. The pair is a
+constructed illustration (six near-synonym tools, vague vs. clear descriptions), not a benchmark; a
+first pair with REST-style names showed no effect because the model read the answer off the names.
+Recording details:
+[`agentgauge/demo/PROVENANCE.md`](https://github.com/gaurav-gandhi-2411/agentgauge/blob/main/agentgauge/demo/PROVENANCE.md).
+Note that `agentgauge lint` reports nothing on either server: static rules cannot see this difference.
 
 ## Install
 
 ```bash
-pip install agentgauge-harness
+pip install agentgauge-harness     # the PyPI name; the command is `agentgauge`
 agentgauge --version
 ```
 
-The PyPI distribution is named `agentgauge-harness` (the name `agentgauge` was
-already taken); the installed CLI command is still `agentgauge`.
+From source: `git clone https://github.com/gaurav-gandhi-2411/agentgauge && cd agentgauge && pip install uv && uv sync`.
 
-For contributing or running from source:
-
-```bash
-git clone https://github.com/gaurav-gandhi-2411/agentgauge
-cd agentgauge
-pip install uv && uv sync
-```
-
----
-
-## Quickstart (under 5 minutes)
+## Quickstart
 
 ```bash
-# 1. Scaffold a starter anti-tautology tasks file + GitHub Action
+# 1. Replay the demo pair with no model (no dummy paths needed)
+agentgauge demo --extract demo_files
+agentgauge diff --replay-before demo_files/replay_before.json --replay-after demo_files/replay_after.json
+
+# 2. Lint the demo servers (no LLM)
+agentgauge lint demo_files/before_server.py
+
+# 3. Run the same comparison live (needs `ollama pull gemma2:9b`)
+agentgauge diff demo_files/before_server.py demo_files/after_server.py --tasks demo_files/tasks.json
+
+# 4. Your own server: scaffold a tasks file and a CI workflow, then edit the tasks
 agentgauge init
-
-# 2. Edit agentgauge_tasks.json with real tasks for your tools (never quote the
-#    gold tool name or a required literal value in the task text -- that makes
-#    selection trivial regardless of description quality)
-
-# 3. Compare two variants of your server before merging a description change --
-#    THIS is the number that matters: did the change move real task success?
 agentgauge diff before_server.py after_server.py --tasks agentgauge_tasks.json
-
-# 4. (Optional) fast, zero-LLM-cost static check -- exits 1 on a BLOCKING finding.
-#    Only one rule has a validated causal effect (see the per-rule table above);
-#    `diff` above is what actually tells you whether a change helped.
-agentgauge lint path/to/your_server.py
 ```
 
-`agentgauge diff` needs a live agent model (Ollama, default `gemma2:9b`) or a `--mock`/`--replay`
-run for testing without inference. See `reports/predictive_validity_study.md`'s `blind_tasks.py`
-for worked examples of anti-tautology task authoring. Every `diff`/`eval` run passes through
-`agentgauge audit` first (task leakage, ceiling/floor, degenerate metrics, scoring-reference
-consistency) — a failing check blocks the result from being reported, rather than silently
-shipping a bad measurement.
+- **Write your own tasks.** Never quote the gold tool name or a required literal value in the task
+  text; that makes selection trivial. The scaffold ships one placeholder task. Plan on the order of
+  100 tasks per arm, one trial each: repeat trials on one task add little, more distinct tasks add
+  power (variance and MDE table below). The demo's 24 tasks return `INSUFFICIENT_SENSITIVITY`.
+- **`--mock` cannot give a verdict.** The mock provider returns one canned reply, so `diff`/`eval`
+  refuse it with exit code 2. It is for plumbing tests only.
+- **Exit codes:** `0` ok, `1` regression verdict or a blocking lint finding, `2` usage error, failed
+  pre-report audit, or the model backend is unreachable.
+- **Audit gate.** `diff`/`eval` first check task leakage, ceiling/floor, degenerate metrics and
+  scoring consistency; a failing check blocks the result.
+- **CI workflow from `init`** is lint-only by default. Set the repository variable
+  `AGENTGAUGE_LIVE_DIFF=true` to opt in to a live `diff` job (it installs Ollama and pulls a model on
+  the runner; slow on CPU-only runners).
+- **Other providers:** `--provider-config <yaml>` selects a hosted adapter instead of Ollama (example
+  configs are in the repo under `configs/`; see [model adapters](https://github.com/gaurav-gandhi-2411/agentgauge/blob/main/docs/history/model-adapters.md)).
+- **Legacy:** `scan`, `fix`, `ci`, `try` are the v1 eight-axis score, which did not predict task
+  success in this project's own study; unsupported surface.
 
-```bash
-# Point at a different provider with --provider-config instead of --model -- no code change.
-# See configs/provider.*.yaml for one example per adapter (ollama/anthropic/openai_compatible/
-# bedrock/vertex/custom_endpoint).
-agentgauge diff before_server.py after_server.py --tasks agentgauge_tasks.json \
-  --provider-config configs/provider.anthropic.yaml
-```
+## Measured numbers
 
-`agentgauge lint` needs no LLM at all — try it right now against the bundled example fixture,
-which demonstrates the re-tiering story directly: this file's only defects are
-`required_references_missing_property` and `required_not_mentioned`, both of which measured a null
-causal effect on task success (the per-rule table above) and are demoted to INFO — so the default,
-CI-gating view is clean:
+Each figure names its sample, source file and whether it reproduces without a GPU ("clone" = a
+checkout of this repository; scripts and fixtures are not in the wheel).
 
-```bash
-agentgauge lint examples/call_constraints_server_fixed.py
-```
+| Number | What it measures | n | 95% CI | Source | Reproduce without GPU |
+|---|---|---|---|---|---|
+| +0.333 joint-success change (0.667 to 1.000) | Bundled demo pair, recorded `gemma2:9b` | 24 tasks per arm, 1 trial | [+0.125, +0.500]; verdict `INSUFFICIENT_SENSITIVITY` | `agentgauge/demo/replay_*.json` | Yes: `agentgauge demo` |
+| 4.22% (22 of 521 tools; 0 BLOCKING) | Tools flagged by BLOCKING + ADVISORY lint rules in the repo's "clean" corpus | 521 tools, 21 tool sets | Wilson [2.80%, 6.31%] (upper bound is above 5%) | `evals/fixtures/v2_1_severity_gate.json` | Yes, clone: `python scripts/v2_1_severity_gate_measurement.py` |
+| 50 of 50 identical outputs | The diff engine returns byte-identical results for identical input (says nothing about model determinism) | 50 reruns of one input | n/a | `evals/fixtures/v2_false_alarm_determinism.json` | Yes, clone: `python scripts/v2_false_alarm_and_determinism.py` |
+| 97.1% (169 of 174 clean tools flagged) | A single-prompt `llama3.1:8b` judge as a linter substitute; flags every defect (138 of 138) but almost every clean tool too | 174 clean tools; 138 defect cases | Wilson [93.5%, 98.8%] | `evals/fixtures/v2_1_llm_linter_baseline.json` | No (needs the 8B judge); the fixture can be re-tallied |
+| gemma2:9b +0.022, llama3.1:8b +0.055, qwen2.5:7b +0.004 | Joint-success change when empty descriptions are replaced by authored, constraint-revealing ones | 253 tasks, 1 trial, per model | [-0.004, +0.051], [+0.023, +0.089], [-0.021, +0.029] | `evals/fixtures/v2_5_argument_degradation_summary.json` | No (live models); the stored per-task results can be re-analysed |
 
-```
-No violations found.
-```
+gemma2:9b and qwen2.5:7b are indistinguishable from zero; llama3.1:8b shows a small
+positive effect (point estimate above the harness's 0.05 threshold, CI excludes zero). These CIs
+treat tasks as independent although they are nested in 52 tools.
 
-```bash
-# --show-info surfaces the demoted, non-gating findings anyway (still 0% false-alarm,
-# just no longer BLOCKING now that they're measured to have zero task-success effect)
-agentgauge lint examples/call_constraints_server_fixed.py --show-info
-```
+**Causal effect of the `type_enum_contradiction` defect.** Injecting this defect (a type flipped or an
+enum dropped) into an oracle-described server lowers joint task success. n=30 tasks per model
+(2 defect types x 15 tasks), spread over only 6 tool sets, so the tool set is the independent unit:
 
-```
-13 INFO-severity hint(s) (off by default):
-  -  ping_server: 'host' is in the schema's required list but is not a key in properties
-  -  get_server_info: 'hostname' is in the schema's required list but is not a key in properties
-  ...
-```
+| Model | Effect | Cluster-bootstrap 95% CI | t(5) cluster-robust 95% CI | Task-level CI (ignores clustering) |
+|---|---|---|---|---|
+| gemma2:9b | -37.8 pp | [-66.7, -8.3] | [-87.2, +11.7] | [-55.6, -21.1] |
+| llama3.1:8b | -33.3 pp | [-55.9, -2.9] | [-77.4, +10.7] | [-53.3, -13.3] |
+| qwen2.5:7b | -16.7 pp | [-34.4, -2.8] | [-40.9, +7.6] | [-33.3, 0.0] |
 
----
+The direction is consistent across models, but with 6 clusters the t-based interval includes zero for
+every model, so the size of the effect is not pinned down. These are synthetic injections into
+hand-built mock servers. Source: `evals/fixtures/type_enum_contradiction_clustered.json`, produced
+by `scripts/type_enum_clustered_ci.py` (clone; pure Python, seed 42, 10,000 resamples; `--check`
+verifies the committed file). An earlier README quoted a pooled figure that mixed in a defect type
+with no measurable effect; it is withdrawn.
 
-## v1 (legacy — not the recommended surface)
+### Variance, power and false-alarm figures (re-measured with per-trial seeds)
 
-`agentgauge scan`/`fix`/`ci`/`try` implement an 8-axis LLM-judged correlational score. The
-predictive-validity study found none of the 8 axes predicts real task success by a margin
-surviving both multiple-comparison correction and length-control (`reports/
-predictive_validity_study.md`, `reports/v2_axis_triage.md`). The commands still exist and still
-work — deleting working code that some users may already depend on wasn't in scope for this
-rebuild — but `diff`/`eval`/`lint`/`init` are the supported product surface going forward.
+<!-- BEGIN recalibration-metrics (generated) -->
 
----
+**Re-measured with per-trial seeds** (replaces the fixed-seed figures; those are retired).
+
+- Source: `evals/fixtures/recalibration_seedfix/results.json`
+- Tool sets in the new data: 44 (`call_constraints_server`, `call_constraints_server_fixed`, `call_constraints_server_oracle`, `call_constraints_v2_server`, `call_constraints_v2_server_fixed`, `call_constraints_v2_server_oracle`, `confusable_server`, `confusable_server_fixed`, `confusable_server_oracle`, `echo_server`, `exp1_blazickjp_arxiv_mcp_server_mirror`, `exp1_datalayer_jupyter_mcp_server_mirror`, `exp1_datalayer_jupyter_mcp_server_mirror_oracle`, `exp1_dataojitori_nocturne_memory_mirror`, `exp1_stickerdaniel_linkedin_mcp_server_mirror`, `grounded_server`, `grounded_server_fixed`, `grounded_server_oracle`, `mediocre_server`, `mediocre_server_fixed`, `p2a_arm_a`, `p2a_arm_guardb`, `p2a_arm_oracle`, `p2a_internal_proxy_mirror`, `q3_arm_a`, `q3_arm_o`, `q3_real_server`, `q6_arm_a`, `q6_arm_f_doc_guarded`, `q6_real_server`, `rw1_arm_a`, `rw1_arm_guardb`, `rw1_arm_oracle`, `rw1_github_mirror`, `rw2_arm_a`, `rw2_aws_iam_mirror`, `t18_fixer_server`, `t18_fixer_server_set2`, `t18_oracle_server`, `t18_oracle_server_set2`, `t18_q2b_server`, `t18_q2b_server_set2`, `t18_vague_server`, `t18_vague_server_set2`); trials used: 5535; dropped as partial/incomplete: none.
+- 'Old, same subset' restricts the original fixed-seed corpus to those tool sets, so the paired comparison is like-for-like; 'old, all' is the original 44 tool sets.
+- CIs are 95%, cluster bootstrap over tool sets (variance table) and Wilson (rates). With few tool sets the intervals are degenerate or optimistic; read n first.
+
+| Quantity | Old, all tool sets | Old, same subset as new | New (per-trial seeds) | New - old (paired) |
+|---|---|---|---|---|
+| Zero-variance share of (tool set, task) groups, % | 90.3 [84.9, 94.1] | 90.3 [84.9, 94.1] | 82.9 [75.9, 88.2] | -7.4 [-10.7, -4.5] |
+| ICC(1) | 0.793 [0.721, 0.866] | 0.793 [0.721, 0.866] | 0.731 [0.653, 0.809] | -0.063 [-0.117, -0.019] |
+| Between-task share of variance, % | 56.1 [46.4, 65.9] | 56.1 [46.4, 65.9] | 50.8 [41.7, 60.7] | -5.2 [-9.8, -1.2] |
+| Between-trial (within-task) share, % | 18.0 [11.5, 24.5] | 18.0 [11.5, 24.5] | 23.5 [16.4, 30.4] | 5.5 [1.6, 10.2] |
+| Baseline success rate | 0.775 [0.705, 0.834] | 0.775 [0.705, 0.834] | 0.789 [0.718, 0.847] | 0.014 [0.002, 0.026] |
+| sigma_task | 0.359 [0.313, 0.401] | 0.359 [0.313, 0.401] | 0.334 [0.286, 0.379] | -0.025 [-0.038, -0.012] |
+| resid_sd (within-task trial noise) | 0.139 [0.107, 0.176] | 0.139 [0.107, 0.176] | 0.169 [0.139, 0.203] | 0.030 [0.011, 0.050] |
+
+**Correction to an earlier diagnosis.** The original corpus drew every repeat trial with the same sampler seed, and an October 2026 audit concluded that this explained the high share of groups with zero variance. Re-measuring with per-trial seeds shows that diagnosis was mostly wrong. The zero-variance share moved from 90.3 [84.9, 94.1]% to 82.9 [75.9, 88.2]% (paired change -7.4 [-10.7, -4.5] points) and ICC(1) from 0.793 [0.721, 0.866] to 0.731 [0.653, 0.809]: about 83% of (tool set, gold tool) groups still score identically on every repeat when the seed varies.
+
+That is not because the model repeats itself: of the 597 zero-variance groups, 235 issued the identical tool call on every trial and 362 issued different calls that scored the same (345 differ only in arguments, 17 in the selected tool). Source: `output_diversity.json`.
+
+All 17 groups whose selected tool differs are all-fail (0 all-pass with a non-gold tool); a wrong tool always scores 0. The identical scores in the argument-only groups (299 all-pass, 46 all-fail) come from a lenient argument check: of 343 all-pass tasks whose arguments differ across trials, 134 have no registered constraint at all (any call scores 1.0), 115 are constrained but the arguments that differ are not, and only 94 vary in an argument the scorer checks. A score of 1.0 therefore means "right tool plus the checked identifiers", not "fully correct call". Source: `zero_variance_audit.json`.
+
+Practical reading: repeat trials on the same task still add little independent information (ICC above), so spend effort on more distinct tasks, not more trials per task. The coarse outcome metric, not sampler determinism, is what limits the variance structure.
+
+| Tasks per arm x trials | MDE, old constants | MDE, new constants (gold grouping) | MDE, new constants (true-task grouping) | New-constant sensitivity range |
+|---|---|---|---|---|
+| 100 x 1 | 0.0848 | 0.0878 | 0.0839 | 0.0768 to 0.1001 |
+| 253 x 1 | 0.0537 | 0.0562 | 0.0539 | 0.0485 to 0.0639 |
+
+Ship target (detect a 10-point regression, i.e. 0.10, at 80% power with 100 tasks x 1 trial), evaluated on the new gold-grouping constants: **met** (MDE 0.0878). The target is met at the point estimate but not across the sensitivity range (0.0768 to 0.1001): with resid_sd at its upper bootstrap quantile the MDE exceeds it. MDE is a Monte-Carlo simulation of a Gaussian task model, not a measurement on a corpus; it has no CI of its own.
+MDE simulations per cell: 2000.
+
+| Cluster stratum | False alarm, old (all) | False alarm, new | Abstention, old (all) | Abstention, new |
+|---|---|---|---|---|
+| **All strata** | 10/2200 = 0.45% [0.25, 0.83] | 7/2200 = 0.32% [0.15, 0.66] | 572/2200 = 26.00% [24.21, 27.87] | 616/2200 = 28.00% [26.16, 29.91] |
+| <10 tasks | 7/700 = 1.00% [0.49, 2.05] | 7/700 = 1.00% [0.49, 2.05] | 262/700 = 37.43% [33.92, 41.07] | 183/700 = 26.14% [23.02, 29.52] |
+| 10-29 tasks | 3/1300 = 0.23% [0.08, 0.68] | 0/1300 = 0.00% [0.00, 0.29] | 310/1300 = 23.85% [21.61, 26.24] | 431/1300 = 33.15% [30.65, 35.76] |
+| >=30 tasks | 0/200 = 0.00% [0.00, 1.88] | 0/200 = 0.00% [0.00, 1.88] | 0/200 = 0.00% [0.00, 1.88] | 2/200 = 1.00% [0.27, 3.57] |
+
+Null-comparison caveat: Repeats within a tool set share one trial pool, so the Wilson intervals treat correlated comparisons as independent and are optimistic.
+
+Input hashes (sha256): rows `dd349057f781`; old `7d7c0caa02e8`; run_status `3450be6ec81c`
+
+Rendered at commit: `64efda0`
+
+<!-- END recalibration-metrics -->
+
+## Limitations
+
+- **Calibrated on local open models.** All measurements use `gemma2:9b`, `llama3.1:8b` and
+  `qwen2.5:7b` through Ollama on one machine. Nothing here is validated on frontier or hosted models.
+- **Judge-dependent scores.** Rubric-judged scores are not comparable across judge models (pinned:
+  `llama3.1:8b`).
+- **Stubbed mirrors, not real servers.** The corpus is hand-built mock MCP servers and mirrors of
+  real ones; tasks and gold labels were largely authored by AI assistants, and 3 of the 10 newest
+  fixtures contained a factual error when checked against vendor docs
+  (`reports/v2_5_task2_fixture_validation.md`).
+- **Small and pilot samples.** The causal-effect figures use 6 tool sets and 30 to 45 tasks per model;
+  the regime study behind the papers used a 10-server pilot from one source.
+- **You need many tasks (~100 per arm).** The table above gives the MDE at 100 and 253 tasks. With fewer, expect
+  `INSUFFICIENT_SENSITIVITY`; the demo shows this at 24. Writing and validating tasks is the real
+  cost, not compute.
+- **Hosted APIs are not deterministic.** `--seed` applies to Ollama only; hosted adapters ignore it,
+  and their replay determinism is measured on recorded responses, not live calls.
+- **Research drafts are not peer-reviewed.** Their claims are being re-verified (below).
+
+## Research drafts
+
+Two drafts live under `docs/` and are **under revision: not peer-reviewed, claims being
+re-verified, no arXiv version exists.** They are kept for transparency, not as established results.
+
+- Draft 1, tool-description quality as a regime-bounded effect: `docs/paper/`.
+- Draft 2, power analysis and measurement-artifact screening for tool-description evaluation: `docs/paper2/`.
+
+Earlier framing that these experiments ran under a pre-registered, frozen protocol was wrong for
+most of them; see
+[`docs/history/research-drafts.md`](https://github.com/gaurav-gandhi-2411/agentgauge/blob/main/docs/history/research-drafts.md).
+History and the per-rule lint measurements (with corrections) are in
+[`docs/history/`](https://github.com/gaurav-gandhi-2411/agentgauge/tree/main/docs/history).
 
 ## Development
 
 ```bash
-# Run all checks (ruff, mypy, pytest + coverage)
-bash scripts/verify.sh
-
-# Run tests only
-uv run pytest
-
-# Lint the bundled echo server (zero LLM cost)
-agentgauge lint examples/echo_server.py
+bash scripts/verify.sh   # ruff, mypy, pytest + coverage (LLM always mocked, no network)
+uv run pytest            # tests only
 ```
 
----
-
-## Roadmap
-
-v1's 8-axis scoring is complete but methodologically falsified as a predictor of task success
-(`reports/predictive_validity_study.md`). v2's linter and regression harness are built, measured,
-and CLI-integrated. v2.1 rebuilt the harness's estimator (paired + task-clustered + CUPED) and
-found the v2 estimator's MDE was optimistic (ICC=0.793 within task) — the 10-point-regression
-ship target was not yet met at the allocation tested (n=20 tasks/arm, 5 trials/task). **v2.2
-closed that gap** by reallocating to 100 tasks/arm at 1 trial/task (MDE=0.0848 — ship target
-met) and fixed the few-clusters false-alarm concentration v2.1 found (t(G-1)-adjusted CI, <5% in
-every stratum). v2.2 also measured, for the first time, that BLOCKING linter violations actually
-cause agent task failure (previously assumed) — and that ADVISORY violations cause a *larger*
-drop, in every one of the three model families tested (gemma2:9b, llama3.1:8b, qwen2.5:7b).
-v2.3 audited the largest v2.2 finding before trusting it (a scoring bug had inflated an ADVISORY
-effect to -76.7/-80.0pp; corrected to a clean null) and re-tiered the linter by the corrected
-numbers. **v2.4 audited that bug's full blast radius**: confirmed only one of five defect-injection
-classes was ever affected (the other four never rename a schema key — verified from source), traced
-the ICC/variance/rho/MDE-calibration constants to a corpus the bug never touched (no recomputation
-needed), and re-measured the one surviving BLOCKING claim on a freshly rebuilt instance (holds:
--13.3 to -28.9pp, unchanged). v2.4 shipped `agentgauge audit` — a standing pre-report gate encoding
-every measurement-artifact class found during this project's development (task/answer leakage,
-ceiling/floor, degenerate metrics, and the scoring-reference-consistency class the v2.3 bug
-belongs to) as an automated check wired into `diff`/`eval`, with a regression test per class seeded
-with the real historical case — and repositioned the package around the harness (`diff` primary,
-`lint` secondary, every lint rule labeled with its measured causal effect or lack of one).
-**v0.4.0 closed the last open item**: the argument-degradation cross-model question (separate from
-the causal-chain question above) is now measured, not inconclusive — the 10-fixture corpus expansion
-this section once flagged as "in progress" landed in v2.4/v2.5 (253 real tasks, all validated
-against live official API docs), and a live 3-model measurement at that corpus's full power
-(MDE=0.0537) found a real, adequately-powered null: no model shows a practically significant effect
-from better tool descriptions on argument construction (`reports/v0_4_0_task1_argument_degradation.md`).
-**v0.5.0 ships model adapters** (six providers, 100% replay determinism, config-driven — see the
-section above) as the release headline. It also built and honestly evaluated a failure-attribution
-feature (localize which tool description caused a measured regression): accuracy was fixed (both
-strategies clear the ship bar at realistic candidate-set sizes), but the cost of doing so — 1.01x
-to 20.24x a full re-evaluation, at every tested configuration — means it is **not shipped as a
-product surface**, gated `--experimental` and off by default (see the section above and
-`reports/capability_statement.md` for the negative-result writeup). Ten measurement artifacts were
-found and fixed across this project's development, each with a standing `agentgauge audit` check
-seeded from the real historical case.
-Every product claim in this README is now measured — `reports/v2_product_readiness.md` tracks the
-complete, current MEASURED vs. NOT MEASURED breakdown.
-
----
-
-## Project structure
-
-```
-agentgauge/
-  client.py                 # MCP client: stdio + HTTP/SSE, introspect, call tools
-  providers.py               # Provider protocol + 6 adapters (ollama/anthropic/
-                              # openai_compatible/bedrock/vertex/custom_endpoint) + MockProvider
-  provider_config.py         # config-driven provider selection (YAML, see configs/)
-  cassette.py                # record/replay for Provider.chat() -- proves replay determinism
-                              # survives the adapter abstraction
-  tasks.py                   # Task generator: sample args from JSON schema
-  runner.py                  # Agent runner: LLM selects tool + constructs args, N trials
-  scorer.py                  # v1 rubric scoring: static analysis + LLM-as-judge (legacy surface)
-  linter.py                  # deterministic defect linter, zero LLM calls -- secondary utility
-  harness.py                 # bootstrap-CI regression harness, MDE simulation -- PRIMARY interface
-  constraints.py             # anti-tautology blind-task constraint checking
-  audit.py                   # pre-report measurement-validity gate (task leakage, ceiling/floor,
-                              # degenerate metrics, scoring-reference consistency, probe-variance
-                              # calibration, ...) -- ten measurement-artifact classes, each with a
-                              # standing check seeded from the real historical case
-  attribution.py             # failure attribution strategies (exhaustive/Shapley/bisection) --
-                              # EXPERIMENTAL, gated `agentgauge attribute --experimental`, not a
-                              # recommended product surface (see the section above)
-  attribution_benchmark.py   # injected-culprit benchmark generator for attribution -- research use
-  report.py                  # Rich text report renderer
-  cli.py                     # typer CLI: diff / eval / lint / init (primary surface) +
-                              # attribute (experimental, gated) + scan / fix / ci / try (v1, legacy)
-examples/
-  echo_server.py  # Minimal MCP server (good + bad tools) for local demos
-configs/          # example provider-config YAML files for each of the 6 adapters
-tests/            # pytest; LLM always mocked; no network; no paid calls
-```
-
----
+See [`CHANGELOG.md`](https://github.com/gaurav-gandhi-2411/agentgauge/blob/main/CHANGELOG.md) and [`RELEASING.md`](https://github.com/gaurav-gandhi-2411/agentgauge/blob/main/RELEASING.md).
 
 ## License
 
-Apache License 2.0 — see [LICENSE](https://github.com/gaurav-gandhi-2411/agentgauge/blob/main/LICENSE).
+Apache License 2.0 - see [LICENSE](https://github.com/gaurav-gandhi-2411/agentgauge/blob/main/LICENSE).

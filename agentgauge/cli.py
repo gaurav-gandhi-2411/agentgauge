@@ -92,7 +92,7 @@ def main(
 # validation behind it. `agentgauge lint` (the deterministic defect linter) is
 # a fast, zero-LLM-cost secondary utility: useful on its own, but it has at
 # most one rule with a validated causal effect on task success (see the
-# per-rule measured-effect table in README.md) -- the harness is what actually
+# per-rule measured-effect table in docs/history/measurement-history.md) -- the harness is what actually
 # measures whether a change helped. `scan`/`fix`/`ci`/`try` below are v1,
 # legacy, not the recommended surface (reports/predictive_validity_study.md
 # found none of v1's 8 LLM-judged axes predict real task success).
@@ -242,11 +242,13 @@ def diff(
             "--trials",
             "-t",
             help=(
-                "Trials per task. Default 1: measured ICC=0.793 means repeat trials on the "
-                "SAME task carry almost no independent information -- more distinct TASKS is "
-                "what buys detection power. At 100 tasks/arm x 1 trial, MDE=0.085 at 80% power "
-                "(reports/v2_2_optimal_allocation.md) -- write ~100 tasks in your --tasks file "
-                "for a reliable regression gate, not more trials per task."
+                "Trials per task. Default 1. Measured with per-trial seeds on 44 tool sets "
+                "(evals/fixtures/recalibration_seedfix/results.md): ICC(1)=0.73 (95% CI "
+                "0.65-0.81), i.e. about three quarters of outcome variance is between tasks, so "
+                "repeat trials of the SAME task add little independent information. More "
+                "distinct TASKS buy detection power, not more trials per task: at 100 tasks/arm "
+                "x 1 trial the simulated MDE is 0.088 at 80% power (sensitivity range 0.077-"
+                "0.100) -- write ~100 tasks or more in your --tasks file."
             ),
         ),
     ] = 1,
@@ -275,7 +277,7 @@ def diff(
     comparison of real task success between two tool-set variants, decomposed
     into selection vs. argument accuracy -- measures whether a change actually
     helped, which `agentgauge lint`'s static rules mostly do not validate on
-    their own (see README.md's per-rule measured-effect table).
+    their own (see docs/history/measurement-history.md for the per-rule measured-effect table).
 
     Exit codes: 0 = IMPROVEMENT, NO_CHANGE, INSUFFICIENT_SENSITIVITY, or CEILING / FLOOR (every
     trial in both arms scored 1.0 / 0.0: no delta is reported, the task set has no headroom or no
@@ -767,10 +769,11 @@ def eval_cmd(
             "--trials",
             "-t",
             help=(
-                "Trials per task. Default 1: measured ICC=0.793 means repeat trials on the "
-                "SAME task carry almost no independent information (reports/"
-                "v2_variance_structure.md) -- more distinct TASKS, not more trials per task, "
-                "is what buys detection power (reports/v2_2_optimal_allocation.md)."
+                "Trials per task. Default 1. Measured with per-trial seeds on 44 tool sets "
+                "(evals/fixtures/recalibration_seedfix/results.md): ICC(1)=0.73 (95% CI "
+                "0.65-0.81), so repeat trials of the SAME task add little independent "
+                "information -- more distinct TASKS, not more trials per task, is what buys "
+                "detection power."
             ),
         ),
     ] = 1,
