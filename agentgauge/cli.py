@@ -169,6 +169,17 @@ def diff(
             help="Regression threshold on joint success rate (see reports/v2_2_optimal_allocation.md for the real MDE at your trial count)",
         ),
     ] = 0.05,
+    seed: Annotated[
+        int,
+        typer.Option(
+            "--seed",
+            help=(
+                "Base seed. Each (task, trial) gets its own seed derived from this, so repeat "
+                "trials differ but a rerun with the same --seed is identical (Ollama only; "
+                "hosted APIs ignore seeds)."
+            ),
+        ),
+    ] = 42,
     mock: Annotated[bool, typer.Option("--mock", help="Use mock LLM provider")] = False,
     json_output: Annotated[bool, typer.Option("--json")] = False,
 ) -> None:
@@ -195,6 +206,7 @@ def diff(
             provider_config=provider_config,
             trials=trials,
             threshold=threshold,
+            seed=seed,
             mock=mock,
             json_output=json_output,
         )
@@ -212,6 +224,7 @@ async def _diff_async(
     provider_config: Path | None = None,
     trials: int,
     threshold: float,
+    seed: int = 42,
     mock: bool,
     json_output: bool,
 ) -> None:
@@ -240,10 +253,22 @@ async def _diff_async(
             fail_message="Audit failed -- refusing to run live trials. Fix the flagged issue(s) and re-run.",
         )
         before_trials, before_stats = await _collect_trials(
-            before, tasks, model=model, trials=trials, mock=mock, provider_config=provider_config
+            before,
+            tasks,
+            model=model,
+            trials=trials,
+            mock=mock,
+            provider_config=provider_config,
+            seed=seed,
         )
         after_trials, after_stats = await _collect_trials(
-            after, tasks, model=model, trials=trials, mock=mock, provider_config=provider_config
+            after,
+            tasks,
+            model=model,
+            trials=trials,
+            mock=mock,
+            provider_config=provider_config,
+            seed=seed,
         )
         audit_report = run_audit(
             tasks,
@@ -382,6 +407,7 @@ async def _collect_trials(
     trials: int,
     mock: bool,
     provider_config: Path | None = None,
+    seed: int = 42,
 ) -> tuple[list[TrialOutcome], TrialCollectionStats]:
     """Live trial collection: connects, runs each task `trials` times, scores
     argument correctness against any user-supplied constraints (1.0 default for
@@ -403,7 +429,9 @@ async def _collect_trials(
     client, ctx, _ = await _connect(target)
     try:
         task_objs = [Task(tool_name=t.tool_name, description=t.description) for t in tasks]
-        run_results: list[RunResult] = await run_tasks(task_objs, client, provider, trials=trials)
+        run_results: list[RunResult] = await run_tasks(
+            task_objs, client, provider, trials=trials, base_seed=seed
+        )
         outcomes = []
         constraints_by_key = {(t.tool_name, t.description): t.constraints for t in tasks}
         for r in run_results:
@@ -562,6 +590,17 @@ def eval_cmd(
             ),
         ),
     ] = 1,
+    seed: Annotated[
+        int,
+        typer.Option(
+            "--seed",
+            help=(
+                "Base seed. Each (task, trial) gets its own seed derived from this, so repeat "
+                "trials differ but a rerun with the same --seed is identical (Ollama only; "
+                "hosted APIs ignore seeds)."
+            ),
+        ),
+    ] = 42,
     mock: Annotated[bool, typer.Option("--mock", help="Use mock LLM provider")] = False,
     json_output: Annotated[bool, typer.Option("--json")] = False,
 ) -> None:
@@ -576,6 +615,7 @@ def eval_cmd(
             model=model,
             provider_config=provider_config,
             trials=trials,
+            seed=seed,
             mock=mock,
             json_output=json_output,
         )
@@ -590,6 +630,7 @@ async def _eval_async(
     model: str,
     provider_config: Path | None = None,
     trials: int,
+    seed: int = 42,
     mock: bool,
     json_output: bool,
 ) -> None:
@@ -622,7 +663,13 @@ async def _eval_async(
             fail_message="Audit failed -- refusing to run live trials. Fix the flagged issue(s) and re-run.",
         )
         outcomes, stats = await _collect_trials(
-            target, tasks, model=model, trials=trials, mock=mock, provider_config=provider_config
+            target,
+            tasks,
+            model=model,
+            trials=trials,
+            mock=mock,
+            provider_config=provider_config,
+            seed=seed,
         )
         audit_report = run_audit(tasks, before_tools=tools, before_trials=outcomes)
         if not json_output:
