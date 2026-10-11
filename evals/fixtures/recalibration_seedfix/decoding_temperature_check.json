@@ -1,0 +1,668 @@
+{
+  "model": "gemma2:9b",
+  "logged_request_body_open_ended": {
+    "model": "gemma2:9b",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Write one sentence about a lighthouse keeper."
+      }
+    ],
+    "stream": false,
+    "options": {
+      "seed": 100
+    }
+  },
+  "sampler_control": {
+    "prompt": "Write one sentence about a lighthouse keeper.",
+    "seeds": [
+      100,
+      101,
+      102,
+      103,
+      104,
+      105,
+      106,
+      107,
+      108,
+      109
+    ],
+    "default_options_distinct_responses": 10,
+    "temperature_0_distinct_responses": 1,
+    "same_seed_3x_distinct_responses": 1,
+    "default_examples": [
+      "The lighthouse keeper, weathered and wise, diligently tended the lamp that guided ships through the treacherous night. \n",
+      "The weathered lighthouse keeper, his eyes as blue as the stormy sea, kept the light burning bright through the howling wind. \n",
+      "The lighthouse keeper, weathered and wise, guided ships home with the steady beam of his lantern. \n"
+    ],
+    "temperature_0_example": "The lighthouse keeper, weathered and wise, watched the storm rage, his beacon a steady eye in the darkness. \n"
+  },
+  "task_groups": [
+    {
+      "kind": "zero_variance",
+      "tool_set": "call_constraints_server",
+      "task": "Get the full inventory of available input channels",
+      "seeds": [
+        1164780788,
+        743328861,
+        981127268,
+        770820332,
+        55255183,
+        1057391338,
+        330222558,
+        1516111328,
+        1018462483,
+        65861803
+      ],
+      "n_raw_responses": 20,
+      "distinct_raw_responses": 3,
+      "distinct_tool_calls": 2,
+      "per_trial_score": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "pass_per_trial": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "example_raw_responses": [
+        "list_channels \n",
+        "{\"channels\": []}",
+        "{}"
+      ],
+      "first_request_body": {
+        "model": "gemma2:9b",
+        "messages": [
+          {
+            "role": "user",
+            "content": "Available tools:\nping_server \u2014 (no description) | (no params)\nget_server_info \u2014 (no description) | (no params)\nlist_channels \u2014 (no description) | (no params)\nreset_state \u2014 (no description) | (no params)\nset_acquisition_mode \u2014 (no description) | sensor_id:string, mode:string\nconfigure_output_codec \u2014 (no description) | stream_id:string, codec:string\nschedule_maintenance \u2014 (no description) | task_id:string, priority:string\nset_channel_routing \u2014 (no description) | channel_id:string, routing:string\n\nTask: Get the full inventory of available input channels\nReply with ONLY the tool name to call, nothing else."
+          }
+        ],
+        "stream": false,
+        "options": {
+          "seed": 1164780788
+        }
+      }
+    },
+    {
+      "kind": "zero_variance",
+      "tool_set": "call_constraints_server",
+      "task": "Clear all temporary state and reset the system to defaults",
+      "seeds": [
+        1356938769,
+        788557196,
+        217876163,
+        1688323874,
+        1373157484,
+        1720811949,
+        1058956656,
+        374816726,
+        1220551155,
+        1576093967
+      ],
+      "n_raw_responses": 20,
+      "distinct_raw_responses": 2,
+      "distinct_tool_calls": 1,
+      "per_trial_score": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "pass_per_trial": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "example_raw_responses": [
+        "reset_state \n",
+        "{}"
+      ],
+      "first_request_body": {
+        "model": "gemma2:9b",
+        "messages": [
+          {
+            "role": "user",
+            "content": "Available tools:\nping_server \u2014 (no description) | (no params)\nget_server_info \u2014 (no description) | (no params)\nlist_channels \u2014 (no description) | (no params)\nreset_state \u2014 (no description) | (no params)\nset_acquisition_mode \u2014 (no description) | sensor_id:string, mode:string\nconfigure_output_codec \u2014 (no description) | stream_id:string, codec:string\nschedule_maintenance \u2014 (no description) | task_id:string, priority:string\nset_channel_routing \u2014 (no description) | channel_id:string, routing:string\n\nTask: Clear all temporary state and reset the system to defaults\nReply with ONLY the tool name to call, nothing else."
+          }
+        ],
+        "stream": false,
+        "options": {
+          "seed": 1356938769
+        }
+      }
+    },
+    {
+      "kind": "zero_variance",
+      "tool_set": "confusable_server",
+      "task": "Find all documents that mention the word 'overdue'",
+      "seeds": [
+        517599054,
+        1577373219,
+        441455734,
+        509752943,
+        751247308,
+        522746010,
+        2079562780,
+        2008023878,
+        243768424,
+        1023647019
+      ],
+      "n_raw_responses": 20,
+      "distinct_raw_responses": 3,
+      "distinct_tool_calls": 1,
+      "per_trial_score": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "pass_per_trial": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "example_raw_responses": [
+        "search_documents \n",
+        "{\"query\": \"overdue\"}",
+        "{\"query\": \"overdue\"} \n"
+      ],
+      "first_request_body": {
+        "model": "gemma2:9b",
+        "messages": [
+          {
+            "role": "user",
+            "content": "Available tools:\nsearch_documents \u2014 (no description) | query:string\nquery_records \u2014 (no description) | field:string, value:string\nsend_message \u2014 (no description) | user_id:string, body:string\ndispatch_event \u2014 (no description) | event_type:string, payload:string\nlist_items \u2014 (no description) | offset:integer, limit:integer\nenumerate_all \u2014 (no description) | collection:string\ncreate_record \u2014 (no description) | type:string, data:string\nregister_user \u2014 (no description) | email:string, password:string\nupdate_record \u2014 (no description) | id:string, data:string\npatch_fields \u2014 (no description) | id:string, fields:string\ndelete_record \u2014 (no description) | id:string\narchive_record \u2014 (no description) | id:string\nget_record \u2014 (no description) | id:string\nfetch_latest \u2014 (no description) | type:string\nexport_report \u2014 (no description) | format:string, dataset:string\nextract_data \u2014 (no description) | dataset:string\n\nTask: Find all documents that mention the word 'overdue'\nReply with ONLY the tool name to call, nothing else."
+          }
+        ],
+        "stream": false,
+        "options": {
+          "seed": 517599054
+        }
+      }
+    },
+    {
+      "kind": "zero_variance",
+      "tool_set": "call_constraints_server",
+      "task": "Wipe the current run state so a fresh acquisition can start",
+      "seeds": [
+        1366506886,
+        710152654,
+        228979288,
+        1227659818,
+        44418056,
+        686698314,
+        849934959,
+        361942767,
+        1859230487,
+        1131910171
+      ],
+      "n_raw_responses": 20,
+      "distinct_raw_responses": 4,
+      "distinct_tool_calls": 1,
+      "per_trial_score": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "pass_per_trial": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "example_raw_responses": [
+        "reset_state \n",
+        "reset_state  \n",
+        "{}",
+        "{} \n"
+      ],
+      "first_request_body": {
+        "model": "gemma2:9b",
+        "messages": [
+          {
+            "role": "user",
+            "content": "Available tools:\nping_server \u2014 (no description) | (no params)\nget_server_info \u2014 (no description) | (no params)\nlist_channels \u2014 (no description) | (no params)\nreset_state \u2014 (no description) | (no params)\nset_acquisition_mode \u2014 (no description) | sensor_id:string, mode:string\nconfigure_output_codec \u2014 (no description) | stream_id:string, codec:string\nschedule_maintenance \u2014 (no description) | task_id:string, priority:string\nset_channel_routing \u2014 (no description) | channel_id:string, routing:string\n\nTask: Wipe the current run state so a fresh acquisition can start\nReply with ONLY the tool name to call, nothing else."
+          }
+        ],
+        "stream": false,
+        "options": {
+          "seed": 1366506886
+        }
+      }
+    },
+    {
+      "kind": "zero_variance",
+      "tool_set": "call_constraints_server",
+      "task": "Start maintenance task M33 at the lowest urgency, filling only idle time",
+      "seeds": [
+        1660436406,
+        2012198860,
+        1692987432,
+        311910936,
+        1510403385,
+        1907024319,
+        1136293488,
+        50137856,
+        2088022125,
+        1773118749
+      ],
+      "n_raw_responses": 20,
+      "distinct_raw_responses": 5,
+      "distinct_tool_calls": 2,
+      "per_trial_score": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "pass_per_trial": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "example_raw_responses": [
+        "schedule_maintenance \n",
+        "schedule_maintenance  \n",
+        "{\"task_id\": \"M33\", \"priority\": \"low\"}",
+        "{\"task_id\": \"M33\", \"priority\": \"lowest\"}"
+      ],
+      "first_request_body": {
+        "model": "gemma2:9b",
+        "messages": [
+          {
+            "role": "user",
+            "content": "Available tools:\nping_server \u2014 (no description) | (no params)\nget_server_info \u2014 (no description) | (no params)\nlist_channels \u2014 (no description) | (no params)\nreset_state \u2014 (no description) | (no params)\nset_acquisition_mode \u2014 (no description) | sensor_id:string, mode:string\nconfigure_output_codec \u2014 (no description) | stream_id:string, codec:string\nschedule_maintenance \u2014 (no description) | task_id:string, priority:string\nset_channel_routing \u2014 (no description) | channel_id:string, routing:string\n\nTask: Start maintenance task M33 at the lowest urgency, filling only idle time\nReply with ONLY the tool name to call, nothing else."
+          }
+        ],
+        "stream": false,
+        "options": {
+          "seed": 1660436406
+        }
+      }
+    },
+    {
+      "kind": "non_zero_variance",
+      "tool_set": "confusable_server",
+      "task": "Produce a PDF summary of last month's invoices for the accounting team",
+      "seeds": [
+        594150820,
+        1879925020,
+        1030734735,
+        2082550596,
+        1942154758,
+        638702065,
+        1695919418,
+        90481359,
+        2103747147,
+        1778493173
+      ],
+      "n_raw_responses": 20,
+      "distinct_raw_responses": 13,
+      "distinct_tool_calls": 6,
+      "per_trial_score": [
+        1.0,
+        1.0,
+        0.0,
+        1.0,
+        1.0,
+        0.0,
+        1.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      "pass_per_trial": [
+        true,
+        true,
+        false,
+        true,
+        true,
+        false,
+        true,
+        true,
+        false,
+        false
+      ],
+      "example_raw_responses": [
+        "```json\n{\n  \"collection\": \"invoices\",\n  \"time_range\": {\n    \"start\": \"last_month_start\",\n    \"end\": \"last_month_end\"\n  },\n  \"format\": \"pdf\"\n}\n```",
+        "enumerate_all \n",
+        "enumerate_all  \n",
+        "export_report \n"
+      ],
+      "first_request_body": {
+        "model": "gemma2:9b",
+        "messages": [
+          {
+            "role": "user",
+            "content": "Available tools:\nsearch_documents \u2014 (no description) | query:string\nquery_records \u2014 (no description) | field:string, value:string\nsend_message \u2014 (no description) | user_id:string, body:string\ndispatch_event \u2014 (no description) | event_type:string, payload:string\nlist_items \u2014 (no description) | offset:integer, limit:integer\nenumerate_all \u2014 (no description) | collection:string\ncreate_record \u2014 (no description) | type:string, data:string\nregister_user \u2014 (no description) | email:string, password:string\nupdate_record \u2014 (no description) | id:string, data:string\npatch_fields \u2014 (no description) | id:string, fields:string\ndelete_record \u2014 (no description) | id:string\narchive_record \u2014 (no description) | id:string\nget_record \u2014 (no description) | id:string\nfetch_latest \u2014 (no description) | type:string\nexport_report \u2014 (no description) | format:string, dataset:string\nextract_data \u2014 (no description) | dataset:string\n\nTask: Produce a PDF summary of last month's invoices for the accounting team\nReply with ONLY the tool name to call, nothing else."
+          }
+        ],
+        "stream": false,
+        "options": {
+          "seed": 594150820
+        }
+      }
+    },
+    {
+      "kind": "non_zero_variance",
+      "tool_set": "mediocre_server",
+      "task": "Delete just the entry under key 'pressure-03' in session 7, leaving other records untouched",
+      "seeds": [
+        273243177,
+        815079038,
+        13658031,
+        207510476,
+        1704029767,
+        1257905118,
+        1810766526,
+        379956583,
+        1334618632,
+        148234712
+      ],
+      "n_raw_responses": 20,
+      "distinct_raw_responses": 8,
+      "distinct_tool_calls": 4,
+      "per_trial_score": [
+        0.5,
+        1.0,
+        1.0,
+        0.5,
+        1.0,
+        1.0,
+        0.5,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "pass_per_trial": [
+        false,
+        true,
+        true,
+        false,
+        true,
+        true,
+        false,
+        true,
+        true,
+        true
+      ],
+      "example_raw_responses": [
+        "del_a \n",
+        "{\"session\": 7, \"key\": \"pressure-03\"}",
+        "{\"session_id\": \"7\", \"key\": \"pressure-03\"}",
+        "{\"session_id\": \"7\", \"key\": \"pressure-03\"} \n"
+      ],
+      "first_request_body": {
+        "model": "gemma2:9b",
+        "messages": [
+          {
+            "role": "user",
+            "content": "Available tools:\nput_x \u2014 Put. | sid, key, val, ts\nget_a \u2014 Get. | sid, key\nget_b \u2014 Get. | sid, key\ndel_a \u2014 Del. | sid, key\ndel_b \u2014 Del. | sid, key\n\nTask: Delete just the entry under key 'pressure-03' in session 7, leaving other records untouched\nReply with ONLY the tool name to call, nothing else."
+          }
+        ],
+        "stream": false,
+        "options": {
+          "seed": 273243177
+        }
+      }
+    },
+    {
+      "kind": "non_zero_variance",
+      "tool_set": "confusable_server",
+      "task": "Permanently erase a user account that was created by mistake",
+      "seeds": [
+        711190683,
+        1705625075,
+        713161095,
+        1487418153,
+        1333178590,
+        1360489190,
+        1261743260,
+        786146655,
+        1020199057,
+        460212699
+      ],
+      "n_raw_responses": 20,
+      "distinct_raw_responses": 12,
+      "distinct_tool_calls": 8,
+      "per_trial_score": [
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        1.0,
+        1.0,
+        1.0,
+        0.0,
+        1.0,
+        1.0
+      ],
+      "pass_per_trial": [
+        false,
+        true,
+        false,
+        false,
+        true,
+        true,
+        true,
+        false,
+        true,
+        true
+      ],
+      "example_raw_responses": [
+        "delete_record",
+        "delete_record \n",
+        "delete_record  \n",
+        "register_user \n"
+      ],
+      "first_request_body": {
+        "model": "gemma2:9b",
+        "messages": [
+          {
+            "role": "user",
+            "content": "Available tools:\nsearch_documents \u2014 (no description) | query:string\nquery_records \u2014 (no description) | field:string, value:string\nsend_message \u2014 (no description) | user_id:string, body:string\ndispatch_event \u2014 (no description) | event_type:string, payload:string\nlist_items \u2014 (no description) | offset:integer, limit:integer\nenumerate_all \u2014 (no description) | collection:string\ncreate_record \u2014 (no description) | type:string, data:string\nregister_user \u2014 (no description) | email:string, password:string\nupdate_record \u2014 (no description) | id:string, data:string\npatch_fields \u2014 (no description) | id:string, fields:string\ndelete_record \u2014 (no description) | id:string\narchive_record \u2014 (no description) | id:string\nget_record \u2014 (no description) | id:string\nfetch_latest \u2014 (no description) | type:string\nexport_report \u2014 (no description) | format:string, dataset:string\nextract_data \u2014 (no description) | dataset:string\n\nTask: Permanently erase a user account that was created by mistake\nReply with ONLY the tool name to call, nothing else."
+          }
+        ],
+        "stream": false,
+        "options": {
+          "seed": 711190683
+        }
+      }
+    },
+    {
+      "kind": "non_zero_variance",
+      "tool_set": "grounded_server",
+      "task": "Compute log base 2 of 8.0",
+      "seeds": [
+        1627825508,
+        1529684358,
+        2013681341,
+        872503660,
+        1571492509,
+        989566439,
+        623461429,
+        458333058,
+        1005714740,
+        724417743
+      ],
+      "n_raw_responses": 20,
+      "distinct_raw_responses": 4,
+      "distinct_tool_calls": 3,
+      "per_trial_score": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        0.5,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "pass_per_trial": [
+        true,
+        true,
+        true,
+        true,
+        false,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "example_raw_responses": [
+        "transform_log \n",
+        "{\"value\": 8.0, \"base\": 2.0}",
+        "{\"value\": 8.0, \"base\": 2}",
+        "{\"value\": 8.0}"
+      ],
+      "first_request_body": {
+        "model": "gemma2:9b",
+        "messages": [
+          {
+            "role": "user",
+            "content": "Available tools:\ntransform_scale \u2014 (no description) | value, factor, offset\ntransform_normalize \u2014 (no description) | value, low, high\ntransform_clip \u2014 (no description) | value, lower, upper\ntransform_round \u2014 (no description) | value, places\ntransform_log \u2014 (no description) | value, base\n\nTask: Compute log base 2 of 8.0\nReply with ONLY the tool name to call, nothing else."
+          }
+        ],
+        "stream": false,
+        "options": {
+          "seed": 1627825508
+        }
+      }
+    },
+    {
+      "kind": "non_zero_variance",
+      "tool_set": "confusable_server",
+      "task": "Update just the expiry date on a credential, leaving everything else alone",
+      "seeds": [
+        330572694,
+        1173839014,
+        1760387502,
+        272127721,
+        904779299,
+        671841648,
+        1416478835,
+        271234017,
+        566074033,
+        281223429
+      ],
+      "n_raw_responses": 20,
+      "distinct_raw_responses": 12,
+      "distinct_tool_calls": 9,
+      "per_trial_score": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        0.0,
+        1.0,
+        1.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      "pass_per_trial": [
+        true,
+        true,
+        true,
+        true,
+        false,
+        true,
+        true,
+        true,
+        false,
+        false
+      ],
+      "example_raw_responses": [
+        "```json\n{\n  \"id\": \"YOUR_CREDENTIAL_ID\",\n  \"data\": {\n    \"expiry_date\": \"YOUR_NEW_EXPIRY_DATE\"\n  }\n}\n``` \n\n\nRemember to replace `\"YOUR_CREDENTIAL_ID\"` and `\"YOUR_NEW_EXPIRY_DATE\"` with the actual values.",
+        "```json\n{\n  \"id\": \"YOUR_CREDENTIAL_ID\",\n  \"fields\": {\n    \"expiry_date\": \"YYYY-MM-DD\"\n  }\n}\n```",
+        "patch_fields \n",
+        "update_record \n"
+      ],
+      "first_request_body": {
+        "model": "gemma2:9b",
+        "messages": [
+          {
+            "role": "user",
+            "content": "Available tools:\nsearch_documents \u2014 (no description) | query:string\nquery_records \u2014 (no description) | field:string, value:string\nsend_message \u2014 (no description) | user_id:string, body:string\ndispatch_event \u2014 (no description) | event_type:string, payload:string\nlist_items \u2014 (no description) | offset:integer, limit:integer\nenumerate_all \u2014 (no description) | collection:string\ncreate_record \u2014 (no description) | type:string, data:string\nregister_user \u2014 (no description) | email:string, password:string\nupdate_record \u2014 (no description) | id:string, data:string\npatch_fields \u2014 (no description) | id:string, fields:string\ndelete_record \u2014 (no description) | id:string\narchive_record \u2014 (no description) | id:string\nget_record \u2014 (no description) | id:string\nfetch_latest \u2014 (no description) | type:string\nexport_report \u2014 (no description) | format:string, dataset:string\nextract_data \u2014 (no description) | dataset:string\n\nTask: Update just the expiry date on a credential, leaving everything else alone\nReply with ONLY the tool name to call, nothing else."
+          }
+        ],
+        "stream": false,
+        "options": {
+          "seed": 330572694
+        }
+      }
+    }
+  ]
+}

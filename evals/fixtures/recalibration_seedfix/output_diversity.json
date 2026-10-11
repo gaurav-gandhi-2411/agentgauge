@@ -1,0 +1,27 @@
+{
+  "gold_groups(tool_set,task_tool_name)": {
+    "all_groups_with_ge2_distinct_calls": 485,
+    "groups": 720,
+    "of_which_same_tool_only_args_differ": 345,
+    "of_which_selected_tool_differs": 17,
+    "zero_variance_all_score_0.0": 75,
+    "zero_variance_all_score_1.0": 522,
+    "zero_variance_all_trials_identical_call": 235,
+    "zero_variance_differing_calls_same_score": 362,
+    "zero_variance_groups": 597,
+    "zero_variance_other_constant_score": 0
+  },
+  "n_rows": 5535,
+  "true_task_groups(tool_set,task_description)": {
+    "all_groups_with_ge2_distinct_calls": 647,
+    "groups": 1107,
+    "of_which_same_tool_only_args_differ": 494,
+    "of_which_selected_tool_differs": 24,
+    "zero_variance_all_score_0.0": 177,
+    "zero_variance_all_score_1.0": 799,
+    "zero_variance_all_trials_identical_call": 460,
+    "zero_variance_differing_calls_same_score": 518,
+    "zero_variance_groups": 978,
+    "zero_variance_other_constant_score": 2
+  }
+}
