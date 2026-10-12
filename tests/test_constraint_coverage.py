@@ -123,3 +123,24 @@ class TestInitScaffold:
         tool = _tool(tasks[0].tool_name, ["project", "title", "priority"])
         assert summarize_constraint_coverage(tasks, [tool]).count(FULL) == len(tasks) == 1
         assert "selection-only" in raw[0]["note"]
+
+
+class TestCommittedCorpusCounts:
+    """evals/fixtures/constraint_coverage_corpora.json is produced by
+    scripts/constraint_coverage_corpora.py (which introspects every fixture server, so the full
+    `--check` is run by hand); the cheap parts are re-derived here."""
+
+    FIXTURE = Path(__file__).parent.parent / "evals/fixtures/constraint_coverage_corpora.json"
+
+    def test_class_counts_add_up_for_every_corpus_and_group(self) -> None:
+        corpora = json.loads(self.FIXTURE.read_text(encoding="utf-8"))["corpora"]
+        # "bundled_demo" is present only where agentgauge/demo exists (see tests/test_demo_coverage.py)
+        assert set(corpora) - {"bundled_demo"} == {
+            "argument_degradation_253",
+            "predictive_validity_44_tool_sets",
+        }
+        for c in corpora.values():
+            assert c["selection_only"] + c["partial"] + c["full"] == c["n_tasks"]
+            groups = c.get("by_group", {})
+            assert sum(g["n_tasks"] for g in groups.values()) in (0, c["n_tasks"])
+        assert corpora["argument_degradation_253"]["n_tasks"] == 253
