@@ -9,6 +9,7 @@ from types import SimpleNamespace
 
 from typer.testing import CliRunner
 
+from agentgauge import cli
 from agentgauge.audit import (
     FULL,
     PARTIAL,
@@ -20,6 +21,7 @@ from agentgauge.audit import (
 )
 from agentgauge.cli import app
 from agentgauge.constraints import BlindTask, Constraint
+from agentgauge.harness import TrialOutcome
 
 _ANSI = re.compile(r"\x1b\[[0-9;]*m")
 
@@ -113,6 +115,37 @@ class TestSummaryAndWarning:
         assert summarize_constraint_coverage(self._tasks(3, 2)).verdict_is_selection_only
         assert not summarize_constraint_coverage(self._tasks(2, 2)).verdict_is_selection_only
         assert not summarize_constraint_coverage([]).verdict_is_selection_only
+
+
+class TestOutputLabel:
+    def _print(self, coverage_tasks: list[BlindTask]) -> str:
+        from io import StringIO
+
+        from rich.console import Console
+
+        from agentgauge.harness import diff_from_trials
+
+        trials = [TrialOutcome("t", "t", 1.0)] * 6 + [TrialOutcome("t", "u", 0.0)] * 6
+        buf = StringIO()
+        console = Console(file=buf, width=200, force_terminal=False)
+        cli._print_diff_text(
+            diff_from_trials(trials, trials),
+            None,
+            None,
+            console,
+            coverage=summarize_constraint_coverage(coverage_tasks),
+        )
+        return _flat(buf.getvalue())
+
+    def test_selection_only_verdict_is_labelled(self) -> None:
+        out = self._print([BlindTask("zz_tool", f"task {i}") for i in range(4)])
+        assert "constraint coverage over 4 tasks: 4 selection-only, 0 partial, 0 full" in out
+        assert "(selection-only):" in out
+
+    def test_constrained_run_has_counts_but_no_label(self) -> None:
+        out = self._print([BlindTask("zz_tool", f"task {i}", [_enum("p", "v")]) for i in range(4)])
+        assert "0 selection-only" in out
+        assert "(selection-only)" not in out
 
 
 class TestInitScaffold:
