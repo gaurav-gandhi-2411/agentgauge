@@ -1,0 +1,845 @@
+{
+  "n_differing_call_groups": 362,
+  "n_zero_variance_gold_groups": 597,
+  "part1_selected_tool_differs": {
+    "groups": [
+      {
+        "all_pass_with_non_gold_tool": false,
+        "constant_score": 0.0,
+        "gold_tool": "extract_data",
+        "n_trials": 10,
+        "selected_tool_counts": {
+          "enumerate_all": 4,
+          "export_report": 1,
+          "list_items": 5
+        },
+        "task_descriptions": [
+          "Get the underlying data so I can run my own aggregations on it",
+          "Pull the raw transaction records as structured data for my ETL script"
+        ],
+        "tool_set": "confusable_server_fixed"
+      },
+      {
+        "all_pass_with_non_gold_tool": false,
+        "constant_score": 0.0,
+        "gold_tool": "read_notebook",
+        "n_trials": 10,
+        "selected_tool_counts": {
+          "list_notebooks": 1,
+          "read_cell": 9
+        },
+        "task_descriptions": [
+          "Give me a quick overview of every cell in the currently active notebook so I can find the one I need to edit",
+          "Show me the detailed contents, outputs and execution counts of each cell in the currently open notebook for debugging"
+        ],
+        "tool_set": "exp1_datalayer_jupyter_mcp_server_mirror_oracle"
+      },
+      {
+        "all_pass_with_non_gold_tool": false,
+        "constant_score": 0.0,
+        "gold_tool": "del_b",
+        "n_trials": 10,
+        "selected_tool_counts": {
+          "del_a": 9,
+          "put_x": 1
+        },
+        "task_descriptions": [
+          "Deactivate session 7's records but keep them recoverable in case they're needed later",
+          "Erase all of session 42's records completely, with no way to recover them afterward"
+        ],
+        "tool_set": "mediocre_server_fixed"
+      },
+      {
+        "all_pass_with_non_gold_tool": false,
+        "constant_score": 0.0,
+        "gold_tool": "load_order",
+        "n_trials": 5,
+        "selected_tool_counts": {
+          "fetch_order": 2,
+          "get_order": 3
+        },
+        "task_descriptions": [
+          "I need a quick look at order ORD-44812 to check its status. A cached result is fine if it's faster."
+        ],
+        "tool_set": "p2a_arm_a"
+      },
+      {
+        "all_pass_with_non_gold_tool": false,
+        "constant_score": 0.0,
+        "gold_tool": "message_customer",
+        "n_trials": 5,
+        "selected_tool_counts": {
+          "notify_customer": 4,
+          "push_update": 1
+        },
+        "task_descriptions": [
+          "Post an in-app message to CUST-901's notification inbox about their order status."
+        ],
+        "tool_set": "p2a_arm_a"
+      },
+      {
+        "all_pass_with_non_gold_tool": false,
+        "constant_score": 0.0,
+        "gold_tool": "retrieve_order",
+        "n_trials": 5,
+        "selected_tool_counts": {
+          "fetch_order": 4,
+          "get_order": 1
+        },
+        "task_descriptions": [
+          "What is the final price for order ORD-44812 once discounts and taxes have been applied?"
+        ],
+        "tool_set": "p2a_arm_a"
+      },
+      {
+        "all_pass_with_non_gold_tool": false,
+        "constant_score": 0.0,
+        "gold_tool": "dispatch_sms",
+        "n_trials": 5,
+        "selected_tool_counts": {
+          "notify_customer": 1,
+          "push_update": 4
+        },
+        "task_descriptions": [
+          "Text CUST-901 a message that their delivery is arriving today."
+        ],
+        "tool_set": "p2a_arm_oracle"
+      },
+      {
+        "all_pass_with_non_gold_tool": false,
+        "constant_score": 0.0,
+        "gold_tool": "load_order",
+        "n_trials": 5,
+        "selected_tool_counts": {
+          "fetch_order": 2,
+          "get_order": 3
+        },
+        "task_descriptions": [
+          "I need a quick look at order ORD-44812 to check its status. A cached result is fine if it's faster."
+        ],
+        "tool_set": "p2a_internal_proxy_mirror"
+      },
+      {
+        "all_pass_with_non_gold_tool": false,
+        "constant_score": 0.0,
+        "gold_tool": "message_customer",
+        "n_trials": 5,
+        "selected_tool_counts": {
+          "notify_customer": 4,
+          "push_update": 1
+        },
+        "task_descriptions": [
+          "Post an in-app message to CUST-901's notification inbox about their order status."
+        ],
+        "tool_set": "p2a_internal_proxy_mirror"
+      },
+      {
+        "all_pass_with_non_gold_tool": false,
+        "constant_score": 0.0,
+        "gold_tool": "retrieve_order",
+        "n_trials": 5,
+        "selected_tool_counts": {
+          "fetch_order": 4,
+          "get_order": 1
+        },
+        "task_descriptions": [
+          "What is the final price for order ORD-44812 once discounts and taxes have been applied?"
+        ],
+        "tool_set": "p2a_internal_proxy_mirror"
+      },
+      {
+        "all_pass_with_non_gold_tool": false,
+        "constant_score": 0.0,
+        "gold_tool": "write_entry",
+        "n_trials": 10,
+        "selected_tool_counts": {
+          "persist_row": 5,
+          "save_record": 5
+        },
+        "task_descriptions": [
+          "Append today's system health check result for service 'checkout-api' to the audit trail as a permanent record.",
+          "Record the user login event in the application audit trail."
+        ],
+        "tool_set": "t18_fixer_server_set2"
+      },
+      {
+        "all_pass_with_non_gold_tool": false,
+        "constant_score": 0.0,
+        "gold_tool": "fetch_record",
+        "n_trials": 10,
+        "selected_tool_counts": {
+          "ping_service": 9,
+          "trigger_event": 1
+        },
+        "task_descriptions": [
+          "Pull the shipping status for order #55219 by calling the courier partner's remote web API",
+          "Retrieve order status for #TX-991 by calling the fulfilment partner's external HTTP endpoint."
+        ],
+        "tool_set": "t18_q2b_server"
+      },
+      {
+        "all_pass_with_non_gold_tool": false,
+        "constant_score": 0.0,
+        "gold_tool": "persist_row",
+        "n_trials": 10,
+        "selected_tool_counts": {
+          "insert_document": 4,
+          "save_record": 6
+        },
+        "task_descriptions": [
+          "Add a new invoice line item to the orders table as a brand-new row.",
+          "Insert a brand-new subscription-renewal row for subscription 'SUB-88213' into the billing table \u2014 this should only succeed if no such row exists yet."
+        ],
+        "tool_set": "t18_q2b_server_set2"
+      },
+      {
+        "all_pass_with_non_gold_tool": false,
+        "constant_score": 0.0,
+        "gold_tool": "fetch_record",
+        "n_trials": 10,
+        "selected_tool_counts": {
+          "ping_service": 9,
+          "pull_document": 1
+        },
+        "task_descriptions": [
+          "Pull the shipping status for order #55219 by calling the courier partner's remote web API",
+          "Retrieve order status for #TX-991 by calling the fulfilment partner's external HTTP endpoint."
+        ],
+        "tool_set": "t18_vague_server"
+      },
+      {
+        "all_pass_with_non_gold_tool": false,
+        "constant_score": 0.0,
+        "gold_tool": "get_record",
+        "n_trials": 10,
+        "selected_tool_counts": {
+          "fetch_record": 9,
+          "retrieve_row": 1
+        },
+        "task_descriptions": [
+          "The billing service needs account ACCT-4471's data fetched straight from the primary datastore using its unique key",
+          "The inventory service needs the warehouse product with item_id=9812 from the primary database."
+        ],
+        "tool_set": "t18_vague_server"
+      },
+      {
+        "all_pass_with_non_gold_tool": false,
+        "constant_score": 0.0,
+        "gold_tool": "send_notification",
+        "n_trials": 10,
+        "selected_tool_counts": {
+          "alert_contact": 3,
+          "notify_user": 7
+        },
+        "task_descriptions": [
+          "Push a mobile alert to the user's phone letting them know their ride has arrived",
+          "Push a pop-up reminder to the user's phone for their upcoming appointment."
+        ],
+        "tool_set": "t18_vague_server"
+      },
+      {
+        "all_pass_with_non_gold_tool": false,
+        "constant_score": 0.0,
+        "gold_tool": "save_record",
+        "n_trials": 10,
+        "selected_tool_counts": {
+          "insert_document": 4,
+          "store_item": 2,
+          "write_entry": 4
+        },
+        "task_descriptions": [
+          "Update the shipping preferences on file for repeat customer 'CUST-7734', creating a fresh record if this is their first order.",
+          "Upsert a customer profile: create it if new, overwrite it if found by key."
+        ],
+        "tool_set": "t18_vague_server_set2"
+      }
+    ],
+    "n_all_fail": 17,
+    "n_all_pass": 0,
+    "n_all_pass_with_non_gold_tool": 0,
+    "n_groups": 17,
+    "trials_anywhere_selecting_non_gold_tool_but_scoring_nonzero": []
+  },
+  "part3_arguments_differ": {
+    "all_pass_tasks_with_differing_args": 343,
+    "n_all_fail": 46,
+    "n_all_pass": 299,
+    "n_groups": 345,
+    "n_other_constant_score": 0,
+    "of_which_a_differing_param_is_constrained": 94,
+    "of_which_constrained_but_differing_params_all_unconstrained": 115,
+    "of_which_task_has_NO_registered_constraint": 134,
+    "sample_of_10_all_pass_tasks": [
+      {
+        "constraints": [
+          {
+            "gold_value": "INV-ADJ-220",
+            "kind": "contains",
+            "param": "query"
+          }
+        ],
+        "differing_params": [
+          "query"
+        ],
+        "differing_params_constrained": [
+          "query"
+        ],
+        "differing_params_unconstrained": [],
+        "distinct_arg_variants": 5,
+        "gold_tool": "commit_data",
+        "n_constraints": 1,
+        "task_description": "Finalize the queued set of inventory adjustments tagged 'INV-ADJ-220' as a single atomic write to the database.",
+        "tool_set": "t18_q2b_server_set2",
+        "variants": [
+          {
+            "args": {
+              "query": "UPDATE inventory SET quantity = quantity + adjustment WHERE tag = 'INV-ADJ-220'"
+            },
+            "satisfaction": 1.0,
+            "trials": [
+              0
+            ]
+          },
+          {
+            "args": {
+              "query": "UPDATE inventory_adjustments SET status='finalized' WHERE tag='INV-ADJ-220'"
+            },
+            "satisfaction": 1.0,
+            "trials": [
+              1
+            ]
+          },
+          {
+            "args": {
+              "query": "UPDATE inventory SET quantity = quantity + adjusted_quantity WHERE adjustment_tag = 'INV-ADJ-220'"
+            },
+            "satisfaction": 1.0,
+            "trials": [
+              2
+            ]
+          },
+          {
+            "args": {
+              "query": "UPDATE inventory_adjustments SET status='FINALIZED' WHERE tag='INV-ADJ-220'"
+            },
+            "satisfaction": 1.0,
+            "trials": [
+              3
+            ]
+          },
+          {
+            "args": {
+              "query": "UPDATE inventory SET quantity = quantity + adjusted_quantity WHERE tag = 'INV-ADJ-220' AND processed = false;"
+            },
+            "satisfaction": 1.0,
+            "trials": [
+              4
+            ]
+          }
+        ]
+      },
+      {
+        "constraints": [],
+        "differing_params": [
+          "email",
+          "password"
+        ],
+        "differing_params_constrained": [],
+        "differing_params_unconstrained": [
+          "email",
+          "password"
+        ],
+        "distinct_arg_variants": 4,
+        "gold_tool": "register_user",
+        "n_constraints": 0,
+        "task_description": "Set up an account for a new team member joining the platform",
+        "tool_set": "confusable_server_oracle",
+        "variants": [
+          {
+            "args": {
+              "email": "newmember@example.com",
+              "password": "StrongPassword123"
+            },
+            "satisfaction": 1.0,
+            "trials": [
+              0
+            ]
+          },
+          {
+            "args": {
+              "email": "newteammember@example.com",
+              "password": "StrongPassword123!"
+            },
+            "satisfaction": 1.0,
+            "trials": [
+              1
+            ]
+          },
+          {
+            "args": {
+              "email": "newteammember@example.com",
+              "password": "securepassword"
+            },
+            "satisfaction": 1.0,
+            "trials": [
+              2
+            ]
+          },
+          {
+            "args": {
+              "email": "newteammember@example.com",
+              "password": "securePassword"
+            },
+            "satisfaction": 1.0,
+            "trials": [
+              3,
+              4
+            ]
+          }
+        ]
+      },
+      {
+        "constraints": [],
+        "differing_params": [
+          "build_details",
+          "server_id"
+        ],
+        "differing_params_constrained": [],
+        "differing_params_unconstrained": [
+          "build_details",
+          "server_id"
+        ],
+        "distinct_arg_variants": 2,
+        "gold_tool": "get_server_info",
+        "n_constraints": 0,
+        "task_description": "Pull the server build details",
+        "tool_set": "call_constraints_server_fixed",
+        "variants": [
+          {
+            "args": {
+              "build_details": true
+            },
+            "satisfaction": 1.0,
+            "trials": [
+              0,
+              1
+            ]
+          },
+          {
+            "args": {
+              "server_id": "YOUR_SERVER_ID"
+            },
+            "satisfaction": 1.0,
+            "trials": [
+              2,
+              3,
+              4
+            ]
+          }
+        ]
+      },
+      {
+        "constraints": [
+          {
+            "gold_value": "INV-2201",
+            "kind": "contains",
+            "param": "invoice_id"
+          }
+        ],
+        "differing_params": [
+          "correction_note"
+        ],
+        "differing_params_constrained": [],
+        "differing_params_unconstrained": [
+          "correction_note"
+        ],
+        "distinct_arg_variants": 4,
+        "gold_tool": "amend_invoice",
+        "n_constraints": 1,
+        "task_description": "Invoice INV-2201 had an incorrect tax rate. Correct it \u2014 the original version needs to stay in the audit trail.",
+        "tool_set": "p2a_arm_a",
+        "variants": [
+          {
+            "args": {
+              "amount": null,
+              "correction_note": "Tax rate corrected",
+              "due_date": null,
+              "invoice_id": "INV-2201"
+            },
+            "satisfaction": 1.0,
+            "trials": [
+              0
+            ]
+          },
+          {
+            "args": {
+              "amount": null,
+              "correction_note": "Corrected tax rate",
+              "due_date": null,
+              "invoice_id": "INV-2201"
+            },
+            "satisfaction": 1.0,
+            "trials": [
+              1,
+              4
+            ]
+          },
+          {
+            "args": {
+              "amount": null,
+              "correction_note": "Corrected tax rate applied.",
+              "due_date": null,
+              "invoice_id": "INV-2201"
+            },
+            "satisfaction": 1.0,
+            "trials": [
+              2
+            ]
+          },
+          {
+            "args": {
+              "amount": null,
+              "correction_note": "Tax rate correction",
+              "due_date": null,
+              "invoice_id": "INV-2201"
+            },
+            "satisfaction": 1.0,
+            "trials": [
+              3
+            ]
+          }
+        ]
+      },
+      {
+        "constraints": [],
+        "differing_params": [
+          "extractor"
+        ],
+        "differing_params_constrained": [],
+        "differing_params_unconstrained": [
+          "extractor"
+        ],
+        "distinct_arg_variants": 2,
+        "gold_tool": "get_feed",
+        "n_constraints": 0,
+        "task_description": "Pull up what's currently showing on my personal LinkedIn feed",
+        "tool_set": "exp1_stickerdaniel_linkedin_mcp_server_mirror",
+        "variants": [
+          {
+            "args": {
+              "extractor": "linkedin",
+              "num_posts": "10"
+            },
+            "satisfaction": 1.0,
+            "trials": [
+              0,
+              1,
+              2,
+              3
+            ]
+          },
+          {
+            "args": {
+              "extractor": "linkedin_feed",
+              "num_posts": "10"
+            },
+            "satisfaction": 1.0,
+            "trials": [
+              4
+            ]
+          }
+        ]
+      },
+      {
+        "constraints": [
+          {
+            "gold_value": "core://hazards/network_outage",
+            "kind": "contains",
+            "param": "target_uri"
+          },
+          {
+            "gold_value": "core://agent/infra_notes",
+            "kind": "contains",
+            "param": "new_uri"
+          }
+        ],
+        "differing_params": [
+          "disclosure",
+          "priority"
+        ],
+        "differing_params_constrained": [],
+        "differing_params_unconstrained": [
+          "disclosure",
+          "priority"
+        ],
+        "distinct_arg_variants": 4,
+        "gold_tool": "add_alias",
+        "n_constraints": 2,
+        "task_description": "I want 'core://hazards/network_outage' to also be reachable from a new path under 'core://agent/infra_notes' without duplicating the content \u2014 set a priority and disclosure condition for the new path.",
+        "tool_set": "exp1_dataojitori_nocturne_memory_mirror",
+        "variants": [
+          {
+            "args": {
+              "disclosure": "Internal",
+              "new_uri": "core://agent/infra_notes/network_outage",
+              "priority": "Medium",
+              "target_uri": "core://hazards/network_outage"
+            },
+            "satisfaction": 1.0,
+            "trials": [
+              0
+            ]
+          },
+          {
+            "args": {
+              "disclosure": "public",
+              "new_uri": "core://agent/infra_notes/network_outage",
+              "priority": "medium",
+              "target_uri": "core://hazards/network_outage"
+            },
+            "satisfaction": 1.0,
+            "trials": [
+              1,
+              4
+            ]
+          },
+          {
+            "args": {
+              "disclosure": "public",
+              "new_uri": "core://agent/infra_notes/network_outage",
+              "priority": "high",
+              "target_uri": "core://hazards/network_outage"
+            },
+            "satisfaction": 1.0,
+            "trials": [
+              2
+            ]
+          },
+          {
+            "args": {
+              "disclosure": "internal",
+              "new_uri": "core://agent/infra_notes/network_outage",
+              "priority": "medium",
+              "target_uri": "core://hazards/network_outage"
+            },
+            "satisfaction": 1.0,
+            "trials": [
+              3
+            ]
+          }
+        ]
+      },
+      {
+        "constraints": [],
+        "differing_params": [
+          "action",
+          "dataset",
+          "index",
+          "refresh"
+        ],
+        "differing_params_constrained": [],
+        "differing_params_unconstrained": [
+          "action",
+          "dataset",
+          "index",
+          "refresh"
+        ],
+        "distinct_arg_variants": 5,
+        "gold_tool": "reindex",
+        "n_constraints": 0,
+        "task_description": "Refresh the local semantic search structure over all the papers I've downloaded so search results are up to date",
+        "tool_set": "exp1_blazickjp_arxiv_mcp_server_mirror",
+        "variants": [
+          {
+            "args": {
+              "action": "refresh"
+            },
+            "satisfaction": 1.0,
+            "trials": [
+              0
+            ]
+          },
+          {
+            "args": {
+              "index": "papers"
+            },
+            "satisfaction": 1.0,
+            "trials": [
+              1
+            ]
+          },
+          {
+            "args": {},
+            "satisfaction": 1.0,
+            "trials": [
+              2
+            ]
+          },
+          {
+            "args": {
+              "dataset": "papers"
+            },
+            "satisfaction": 1.0,
+            "trials": [
+              3
+            ]
+          },
+          {
+            "args": {
+              "refresh": true
+            },
+            "satisfaction": 1.0,
+            "trials": [
+              4
+            ]
+          }
+        ]
+      },
+      {
+        "constraints": [
+          {
+            "gold_value": "102",
+            "kind": "contains",
+            "param": "user_id"
+          }
+        ],
+        "differing_params": [
+          "body"
+        ],
+        "differing_params_constrained": [],
+        "differing_params_unconstrained": [
+          "body"
+        ],
+        "distinct_arg_variants": 2,
+        "gold_tool": "send_message",
+        "n_constraints": 1,
+        "task_description": "Tell user #102 that their subscription renewal went through",
+        "tool_set": "confusable_server_fixed",
+        "variants": [
+          {
+            "args": {
+              "body": "Your subscription renewal went through successfully!",
+              "user_id": "102"
+            },
+            "satisfaction": 1.0,
+            "trials": [
+              0
+            ]
+          },
+          {
+            "args": {
+              "body": "Your subscription renewal was successful!",
+              "user_id": "102"
+            },
+            "satisfaction": 1.0,
+            "trials": [
+              1,
+              2,
+              3,
+              4
+            ]
+          }
+        ]
+      },
+      {
+        "constraints": [],
+        "differing_params": [
+          "max_items",
+          "path_prefix"
+        ],
+        "differing_params_constrained": [],
+        "differing_params_unconstrained": [
+          "max_items",
+          "path_prefix"
+        ],
+        "distinct_arg_variants": 2,
+        "gold_tool": "list_users",
+        "n_constraints": 0,
+        "task_description": "Who are the IAM users currently in this AWS account? I need the list of user accounts, not groups or roles.",
+        "tool_set": "rw2_arm_a",
+        "variants": [
+          {
+            "args": {},
+            "satisfaction": 1.0,
+            "trials": [
+              0
+            ]
+          },
+          {
+            "args": {
+              "max_items": 100,
+              "path_prefix": ""
+            },
+            "satisfaction": 1.0,
+            "trials": [
+              1,
+              2,
+              3,
+              4
+            ]
+          }
+        ]
+      },
+      {
+        "constraints": [],
+        "differing_params": [
+          "email",
+          "password"
+        ],
+        "differing_params_constrained": [],
+        "differing_params_unconstrained": [
+          "email",
+          "password"
+        ],
+        "distinct_arg_variants": 4,
+        "gold_tool": "register_user",
+        "n_constraints": 0,
+        "task_description": "Onboard a new customer who just signed up on the website",
+        "tool_set": "confusable_server",
+        "variants": [
+          {
+            "args": {
+              "email": "johndoe@example.com",
+              "password": "password123"
+            },
+            "satisfaction": 1.0,
+            "trials": [
+              0
+            ]
+          },
+          {
+            "args": {
+              "email": "john.doe@example.com",
+              "password": "securepassword"
+            },
+            "satisfaction": 1.0,
+            "trials": [
+              1,
+              2
+            ]
+          },
+          {
+            "args": {
+              "email": "john.doe@example.com",
+              "password": "password123"
+            },
+            "satisfaction": 1.0,
+            "trials": [
+              3
+            ]
+          },
+          {
+            "args": {
+              "email": "test@example.com",
+              "password": "password123"
+            },
+            "satisfaction": 1.0,
+            "trials": [
+              4
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

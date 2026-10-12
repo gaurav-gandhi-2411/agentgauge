@@ -1,0 +1,3 @@
+# Raw trial rows and results are referenced by sha256 in MANIFEST.json/results.json: store bytes as-is
+# (no autocrlf normalisation) so the hashes hold on every platform.
+evals/fixtures/recalibration_seedfix/* -text

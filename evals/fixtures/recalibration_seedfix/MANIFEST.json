@@ -1,0 +1,20 @@
+{
+  "inputs": {
+    "rows": {
+      "path": "evals\\fixtures\\recalibration_seedfix\\rows.ndjson",
+      "sha256": "dd349057f781f52b068ff9772bcf9d7856c112f7fc2dfcf04a26353f959ba7b0"
+    },
+    "old": {
+      "path": "evals\\fixtures\\predictive_validity\\results_raw.json",
+      "sha256": "7d7c0caa02e8c17e800eed3c14b1a101eb53e82b8d8a2e156bdaefd61a87dd33"
+    },
+    "run_status": {
+      "path": "evals\\fixtures\\recalibration_seedfix\\run_status.json",
+      "sha256": "3450be6ec81cad29c10b904e25b28a27ff86222152e0c1e8d038a9f797fa5f57"
+    }
+  },
+  "script": {
+    "path": "C:\\Users\\gaura\\ml-projects\\agentgauge\\scripts\\recalibration_analyze.py",
+    "sha256": "dc2c3349e07104dc07533246ed271203015a6feedc96c2f154ca5f80c9ee0907"
+  }
+}

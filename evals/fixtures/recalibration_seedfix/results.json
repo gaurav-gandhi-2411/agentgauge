@@ -1,0 +1,2507 @@
+{
+  "method": {
+    "bootstrap": "Cluster bootstrap over TOOL SETS: B=2000, resample tool sets with replacement (random.Random(42)), recompute each statistic from per-tool-set sufficient statistics, percentile 95% CI (linear interpolation). Old-restricted and NEW share the same resamples so the new-minus-old difference CI is paired. rho resamples the 5 Phase-3 pairs (5 clusters; crude).",
+    "formulas": "ICC, nested variance shares, zero-variance share and rho are computed by the code of scripts/v2_variance_structure.py (imported) on constraint_satisfaction. Constants use joint_success: baseline = trial-weighted mean; sigma_task = population SD of group means; resid_sd = sqrt(mean population variance over groups with n>=2); rho = pooled Pearson of before/after group means over the 5 PHASE3 pairs.",
+    "groupings": "gold = (tool_set, task_tool_name) like the old analysis; true = (tool_set, task_description), NEW data only (old rows carry no description).",
+    "null": "Null: per tool set, bootstrap-resample each gold-tool trial pool twice (before/after), diff_server_level(threshold=0.05, CUPED); seed from a hash of the tool-set name. Eligible = >=2 gold tools each with >=2 trials.",
+    "mde": "simulate_mde_task_level, power 0.8, trials_per_task=1, seed 42; constants rounded to 4 dp (rho 3 dp) as in harness."
+  },
+  "status": {
+    "status_file": "evals\\fixtures\\recalibration_seedfix\\run_status.json",
+    "rows_tool_sets": [
+      "call_constraints_server",
+      "call_constraints_server_fixed",
+      "call_constraints_server_oracle",
+      "call_constraints_v2_server",
+      "call_constraints_v2_server_fixed",
+      "call_constraints_v2_server_oracle",
+      "confusable_server",
+      "confusable_server_fixed",
+      "confusable_server_oracle",
+      "echo_server",
+      "exp1_blazickjp_arxiv_mcp_server_mirror",
+      "exp1_datalayer_jupyter_mcp_server_mirror",
+      "exp1_datalayer_jupyter_mcp_server_mirror_oracle",
+      "exp1_dataojitori_nocturne_memory_mirror",
+      "exp1_stickerdaniel_linkedin_mcp_server_mirror",
+      "grounded_server",
+      "grounded_server_fixed",
+      "grounded_server_oracle",
+      "mediocre_server",
+      "mediocre_server_fixed",
+      "p2a_arm_a",
+      "p2a_arm_guardb",
+      "p2a_arm_oracle",
+      "p2a_internal_proxy_mirror",
+      "q3_arm_a",
+      "q3_arm_o",
+      "q3_real_server",
+      "q6_arm_a",
+      "q6_arm_f_doc_guarded",
+      "q6_real_server",
+      "rw1_arm_a",
+      "rw1_arm_guardb",
+      "rw1_arm_oracle",
+      "rw1_github_mirror",
+      "rw2_arm_a",
+      "rw2_aws_iam_mirror",
+      "t18_fixer_server",
+      "t18_fixer_server_set2",
+      "t18_oracle_server",
+      "t18_oracle_server_set2",
+      "t18_q2b_server",
+      "t18_q2b_server_set2",
+      "t18_vague_server",
+      "t18_vague_server_set2"
+    ],
+    "not_run_or_partial": [],
+    "cap_hit": false,
+    "completed_declared": [
+      "call_constraints_server",
+      "call_constraints_server_fixed",
+      "call_constraints_server_oracle",
+      "call_constraints_v2_server",
+      "call_constraints_v2_server_fixed",
+      "call_constraints_v2_server_oracle",
+      "confusable_server",
+      "confusable_server_fixed",
+      "confusable_server_oracle",
+      "echo_server",
+      "exp1_blazickjp_arxiv_mcp_server_mirror",
+      "exp1_datalayer_jupyter_mcp_server_mirror",
+      "exp1_datalayer_jupyter_mcp_server_mirror_oracle",
+      "exp1_dataojitori_nocturne_memory_mirror",
+      "exp1_stickerdaniel_linkedin_mcp_server_mirror",
+      "grounded_server",
+      "grounded_server_fixed",
+      "grounded_server_oracle",
+      "mediocre_server",
+      "mediocre_server_fixed",
+      "p2a_arm_a",
+      "p2a_arm_guardb",
+      "p2a_arm_oracle",
+      "p2a_internal_proxy_mirror",
+      "q3_arm_a",
+      "q3_arm_o",
+      "q3_real_server",
+      "q6_arm_a",
+      "q6_arm_f_doc_guarded",
+      "q6_real_server",
+      "rw1_arm_a",
+      "rw1_arm_guardb",
+      "rw1_arm_oracle",
+      "rw1_github_mirror",
+      "rw2_arm_a",
+      "rw2_aws_iam_mirror",
+      "t18_fixer_server",
+      "t18_fixer_server_set2",
+      "t18_oracle_server",
+      "t18_oracle_server_set2",
+      "t18_q2b_server",
+      "t18_q2b_server_set2",
+      "t18_vague_server",
+      "t18_vague_server_set2"
+    ]
+  },
+  "tool_sets_used": [
+    "call_constraints_server",
+    "call_constraints_server_fixed",
+    "call_constraints_server_oracle",
+    "call_constraints_v2_server",
+    "call_constraints_v2_server_fixed",
+    "call_constraints_v2_server_oracle",
+    "confusable_server",
+    "confusable_server_fixed",
+    "confusable_server_oracle",
+    "echo_server",
+    "exp1_blazickjp_arxiv_mcp_server_mirror",
+    "exp1_datalayer_jupyter_mcp_server_mirror",
+    "exp1_datalayer_jupyter_mcp_server_mirror_oracle",
+    "exp1_dataojitori_nocturne_memory_mirror",
+    "exp1_stickerdaniel_linkedin_mcp_server_mirror",
+    "grounded_server",
+    "grounded_server_fixed",
+    "grounded_server_oracle",
+    "mediocre_server",
+    "mediocre_server_fixed",
+    "p2a_arm_a",
+    "p2a_arm_guardb",
+    "p2a_arm_oracle",
+    "p2a_internal_proxy_mirror",
+    "q3_arm_a",
+    "q3_arm_o",
+    "q3_real_server",
+    "q6_arm_a",
+    "q6_arm_f_doc_guarded",
+    "q6_real_server",
+    "rw1_arm_a",
+    "rw1_arm_guardb",
+    "rw1_arm_oracle",
+    "rw1_github_mirror",
+    "rw2_arm_a",
+    "rw2_aws_iam_mirror",
+    "t18_fixer_server",
+    "t18_fixer_server_set2",
+    "t18_oracle_server",
+    "t18_oracle_server_set2",
+    "t18_q2b_server",
+    "t18_q2b_server_set2",
+    "t18_vague_server",
+    "t18_vague_server_set2"
+  ],
+  "tool_sets_dropped_partial_or_incomplete": [],
+  "old_missing_tool_sets": [],
+  "n_new_rows_used": 5535,
+  "n_new_rows_null_constraint_satisfaction": 0,
+  "inputs": {
+    "rows": {
+      "path": "evals\\fixtures\\recalibration_seedfix\\rows.ndjson",
+      "sha256": "dd349057f781f52b068ff9772bcf9d7856c112f7fc2dfcf04a26353f959ba7b0"
+    },
+    "old": {
+      "path": "evals\\fixtures\\predictive_validity\\results_raw.json",
+      "sha256": "7d7c0caa02e8c17e800eed3c14b1a101eb53e82b8d8a2e156bdaefd61a87dd33"
+    },
+    "run_status": {
+      "path": "evals\\fixtures\\recalibration_seedfix\\run_status.json",
+      "sha256": "3450be6ec81cad29c10b904e25b28a27ff86222152e0c1e8d038a9f797fa5f57"
+    }
+  },
+  "control": {
+    "rows": [
+      {
+        "name": "ICC(1)",
+        "expected": 0.7932642721759006,
+        "observed": 0.7932642721759006,
+        "match": true
+      },
+      {
+        "name": "zero-variance groups",
+        "expected": 650,
+        "observed": 650,
+        "match": true
+      },
+      {
+        "name": "multi-trial groups",
+        "expected": 720,
+        "observed": 720,
+        "match": true
+      },
+      {
+        "name": "between-task share (%)",
+        "expected": 56.06,
+        "observed": 56.06,
+        "match": true
+      },
+      {
+        "name": "constant baseline",
+        "expected": 0.7749,
+        "observed": 0.7749,
+        "match": true
+      },
+      {
+        "name": "constant sigma_task",
+        "expected": 0.3588,
+        "observed": 0.3588,
+        "match": true
+      },
+      {
+        "name": "constant resid_sd",
+        "expected": 0.1392,
+        "observed": 0.1392,
+        "match": true
+      },
+      {
+        "name": "constant rho",
+        "expected": 0.881,
+        "observed": 0.881,
+        "match": true
+      }
+    ],
+    "constants": {
+      "baseline": [
+        0.7749,
+        0.7749
+      ],
+      "sigma_task": [
+        0.3588,
+        0.3588
+      ],
+      "resid_sd": [
+        0.1392,
+        0.1392
+      ],
+      "rho": [
+        0.881,
+        0.881
+      ]
+    },
+    "pass": true
+  },
+  "old_full": {
+    "tool_sets": [
+      "call_constraints_server",
+      "call_constraints_server_fixed",
+      "call_constraints_server_oracle",
+      "call_constraints_v2_server",
+      "call_constraints_v2_server_fixed",
+      "call_constraints_v2_server_oracle",
+      "confusable_server",
+      "confusable_server_fixed",
+      "confusable_server_oracle",
+      "echo_server",
+      "exp1_blazickjp_arxiv_mcp_server_mirror",
+      "exp1_datalayer_jupyter_mcp_server_mirror",
+      "exp1_datalayer_jupyter_mcp_server_mirror_oracle",
+      "exp1_dataojitori_nocturne_memory_mirror",
+      "exp1_stickerdaniel_linkedin_mcp_server_mirror",
+      "grounded_server",
+      "grounded_server_fixed",
+      "grounded_server_oracle",
+      "mediocre_server",
+      "mediocre_server_fixed",
+      "p2a_arm_a",
+      "p2a_arm_guardb",
+      "p2a_arm_oracle",
+      "p2a_internal_proxy_mirror",
+      "q3_arm_a",
+      "q3_arm_o",
+      "q3_real_server",
+      "q6_arm_a",
+      "q6_arm_f_doc_guarded",
+      "q6_real_server",
+      "rw1_arm_a",
+      "rw1_arm_guardb",
+      "rw1_arm_oracle",
+      "rw1_github_mirror",
+      "rw2_arm_a",
+      "rw2_aws_iam_mirror",
+      "t18_fixer_server",
+      "t18_fixer_server_set2",
+      "t18_oracle_server",
+      "t18_oracle_server_set2",
+      "t18_q2b_server",
+      "t18_q2b_server_set2",
+      "t18_vague_server",
+      "t18_vague_server_set2"
+    ],
+    "n_trials": 5535,
+    "n_groups": 720,
+    "n_groups_with_multiple_trials": 720,
+    "n_groups_zero_within_group_variance": 650,
+    "icc_detail": {
+      "n_trials_total": 5535,
+      "n_groups": 720,
+      "mean_trials_per_group": 7.6875,
+      "ms_between": 1.0843056307642869,
+      "ms_within": 0.035569228106611284,
+      "n0_adjusted_group_size": 7.684038731903313,
+      "icc": 0.7932642721759006,
+      "n_eff": 877.8809932606621,
+      "n_groups_with_multiple_trials": 720,
+      "n_groups_zero_within_group_variance": 650,
+      "pct_groups_zero_within_group_variance": 90.27777777777777
+    },
+    "variance_decomposition": {
+      "ss_total": 950.8815818528556,
+      "ss_between_toolset": 246.5179185807626,
+      "ss_between_task_within_toolset": 533.097829938761,
+      "ss_between_trial_within_task": 171.26583333333335,
+      "pct_between_toolset": 25.925196500326166,
+      "pct_between_task_within_toolset": 56.063535156500215,
+      "pct_between_trial_within_task": 18.01126834317377,
+      "identity_check_sum_of_parts": 950.881581852857
+    },
+    "rho": {
+      "computable": true,
+      "n_matched_tasks_pooled": 40,
+      "pooled_spearman_rho": 0.8686226561635978,
+      "per_pair": [
+        {
+          "before": "grounded_server",
+          "after": "grounded_server_fixed",
+          "n_matched_tasks": 5,
+          "spearman_rho": 0.7826237921249264
+        },
+        {
+          "before": "confusable_server",
+          "after": "confusable_server_fixed",
+          "n_matched_tasks": 16,
+          "spearman_rho": 0.8681209711892444
+        },
+        {
+          "before": "mediocre_server",
+          "after": "mediocre_server_fixed",
+          "n_matched_tasks": 5,
+          "spearman_rho": 0.6315789473684211
+        },
+        {
+          "before": "call_constraints_server",
+          "after": "call_constraints_server_fixed",
+          "n_matched_tasks": 8,
+          "spearman_rho": 0.9999999999999998
+        },
+        {
+          "before": "call_constraints_v2_server",
+          "after": "call_constraints_v2_server_fixed",
+          "n_matched_tasks": 6,
+          "spearman_rho": 0.9696969696969695
+        }
+      ],
+      "bootstrap_unit": "the 5 Phase-3 before/after pairs (only 5 clusters: CI is crude)"
+    },
+    "metrics": {
+      "zero_var_share_pct": {
+        "point": 90.27777777777777,
+        "ci_lo": 84.89227146547712,
+        "ci_hi": 94.11815415821502,
+        "n_valid_replicates": 2000
+      },
+      "icc": {
+        "point": 0.7932642721759006,
+        "ci_lo": 0.7212007772754842,
+        "ci_hi": 0.8658363090431953,
+        "n_valid_replicates": 2000
+      },
+      "pct_between_toolset": {
+        "point": 25.925196500326166,
+        "ci_lo": 19.14883580415047,
+        "ci_hi": 32.338963238766794,
+        "n_valid_replicates": 2000
+      },
+      "pct_between_task": {
+        "point": 56.063535156500215,
+        "ci_lo": 46.4484583990433,
+        "ci_hi": 65.91527241287304,
+        "n_valid_replicates": 2000
+      },
+      "pct_between_trial": {
+        "point": 18.01126834317377,
+        "ci_lo": 11.528798338192578,
+        "ci_hi": 24.518947321054753,
+        "n_valid_replicates": 2000
+      },
+      "baseline": {
+        "point": 0.7749473050286058,
+        "ci_lo": 0.7046515971607203,
+        "ci_hi": 0.8343426574242635,
+        "n_valid_replicates": 2000
+      },
+      "sigma_task": {
+        "point": 0.3588236012235721,
+        "ci_lo": 0.313309767742919,
+        "ci_hi": 0.401093471797413,
+        "n_valid_replicates": 2000
+      },
+      "resid_sd": {
+        "point": 0.13919165610635442,
+        "ci_lo": 0.10721243051536629,
+        "ci_hi": 0.17564593449843477,
+        "n_valid_replicates": 2000
+      },
+      "rho": {
+        "point": 0.880699932942003,
+        "ci_lo": 0.7753133423837607,
+        "ci_hi": 0.9692598448918662,
+        "n_valid_replicates": 2000
+      }
+    },
+    "point": {
+      "zero_var_share_pct": 90.27777777777777,
+      "icc": 0.7932642721759006,
+      "pct_between_toolset": 25.925196500326166,
+      "pct_between_task": 56.063535156500215,
+      "pct_between_trial": 18.01126834317377,
+      "baseline": 0.7749473050286058,
+      "sigma_task": 0.3588236012235721,
+      "resid_sd": 0.13919165610635442,
+      "rho": 0.880699932942003
+    },
+    "suff_stat_vs_exact_max_abs_drift": 1.7053025658242404e-13
+  },
+  "old_restricted": {
+    "tool_sets": [
+      "call_constraints_server",
+      "call_constraints_server_fixed",
+      "call_constraints_server_oracle",
+      "call_constraints_v2_server",
+      "call_constraints_v2_server_fixed",
+      "call_constraints_v2_server_oracle",
+      "confusable_server",
+      "confusable_server_fixed",
+      "confusable_server_oracle",
+      "echo_server",
+      "exp1_blazickjp_arxiv_mcp_server_mirror",
+      "exp1_datalayer_jupyter_mcp_server_mirror",
+      "exp1_datalayer_jupyter_mcp_server_mirror_oracle",
+      "exp1_dataojitori_nocturne_memory_mirror",
+      "exp1_stickerdaniel_linkedin_mcp_server_mirror",
+      "grounded_server",
+      "grounded_server_fixed",
+      "grounded_server_oracle",
+      "mediocre_server",
+      "mediocre_server_fixed",
+      "p2a_arm_a",
+      "p2a_arm_guardb",
+      "p2a_arm_oracle",
+      "p2a_internal_proxy_mirror",
+      "q3_arm_a",
+      "q3_arm_o",
+      "q3_real_server",
+      "q6_arm_a",
+      "q6_arm_f_doc_guarded",
+      "q6_real_server",
+      "rw1_arm_a",
+      "rw1_arm_guardb",
+      "rw1_arm_oracle",
+      "rw1_github_mirror",
+      "rw2_arm_a",
+      "rw2_aws_iam_mirror",
+      "t18_fixer_server",
+      "t18_fixer_server_set2",
+      "t18_oracle_server",
+      "t18_oracle_server_set2",
+      "t18_q2b_server",
+      "t18_q2b_server_set2",
+      "t18_vague_server",
+      "t18_vague_server_set2"
+    ],
+    "n_trials": 5535,
+    "n_groups": 720,
+    "n_groups_with_multiple_trials": 720,
+    "n_groups_zero_within_group_variance": 650,
+    "icc_detail": {
+      "n_trials_total": 5535,
+      "n_groups": 720,
+      "mean_trials_per_group": 7.6875,
+      "ms_between": 1.0843056307642869,
+      "ms_within": 0.035569228106611284,
+      "n0_adjusted_group_size": 7.684038731903313,
+      "icc": 0.7932642721759006,
+      "n_eff": 877.8809932606621,
+      "n_groups_with_multiple_trials": 720,
+      "n_groups_zero_within_group_variance": 650,
+      "pct_groups_zero_within_group_variance": 90.27777777777777
+    },
+    "variance_decomposition": {
+      "ss_total": 950.8815818528556,
+      "ss_between_toolset": 246.5179185807626,
+      "ss_between_task_within_toolset": 533.097829938761,
+      "ss_between_trial_within_task": 171.26583333333335,
+      "pct_between_toolset": 25.925196500326166,
+      "pct_between_task_within_toolset": 56.063535156500215,
+      "pct_between_trial_within_task": 18.01126834317377,
+      "identity_check_sum_of_parts": 950.881581852857
+    },
+    "rho": {
+      "computable": true,
+      "n_matched_tasks_pooled": 40,
+      "pooled_spearman_rho": 0.8686226561635978,
+      "per_pair": [
+        {
+          "before": "grounded_server",
+          "after": "grounded_server_fixed",
+          "n_matched_tasks": 5,
+          "spearman_rho": 0.7826237921249264
+        },
+        {
+          "before": "confusable_server",
+          "after": "confusable_server_fixed",
+          "n_matched_tasks": 16,
+          "spearman_rho": 0.8681209711892444
+        },
+        {
+          "before": "mediocre_server",
+          "after": "mediocre_server_fixed",
+          "n_matched_tasks": 5,
+          "spearman_rho": 0.6315789473684211
+        },
+        {
+          "before": "call_constraints_server",
+          "after": "call_constraints_server_fixed",
+          "n_matched_tasks": 8,
+          "spearman_rho": 0.9999999999999998
+        },
+        {
+          "before": "call_constraints_v2_server",
+          "after": "call_constraints_v2_server_fixed",
+          "n_matched_tasks": 6,
+          "spearman_rho": 0.9696969696969695
+        }
+      ],
+      "bootstrap_unit": "the 5 Phase-3 before/after pairs (only 5 clusters: CI is crude)"
+    },
+    "metrics": {
+      "zero_var_share_pct": {
+        "point": 90.27777777777777,
+        "ci_lo": 84.89227146547712,
+        "ci_hi": 94.11815415821502,
+        "n_valid_replicates": 2000
+      },
+      "icc": {
+        "point": 0.7932642721759006,
+        "ci_lo": 0.7212007772754842,
+        "ci_hi": 0.8658363090431953,
+        "n_valid_replicates": 2000
+      },
+      "pct_between_toolset": {
+        "point": 25.925196500326166,
+        "ci_lo": 19.14883580415047,
+        "ci_hi": 32.338963238766794,
+        "n_valid_replicates": 2000
+      },
+      "pct_between_task": {
+        "point": 56.063535156500215,
+        "ci_lo": 46.4484583990433,
+        "ci_hi": 65.91527241287304,
+        "n_valid_replicates": 2000
+      },
+      "pct_between_trial": {
+        "point": 18.01126834317377,
+        "ci_lo": 11.528798338192578,
+        "ci_hi": 24.518947321054753,
+        "n_valid_replicates": 2000
+      },
+      "baseline": {
+        "point": 0.7749473050286058,
+        "ci_lo": 0.7046515971607203,
+        "ci_hi": 0.8343426574242635,
+        "n_valid_replicates": 2000
+      },
+      "sigma_task": {
+        "point": 0.3588236012235721,
+        "ci_lo": 0.313309767742919,
+        "ci_hi": 0.401093471797413,
+        "n_valid_replicates": 2000
+      },
+      "resid_sd": {
+        "point": 0.13919165610635442,
+        "ci_lo": 0.10721243051536629,
+        "ci_hi": 0.17564593449843477,
+        "n_valid_replicates": 2000
+      },
+      "rho": {
+        "point": 0.880699932942003,
+        "ci_lo": 0.7753133423837607,
+        "ci_hi": 0.9692598448918662,
+        "n_valid_replicates": 2000
+      }
+    },
+    "point": {
+      "zero_var_share_pct": 90.27777777777777,
+      "icc": 0.7932642721759006,
+      "pct_between_toolset": 25.925196500326166,
+      "pct_between_task": 56.063535156500215,
+      "pct_between_trial": 18.01126834317377,
+      "baseline": 0.7749473050286058,
+      "sigma_task": 0.3588236012235721,
+      "resid_sd": 0.13919165610635442,
+      "rho": 0.880699932942003
+    },
+    "suff_stat_vs_exact_max_abs_drift": 1.7053025658242404e-13
+  },
+  "new_gold": {
+    "tool_sets": [
+      "call_constraints_server",
+      "call_constraints_server_fixed",
+      "call_constraints_server_oracle",
+      "call_constraints_v2_server",
+      "call_constraints_v2_server_fixed",
+      "call_constraints_v2_server_oracle",
+      "confusable_server",
+      "confusable_server_fixed",
+      "confusable_server_oracle",
+      "echo_server",
+      "exp1_blazickjp_arxiv_mcp_server_mirror",
+      "exp1_datalayer_jupyter_mcp_server_mirror",
+      "exp1_datalayer_jupyter_mcp_server_mirror_oracle",
+      "exp1_dataojitori_nocturne_memory_mirror",
+      "exp1_stickerdaniel_linkedin_mcp_server_mirror",
+      "grounded_server",
+      "grounded_server_fixed",
+      "grounded_server_oracle",
+      "mediocre_server",
+      "mediocre_server_fixed",
+      "p2a_arm_a",
+      "p2a_arm_guardb",
+      "p2a_arm_oracle",
+      "p2a_internal_proxy_mirror",
+      "q3_arm_a",
+      "q3_arm_o",
+      "q3_real_server",
+      "q6_arm_a",
+      "q6_arm_f_doc_guarded",
+      "q6_real_server",
+      "rw1_arm_a",
+      "rw1_arm_guardb",
+      "rw1_arm_oracle",
+      "rw1_github_mirror",
+      "rw2_arm_a",
+      "rw2_aws_iam_mirror",
+      "t18_fixer_server",
+      "t18_fixer_server_set2",
+      "t18_oracle_server",
+      "t18_oracle_server_set2",
+      "t18_q2b_server",
+      "t18_q2b_server_set2",
+      "t18_vague_server",
+      "t18_vague_server_set2"
+    ],
+    "n_trials": 5535,
+    "n_groups": 720,
+    "n_groups_with_multiple_trials": 720,
+    "n_groups_zero_within_group_variance": 597,
+    "icc_detail": {
+      "n_trials_total": 5535,
+      "n_groups": 720,
+      "mean_trials_per_group": 7.6875,
+      "ms_between": 0.9731998139290619,
+      "ms_within": 0.04455792084919811,
+      "n0_adjusted_group_size": 7.684038731903313,
+      "icc": 0.7306234445908776,
+      "n_eff": 940.3598972990642,
+      "n_groups_with_multiple_trials": 720,
+      "n_groups_zero_within_group_variance": 597,
+      "pct_groups_zero_within_group_variance": 82.91666666666667
+    },
+    "variance_decomposition": {
+      "ss_total": 914.2770551038844,
+      "ss_between_toolset": 235.02122038118978,
+      "ss_between_task_within_toolset": 464.70944583380555,
+      "ss_between_trial_within_task": 214.54638888888894,
+      "pct_between_toolset": 25.70568943726643,
+      "pct_between_task_within_toolset": 50.82807702977989,
+      "pct_between_trial_within_task": 23.46623353295366,
+      "identity_check_sum_of_parts": 914.2770551038843
+    },
+    "rho": {
+      "computable": true,
+      "n_matched_tasks_pooled": 40,
+      "pooled_spearman_rho": 0.8750441256157757,
+      "per_pair": [
+        {
+          "before": "grounded_server",
+          "after": "grounded_server_fixed",
+          "n_matched_tasks": 5,
+          "spearman_rho": -0.35355339059327373
+        },
+        {
+          "before": "confusable_server",
+          "after": "confusable_server_fixed",
+          "n_matched_tasks": 16,
+          "spearman_rho": 0.9773283261818477
+        },
+        {
+          "before": "mediocre_server",
+          "after": "mediocre_server_fixed",
+          "n_matched_tasks": 5,
+          "spearman_rho": 0.7631578947368423
+        },
+        {
+          "before": "call_constraints_server",
+          "after": "call_constraints_server_fixed",
+          "n_matched_tasks": 8,
+          "spearman_rho": 0.9999999999999998
+        },
+        {
+          "before": "call_constraints_v2_server",
+          "after": "call_constraints_v2_server_fixed",
+          "n_matched_tasks": 6,
+          "spearman_rho": 1.0
+        }
+      ],
+      "bootstrap_unit": "the 5 Phase-3 before/after pairs (only 5 clusters: CI is crude)"
+    },
+    "metrics": {
+      "zero_var_share_pct": {
+        "point": 82.91666666666667,
+        "ci_lo": 75.86468334660294,
+        "ci_hi": 88.18064107207535,
+        "n_valid_replicates": 2000
+      },
+      "icc": {
+        "point": 0.7306234445908776,
+        "ci_lo": 0.6530028276595123,
+        "ci_hi": 0.8088106449278218,
+        "n_valid_replicates": 2000
+      },
+      "pct_between_toolset": {
+        "point": 25.70568943726643,
+        "ci_lo": 18.27314439380226,
+        "ci_hi": 32.39525232160638,
+        "n_valid_replicates": 2000
+      },
+      "pct_between_task": {
+        "point": 50.82807702977989,
+        "ci_lo": 41.66012222788272,
+        "ci_hi": 60.723265884834326,
+        "n_valid_replicates": 2000
+      },
+      "pct_between_trial": {
+        "point": 23.46623353295366,
+        "ci_lo": 16.425258364629943,
+        "ci_hi": 30.396953144075116,
+        "n_valid_replicates": 2000
+      },
+      "baseline": {
+        "point": 0.788527551942186,
+        "ci_lo": 0.7181714150635873,
+        "ci_hi": 0.8465392405423305,
+        "n_valid_replicates": 2000
+      },
+      "sigma_task": {
+        "point": 0.33371726088729714,
+        "ci_lo": 0.2864221623849282,
+        "ci_hi": 0.37918257774420505,
+        "n_valid_replicates": 2000
+      },
+      "resid_sd": {
+        "point": 0.16939665765137396,
+        "ci_lo": 0.1386926430585678,
+        "ci_hi": 0.20314441818211998,
+        "n_valid_replicates": 2000
+      },
+      "rho": {
+        "point": 0.9195388363520915,
+        "ci_lo": 0.7035375249522087,
+        "ci_hi": 0.9985141511567216,
+        "n_valid_replicates": 2000
+      }
+    },
+    "point": {
+      "zero_var_share_pct": 82.91666666666667,
+      "icc": 0.7306234445908776,
+      "pct_between_toolset": 25.70568943726643,
+      "pct_between_task": 50.82807702977989,
+      "pct_between_trial": 23.46623353295366,
+      "baseline": 0.788527551942186,
+      "sigma_task": 0.33371726088729714,
+      "resid_sd": 0.16939665765137396,
+      "rho": 0.9195388363520915
+    },
+    "suff_stat_vs_exact_max_abs_drift": 1.7763568394002505e-14
+  },
+  "new_true": {
+    "tool_sets": [
+      "call_constraints_server",
+      "call_constraints_server_fixed",
+      "call_constraints_server_oracle",
+      "call_constraints_v2_server",
+      "call_constraints_v2_server_fixed",
+      "call_constraints_v2_server_oracle",
+      "confusable_server",
+      "confusable_server_fixed",
+      "confusable_server_oracle",
+      "echo_server",
+      "exp1_blazickjp_arxiv_mcp_server_mirror",
+      "exp1_datalayer_jupyter_mcp_server_mirror",
+      "exp1_datalayer_jupyter_mcp_server_mirror_oracle",
+      "exp1_dataojitori_nocturne_memory_mirror",
+      "exp1_stickerdaniel_linkedin_mcp_server_mirror",
+      "grounded_server",
+      "grounded_server_fixed",
+      "grounded_server_oracle",
+      "mediocre_server",
+      "mediocre_server_fixed",
+      "p2a_arm_a",
+      "p2a_arm_guardb",
+      "p2a_arm_oracle",
+      "p2a_internal_proxy_mirror",
+      "q3_arm_a",
+      "q3_arm_o",
+      "q3_real_server",
+      "q6_arm_a",
+      "q6_arm_f_doc_guarded",
+      "q6_real_server",
+      "rw1_arm_a",
+      "rw1_arm_guardb",
+      "rw1_arm_oracle",
+      "rw1_github_mirror",
+      "rw2_arm_a",
+      "rw2_aws_iam_mirror",
+      "t18_fixer_server",
+      "t18_fixer_server_set2",
+      "t18_oracle_server",
+      "t18_oracle_server_set2",
+      "t18_q2b_server",
+      "t18_q2b_server_set2",
+      "t18_vague_server",
+      "t18_vague_server_set2"
+    ],
+    "n_trials": 5535,
+    "n_groups": 1107,
+    "n_groups_with_multiple_trials": 1107,
+    "n_groups_zero_within_group_variance": 978,
+    "icc_detail": {
+      "n_trials_total": 5535,
+      "n_groups": 1107,
+      "mean_trials_per_group": 5.0,
+      "ms_between": 0.7252153401582238,
+      "ms_within": 0.025336244103181773,
+      "n0_adjusted_group_size": 5.0,
+      "icc": 0.8467368708898877,
+      "n_eff": 1261.6973466727995,
+      "n_groups_with_multiple_trials": 1107,
+      "n_groups_zero_within_group_variance": 978,
+      "pct_groups_zero_within_group_variance": 88.34688346883469
+    },
+    "variance_decomposition": {
+      "ss_total": 914.2770551038844,
+      "ss_between_toolset": 235.02122038118978,
+      "ss_between_task_within_toolset": 567.0669458338057,
+      "ss_between_trial_within_task": 112.18888888888885,
+      "pct_between_toolset": 25.70568943726643,
+      "pct_between_task_within_toolset": 62.02353462423629,
+      "pct_between_trial_within_task": 12.270775938497268,
+      "identity_check_sum_of_parts": 914.2770551038843
+    },
+    "rho": {
+      "computable": true,
+      "n_matched_tasks_pooled": 116,
+      "pooled_spearman_rho": 0.9311941041918557,
+      "per_pair": [
+        {
+          "before": "grounded_server",
+          "after": "grounded_server_fixed",
+          "n_matched_tasks": 10,
+          "spearman_rho": 0.06211299937499416
+        },
+        {
+          "before": "confusable_server",
+          "after": "confusable_server_fixed",
+          "n_matched_tasks": 32,
+          "spearman_rho": 0.9746894770520518
+        },
+        {
+          "before": "mediocre_server",
+          "after": "mediocre_server_fixed",
+          "n_matched_tasks": 12,
+          "spearman_rho": 0.8998021774304341
+        },
+        {
+          "before": "call_constraints_server",
+          "after": "call_constraints_server_fixed",
+          "n_matched_tasks": 32,
+          "spearman_rho": 0.9999999999999998
+        },
+        {
+          "before": "call_constraints_v2_server",
+          "after": "call_constraints_v2_server_fixed",
+          "n_matched_tasks": 30,
+          "spearman_rho": 0.9986654204650033
+        }
+      ],
+      "bootstrap_unit": "the 5 Phase-3 before/after pairs (only 5 clusters: CI is crude)"
+    },
+    "metrics": {
+      "zero_var_share_pct": {
+        "point": 88.34688346883469,
+        "ci_lo": 84.70106532982233,
+        "ci_hi": 91.57988348367698,
+        "n_valid_replicates": 2000
+      },
+      "icc": {
+        "point": 0.8467368708898877,
+        "ci_lo": 0.7941936622467647,
+        "ci_hi": 0.8920459851108432,
+        "n_valid_replicates": 2000
+      },
+      "pct_between_toolset": {
+        "point": 25.70568943726643,
+        "ci_lo": 18.273144393802255,
+        "ci_hi": 32.39525232160638,
+        "n_valid_replicates": 2000
+      },
+      "pct_between_task": {
+        "point": 62.02353462423629,
+        "ci_lo": 56.058779045686016,
+        "ci_hi": 68.54283712949831,
+        "n_valid_replicates": 2000
+      },
+      "pct_between_trial": {
+        "point": 12.270775938497268,
+        "ci_lo": 8.643440337292681,
+        "ci_hi": 16.47806219959777,
+        "n_valid_replicates": 2000
+      },
+      "baseline": {
+        "point": 0.788527551942186,
+        "ci_lo": 0.7181714150635873,
+        "ci_hi": 0.8465392405423305,
+        "n_valid_replicates": 2000
+      },
+      "sigma_task": {
+        "point": 0.38067314652242995,
+        "ci_lo": 0.33176284997934313,
+        "ci_hi": 0.42273576872451946,
+        "n_valid_replicates": 2000
+      },
+      "resid_sd": {
+        "point": 0.14236922168272684,
+        "ci_lo": 0.11741428151198689,
+        "ci_hi": 0.16552109297398554,
+        "n_valid_replicates": 2000
+      },
+      "rho": {
+        "point": 0.9519649492758829,
+        "ci_lo": 0.8037369004544452,
+        "ci_hi": 0.9965900837644697,
+        "n_valid_replicates": 2000
+      }
+    },
+    "point": {
+      "zero_var_share_pct": 88.34688346883469,
+      "icc": 0.8467368708898877,
+      "pct_between_toolset": 25.70568943726643,
+      "pct_between_task": 62.02353462423629,
+      "pct_between_trial": 12.270775938497268,
+      "baseline": 0.788527551942186,
+      "sigma_task": 0.38067314652242995,
+      "resid_sd": 0.14236922168272684,
+      "rho": 0.9519649492758829
+    },
+    "suff_stat_vs_exact_max_abs_drift": 1.7763568394002505e-14
+  },
+  "diff_new_minus_old": {
+    "zero_var_share_pct": {
+      "point": -7.3611111111111,
+      "ci_lo": -10.65455121154551,
+      "ci_hi": -4.544812532100672,
+      "n_valid_replicates": 2000
+    },
+    "icc": {
+      "point": -0.06264082758502298,
+      "ci_lo": -0.1174783259506278,
+      "ci_hi": -0.018765651611322112,
+      "n_valid_replicates": 2000
+    },
+    "pct_between_toolset": {
+      "point": -0.2195070630597371,
+      "ci_lo": -3.1777654881875916,
+      "ci_hi": 2.3142461187853423,
+      "n_valid_replicates": 2000
+    },
+    "pct_between_task": {
+      "point": -5.235458126720324,
+      "ci_lo": -9.81294577515762,
+      "ci_hi": -1.1821932097818093,
+      "n_valid_replicates": 2000
+    },
+    "pct_between_trial": {
+      "point": 5.454965189779887,
+      "ci_lo": 1.6258479907542007,
+      "ci_hi": 10.150407458442482,
+      "n_valid_replicates": 2000
+    },
+    "baseline": {
+      "point": 0.013580246913580285,
+      "ci_lo": 0.002275915613621696,
+      "ci_hi": 0.025761606157242687,
+      "n_valid_replicates": 2000
+    },
+    "sigma_task": {
+      "point": -0.025106340336274957,
+      "ci_lo": -0.03804735216149664,
+      "ci_hi": -0.011959895878648196,
+      "n_valid_replicates": 2000
+    },
+    "resid_sd": {
+      "point": 0.03020500154501954,
+      "ci_lo": 0.010770667711980379,
+      "ci_hi": 0.04989943582396731,
+      "n_valid_replicates": 2000
+    },
+    "rho": {
+      "point": 0.038838903410088554,
+      "ci_lo": -0.1133416536101518,
+      "ci_hi": 0.14146988536524696,
+      "n_valid_replicates": 2000
+    }
+  },
+  "null": {
+    "repeats_per_tool_set": 50,
+    "caveat": "Repeats within a tool set share one trial pool, so the Wilson intervals treat correlated comparisons as independent and are optimistic.",
+    "old_full": {
+      "overall": {
+        "n_tool_sets": 44,
+        "n_comparisons": 2200,
+        "n_task_pools": 720,
+        "n_zero_variance_task_pools": 650,
+        "n_tool_sets_all_pools_zero_variance": 21,
+        "false_alarm": {
+          "k": 10,
+          "N": 2200,
+          "rate_pct": 0.45454545454545453,
+          "wilson_lo_pct": 0.24708923652153988,
+          "wilson_hi_pct": 0.8347244658760131
+        },
+        "abstention": {
+          "k": 572,
+          "N": 2200,
+          "rate_pct": 26.0,
+          "wilson_lo_pct": 24.210051978748943,
+          "wilson_hi_pct": 27.8736155761739
+        },
+        "confident_no_change": {
+          "k": 1618,
+          "N": 2200,
+          "rate_pct": 73.54545454545455,
+          "wilson_lo_pct": 71.66239530492085,
+          "wilson_hi_pct": 75.34643084384801
+        }
+      },
+      "by_stratum": {
+        "<10 tasks": {
+          "n_tool_sets": 14,
+          "n_comparisons": 700,
+          "n_task_pools": 86,
+          "n_zero_variance_task_pools": 63,
+          "n_tool_sets_all_pools_zero_variance": 4,
+          "false_alarm": {
+            "k": 7,
+            "N": 700,
+            "rate_pct": 1.0,
+            "wilson_lo_pct": 0.48522733187267625,
+            "wilson_hi_pct": 2.049641658319189
+          },
+          "abstention": {
+            "k": 262,
+            "N": 700,
+            "rate_pct": 37.42857142857143,
+            "wilson_lo_pct": 33.921326105047825,
+            "wilson_hi_pct": 41.073042615467884
+          },
+          "confident_no_change": {
+            "k": 431,
+            "N": 700,
+            "rate_pct": 61.57142857142857,
+            "wilson_lo_pct": 57.914137831345315,
+            "wilson_hi_pct": 65.1024091418164
+          }
+        },
+        "10-29 tasks": {
+          "n_tool_sets": 26,
+          "n_comparisons": 1300,
+          "n_task_pools": 442,
+          "n_zero_variance_task_pools": 395,
+          "n_tool_sets_all_pools_zero_variance": 13,
+          "false_alarm": {
+            "k": 3,
+            "N": 1300,
+            "rate_pct": 0.23076923076923078,
+            "wilson_lo_pct": 0.07851271966820574,
+            "wilson_hi_pct": 0.6762921543645646
+          },
+          "abstention": {
+            "k": 310,
+            "N": 1300,
+            "rate_pct": 23.846153846153847,
+            "wilson_lo_pct": 21.60884605615257,
+            "wilson_hi_pct": 26.23757381582756
+          },
+          "confident_no_change": {
+            "k": 987,
+            "N": 1300,
+            "rate_pct": 75.92307692307692,
+            "wilson_lo_pct": 73.52472242471022,
+            "wilson_hi_pct": 78.16867905512126
+          }
+        },
+        ">=30 tasks": {
+          "n_tool_sets": 4,
+          "n_comparisons": 200,
+          "n_task_pools": 192,
+          "n_zero_variance_task_pools": 192,
+          "n_tool_sets_all_pools_zero_variance": 4,
+          "false_alarm": {
+            "k": 0,
+            "N": 200,
+            "rate_pct": 0.0,
+            "wilson_lo_pct": 0.0,
+            "wilson_hi_pct": 1.8845326668962936
+          },
+          "abstention": {
+            "k": 0,
+            "N": 200,
+            "rate_pct": 0.0,
+            "wilson_lo_pct": 0.0,
+            "wilson_hi_pct": 1.8845326668962936
+          },
+          "confident_no_change": {
+            "k": 200,
+            "N": 200,
+            "rate_pct": 100.0,
+            "wilson_lo_pct": 98.1154673331037,
+            "wilson_hi_pct": 99.99999999999999
+          }
+        }
+      }
+    },
+    "old_restricted": {
+      "overall": {
+        "n_tool_sets": 44,
+        "n_comparisons": 2200,
+        "n_task_pools": 720,
+        "n_zero_variance_task_pools": 650,
+        "n_tool_sets_all_pools_zero_variance": 21,
+        "false_alarm": {
+          "k": 10,
+          "N": 2200,
+          "rate_pct": 0.45454545454545453,
+          "wilson_lo_pct": 0.24708923652153988,
+          "wilson_hi_pct": 0.8347244658760131
+        },
+        "abstention": {
+          "k": 572,
+          "N": 2200,
+          "rate_pct": 26.0,
+          "wilson_lo_pct": 24.210051978748943,
+          "wilson_hi_pct": 27.8736155761739
+        },
+        "confident_no_change": {
+          "k": 1618,
+          "N": 2200,
+          "rate_pct": 73.54545454545455,
+          "wilson_lo_pct": 71.66239530492085,
+          "wilson_hi_pct": 75.34643084384801
+        }
+      },
+      "by_stratum": {
+        "<10 tasks": {
+          "n_tool_sets": 14,
+          "n_comparisons": 700,
+          "n_task_pools": 86,
+          "n_zero_variance_task_pools": 63,
+          "n_tool_sets_all_pools_zero_variance": 4,
+          "false_alarm": {
+            "k": 7,
+            "N": 700,
+            "rate_pct": 1.0,
+            "wilson_lo_pct": 0.48522733187267625,
+            "wilson_hi_pct": 2.049641658319189
+          },
+          "abstention": {
+            "k": 262,
+            "N": 700,
+            "rate_pct": 37.42857142857143,
+            "wilson_lo_pct": 33.921326105047825,
+            "wilson_hi_pct": 41.073042615467884
+          },
+          "confident_no_change": {
+            "k": 431,
+            "N": 700,
+            "rate_pct": 61.57142857142857,
+            "wilson_lo_pct": 57.914137831345315,
+            "wilson_hi_pct": 65.1024091418164
+          }
+        },
+        "10-29 tasks": {
+          "n_tool_sets": 26,
+          "n_comparisons": 1300,
+          "n_task_pools": 442,
+          "n_zero_variance_task_pools": 395,
+          "n_tool_sets_all_pools_zero_variance": 13,
+          "false_alarm": {
+            "k": 3,
+            "N": 1300,
+            "rate_pct": 0.23076923076923078,
+            "wilson_lo_pct": 0.07851271966820574,
+            "wilson_hi_pct": 0.6762921543645646
+          },
+          "abstention": {
+            "k": 310,
+            "N": 1300,
+            "rate_pct": 23.846153846153847,
+            "wilson_lo_pct": 21.60884605615257,
+            "wilson_hi_pct": 26.23757381582756
+          },
+          "confident_no_change": {
+            "k": 987,
+            "N": 1300,
+            "rate_pct": 75.92307692307692,
+            "wilson_lo_pct": 73.52472242471022,
+            "wilson_hi_pct": 78.16867905512126
+          }
+        },
+        ">=30 tasks": {
+          "n_tool_sets": 4,
+          "n_comparisons": 200,
+          "n_task_pools": 192,
+          "n_zero_variance_task_pools": 192,
+          "n_tool_sets_all_pools_zero_variance": 4,
+          "false_alarm": {
+            "k": 0,
+            "N": 200,
+            "rate_pct": 0.0,
+            "wilson_lo_pct": 0.0,
+            "wilson_hi_pct": 1.8845326668962936
+          },
+          "abstention": {
+            "k": 0,
+            "N": 200,
+            "rate_pct": 0.0,
+            "wilson_lo_pct": 0.0,
+            "wilson_hi_pct": 1.8845326668962936
+          },
+          "confident_no_change": {
+            "k": 200,
+            "N": 200,
+            "rate_pct": 100.0,
+            "wilson_lo_pct": 98.1154673331037,
+            "wilson_hi_pct": 99.99999999999999
+          }
+        }
+      }
+    },
+    "new": {
+      "overall": {
+        "n_tool_sets": 44,
+        "n_comparisons": 2200,
+        "n_task_pools": 720,
+        "n_zero_variance_task_pools": 597,
+        "n_tool_sets_all_pools_zero_variance": 10,
+        "false_alarm": {
+          "k": 7,
+          "N": 2200,
+          "rate_pct": 0.3181818181818182,
+          "wilson_lo_pct": 0.1542127896833063,
+          "wilson_hi_pct": 0.6553490238217632
+        },
+        "abstention": {
+          "k": 616,
+          "N": 2200,
+          "rate_pct": 28.0,
+          "wilson_lo_pct": 26.16337887028371,
+          "wilson_hi_pct": 29.913316388395568
+        },
+        "confident_no_change": {
+          "k": 1577,
+          "N": 2200,
+          "rate_pct": 71.68181818181819,
+          "wilson_lo_pct": 69.76261819679868,
+          "wilson_hi_pct": 73.52543213710624
+        }
+      },
+      "by_stratum": {
+        "<10 tasks": {
+          "n_tool_sets": 14,
+          "n_comparisons": 700,
+          "n_task_pools": 86,
+          "n_zero_variance_task_pools": 63,
+          "n_tool_sets_all_pools_zero_variance": 4,
+          "false_alarm": {
+            "k": 7,
+            "N": 700,
+            "rate_pct": 1.0,
+            "wilson_lo_pct": 0.48522733187267625,
+            "wilson_hi_pct": 2.049641658319189
+          },
+          "abstention": {
+            "k": 183,
+            "N": 700,
+            "rate_pct": 26.142857142857142,
+            "wilson_lo_pct": 23.024194361880816,
+            "wilson_hi_pct": 29.52193718727966
+          },
+          "confident_no_change": {
+            "k": 510,
+            "N": 700,
+            "rate_pct": 72.85714285714286,
+            "wilson_lo_pct": 69.44472825985045,
+            "wilson_hi_pct": 76.02005588466646
+          }
+        },
+        "10-29 tasks": {
+          "n_tool_sets": 26,
+          "n_comparisons": 1300,
+          "n_task_pools": 442,
+          "n_zero_variance_task_pools": 358,
+          "n_tool_sets_all_pools_zero_variance": 6,
+          "false_alarm": {
+            "k": 0,
+            "N": 1300,
+            "rate_pct": 0.0,
+            "wilson_lo_pct": 0.0,
+            "wilson_hi_pct": 0.2946262258443596
+          },
+          "abstention": {
+            "k": 431,
+            "N": 1300,
+            "rate_pct": 33.15384615384615,
+            "wilson_lo_pct": 30.647703374680074,
+            "wilson_hi_pct": 35.75925530756596
+          },
+          "confident_no_change": {
+            "k": 869,
+            "N": 1300,
+            "rate_pct": 66.84615384615384,
+            "wilson_lo_pct": 64.24074469243405,
+            "wilson_hi_pct": 69.35229662531994
+          }
+        },
+        ">=30 tasks": {
+          "n_tool_sets": 4,
+          "n_comparisons": 200,
+          "n_task_pools": 192,
+          "n_zero_variance_task_pools": 176,
+          "n_tool_sets_all_pools_zero_variance": 0,
+          "false_alarm": {
+            "k": 0,
+            "N": 200,
+            "rate_pct": 0.0,
+            "wilson_lo_pct": 0.0,
+            "wilson_hi_pct": 1.8845326668962936
+          },
+          "abstention": {
+            "k": 2,
+            "N": 200,
+            "rate_pct": 1.0,
+            "wilson_lo_pct": 0.274665810884896,
+            "wilson_hi_pct": 3.5721762026734716
+          },
+          "confident_no_change": {
+            "k": 198,
+            "N": 200,
+            "rate_pct": 99.0,
+            "wilson_lo_pct": 96.42782379732651,
+            "wilson_hi_pct": 99.7253341891151
+          }
+        }
+      }
+    },
+    "per_tool_set_old": [
+      {
+        "tool_set": "call_constraints_server",
+        "n_tasks": 8,
+        "stratum": "<10 tasks",
+        "n_task_pools": 8,
+        "n_zero_variance_task_pools": 8,
+        "total": 50,
+        "false_alarms": 0,
+        "insufficient": 0,
+        "no_change": 50
+      },
+      {
+        "tool_set": "call_constraints_server_fixed",
+        "n_tasks": 8,
+        "stratum": "<10 tasks",
+        "n_task_pools": 8,
+        "n_zero_variance_task_pools": 8,
+        "total": 50,
+        "false_alarms": 0,
+        "insufficient": 0,
+        "no_change": 50
+      },
+      {
+        "tool_set": "call_constraints_server_oracle",
+        "n_tasks": 8,
+        "stratum": "<10 tasks",
+        "n_task_pools": 8,
+        "n_zero_variance_task_pools": 8,
+        "total": 50,
+        "false_alarms": 0,
+        "insufficient": 0,
+        "no_change": 50
+      },
+      {
+        "tool_set": "call_constraints_v2_server",
+        "n_tasks": 6,
+        "stratum": "<10 tasks",
+        "n_task_pools": 6,
+        "n_zero_variance_task_pools": 2,
+        "total": 50,
+        "false_alarms": 0,
+        "insufficient": 45,
+        "no_change": 5
+      },
+      {
+        "tool_set": "call_constraints_v2_server_fixed",
+        "n_tasks": 6,
+        "stratum": "<10 tasks",
+        "n_task_pools": 6,
+        "n_zero_variance_task_pools": 2,
+        "total": 50,
+        "false_alarms": 0,
+        "insufficient": 44,
+        "no_change": 6
+      },
+      {
+        "tool_set": "call_constraints_v2_server_oracle",
+        "n_tasks": 6,
+        "stratum": "<10 tasks",
+        "n_task_pools": 6,
+        "n_zero_variance_task_pools": 5,
+        "total": 50,
+        "false_alarms": 1,
+        "insufficient": 0,
+        "no_change": 49
+      },
+      {
+        "tool_set": "confusable_server",
+        "n_tasks": 16,
+        "stratum": "10-29 tasks",
+        "n_task_pools": 16,
+        "n_zero_variance_task_pools": 11,
+        "total": 50,
+        "false_alarms": 0,
+        "insufficient": 33,
+        "no_change": 17
+      },
+      {
+        "tool_set": "confusable_server_fixed",
+        "n_tasks": 16,
+        "stratum": "10-29 tasks",
+        "n_task_pools": 16,
+        "n_zero_variance_task_pools": 10,
+        "total": 50,
+        "false_alarms": 0,
+        "insufficient": 36,
+        "no_change": 14
+      },
+      {
+        "tool_set": "confusable_server_oracle",
+        "n_tasks": 16,
+        "stratum": "10-29 tasks",
+        "n_task_pools": 16,
+        "n_zero_variance_task_pools": 14,
+        "total": 50,
+        "false_alarms": 0,
+        "insufficient": 3,
+        "no_change": 47
+      },
+      {
+        "tool_set": "echo_server",
+        "n_tasks": 4,
+        "stratum": "<10 tasks",
+        "n_task_pools": 4,
+        "n_zero_variance_task_pools": 4,
+        "total": 50,
+        "false_alarms": 0,
+        "insufficient": 0,
+        "no_change": 50
+      },
+      {
+        "tool_set": "exp1_blazickjp_arxiv_mcp_server_mirror",
+        "n_tasks": 8,
+        "stratum": "<10 tasks",
+        "n_task_pools": 8,
+        "n_zero_variance_task_pools": 7,
+        "total": 50,
+        "false_alarms": 3,
+        "insufficient": 0,
+        "no_change": 47
+      },
+      {
+        "tool_set": "exp1_datalayer_jupyter_mcp_server_mirror",
+        "n_tasks": 17,
+        "stratum": "10-29 tasks",
+        "n_task_pools": 17,
+        "n_zero_variance_task_pools": 16,
+        "total": 50,
+        "false_alarms": 0,
+        "insufficient": 0,
+        "no_change": 50
+      },
+      {
+        "tool_set": "exp1_datalayer_jupyter_mcp_server_mirror_oracle",
+        "n_tasks": 17,
+        "stratum": "10-29 tasks",
+        "n_task_pools": 17,
+        "n_zero_variance_task_pools": 17,
+        "total": 50,
+        "false_alarms": 0,
+        "insufficient": 0,
+        "no_change": 50
+      },
+      {
+        "tool_set": "exp1_dataojitori_nocturne_memory_mirror",
+        "n_tasks": 7,
+        "stratum": "<10 tasks",
+        "n_task_pools": 7,
+        "n_zero_variance_task_pools": 5,
+        "total": 50,
+        "false_alarms": 1,
+        "insufficient": 1,
+        "no_change": 48
+      },
+      {
+        "tool_set": "exp1_stickerdaniel_linkedin_mcp_server_mirror",
+        "n_tasks": 17,
+        "stratum": "10-29 tasks",
+        "n_task_pools": 17,
+        "n_zero_variance_task_pools": 15,
+        "total": 50,
+        "false_alarms": 0,
+        "insufficient": 0,
+        "no_change": 50
+      },
+      {
+        "tool_set": "grounded_server",
+        "n_tasks": 5,
+        "stratum": "<10 tasks",
+        "n_task_pools": 5,
+        "n_zero_variance_task_pools": 2,
+        "total": 50,
+        "false_alarms": 0,
+        "insufficient": 41,
+        "no_change": 9
+      },
+      {
+        "tool_set": "grounded_server_fixed",
+        "n_tasks": 5,
+        "stratum": "<10 tasks",
+        "n_task_pools": 5,
+        "n_zero_variance_task_pools": 3,
+        "total": 50,
+        "false_alarms": 2,
+        "insufficient": 33,
+        "no_change": 15
+      },
+      {
+        "tool_set": "grounded_server_oracle",
+        "n_tasks": 5,
+        "stratum": "<10 tasks",
+        "n_task_pools": 5,
+        "n_zero_variance_task_pools": 3,
+        "total": 50,
+        "false_alarms": 0,
+        "insufficient": 32,
+        "no_change": 18
+      },
+      {
+        "tool_set": "mediocre_server",
+        "n_tasks": 5,
+        "stratum": "<10 tasks",
+        "n_task_pools": 5,
+        "n_zero_variance_task_pools": 3,
+        "total": 50,
+        "false_alarms": 0,
+        "insufficient": 28,
+        "no_change": 22
+      },
+      {
+        "tool_set": "mediocre_server_fixed",
+        "n_tasks": 5,
+        "stratum": "<10 tasks",
+        "n_task_pools": 5,
+        "n_zero_variance_task_pools": 3,
+        "total": 50,
+        "false_alarms": 0,
+        "insufficient": 38,
+        "no_change": 12
+      },
+      {
+        "tool_set": "p2a_arm_a",
+        "n_tasks": 48,
+        "stratum": ">=30 tasks",
+        "n_task_pools": 48,
+        "n_zero_variance_task_pools": 48,
+        "total": 50,
+        "false_alarms": 0,
+        "insufficient": 0,
+        "no_change": 50
+      },
+      {
+        "tool_set": "p2a_arm_guardb",
+        "n_tasks": 48,
+        "stratum": ">=30 tasks",
+        "n_task_pools": 48,
+        "n_zero_variance_task_pools": 48,
+        "total": 50,
+        "false_alarms": 0,
+        "insufficient": 0,
+        "no_change": 50
+      },
+      {
+        "tool_set": "p2a_arm_oracle",
+        "n_tasks": 48,
+        "stratum": ">=30 tasks",
+        "n_task_pools": 48,
+        "n_zero_variance_task_pools": 48,
+        "total": 50,
+        "false_alarms": 0,
+        "insufficient": 0,
+        "no_change": 50
+      },
+      {
+        "tool_set": "p2a_internal_proxy_mirror",
+        "n_tasks": 48,
+        "stratum": ">=30 tasks",
+        "n_task_pools": 48,
+        "n_zero_variance_task_pools": 48,
+        "total": 50,
+        "false_alarms": 0,
+        "insufficient": 0,
+        "no_change": 50
+      },
+      {
+        "tool_set": "q3_arm_a",
+        "n_tasks": 12,
+        "stratum": "10-29 tasks",
+        "n_task_pools": 12,
+        "n_zero_variance_task_pools": 12,
+        "total": 50,
+        "false_alarms": 0,
+        "insufficient": 0,
+        "no_change": 50
+      },
+      {
+        "tool_set": "q3_arm_o",
+        "n_tasks": 12,
+        "stratum": "10-29 tasks",
+        "n_task_pools": 12,
+        "n_zero_variance_task_pools": 12,
+        "total": 50,
+        "false_alarms": 0,
+        "insufficient": 0,
+        "no_change": 50
+      },
+      {
+        "tool_set": "q3_real_server",
+        "n_tasks": 12,
+        "stratum": "10-29 tasks",
+        "n_task_pools": 12,
+        "n_zero_variance_task_pools": 12,
+        "total": 50,
+        "false_alarms": 0,
+        "insufficient": 0,
+        "no_change": 50
+      },
+      {
+        "tool_set": "q6_arm_a",
+        "n_tasks": 23,
+        "stratum": "10-29 tasks",
+        "n_task_pools": 23,
+        "n_zero_variance_task_pools": 23,
+        "total": 50,
+        "false_alarms": 0,
+        "insufficient": 0,
+        "no_change": 50
+      },
+      {
+        "tool_set": "q6_arm_f_doc_guarded",
+        "n_tasks": 23,
+        "stratum": "10-29 tasks",
+        "n_task_pools": 23,
+        "n_zero_variance_task_pools": 23,
+        "total": 50,
+        "false_alarms": 0,
+        "insufficient": 0,
+        "no_change": 50
+      },
+      {
+        "tool_set": "q6_real_server",
+        "n_tasks": 23,
+        "stratum": "10-29 tasks",
+        "n_task_pools": 23,
+        "n_zero_variance_task_pools": 23,
+        "total": 50,
+        "false_alarms": 0,
+        "insufficient": 0,
+        "no_change": 50
+      },
+      {
+        "tool_set": "rw1_arm_a",
+        "n_tasks": 21,
+        "stratum": "10-29 tasks",
+        "n_task_pools": 21,
+        "n_zero_variance_task_pools": 21,
+        "total": 50,
+        "false_alarms": 0,
+        "insufficient": 0,
+        "no_change": 50
+      },
+      {
+        "tool_set": "rw1_arm_guardb",
+        "n_tasks": 21,
+        "stratum": "10-29 tasks",
+        "n_task_pools": 21,
+        "n_zero_variance_task_pools": 21,
+        "total": 50,
+        "false_alarms": 0,
+        "insufficient": 0,
+        "no_change": 50
+      },
+      {
+        "tool_set": "rw1_arm_oracle",
+        "n_tasks": 21,
+        "stratum": "10-29 tasks",
+        "n_task_pools": 21,
+        "n_zero_variance_task_pools": 21,
+        "total": 50,
+        "false_alarms": 0,
+        "insufficient": 0,
+        "no_change": 50
+      },
+      {
+        "tool_set": "rw1_github_mirror",
+        "n_tasks": 21,
+        "stratum": "10-29 tasks",
+        "n_task_pools": 21,
+        "n_zero_variance_task_pools": 21,
+        "total": 50,
+        "false_alarms": 0,
+        "insufficient": 0,
+        "no_change": 50
+      },
+      {
+        "tool_set": "rw2_arm_a",
+        "n_tasks": 29,
+        "stratum": "10-29 tasks",
+        "n_task_pools": 29,
+        "n_zero_variance_task_pools": 29,
+        "total": 50,
+        "false_alarms": 0,
+        "insufficient": 0,
+        "no_change": 50
+      },
+      {
+        "tool_set": "rw2_aws_iam_mirror",
+        "n_tasks": 29,
+        "stratum": "10-29 tasks",
+        "n_task_pools": 29,
+        "n_zero_variance_task_pools": 29,
+        "total": 50,
+        "false_alarms": 0,
+        "insufficient": 0,
+        "no_change": 50
+      },
+      {
+        "tool_set": "t18_fixer_server",
+        "n_tasks": 12,
+        "stratum": "10-29 tasks",
+        "n_task_pools": 12,
+        "n_zero_variance_task_pools": 9,
+        "total": 50,
+        "false_alarms": 0,
+        "insufficient": 36,
+        "no_change": 14
+      },
+      {
+        "tool_set": "t18_fixer_server_set2",
+        "n_tasks": 12,
+        "stratum": "10-29 tasks",
+        "n_task_pools": 12,
+        "n_zero_variance_task_pools": 9,
+        "total": 50,
+        "false_alarms": 0,
+        "insufficient": 29,
+        "no_change": 21
+      },
+      {
+        "tool_set": "t18_oracle_server",
+        "n_tasks": 12,
+        "stratum": "10-29 tasks",
+        "n_task_pools": 12,
+        "n_zero_variance_task_pools": 10,
+        "total": 50,
+        "false_alarms": 1,
+        "insufficient": 7,
+        "no_change": 42
+      },
+      {
+        "tool_set": "t18_oracle_server_set2",
+        "n_tasks": 12,
+        "stratum": "10-29 tasks",
+        "n_task_pools": 12,
+        "n_zero_variance_task_pools": 8,
+        "total": 50,
+        "false_alarms": 2,
+        "insufficient": 19,
+        "no_change": 29
+      },
+      {
+        "tool_set": "t18_q2b_server",
+        "n_tasks": 12,
+        "stratum": "10-29 tasks",
+        "n_task_pools": 12,
+        "n_zero_variance_task_pools": 6,
+        "total": 50,
+        "false_alarms": 0,
+        "insufficient": 45,
+        "no_change": 5
+      },
+      {
+        "tool_set": "t18_q2b_server_set2",
+        "n_tasks": 12,
+        "stratum": "10-29 tasks",
+        "n_task_pools": 12,
+        "n_zero_variance_task_pools": 9,
+        "total": 50,
+        "false_alarms": 0,
+        "insufficient": 20,
+        "no_change": 30
+      },
+      {
+        "tool_set": "t18_vague_server",
+        "n_tasks": 12,
+        "stratum": "10-29 tasks",
+        "n_task_pools": 12,
+        "n_zero_variance_task_pools": 6,
+        "total": 50,
+        "false_alarms": 0,
+        "insufficient": 47,
+        "no_change": 3
+      },
+      {
+        "tool_set": "t18_vague_server_set2",
+        "n_tasks": 12,
+        "stratum": "10-29 tasks",
+        "n_task_pools": 12,
+        "n_zero_variance_task_pools": 8,
+        "total": 50,
+        "false_alarms": 0,
+        "insufficient": 35,
+        "no_change": 15
+      }
+    ],
+    "per_tool_set_new": [
+      {
+        "tool_set": "call_constraints_server",
+        "n_tasks": 8,
+        "stratum": "<10 tasks",
+        "n_task_pools": 8,
+        "n_zero_variance_task_pools": 8,
+        "total": 50,
+        "false_alarms": 0,
+        "insufficient": 0,
+        "no_change": 50
+      },
+      {
+        "tool_set": "call_constraints_server_fixed",
+        "n_tasks": 8,
+        "stratum": "<10 tasks",
+        "n_task_pools": 8,
+        "n_zero_variance_task_pools": 8,
+        "total": 50,
+        "false_alarms": 0,
+        "insufficient": 0,
+        "no_change": 50
+      },
+      {
+        "tool_set": "call_constraints_server_oracle",
+        "n_tasks": 8,
+        "stratum": "<10 tasks",
+        "n_task_pools": 8,
+        "n_zero_variance_task_pools": 8,
+        "total": 50,
+        "false_alarms": 0,
+        "insufficient": 0,
+        "no_change": 50
+      },
+      {
+        "tool_set": "call_constraints_v2_server",
+        "n_tasks": 6,
+        "stratum": "<10 tasks",
+        "n_task_pools": 6,
+        "n_zero_variance_task_pools": 2,
+        "total": 50,
+        "false_alarms": 0,
+        "insufficient": 42,
+        "no_change": 8
+      },
+      {
+        "tool_set": "call_constraints_v2_server_fixed",
+        "n_tasks": 6,
+        "stratum": "<10 tasks",
+        "n_task_pools": 6,
+        "n_zero_variance_task_pools": 2,
+        "total": 50,
+        "false_alarms": 1,
+        "insufficient": 41,
+        "no_change": 8
+      },
+      {
+        "tool_set": "call_constraints_v2_server_oracle",
+        "n_tasks": 6,
+        "stratum": "<10 tasks",
+        "n_task_pools": 6,
+        "n_zero_variance_task_pools": 5,
+        "total": 50,
+        "false_alarms": 1,
+        "insufficient": 0,
+        "no_change": 49
+      },
+      {
+        "tool_set": "confusable_server",
+        "n_tasks": 16,
+        "stratum": "10-29 tasks",
+        "n_task_pools": 16,
+        "n_zero_variance_task_pools": 7,
+        "total": 50,
+        "false_alarms": 0,
+        "insufficient": 48,
+        "no_change": 2
+      },
+      {
+        "tool_set": "confusable_server_fixed",
+        "n_tasks": 16,
+        "stratum": "10-29 tasks",
+        "n_task_pools": 16,
+        "n_zero_variance_task_pools": 8,
+        "total": 50,
+        "false_alarms": 0,
+        "insufficient": 43,
+        "no_change": 7
+      },
+      {
+        "tool_set": "confusable_server_oracle",
+        "n_tasks": 16,
+        "stratum": "10-29 tasks",
+        "n_task_pools": 16,
+        "n_zero_variance_task_pools": 7,
+        "total": 50,
+        "false_alarms": 0,
+        "insufficient": 40,
+        "no_change": 10
+      },
+      {
+        "tool_set": "echo_server",
+        "n_tasks": 4,
+        "stratum": "<10 tasks",
+        "n_task_pools": 4,
+        "n_zero_variance_task_pools": 4,
+        "total": 50,
+        "false_alarms": 0,
+        "insufficient": 0,
+        "no_change": 50
+      },
+      {
+        "tool_set": "exp1_blazickjp_arxiv_mcp_server_mirror",
+        "n_tasks": 8,
+        "stratum": "<10 tasks",
+        "n_task_pools": 8,
+        "n_zero_variance_task_pools": 7,
+        "total": 50,
+        "false_alarms": 3,
+        "insufficient": 0,
+        "no_change": 47
+      },
+      {
+        "tool_set": "exp1_datalayer_jupyter_mcp_server_mirror",
+        "n_tasks": 17,
+        "stratum": "10-29 tasks",
+        "n_task_pools": 17,
+        "n_zero_variance_task_pools": 16,
+        "total": 50,
+        "false_alarms": 0,
+        "insufficient": 1,
+        "no_change": 49
+      },
+      {
+        "tool_set": "exp1_datalayer_jupyter_mcp_server_mirror_oracle",
+        "n_tasks": 17,
+        "stratum": "10-29 tasks",
+        "n_task_pools": 17,
+        "n_zero_variance_task_pools": 17,
+        "total": 50,
+        "false_alarms": 0,
+        "insufficient": 0,
+        "no_change": 50
+      },
+      {
+        "tool_set": "exp1_dataojitori_nocturne_memory_mirror",
+        "n_tasks": 7,
+        "stratum": "<10 tasks",
+        "n_task_pools": 7,
+        "n_zero_variance_task_pools": 5,
+        "total": 50,
+        "false_alarms": 2,
+        "insufficient": 22,
+        "no_change": 26
+      },
+      {
+        "tool_set": "exp1_stickerdaniel_linkedin_mcp_server_mirror",
+        "n_tasks": 17,
+        "stratum": "10-29 tasks",
+        "n_task_pools": 17,
+        "n_zero_variance_task_pools": 13,
+        "total": 50,
+        "false_alarms": 0,
+        "insufficient": 1,
+        "no_change": 49
+      },
+      {
+        "tool_set": "grounded_server",
+        "n_tasks": 5,
+        "stratum": "<10 tasks",
+        "n_task_pools": 5,
+        "n_zero_variance_task_pools": 2,
+        "total": 50,
+        "false_alarms": 0,
+        "insufficient": 24,
+        "no_change": 26
+      },
+      {
+        "tool_set": "grounded_server_fixed",
+        "n_tasks": 5,
+        "stratum": "<10 tasks",
+        "n_task_pools": 5,
+        "n_zero_variance_task_pools": 4,
+        "total": 50,
+        "false_alarms": 0,
+        "insufficient": 1,
+        "no_change": 49
+      },
+      {
+        "tool_set": "grounded_server_oracle",
+        "n_tasks": 5,
+        "stratum": "<10 tasks",
+        "n_task_pools": 5,
+        "n_zero_variance_task_pools": 2,
+        "total": 50,
+        "false_alarms": 0,
+        "insufficient": 14,
+        "no_change": 36
+      },
+      {
+        "tool_set": "mediocre_server",
+        "n_tasks": 5,
+        "stratum": "<10 tasks",
+        "n_task_pools": 5,
+        "n_zero_variance_task_pools": 3,
+        "total": 50,
+        "false_alarms": 0,
+        "insufficient": 20,
+        "no_change": 30
+      },
+      {
+        "tool_set": "mediocre_server_fixed",
+        "n_tasks": 5,
+        "stratum": "<10 tasks",
+        "n_task_pools": 5,
+        "n_zero_variance_task_pools": 3,
+        "total": 50,
+        "false_alarms": 0,
+        "insufficient": 19,
+        "no_change": 31
+      },
+      {
+        "tool_set": "p2a_arm_a",
+        "n_tasks": 48,
+        "stratum": ">=30 tasks",
+        "n_task_pools": 48,
+        "n_zero_variance_task_pools": 41,
+        "total": 50,
+        "false_alarms": 0,
+        "insufficient": 1,
+        "no_change": 49
+      },
+      {
+        "tool_set": "p2a_arm_guardb",
+        "n_tasks": 48,
+        "stratum": ">=30 tasks",
+        "n_task_pools": 48,
+        "n_zero_variance_task_pools": 47,
+        "total": 50,
+        "false_alarms": 0,
+        "insufficient": 0,
+        "no_change": 50
+      },
+      {
+        "tool_set": "p2a_arm_oracle",
+        "n_tasks": 48,
+        "stratum": ">=30 tasks",
+        "n_task_pools": 48,
+        "n_zero_variance_task_pools": 47,
+        "total": 50,
+        "false_alarms": 0,
+        "insufficient": 0,
+        "no_change": 50
+      },
+      {
+        "tool_set": "p2a_internal_proxy_mirror",
+        "n_tasks": 48,
+        "stratum": ">=30 tasks",
+        "n_task_pools": 48,
+        "n_zero_variance_task_pools": 41,
+        "total": 50,
+        "false_alarms": 0,
+        "insufficient": 1,
+        "no_change": 49
+      },
+      {
+        "tool_set": "q3_arm_a",
+        "n_tasks": 12,
+        "stratum": "10-29 tasks",
+        "n_task_pools": 12,
+        "n_zero_variance_task_pools": 12,
+        "total": 50,
+        "false_alarms": 0,
+        "insufficient": 0,
+        "no_change": 50
+      },
+      {
+        "tool_set": "q3_arm_o",
+        "n_tasks": 12,
+        "stratum": "10-29 tasks",
+        "n_task_pools": 12,
+        "n_zero_variance_task_pools": 11,
+        "total": 50,
+        "false_alarms": 0,
+        "insufficient": 19,
+        "no_change": 31
+      },
+      {
+        "tool_set": "q3_real_server",
+        "n_tasks": 12,
+        "stratum": "10-29 tasks",
+        "n_task_pools": 12,
+        "n_zero_variance_task_pools": 12,
+        "total": 50,
+        "false_alarms": 0,
+        "insufficient": 0,
+        "no_change": 50
+      },
+      {
+        "tool_set": "q6_arm_a",
+        "n_tasks": 23,
+        "stratum": "10-29 tasks",
+        "n_task_pools": 23,
+        "n_zero_variance_task_pools": 23,
+        "total": 50,
+        "false_alarms": 0,
+        "insufficient": 0,
+        "no_change": 50
+      },
+      {
+        "tool_set": "q6_arm_f_doc_guarded",
+        "n_tasks": 23,
+        "stratum": "10-29 tasks",
+        "n_task_pools": 23,
+        "n_zero_variance_task_pools": 22,
+        "total": 50,
+        "false_alarms": 0,
+        "insufficient": 5,
+        "no_change": 45
+      },
+      {
+        "tool_set": "q6_real_server",
+        "n_tasks": 23,
+        "stratum": "10-29 tasks",
+        "n_task_pools": 23,
+        "n_zero_variance_task_pools": 23,
+        "total": 50,
+        "false_alarms": 0,
+        "insufficient": 0,
+        "no_change": 50
+      },
+      {
+        "tool_set": "rw1_arm_a",
+        "n_tasks": 21,
+        "stratum": "10-29 tasks",
+        "n_task_pools": 21,
+        "n_zero_variance_task_pools": 20,
+        "total": 50,
+        "false_alarms": 0,
+        "insufficient": 1,
+        "no_change": 49
+      },
+      {
+        "tool_set": "rw1_arm_guardb",
+        "n_tasks": 21,
+        "stratum": "10-29 tasks",
+        "n_task_pools": 21,
+        "n_zero_variance_task_pools": 20,
+        "total": 50,
+        "false_alarms": 0,
+        "insufficient": 4,
+        "no_change": 46
+      },
+      {
+        "tool_set": "rw1_arm_oracle",
+        "n_tasks": 21,
+        "stratum": "10-29 tasks",
+        "n_task_pools": 21,
+        "n_zero_variance_task_pools": 21,
+        "total": 50,
+        "false_alarms": 0,
+        "insufficient": 0,
+        "no_change": 50
+      },
+      {
+        "tool_set": "rw1_github_mirror",
+        "n_tasks": 21,
+        "stratum": "10-29 tasks",
+        "n_task_pools": 21,
+        "n_zero_variance_task_pools": 20,
+        "total": 50,
+        "false_alarms": 0,
+        "insufficient": 1,
+        "no_change": 49
+      },
+      {
+        "tool_set": "rw2_arm_a",
+        "n_tasks": 29,
+        "stratum": "10-29 tasks",
+        "n_task_pools": 29,
+        "n_zero_variance_task_pools": 28,
+        "total": 50,
+        "false_alarms": 0,
+        "insufficient": 0,
+        "no_change": 50
+      },
+      {
+        "tool_set": "rw2_aws_iam_mirror",
+        "n_tasks": 29,
+        "stratum": "10-29 tasks",
+        "n_task_pools": 29,
+        "n_zero_variance_task_pools": 28,
+        "total": 50,
+        "false_alarms": 0,
+        "insufficient": 0,
+        "no_change": 50
+      },
+      {
+        "tool_set": "t18_fixer_server",
+        "n_tasks": 12,
+        "stratum": "10-29 tasks",
+        "n_task_pools": 12,
+        "n_zero_variance_task_pools": 4,
+        "total": 50,
+        "false_alarms": 0,
+        "insufficient": 48,
+        "no_change": 2
+      },
+      {
+        "tool_set": "t18_fixer_server_set2",
+        "n_tasks": 12,
+        "stratum": "10-29 tasks",
+        "n_task_pools": 12,
+        "n_zero_variance_task_pools": 7,
+        "total": 50,
+        "false_alarms": 0,
+        "insufficient": 35,
+        "no_change": 15
+      },
+      {
+        "tool_set": "t18_oracle_server",
+        "n_tasks": 12,
+        "stratum": "10-29 tasks",
+        "n_task_pools": 12,
+        "n_zero_variance_task_pools": 8,
+        "total": 50,
+        "false_alarms": 0,
+        "insufficient": 17,
+        "no_change": 33
+      },
+      {
+        "tool_set": "t18_oracle_server_set2",
+        "n_tasks": 12,
+        "stratum": "10-29 tasks",
+        "n_task_pools": 12,
+        "n_zero_variance_task_pools": 8,
+        "total": 50,
+        "false_alarms": 0,
+        "insufficient": 17,
+        "no_change": 33
+      },
+      {
+        "tool_set": "t18_q2b_server",
+        "n_tasks": 12,
+        "stratum": "10-29 tasks",
+        "n_task_pools": 12,
+        "n_zero_variance_task_pools": 3,
+        "total": 50,
+        "false_alarms": 0,
+        "insufficient": 47,
+        "no_change": 3
+      },
+      {
+        "tool_set": "t18_q2b_server_set2",
+        "n_tasks": 12,
+        "stratum": "10-29 tasks",
+        "n_task_pools": 12,
+        "n_zero_variance_task_pools": 8,
+        "total": 50,
+        "false_alarms": 0,
+        "insufficient": 26,
+        "no_change": 24
+      },
+      {
+        "tool_set": "t18_vague_server",
+        "n_tasks": 12,
+        "stratum": "10-29 tasks",
+        "n_task_pools": 12,
+        "n_zero_variance_task_pools": 5,
+        "total": 50,
+        "false_alarms": 0,
+        "insufficient": 39,
+        "no_change": 11
+      },
+      {
+        "tool_set": "t18_vague_server_set2",
+        "n_tasks": 12,
+        "stratum": "10-29 tasks",
+        "n_task_pools": 12,
+        "n_zero_variance_task_pools": 7,
+        "total": 50,
+        "false_alarms": 0,
+        "insufficient": 39,
+        "no_change": 11
+      }
+    ]
+  },
+  "mde": {
+    "sims": 2000,
+    "notes": {
+      "rho": "NEW rho=0.92 (pooled Pearson on matched Phase-3 tasks)"
+    },
+    "cells": [
+      {
+        "label": "OLD constants (control; expect 0.0848 @100, 0.0537 @253)",
+        "n_tasks": 100,
+        "sims": 2000,
+        "baseline": 0.7749,
+        "sigma_task": 0.3588,
+        "resid_sd": 0.1392,
+        "rho": 0.881,
+        "mde": 0.08475468750000001,
+        "seconds": 320.6
+      },
+      {
+        "label": "OLD constants (control; expect 0.0848 @100, 0.0537 @253)",
+        "n_tasks": 253,
+        "sims": 2000,
+        "baseline": 0.7749,
+        "sigma_task": 0.3588,
+        "resid_sd": 0.1392,
+        "rho": 0.881,
+        "mde": 0.05372841796875,
+        "seconds": 965.4
+      },
+      {
+        "label": "NEW constants, gold-tool grouping (point)",
+        "n_tasks": 100,
+        "sims": 2000,
+        "baseline": 0.7885,
+        "sigma_task": 0.3337,
+        "resid_sd": 0.1694,
+        "rho": 0.92,
+        "mde": 0.08778222656250001,
+        "seconds": 305.9
+      },
+      {
+        "label": "NEW constants, gold-tool grouping (point)",
+        "n_tasks": 253,
+        "sims": 2000,
+        "baseline": 0.7885,
+        "sigma_task": 0.3337,
+        "resid_sd": 0.1694,
+        "rho": 0.92,
+        "mde": 0.056211425781250005,
+        "seconds": 961.2
+      },
+      {
+        "label": "NEW constants, true-task grouping (point)",
+        "n_tasks": 100,
+        "sims": 2000,
+        "baseline": 0.7885,
+        "sigma_task": 0.3807,
+        "resid_sd": 0.1424,
+        "rho": 0.92,
+        "mde": 0.08393212890624999,
+        "seconds": 308.8
+      },
+      {
+        "label": "NEW constants, true-task grouping (point)",
+        "n_tasks": 253,
+        "sims": 2000,
+        "baseline": 0.7885,
+        "sigma_task": 0.3807,
+        "resid_sd": 0.1424,
+        "rho": 0.92,
+        "mde": 0.05390136718749999,
+        "seconds": 960.3
+      },
+      {
+        "label": "NEW gold constants with resid_sd at its 2.5% bootstrap quantile (others at point)",
+        "n_tasks": 100,
+        "sims": 2000,
+        "baseline": 0.7885,
+        "sigma_task": 0.3337,
+        "resid_sd": 0.1387,
+        "rho": 0.92,
+        "mde": 0.0768094482421875,
+        "seconds": 306.0
+      },
+      {
+        "label": "NEW gold constants with resid_sd at its 2.5% bootstrap quantile (others at point)",
+        "n_tasks": 253,
+        "sims": 2000,
+        "baseline": 0.7885,
+        "sigma_task": 0.3337,
+        "resid_sd": 0.1387,
+        "rho": 0.92,
+        "mde": 0.04851123046875,
+        "seconds": 962.3
+      },
+      {
+        "label": "NEW gold constants with resid_sd at its 97.5% bootstrap quantile (others at point)",
+        "n_tasks": 100,
+        "sims": 2000,
+        "baseline": 0.7885,
+        "sigma_task": 0.3337,
+        "resid_sd": 0.2031,
+        "rho": 0.92,
+        "mde": 0.1001025390625,
+        "seconds": 306.0
+      },
+      {
+        "label": "NEW gold constants with resid_sd at its 97.5% bootstrap quantile (others at point)",
+        "n_tasks": 253,
+        "sims": 2000,
+        "baseline": 0.7885,
+        "sigma_task": 0.3337,
+        "resid_sd": 0.2031,
+        "rho": 0.92,
+        "mde": 0.06391162109375001,
+        "seconds": 781.8
+      },
+      {
+        "label": "NEW gold constants with sigma_task at its 2.5% bootstrap quantile (others at point)",
+        "n_tasks": 100,
+        "sims": 2000,
+        "baseline": 0.7885,
+        "sigma_task": 0.2864,
+        "resid_sd": 0.1694,
+        "rho": 0.92,
+        "mde": 0.08162207031249999,
+        "seconds": 305.1
+      },
+      {
+        "label": "NEW gold constants with sigma_task at its 2.5% bootstrap quantile (others at point)",
+        "n_tasks": 253,
+        "sims": 2000,
+        "baseline": 0.7885,
+        "sigma_task": 0.2864,
+        "resid_sd": 0.1694,
+        "rho": 0.92,
+        "mde": 0.052361328124999995,
+        "seconds": 781.2
+      },
+      {
+        "label": "NEW gold constants with sigma_task at its 97.5% bootstrap quantile (others at point)",
+        "n_tasks": 100,
+        "sims": 2000,
+        "baseline": 0.7885,
+        "sigma_task": 0.3792,
+        "resid_sd": 0.1694,
+        "rho": 0.92,
+        "mde": 0.0939423828125,
+        "seconds": 288.2
+      },
+      {
+        "label": "NEW gold constants with sigma_task at its 97.5% bootstrap quantile (others at point)",
+        "n_tasks": 253,
+        "sims": 2000,
+        "baseline": 0.7885,
+        "sigma_task": 0.3792,
+        "resid_sd": 0.1694,
+        "rho": 0.92,
+        "mde": 0.0606390380859375,
+        "seconds": 784.0
+      }
+    ]
+  }
+}
