@@ -30,7 +30,13 @@ class Provider(Protocol):
 
 
 class OllamaProvider:
-    """Calls a local Ollama instance. Default for local dev."""
+    """Calls a local Ollama instance. Default for local dev.
+
+    Decoding: sends only `options.seed`; temperature/top_p/top_k are NOT set, so the model's
+    Modelfile / Ollama's runtime defaults apply (Ollama's documented default temperature is
+    0.8 -- sampling is on). Seed support: honoured (same seed + same prompt + same model
+    build -> same completion). `runner.run_tasks` passes a distinct seed per trial.
+    """
 
     BASE_URL = "http://localhost:11434"
 
@@ -56,7 +62,10 @@ class OllamaProvider:
 
 
 class MockProvider:
-    """Deterministic mock for tests — returns preset responses in round-robin."""
+    """Deterministic mock for tests — returns preset responses in round-robin.
+
+    Seed support: accepted and ignored (output depends only on call order).
+    """
 
     def __init__(self, responses: list[str] | None = None) -> None:
         self._responses = responses or ["7"]
@@ -98,6 +107,10 @@ class ApiAgentProvider:
     GG's standing rule: never wire ANTHROPIC_API_KEY (Max-plan double-billing).
     Pass api_key_env='FRONTIER_API_KEY' (or another separately-billed var).
     Tracks token spend and raises CostCeilingError when cost_ceiling_usd is hit.
+
+    Decoding: temperature/top_p are NOT sent (API defaults apply). Seed support: none --
+    the Messages API has no seed parameter; `seed` is accepted and ignored, so trials are
+    independently sampled but not replayable except via a recorded cassette.
     """
 
     _ANTHROPIC_URL = "https://api.anthropic.com/v1/messages"
@@ -220,6 +233,10 @@ class OpenAICompatibleProvider:
     local servers). Tracks token spend; raises CostCeilingError when ceiling is hit.
 
     GG's standing rule: api_key_env must not be 'ANTHROPIC_API_KEY'.
+
+    Decoding: temperature/top_p are NOT sent (endpoint defaults apply). Seed support: none
+    -- `seed` is accepted and ignored (most endpoints do not honour it); replay requires a
+    recorded cassette.
     """
 
     def __init__(
@@ -439,6 +456,9 @@ class BedrockProvider:
     credential chain -- see the module-level SigV4 docstring above for why boto3/
     botocore are not used here). GG's standing rule applies to every key-env parameter,
     not just Anthropic's: neither env var name may be 'ANTHROPIC_API_KEY'.
+
+    Decoding: temperature/top_p are NOT sent (model defaults apply). Seed support: none --
+    `seed` is accepted and ignored; replay requires a recorded cassette.
     """
 
     def __init__(
@@ -592,6 +612,9 @@ class VertexProvider:
     wire response, never live auth). Obtain a token yourself (e.g. `gcloud auth
     print-access-token`) and export it into the configured env var before using this
     adapter for a real (non-replay) run.
+
+    Decoding: temperature/top_p are NOT sent (model defaults apply). Seed support: none --
+    the REST call sets no seed; `seed` is accepted and ignored; replay requires a cassette.
     """
 
     def __init__(
@@ -724,6 +747,9 @@ class CustomEndpointProvider:
     `OpenAICompatibleProvider`. Cost is tracked via the same flat fallback rate
     `OpenAICompatibleProvider` uses for unknown models -- an internal gateway's actual
     per-token price is org-specific and not knowable from the wire response alone.
+
+    Decoding: temperature/top_p are NOT sent (gateway defaults apply). Seed support: none
+    -- `seed` is accepted and ignored; replay requires a recorded cassette.
     """
 
     def __init__(

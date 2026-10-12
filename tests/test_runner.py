@@ -1,12 +1,13 @@
 from __future__ import annotations
 
+from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock
 
 from mcp.types import Tool
 
 from agentgauge.client import MCPClient
 from agentgauge.providers import Message, MockProvider
-from agentgauge.runner import RunResult, _build_tool_listing, run_tasks
+from agentgauge.runner import RunResult, _build_tool_listing, run_tasks, trial_seed
 from agentgauge.tasks import Task
 
 
@@ -305,3 +306,81 @@ async def test_run_tasks_selected_tool_recorded() -> None:
     results = await run_tasks(tasks, client, provider)
     assert results[0].selected_tool == "echo"
     assert results[0].constructed_args == {"message": "hi"}
+
+
+# ── per-trial seeds ───────────────────────────────────────────────────────────
+
+
+class _SeedRecorder:
+    """Provider that records the seed of every chat() call and answers deterministically."""
+
+    model_name = "seed-recorder"
+
+    def __init__(self) -> None:
+        self.seeds: list[int] = []
+
+    async def chat(self, messages: list[Message], *, seed: int = 42) -> str:
+        self.seeds.append(seed)
+        return "echo" if "Reply with ONLY the tool name" in messages[0].content else "{}"
+
+
+_SEED_TASKS = [
+    Task(tool_name="echo", description="Call echo A", sample_args={}),
+    Task(tool_name="echo", description="Call echo B", sample_args={}),
+]
+
+
+async def _seeds_for(base_seed: int, trials: int = 3) -> list[int]:
+    provider = _SeedRecorder()
+    await run_tasks(
+        _SEED_TASKS, _make_mock_client("echo"), provider, trials=trials, base_seed=base_seed
+    )
+    return provider.seeds
+
+
+async def test_repeat_trials_receive_distinct_seeds() -> None:
+    seeds = await _seeds_for(42, trials=3)
+    # 2 tasks x 3 trials x 2 prompts (selection + args); both prompts of a trial share a seed.
+    assert len(seeds) == 12
+    per_trial = seeds[0::2]
+    assert seeds[0::2] == seeds[1::2]
+    assert len(set(per_trial[:3])) == 3  # task A: three trials, three seeds
+    assert len(set(per_trial[3:])) == 3  # task B
+    assert all(s != 42 for s in per_trial)  # no trial still uses the old fixed seed
+
+
+async def test_same_base_seed_gives_identical_seed_sequence() -> None:
+    assert await _seeds_for(42) == await _seeds_for(42)
+    assert await _seeds_for(42) != await _seeds_for(43)
+
+
+def test_trial_seed_is_stable_and_31_bit() -> None:
+    # Pinned values: a change here silently invalidates every previously recorded cassette.
+    task = Task(tool_name="echo", description="Call echo A", sample_args={})
+    assert trial_seed(42, task, 0) == trial_seed(42, task, 0)
+    assert 0 <= trial_seed(42, task, 0) < 2**31
+    assert trial_seed(42, task, 0) != trial_seed(42, task, 1)
+
+
+async def test_run_tasks_replay_is_byte_identical_with_varied_seeds(tmp_path: Path) -> None:
+    from agentgauge.cassette import Cassette, CassetteProvider
+
+    class _SeedSensitive:
+        model_name = "seed-sensitive"
+
+        async def chat(self, messages: list[Message], *, seed: int = 42) -> str:
+            if "Reply with ONLY the tool name" in messages[0].content:
+                return "echo"
+            return f'{{"message": "s{seed}"}}'
+
+    cassette = Cassette(tmp_path / "c.json")
+    recorder = CassetteProvider(cassette, "fake", provider=_SeedSensitive())  # type: ignore[arg-type]
+    recorded = await run_tasks(_SEED_TASKS, _make_mock_client("echo"), recorder, trials=3)
+    cassette.save()
+
+    replayer = CassetteProvider(Cassette.load(tmp_path / "c.json"), "fake", model="seed-sensitive")
+    for _ in range(3):
+        replayed = await run_tasks(_SEED_TASKS, _make_mock_client("echo"), replayer, trials=3)
+        assert [r.constructed_args for r in replayed] == [r.constructed_args for r in recorded]
+    # and the trials really did differ from each other (the pre-fix bug made them identical)
+    assert len({tuple(sorted(r.constructed_args.items())) for r in recorded[:3]}) == 3
