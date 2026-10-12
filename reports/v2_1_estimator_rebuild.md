@@ -1,3 +1,5 @@
+> Historical — numbers superseded; see README (re-measured 2026-10-11).
+
 # AgentGauge v2.1 — estimator rebuild (Tasks 2–3)
 
 Consolidates the harness redesign driven by `reports/v2_variance_structure.md`'s Task 1 findings

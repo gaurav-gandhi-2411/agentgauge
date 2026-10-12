@@ -1,3 +1,5 @@
+> Historical — numbers superseded; see README (re-measured 2026-10-11).
+
 # AgentGauge v0.5 Wave 1 — scale-curve + multi-culprit study for failure attribution
 ## (Component 1.2, Task 2; follow-up to `reports/v0_5_attribution_benchmark.md` section 7j)
 

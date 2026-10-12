@@ -1,3 +1,5 @@
+> Historical — numbers superseded; see README (re-measured 2026-10-11).
+
 # AgentGauge v0.4.0 — release, rename, and verification
 
 Closes the full ship sequence: PR #64 merge → PyPI Trusted Publishing setup →

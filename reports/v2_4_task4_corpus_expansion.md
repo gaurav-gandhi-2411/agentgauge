@@ -1,3 +1,5 @@
+> Historical — numbers superseded; see README (re-measured 2026-10-11).
+
 # AgentGauge v2.4 — Task 4: fixture corpus expansion
 
 Deferred from v2.3, executed after Tasks 1-3. Builds >=10 additional gold-constraint

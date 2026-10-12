@@ -1,3 +1,5 @@
+> Historical — numbers superseded; see README (re-measured 2026-10-11).
+
 # AgentGauge v2.1 — cross-model validation (Task 6)
 
 Tests whether the harness's flagship real-world finding (`call_constraints_server`: tool-selection

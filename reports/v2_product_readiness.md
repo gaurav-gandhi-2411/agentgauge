@@ -1,3 +1,5 @@
+> Historical — numbers superseded; see README (re-measured 2026-10-11).
+
 # AgentGauge v2.1 — product readiness report (Task 7)
 
 Consolidates every number produced across the v2 rebuild (Tasks 0–7, `reports/v2_*.md`) and the

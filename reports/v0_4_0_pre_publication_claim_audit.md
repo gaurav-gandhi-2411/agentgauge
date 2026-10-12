@@ -1,3 +1,5 @@
+> Historical — numbers superseded; see README (re-measured 2026-10-11).
+
 # AgentGauge v0.4.0 — pre-publication claim audit
 
 Grepped every named public-facing artifact for a surviving claim that LLM-
