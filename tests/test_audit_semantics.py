@@ -61,6 +61,37 @@ class TestPooledDegenerate:
         assert [f.check for f in report.blocking] == ["degenerate_metrics"]
 
 
+class TestCeilingFloorWarning:
+    """Task 15: which arm is at the ceiling/floor, and why the warning matters."""
+
+    def _findings(self, before: list[TrialOutcome], after: list[TrialOutcome]) -> list[str]:
+        report = run_audit([], before_trials=before, after_trials=after)
+        return [f.detail for f in report.warnings if f.check == "ceiling_floor"]
+
+    def test_after_arm_at_ceiling_names_the_arm_and_the_truncation(self) -> None:
+        # the live README run: before joint 0.667, after joint 1.000
+        details = self._findings(_trials(16, 8), _trials(24, 0))
+        assert len(details) == 1  # the 0.667 arm is not flagged
+        assert details[0].startswith("[after]")
+        assert "the 'after' arm's joint success rate 1.000 is at the ceiling" in details[0]
+        assert "effect size may be truncated (no headroom above 1.0)" in details[0]
+
+    def test_before_arm_at_floor_says_no_headroom_below(self) -> None:
+        details = self._findings(_trials(0, 24), _trials(16, 8))
+        assert len(details) == 1 and details[0].startswith("[before]")
+        assert "is at the floor" in details[0]
+        assert "effect size may be truncated (no headroom below 0.0)" in details[0]
+
+    def test_both_arms_at_the_extreme_flag_both_arms(self) -> None:
+        details = self._findings(_trials(24, 0), _trials(24, 0))
+        assert [d.split("]")[0] for d in details] == ["[before", "[after"]
+
+    def test_condition_is_within_five_points_of_an_extreme(self) -> None:
+        assert self._findings(_trials(90, 10), _trials(80, 20)) == []  # 0.90 and 0.80
+        assert len(self._findings(_trials(96, 4), _trials(80, 20))) == 1  # 0.96 is flagged
+        assert "<= 0.05 or >= 0.95" in self._findings(_trials(96, 4), _trials(80, 20))[0]
+
+
 class TestCeilingFloorVerdict:
     def test_both_arms_one_is_ceiling(self) -> None:
         r = diff_from_trials(_trials(24, 0), _trials(24, 0))

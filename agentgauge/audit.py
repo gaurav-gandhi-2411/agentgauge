@@ -369,13 +369,15 @@ def check_ceiling_floor(
     r = rate.joint_success_rate
     if r <= margin or r >= 1.0 - margin:
         which = "floor" if r <= margin else "ceiling"
+        headroom = "below 0.0" if which == "floor" else "above 1.0"
         return [
             AuditFinding(
                 check="ceiling_floor",
                 severity="warn",
                 detail=(
-                    f"[{variant_label}] joint success rate {r:.3f} is at the {which} "
-                    f"(n={rate.n_trials}) -- little to no room for a before/after delta to show up"
+                    f"[{variant_label}] the {variant_label!r} arm's joint success rate {r:.3f} "
+                    f"is at the {which} (n={rate.n_trials}, flagged at <= {margin:.2f} or >= "
+                    f"{1.0 - margin:.2f}); effect size may be truncated (no headroom {headroom})"
                 ),
             )
         ]
