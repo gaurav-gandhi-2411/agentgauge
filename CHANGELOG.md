@@ -75,13 +75,16 @@ dependency-lockfile updates only).
   live run of the bundled demo pair had been refused for exactly this. If every trial in both arms
   scores 1.0 (0.0), `diff` reports a distinct `CEILING` (`FLOOR`) verdict with no delta and exits 0.
   `diff --replay-*` and `demo` now run the same trial-level audit as a live run. A pooled constant at
-  a non-extreme value (a scorer returning one fixed number) still blocks.
+  a non-extreme value (a scorer returning one fixed number) still blocks. The `ceiling_floor` warning
+  now names the arm and says "effect size may be truncated (no headroom above 1.0)".
 - **Constraint-coverage check.** `diff`/`eval` print how many tasks are selection-only / partial /
   full (zero argument constraints / a required parameter or stated value unchecked / neither) and
   label the verdict `(selection-only)` with a warning when more than half are selection-only
   (warn, never block). `agentgauge init` scaffolds a fully-constrained worked example. Class counts
   for every committed corpus: `evals/fixtures/constraint_coverage_corpora.json` (the 253-task
-  argument-degradation corpus: 16 / 211 / 26).
+  argument-degradation corpus: 16 / 211 / 26). All 24 bundled demo tasks are constrained to full
+  coverage (a `ticket_id` constraint on every task); the demo was re-recorded and the replay files
+  came out byte-identical (`agentgauge/demo/PROVENANCE.md`).
 - **Superseded numbers.** 27 reports and paper sources that still quote the fixed-seed figures now
   start with a "Historical" banner (`scripts/add_historical_banners.py`); the paper drafts have
   READMEs itemising their known false or unsupported claims.

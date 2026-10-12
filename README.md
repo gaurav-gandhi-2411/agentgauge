@@ -28,8 +28,9 @@ agentgauge demo
 agentgauge demo: replaying 24 recorded gemma2:9b trials per arm (no model, GPU,
 keys or network used)
 
-AUDIT WARN (ceiling_floor): [after] joint success rate 1.000 is at the ceiling
-(n=24) -- little to no room for a before/after delta to show up
+AUDIT WARN (ceiling_floor): [after] the 'after' arm's joint success rate 1.000
+is at the ceiling (n=24, flagged at <= 0.05 or >= 0.95); effect size may be
+truncated (no headroom above 1.0)
 
 before (n=24 trials)
   selection accuracy:          0.667
@@ -44,7 +45,7 @@ after (n=24 trials)
 before cost: replay mode -- no live cost to report.
 after cost: replay mode -- no live cost to report.
 
-constraint coverage over 24 tasks: 0 selection-only, 16 partial, 8 full
+constraint coverage over 24 tasks: 0 selection-only, 0 partial, 24 full
 INSUFFICIENT_SENSITIVITY: Delta point estimate is +0.333, but the 95% CI
 [+0.125, +0.500] is wider than 2x the regression threshold (0.050) -- this run
 does not have enough trials to reliably distinguish a real regression of this
@@ -237,7 +238,7 @@ Rendered at commit: `64efda0`
 
   | Corpus | Tasks | Selection-only | Partial | Full |
   |---|---|---|---|---|
-  | Bundled demo | 24 | 0 | 16 | 8 |
+  | Bundled demo | 24 | 0 | 0 | 24 (100%) |
   | Argument-degradation corpus | 253 | 16 | 211 | 26 (10.3%) |
   | Calibration corpus (44 tool sets; overlaps the row above) | 1136 | 230 | 389 | 517 (45.5%) |
 
