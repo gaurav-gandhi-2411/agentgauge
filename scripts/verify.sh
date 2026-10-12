@@ -30,7 +30,7 @@ $RUNNER ruff format --check agentgauge/ tests/
 # ── 3. Type check ───────────────────────────────────────────────────────────
 echo ""
 echo "[3/4] Mypy..."
-$RUNNER mypy agentgauge/ --ignore-missing-imports || true   # non-blocking until strict is on
+$RUNNER mypy agentgauge/ --ignore-missing-imports
 
 # ── 4. Tests ─────────────────────────────────────────────────────────────────
 echo ""
