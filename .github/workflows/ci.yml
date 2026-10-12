@@ -72,6 +72,29 @@ jobs:
           echo "python-compat (all legs): $COMPAT_RESULT"
           [ "$COMPAT_RESULT" = "success" ]
 
+  # The suite had only ever run on Linux, and a Windows-only failure (the CLI's pipe output was
+  # locale-encoded, so a UTF-8 reader crashed on it) went unseen until a local run. This job runs the
+  # same suite on Windows WITHOUT PYTHONUTF8, i.e. under the default cp1252 codec a Windows user has.
+  # Deliberately not folded into `python-compat`, whose aggregate check is required: a new OS leg that
+  # is not yet proven green should not be able to block merges until it has run clean on main.
+  windows-tests:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+
+      - name: Install uv
+        run: pip install uv --quiet
+
+      - name: Install dependencies
+        run: uv sync --extra dev --python 3.12
+
+      - name: Unit tests (default Windows codec, no PYTHONUTF8)
+        run: uv run pytest tests/ -v
+
   hygiene:
     runs-on: ubuntu-latest
     steps:

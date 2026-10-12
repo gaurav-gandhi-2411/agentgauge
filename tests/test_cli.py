@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 import json
+import os
 import re
 import subprocess
 import sys
 from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, patch
 
+import pytest
 from mcp.types import Tool
 from typer.testing import CliRunner
 
@@ -164,10 +166,44 @@ def test_scan_echo_server_subprocess() -> None:
         [sys.executable, "-m", "agentgauge", "scan", str(echo_server), "--mock"],
         capture_output=True,
         text=True,
+        # The CLI writes UTF-8 to pipes (see test below); decoding with the locale codec (cp1252 on
+        # Windows) used to crash the capture thread and leave stdout as None.
+        encoding="utf-8",
         timeout=30,
     )
     assert result.returncode == 0, f"scan exited {result.returncode}:\n{result.stderr}"
     assert "AgentGauge Score" in result.stdout
+
+
+@pytest.mark.parametrize("io_encoding", ["cp1252", "utf-8"])
+def test_cli_writes_utf8_to_a_pipe_regardless_of_locale(io_encoding: str) -> None:
+    """Piped output is UTF-8 whatever the host's default codec is.
+
+    Rich draws the score table with box-drawing characters. Before the CLI pinned its pipe
+    encoding, a Windows host whose child inherited a different codec than the reader (e.g.
+    PYTHONIOENCODING=utf-8 in the child, cp1252 in a `text=True` reader) produced undecodable
+    bytes, and the reader thread died with UnicodeDecodeError.
+    """
+    repo_root = Path(__file__).parent.parent
+    env = {**os.environ, "PYTHONIOENCODING": io_encoding}
+    env.pop("PYTHONUTF8", None)
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "agentgauge",
+            "scan",
+            str(repo_root / "examples/echo_server.py"),
+            "--mock",
+        ],
+        capture_output=True,
+        env=env,
+        timeout=30,
+    )
+    assert result.returncode == 0, result.stderr.decode("utf-8", errors="replace")
+    text = result.stdout.decode("utf-8")  # raises if the CLI emitted a non-UTF-8 codec
+    assert "AgentGauge Score" in text
+    assert any(ord(ch) > 127 for ch in text), "expected Rich box-drawing characters in the output"
 
 
 class TestScoringReferenceConsistencyGate:
