@@ -10,7 +10,9 @@ once from a local model. Nothing here is simulated, tuned or cherry-picked.
   three pairs of tools share the same vague description text; in AFTER, every description says
   what the tool does, when to use it and when not to.
 - `tasks.json`: 24 tasks (4 per tool), written as user intents that never contain a gold tool
-  name, each with one argument constraint.
+  name. Every task constrains each required parameter and each value its text states (an issue
+  number, a name, "the 12th"), so `agentgauge.audit.check_constraint_coverage` classes 24 of 24
+  as full.
 - The pair was **designed to show a large gap. It is not a benchmark** and says nothing about how
   real servers behave. Its purpose is to show the shape of the output.
 
@@ -36,6 +38,26 @@ arm). `agentgauge diff` at its default 0.05 threshold gives **INSUFFICIENT_SENSI
 (delta +0.333, 95% CI [+0.125, +0.500]): the point estimate is large but 24 tasks cannot narrow the
 interval below 2x the threshold. That is the harness working as designed, and is kept as-is; the
 demo prints it and explains it. A reliable gate needs roughly 100 tasks per arm.
+
+## Re-recording after the constraints were completed (2026-10-12)
+
+The first recording (2026-10-11) shipped with one constraint per task, which the coverage check
+classes as 0 selection-only / 16 partial / 8 full: the `ticket_id` of 16 tasks was not checked, and
+one of those tasks also states a date ("the 12th") that nothing checked. The replay files store only scored outcomes (`constraint_satisfaction`),
+not the raw tool-call arguments, so they cannot be rescored under stricter constraints. The demo was
+therefore re-recorded with the completed `tasks.json` (a `ticket_id` constraint on every task, plus
+"12" on the task that names a date).
+
+| Item | Value |
+|---|---|
+| Date (UTC) | 2026-10-12, 05:13:59-05:17:02 |
+| Command | `python scripts/record_demo_replays.py --model gemma2:9b --max-calls 120` (96 calls) |
+| Model / Ollama | `gemma2:9b`, image ID `ff02c3702f32`; Ollama 0.33.3; seed 42, 1 trial per task |
+| Result | `replay_before.json` and `replay_after.json` are **byte-identical** to the 2026-10-11 recording |
+
+Every added constraint was satisfied by the same trials that already passed, so the scores did not
+change: joint success BEFORE 0.667, AFTER 1.000, delta +0.333, 95% CI [+0.125, +0.500],
+INSUFFICIENT_SENSITIVITY. No seed search, one pass.
 
 ## History: one earlier design, discarded
 

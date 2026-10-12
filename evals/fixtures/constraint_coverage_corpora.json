@@ -157,6 +157,15 @@
       "selection_only_label": false,
       "share_full": 0.1028
     },
+    "bundled_demo": {
+      "full": 24,
+      "n_tasks": 24,
+      "partial": 0,
+      "partial_reasons": {},
+      "selection_only": 0,
+      "selection_only_label": false,
+      "share_full": 1.0
+    },
     "predictive_validity_44_tool_sets": {
       "by_group": {
         "call_constraints_server": {

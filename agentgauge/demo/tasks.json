@@ -4,6 +4,11 @@
     "description": "Reply to the customer on issue 4812 saying we have reproduced the crash and a fix is coming this week.",
     "constraints": [
       {
+        "param": "ticket_id",
+        "kind": "contains",
+        "gold_value": "4812"
+      },
+      {
         "param": "text",
         "kind": "contains",
         "gold_value": "fix"
@@ -14,6 +19,11 @@
     "tool_name": "ticket_remark",
     "description": "For the team's eyes only, jot down on issue 4812 that the crash comes from the image cache.",
     "constraints": [
+      {
+        "param": "ticket_id",
+        "kind": "contains",
+        "gold_value": "4812"
+      },
       {
         "param": "text",
         "kind": "contains",
@@ -26,6 +36,11 @@
     "description": "Issue 4812 has nobody on it yet; give it to Dana to own.",
     "constraints": [
       {
+        "param": "ticket_id",
+        "kind": "contains",
+        "gold_value": "4812"
+      },
+      {
         "param": "assignee",
         "kind": "contains",
         "gold_value": "dana"
@@ -36,6 +51,11 @@
     "tool_name": "ticket_delegate",
     "description": "Dana is going on leave, so shift her issue 4812 over to Marcus and let Dana know it left her plate.",
     "constraints": [
+      {
+        "param": "ticket_id",
+        "kind": "contains",
+        "gold_value": "4812"
+      },
       {
         "param": "assignee",
         "kind": "contains",
@@ -70,6 +90,11 @@
     "description": "On issue 3090, let the customer know their refund was processed today.",
     "constraints": [
       {
+        "param": "ticket_id",
+        "kind": "contains",
+        "gold_value": "3090"
+      },
+      {
         "param": "text",
         "kind": "contains",
         "gold_value": "refund"
@@ -80,6 +105,11 @@
     "tool_name": "ticket_remark",
     "description": "Leave a private heads-up on issue 3090 that this customer has escalated twice before and is sensitive about delays.",
     "constraints": [
+      {
+        "param": "ticket_id",
+        "kind": "contains",
+        "gold_value": "3090"
+      },
       {
         "param": "text",
         "kind": "contains",
@@ -92,6 +122,11 @@
     "description": "Nobody has picked up issue 3090 so far; put the payments team in charge of it.",
     "constraints": [
       {
+        "param": "ticket_id",
+        "kind": "contains",
+        "gold_value": "3090"
+      },
+      {
         "param": "assignee",
         "kind": "contains",
         "gold_value": "payments"
@@ -102,6 +137,11 @@
     "tool_name": "ticket_delegate",
     "description": "Issue 3090 is currently with Priya, but it belongs with the payments team; pass it over from her.",
     "constraints": [
+      {
+        "param": "ticket_id",
+        "kind": "contains",
+        "gold_value": "3090"
+      },
       {
         "param": "assignee",
         "kind": "contains",
@@ -136,6 +176,11 @@
     "description": "Write back to the person who reported issue 7755 and ask which browser version they use.",
     "constraints": [
       {
+        "param": "ticket_id",
+        "kind": "contains",
+        "gold_value": "7755"
+      },
+      {
         "param": "text",
         "kind": "contains",
         "gold_value": "browser"
@@ -147,9 +192,19 @@
     "description": "Record an internal-only reminder on issue 7755 to check the server logs from the 12th.",
     "constraints": [
       {
+        "param": "ticket_id",
+        "kind": "contains",
+        "gold_value": "7755"
+      },
+      {
         "param": "text",
         "kind": "contains",
         "gold_value": "logs"
+      },
+      {
+        "param": "text",
+        "kind": "contains",
+        "gold_value": "12"
       }
     ]
   },
@@ -157,6 +212,11 @@
     "tool_name": "ticket_assign",
     "description": "Issue 7755 is sitting unowned; make Marcus responsible for it.",
     "constraints": [
+      {
+        "param": "ticket_id",
+        "kind": "contains",
+        "gold_value": "7755"
+      },
       {
         "param": "assignee",
         "kind": "contains",
@@ -168,6 +228,11 @@
     "tool_name": "ticket_delegate",
     "description": "Marcus is overloaded; take issue 7755 off him and hand it to Dana, letting him know.",
     "constraints": [
+      {
+        "param": "ticket_id",
+        "kind": "contains",
+        "gold_value": "7755"
+      },
       {
         "param": "assignee",
         "kind": "contains",
@@ -202,6 +267,11 @@
     "description": "Tell the requester of issue 1203 that we need their order number before we can continue.",
     "constraints": [
       {
+        "param": "ticket_id",
+        "kind": "contains",
+        "gold_value": "1203"
+      },
+      {
         "param": "text",
         "kind": "contains",
         "gold_value": "order"
@@ -212,6 +282,11 @@
     "tool_name": "ticket_remark",
     "description": "Add a staff-only remark on issue 1203: I suspect a regression from last week's release.",
     "constraints": [
+      {
+        "param": "ticket_id",
+        "kind": "contains",
+        "gold_value": "1203"
+      },
       {
         "param": "text",
         "kind": "contains",
@@ -224,6 +299,11 @@
     "description": "No one is looking after issue 1203 yet, so let Priya take it on.",
     "constraints": [
       {
+        "param": "ticket_id",
+        "kind": "contains",
+        "gold_value": "1203"
+      },
+      {
         "param": "assignee",
         "kind": "contains",
         "gold_value": "priya"
@@ -234,6 +314,11 @@
     "tool_name": "ticket_delegate",
     "description": "Hand issue 1203 over from Priya to Marcus since she changed teams.",
     "constraints": [
+      {
+        "param": "ticket_id",
+        "kind": "contains",
+        "gold_value": "1203"
+      },
       {
         "param": "assignee",
         "kind": "contains",
