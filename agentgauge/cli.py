@@ -12,7 +12,7 @@ import typer
 from rich.console import Console
 
 from agentgauge import __version__
-from agentgauge.audit import AuditReport, run_audit
+from agentgauge.audit import AuditReport, CoverageSummary, run_audit, summarize_constraint_coverage
 from agentgauge.client import cleanup_connection, connect_http, connect_stdio
 from agentgauge.constraints import BlindTask, constraint_satisfaction
 from agentgauge.fixer import (
@@ -189,7 +189,12 @@ def diff(
     helped, which `agentgauge lint`'s static rules mostly do not validate on
     their own (see README.md's per-rule measured-effect table).
 
-    Exits 1 on a REGRESSION verdict. See reports/v2_2_optimal_allocation.md for
+    Exit codes: 0 = IMPROVEMENT, NO_CHANGE, INSUFFICIENT_SENSITIVITY, or CEILING / FLOOR (every
+    trial in both arms scored 1.0 / 0.0: no delta is reported, the task set has no headroom or no
+    signal -- a valid finding, not a failure); 1 = REGRESSION; 2 = usage error, failed audit, or
+    backend unreachable.
+
+    See reports/v2_2_optimal_allocation.md for
     the measured minimum detectable effect at your --trials count before
     trusting a NO_CHANGE verdict as conclusive, and reports/
     v2_4_task1_blast_radius_audit.md for the causal-chain validation behind
@@ -233,9 +238,17 @@ async def _diff_async(
     after_tools: list[Any] | None = None
     before_stats: TrialCollectionStats | None = None
     after_stats: TrialCollectionStats | None = None
+    coverage: CoverageSummary | None = None  # needs the tasks file, so live runs only
     if replay_before is not None and replay_after is not None:
         before_trials = _load_replay_trials(replay_before)
         after_trials = _load_replay_trials(replay_after)
+        # Same trial-level audit as a live run (a replay file carries no tasks or schemas, so
+        # only the checks that need trial outcomes apply).
+        _trial_audit_or_exit(
+            run_audit([], before_trials=before_trials, after_trials=after_trials),
+            console=console,
+            json_output=json_output,
+        )
     elif tasks_file is not None:
         tasks = _load_tasks_file(tasks_file)
         before_tools = await _introspect_tools(before)
@@ -252,6 +265,7 @@ async def _diff_async(
             json_output=json_output,
             fail_message="Audit failed -- refusing to run live trials. Fix the flagged issue(s) and re-run.",
         )
+        coverage = summarize_constraint_coverage(tasks, before_tools)
         before_trials, before_stats = await _collect_trials(
             before,
             tasks,
@@ -270,32 +284,17 @@ async def _diff_async(
             provider_config=provider_config,
             seed=seed,
         )
-        audit_report = run_audit(
-            tasks,
-            before_tools=before_tools,
-            after_tools=after_tools,
-            before_trials=before_trials,
-            after_trials=after_trials,
+        _trial_audit_or_exit(
+            run_audit(
+                tasks,
+                before_tools=before_tools,
+                after_tools=after_tools,
+                before_trials=before_trials,
+                after_trials=after_trials,
+            ),
+            console=console,
+            json_output=json_output,
         )
-        if not json_output:
-            _print_audit_report(audit_report, console)
-        if not audit_report.passed:
-            if json_output:
-                typer.echo(
-                    json.dumps(
-                        {
-                            "audit_failed": True,
-                            "blocking": [f.detail for f in audit_report.blocking],
-                        },
-                        indent=2,
-                    )
-                )
-            else:
-                console.print(
-                    "[bold red]Audit failed -- refusing to report a diff. "
-                    "Fix the flagged issue(s) and re-run.[/bold red]"
-                )
-            raise typer.Exit(2)
     else:
         console.print(
             "[red]Error: provide either --tasks, or both --replay-before and --replay-after.[/red]"
@@ -305,11 +304,12 @@ async def _diff_async(
     result: DiffResult = diff_from_trials(before_trials, after_trials, threshold=threshold)
 
     if json_output:
+        no_delta = result.verdict in (Verdict.CEILING, Verdict.FLOOR)  # nothing to estimate
         payload = {
             "verdict": result.verdict.value,
-            "delta": result.delta,
-            "ci_lo": result.ci_lo,
-            "ci_hi": result.ci_hi,
+            "delta": None if no_delta else result.delta,
+            "ci_lo": None if no_delta else result.ci_lo,
+            "ci_hi": None if no_delta else result.ci_hi,
             "threshold": result.threshold,
             "message": result.message,
             "before": {
@@ -324,6 +324,7 @@ async def _diff_async(
             },
             "before_cost": _cost_payload(before_stats),
             "after_cost": _cost_payload(after_stats),
+            "constraint_coverage": coverage.as_dict() if coverage else None,
         }
         typer.echo(json.dumps(payload, indent=2))
     else:
@@ -339,10 +340,24 @@ async def _diff_async(
             Verdict.IMPROVEMENT: "green",
             Verdict.NO_CHANGE: "cyan",
             Verdict.INSUFFICIENT_SENSITIVITY: "yellow",
+            Verdict.CEILING: "yellow",
+            Verdict.FLOOR: "yellow",
         }[result.verdict]
+        label = ""
+        if coverage is not None:
+            console.print(coverage.line())
+            if coverage.verdict_is_selection_only:
+                label = " (selection-only)"
         console.print(
-            f"[bold {verdict_color}]{result.verdict.value.upper()}[/bold {verdict_color}]: {result.message}"
+            f"[bold {verdict_color}]{result.verdict.value.upper()}{label}[/bold {verdict_color}]: "
+            f"{result.message}"
         )
+        if label:
+            console.print(
+                "[yellow]Selection-only: more than half the tasks register no argument "
+                "constraint, so this verdict says nothing about whether the agent built correct "
+                "arguments.[/yellow]"
+            )
 
     raise typer.Exit(result.exit_code)
 
@@ -523,6 +538,26 @@ def _schema_audit_or_exit(
         raise typer.Exit(2)
 
 
+def _trial_audit_or_exit(report: AuditReport, *, console: Console, json_output: bool) -> None:
+    """Print the audit findings and raise Exit(2) on a BLOCKING one (live and replay paths)."""
+    if not json_output:
+        _print_audit_report(report, console)
+    if report.passed:
+        return
+    if json_output:
+        typer.echo(
+            json.dumps(
+                {"audit_failed": True, "blocking": [f.detail for f in report.blocking]}, indent=2
+            )
+        )
+    else:
+        console.print(
+            "[bold red]Audit failed -- refusing to report a diff. "
+            "Fix the flagged issue(s) and re-run.[/bold red]"
+        )
+    raise typer.Exit(2)
+
+
 def _print_audit_report(report: AuditReport, console: Console) -> None:
     for f in report.blocking:
         console.print(f"[bold red]AUDIT BLOCK[/bold red] ({f.check}): {f.detail}")
@@ -647,11 +682,13 @@ async def _eval_async(
 
     tools: list[Any] | None = None
     stats: TrialCollectionStats | None = None
+    coverage: CoverageSummary | None = None  # needs the tasks file, so live runs only
     if replay is not None:
         outcomes = _load_replay_trials(replay)
     elif tasks_file is not None:
         tasks = _load_tasks_file(tasks_file)
         tools = list(info.tools)
+        coverage = summarize_constraint_coverage(tasks, tools)
         # Schema-only pass FIRST (reusing the introspection already done for
         # linting above) -- catches a scoring-reference mismatch before any
         # live inference runs, not just before the result is reported.
@@ -721,11 +758,19 @@ async def _eval_async(
             "argument_accuracy_given_correct_selection": rate.argument_accuracy_given_correct_selection,
             "joint_success_rate": rate.joint_success_rate,
             "cost": _cost_payload(stats),
+            "constraint_coverage": coverage.as_dict() if coverage else None,
         }
         typer.echo(json.dumps(payload, indent=2))
     else:
         _print_decomposed(target, rate, console)
         _print_cost_summary(target, stats, console)
+        if coverage is not None:
+            console.print(coverage.line())
+            if coverage.verdict_is_selection_only:
+                console.print(
+                    "[yellow]Selection-only: more than half the tasks register no argument "
+                    "constraint, so these rates say nothing about argument correctness.[/yellow]"
+                )
     if lint_report.flagged:
         raise typer.Exit(1)
 
@@ -807,9 +852,12 @@ async def _lint_async(target: str, *, show_info: bool, json_output: bool) -> Non
 _STARTER_TASKS_TEMPLATE = """[
   {
     "tool_name": "REPLACE_WITH_YOUR_TOOL_NAME",
-    "description": "Describe the user's INTENT in plain language. Never quote the tool name or any required enum/literal value verbatim -- that makes selection trivial regardless of description quality. See reports/predictive_validity_study.md's blind_tasks.py convention for worked examples.",
+    "description": "Open a high-priority ticket in the billing project titled 'Refund not received for order 4417'.",
+    "note": "WORKED EXAMPLE of FULL argument coverage -- replace it. Describe the user's INTENT; never quote the tool name. Give every required parameter of the tool a constraint, and constrain every value the task text states (here: the project, the title, the order number and the priority are all checked). A task with no constraints only checks that the right tool was picked (`agentgauge diff` reports it as selection-only). Kinds: enum, contains, format, range, numeric_equals.",
     "constraints": [
-      {"param": "some_param", "kind": "enum", "gold_value": "expected_value"}
+      {"param": "project", "kind": "enum", "gold_value": "billing"},
+      {"param": "title", "kind": "contains", "gold_value": "4417"},
+      {"param": "priority", "kind": "enum", "gold_value": "high"}
     ]
   }
 ]
