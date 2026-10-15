@@ -2,14 +2,21 @@ from __future__ import annotations
 
 import asyncio
 import json
+import os
+import shutil
 import sys
 import time
+from collections.abc import Coroutine
 from dataclasses import dataclass
+from importlib import resources
 from pathlib import Path
-from typing import Annotated, Any
+from types import SimpleNamespace
+from typing import Annotated, Any, TypeVar
 
+import httpx
 import typer
 from rich.console import Console
+from rich.markup import escape
 
 from agentgauge import __version__
 from agentgauge.audit import AuditReport, CoverageSummary, run_audit, summarize_constraint_coverage
@@ -27,7 +34,7 @@ from agentgauge.fixer import (
 from agentgauge.harness import DecomposedRate, DiffResult, TrialOutcome, Verdict, diff_from_trials
 from agentgauge.linter import LintReport, lint_tool_set
 from agentgauge.provider_config import create_provider, load_provider_config
-from agentgauge.providers import MockProvider, OllamaProvider, Provider
+from agentgauge.providers import MockProvider, OllamaProvider, Provider, ProviderUnreachableError
 from agentgauge.report import render_html, render_json_stable, render_text
 from agentgauge.runner import RunResult, run_tasks
 from agentgauge.scorer import score_all
@@ -92,12 +99,83 @@ def main(
 # ─────────────────────────────────────────────────────────────────────────────
 
 
+class CliError(Exception):
+    """A user-facing failure: printed as one `Error: ...` line (plus optional hint), exit code 2."""
+
+    def __init__(self, message: str, *, hint: str | None = None) -> None:
+        super().__init__(message)
+        self.hint = hint
+
+
+_T = TypeVar("_T")
+
+# Shown whenever the live model backend is unavailable: each alternative needs no model at all.
+_NO_MODEL_HINT = (
+    "No model? Try `agentgauge demo` (bundled recorded run), `agentgauge diff --replay-before "
+    "<before.json> --replay-after <after.json>`, or `agentgauge lint <server.py>` (no LLM). "
+    "(`--mock` cannot produce a verdict.)"
+)
+
+
+def _fail(message: str, *, hint: str | None = None) -> typer.Exit:
+    """Print `Error: <message>` (and an optional hint) to stderr and return Exit(2) to raise."""
+    typer.echo(f"Error: {message}", err=True)
+    if hint:
+        typer.echo(hint, err=True)
+    return typer.Exit(2)
+
+
+def _run(coro: Coroutine[Any, Any, _T]) -> _T:
+    """`asyncio.run` that turns expected user-facing failures into one-line errors (exit 2)
+    instead of a traceback. Unexpected exceptions still propagate untouched."""
+    try:
+        return asyncio.run(coro)
+    except CliError as exc:
+        raise _fail(str(exc), hint=exc.hint) from None
+    except ProviderUnreachableError as exc:
+        raise _fail(str(exc), hint=_NO_MODEL_HINT) from None
+    except httpx.ConnectError as exc:
+        # Non-Ollama adapters (--provider-config) surface the raw transport error.
+        raise _fail(f"Cannot reach the model endpoint: {exc}", hint=_NO_MODEL_HINT) from None
+
+
+def _check_server_target(target: str) -> None:
+    """Fail fast, before spawning a subprocess, if a file-path target cannot be a server script.
+
+    Without this, a typo'd path spawns `python <path>`, which dies and surfaces as a ~100-line
+    async traceback ending in `McpError: Connection closed`. HTTP/SSE URLs are not checked here.
+    """
+    path = Path(target)
+    if not path.exists():
+        raise CliError(f"server script not found: {target}")
+    if not path.is_file():
+        raise CliError(f"server path is not a file: {target}")
+    if not os.access(path, os.R_OK):
+        raise CliError(f"server script is not readable: {target}")
+
+
+def _is_url(target: str) -> bool:
+    return target.startswith(("http://", "https://"))
+
+
 async def _connect(target: str) -> tuple[Any, Any, str | None]:
-    if target.startswith("http://") or target.startswith("https://"):
+    if _is_url(target):
         client, ctx = await connect_http(target)
         return client, ctx, target
+    _check_server_target(target)
     client, ctx = await connect_stdio(sys.executable, [target])
     return client, ctx, None
+
+
+async def _preflight_provider(provider: Provider) -> None:
+    """Cheap reachability probe before any trial, for providers that offer one (Ollama).
+
+    A dead backend then fails in ~3 s with one line, not after ~25 s of connect timeouts.
+    Providers without `ensure_reachable` (mock, hosted adapters) are skipped.
+    """
+    check = getattr(provider, "ensure_reachable", None)
+    if check is not None:
+        await check()
 
 
 def _print_lint_report(report: LintReport, console: Console, *, show_info: bool) -> None:
@@ -126,8 +204,18 @@ def _print_lint_report(report: LintReport, console: Console, *, show_info: bool)
 
 @app.command()
 def diff(
-    before: Annotated[str, typer.Argument(help="Path to the 'before' MCP server script")],
-    after: Annotated[str, typer.Argument(help="Path to the 'after' MCP server script")],
+    before: Annotated[
+        str | None,
+        typer.Argument(
+            help="Path to the 'before' MCP server script (not needed with --replay-before/after)"
+        ),
+    ] = None,
+    after: Annotated[
+        str | None,
+        typer.Argument(
+            help="Path to the 'after' MCP server script (not needed with --replay-before/after)"
+        ),
+    ] = None,
     tasks_file: Annotated[
         Path | None,
         typer.Option("--tasks", help="JSON file of anti-tautology tasks (see `agentgauge init`)"),
@@ -200,7 +288,7 @@ def diff(
     v2_4_task1_blast_radius_audit.md for the causal-chain validation behind
     this harness's flagship claim.
     """
-    asyncio.run(
+    _run(
         _diff_async(
             before,
             after,
@@ -219,8 +307,8 @@ def diff(
 
 
 async def _diff_async(
-    before: str,
-    after: str,
+    before: str | None,
+    after: str | None,
     *,
     tasks_file: Path | None,
     replay_before: Path | None,
@@ -250,7 +338,18 @@ async def _diff_async(
             json_output=json_output,
         )
     elif tasks_file is not None:
+        if before is None or after is None:
+            raise CliError("a live diff needs both <before> and <after> server paths.")
         tasks = _load_tasks_file(tasks_file)
+        # Cheapest checks first: local paths, then (live only) the model backend, all BEFORE
+        # any server subprocess is spawned or any trial is attempted.
+        for server_path in (before, after):
+            if not _is_url(server_path):
+                _check_server_target(server_path)
+        provider, _label = _resolve_provider(
+            model=model, mock=mock, provider_config=provider_config
+        )
+        await _preflight_provider(provider)
         before_tools = await _introspect_tools(before)
         after_tools = await _introspect_tools(after)
         # Schema-only pass FIRST -- catches a scoring-reference mismatch (a
@@ -265,6 +364,8 @@ async def _diff_async(
             json_output=json_output,
             fail_message="Audit failed -- refusing to run live trials. Fix the flagged issue(s) and re-run.",
         )
+        if mock:
+            raise _refuse_mock(len(tasks), trials, console=console, json_output=json_output)
         coverage = summarize_constraint_coverage(tasks, before_tools)
         before_trials, before_stats = await _collect_trials(
             before,
@@ -328,43 +429,83 @@ async def _diff_async(
         }
         typer.echo(json.dumps(payload, indent=2))
     else:
-        _print_decomposed("before", result.before_decomposed, console)
-        console.print()
-        _print_decomposed("after", result.after_decomposed, console)
-        console.print()
-        _print_cost_summary("before", before_stats, console)
-        _print_cost_summary("after", after_stats, console)
-        console.print()
-        verdict_color = {
-            Verdict.REGRESSION: "red",
-            Verdict.IMPROVEMENT: "green",
-            Verdict.NO_CHANGE: "cyan",
-            Verdict.INSUFFICIENT_SENSITIVITY: "yellow",
-            Verdict.CEILING: "yellow",
-            Verdict.FLOOR: "yellow",
-        }[result.verdict]
-        label = ""
-        if coverage is not None:
-            console.print(coverage.line())
-            if coverage.verdict_is_selection_only:
-                label = " (selection-only)"
-        console.print(
-            f"[bold {verdict_color}]{result.verdict.value.upper()}{label}[/bold {verdict_color}]: "
-            f"{result.message}"
-        )
-        if label:
-            console.print(
-                "[yellow]Selection-only: more than half the tasks register no argument "
-                "constraint, so this verdict says nothing about whether the agent built correct "
-                "arguments.[/yellow]"
-            )
+        _print_diff_text(result, before_stats, after_stats, console, coverage=coverage)
 
     raise typer.Exit(result.exit_code)
 
 
+def _print_diff_text(
+    result: DiffResult,
+    before_stats: TrialCollectionStats | None,
+    after_stats: TrialCollectionStats | None,
+    console: Console,
+    *,
+    coverage: CoverageSummary | None = None,
+) -> None:
+    """Human-readable diff report (shared by `diff` and `demo`)."""
+    _print_decomposed("before", result.before_decomposed, console)
+    console.print()
+    _print_decomposed("after", result.after_decomposed, console)
+    console.print()
+    _print_cost_summary("before", before_stats, console)
+    _print_cost_summary("after", after_stats, console)
+    console.print()
+    verdict_color = {
+        Verdict.REGRESSION: "red",
+        Verdict.IMPROVEMENT: "green",
+        Verdict.NO_CHANGE: "cyan",
+        Verdict.INSUFFICIENT_SENSITIVITY: "yellow",
+        Verdict.CEILING: "yellow",
+        Verdict.FLOOR: "yellow",
+    }[result.verdict]
+    label = ""
+    if coverage is not None:
+        console.print(escape(coverage.line()))
+        if coverage.verdict_is_selection_only:
+            label = " (selection-only)"
+    console.print(
+        f"[bold {verdict_color}]{result.verdict.value.upper()}{label}[/bold {verdict_color}]: "
+        f"{result.message}"
+    )
+    if label:
+        console.print(
+            "[yellow]Selection-only: more than half the tasks register no argument constraint, "
+            "so this verdict says nothing about whether the agent built correct arguments.[/yellow]"
+        )
+
+
+def _refuse_mock(n_tasks: int, trials: int, *, console: Console, json_output: bool) -> typer.Exit:
+    """Refuse to report a verdict/measurement from `--mock`; return Exit(2) to raise.
+
+    `MockProvider` answers every prompt with the same canned reply, so every trial scores
+    identically. There is no n-task floor to quote: `audit.check_degenerate_metrics` blocks any
+    run with >= 2 trials (zero variance), and a single trial has no variance to measure at all
+    (`diff_from_trials` would print NO_CHANGE with a zero-width CI). So no mock run can ever
+    yield a meaningful verdict, at any task count. Before this refusal, a 1-task placeholder
+    scaffold + `--mock` printed a confident-looking NO_CHANGE.
+    """
+    message = (
+        f"--mock cannot produce a verdict: MockProvider gives the same canned reply to every "
+        f"prompt, so all {n_tasks * trials} trial(s) ({n_tasks} task(s) x {trials} trial(s)) "
+        "score identically -- no task count changes that (a run of >= 2 trials is blocked by the audit's "
+        "degenerate_metrics gate, and a single trial has no variance). Use a real model, "
+        "`agentgauge demo`, or --replay-before/--replay-after."
+    )
+    if json_output:
+        typer.echo(json.dumps({"mock_refused": True, "message": message}, indent=2))
+    else:
+        console.print(f"[bold red]Error:[/bold red] {message}")
+    return typer.Exit(2)
+
+
 def _load_tasks_file(path: Path) -> list[BlindTask]:
-    with path.open(encoding="utf-8") as f:
-        raw = json.load(f)
+    try:
+        with path.open(encoding="utf-8") as f:
+            raw = json.load(f)
+    except FileNotFoundError:
+        raise CliError(f"tasks file not found: {path}") from None
+    except (OSError, json.JSONDecodeError) as exc:
+        raise CliError(f"cannot read tasks file {path}: {exc}") from None
     return [BlindTask.from_dict(d) for d in raw]
 
 
@@ -542,6 +683,8 @@ def _trial_audit_or_exit(report: AuditReport, *, console: Console, json_output: 
     """Print the audit findings and raise Exit(2) on a BLOCKING one (live and replay paths)."""
     if not json_output:
         _print_audit_report(report, console)
+        if report.findings:
+            console.print()
     if report.passed:
         return
     if json_output:
@@ -560,17 +703,23 @@ def _trial_audit_or_exit(report: AuditReport, *, console: Console, json_output: 
 
 def _print_audit_report(report: AuditReport, console: Console) -> None:
     for f in report.blocking:
-        console.print(f"[bold red]AUDIT BLOCK[/bold red] ({f.check}): {f.detail}")
+        # escape(): details carry labels like "[after]" that Rich would otherwise swallow as markup
+        console.print(f"[bold red]AUDIT BLOCK[/bold red] ({f.check}): {escape(f.detail)}")
     for f in report.warnings:
-        console.print(f"[yellow]AUDIT WARN[/yellow] ({f.check}): {f.detail}")
+        console.print(f"[yellow]AUDIT WARN[/yellow] ({f.check}): {escape(f.detail)}")
 
 
 def _load_replay_trials(path: Path) -> list[TrialOutcome]:
     """Load pre-collected trial outcomes from a JSON file shaped like
     evals/fixtures/predictive_validity/results_raw.json's `run_results` field
     -- lets `diff`/`eval` be tested and used with zero live inference."""
-    with path.open(encoding="utf-8") as f:
-        raw = json.load(f)
+    try:
+        with path.open(encoding="utf-8") as f:
+            raw = json.load(f)
+    except FileNotFoundError:
+        raise CliError(f"replay file not found: {path}") from None
+    except (OSError, json.JSONDecodeError) as exc:
+        raise CliError(f"cannot read replay file {path}: {exc}") from None
     return [TrialOutcome.from_dict(r) for r in raw]
 
 
@@ -642,7 +791,7 @@ def eval_cmd(
     """Lint + single-point task-success measurement (selection vs. argument
     accuracy reported separately — Task 4's decomposition). Not a regression
     diff; use `agentgauge diff` to compare two variants."""
-    asyncio.run(
+    _run(
         _eval_async(
             target,
             tasks_file=tasks_file,
@@ -670,6 +819,14 @@ async def _eval_async(
     json_output: bool,
 ) -> None:
     console = Console()
+    if not _is_url(target):
+        _check_server_target(target)
+    if tasks_file is not None and replay is None:
+        # Live path: confirm the model backend is up before any work (mock/hosted: no-op).
+        provider, _label = _resolve_provider(
+            model=model, mock=mock, provider_config=provider_config
+        )
+        await _preflight_provider(provider)
     client, ctx, _ = await _connect(target)
     try:
         info = await client.introspect()
@@ -699,6 +856,8 @@ async def _eval_async(
             json_output=json_output,
             fail_message="Audit failed -- refusing to run live trials. Fix the flagged issue(s) and re-run.",
         )
+        if mock:
+            raise _refuse_mock(len(tasks), trials, console=console, json_output=json_output)
         outcomes, stats = await _collect_trials(
             target,
             tasks,
@@ -765,7 +924,7 @@ async def _eval_async(
         _print_decomposed(target, rate, console)
         _print_cost_summary(target, stats, console)
         if coverage is not None:
-            console.print(coverage.line())
+            console.print(escape(coverage.line()))
             if coverage.verdict_is_selection_only:
                 console.print(
                     "[yellow]Selection-only: more than half the tasks register no argument "
@@ -797,7 +956,7 @@ def lint(
     reports/v2_1_severity_gate.md for measured precision/recall/false-alarm rate
     and reports/v2_3_task2_retiering.md for the causal-impact-based re-tiering.
     """
-    asyncio.run(_lint_async(target, show_info=show_info, json_output=json_output))
+    _run(_lint_async(target, show_info=show_info, json_output=json_output))
 
 
 async def _lint_async(target: str, *, show_info: bool, json_output: bool) -> None:
@@ -863,76 +1022,79 @@ _STARTER_TASKS_TEMPLATE = """[
 ]
 """
 
-_GITHUB_ACTION_TEMPLATE = """name: agentgauge
+_GITHUB_ACTION_TEMPLATE = """\
+# agentgauge -- GitHub Actions workflow scaffolded by `agentgauge init`.
+#
+# MODE: LINT-ONLY BY DEFAULT. Out of the box this runs the `lint` job only: a deterministic,
+# zero-LLM check (no Ollama, no model download, no API keys, no cost) that fails the PR on a
+# BLOCKING finding. The `live-diff` job below is OFF until you opt in.
+#
+# TO SWITCH ON THE LIVE before/after DIFF (statistical task-success regression gate):
+#   1. Repo Settings > Secrets and variables > Actions > Variables > New repository variable:
+#      AGENTGAUGE_LIVE_DIFF = true
+#   2. Write real tasks in agentgauge_tasks.json (see `agentgauge init` output).
+#   Cost/time: the job installs Ollama on the runner and pulls gemma2:9b (~5.4 GB). GitHub-hosted
+#   runners have no GPU, so every model call runs on CPU -- expect it to be slow for ~100
+#   tasks (the job is capped at 90 minutes). To skip a runner-hosted model entirely,
+#   run `agentgauge diff` locally or on your own GPU runner and commit the recorded trials, then
+#   call `agentgauge diff --replay-before before.json --replay-after after.json` in CI.
+#
+# Edit the two `path/to/your_server.py` placeholders below to your real MCP server path.
+name: agentgauge
 on:
   pull_request:
     paths:
       - "path/to/your_server.py"   # <-- edit to your actual MCP server path(s)
+permissions:
+  contents: read
 jobs:
-  agentgauge:
+  lint:
+    # ACTIVE by default. No model needed.
     runs-on: ubuntu-latest
-    permissions:
-      pull-requests: write   # required to comment the results table on the PR
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install agentgauge
+        run: pip install agentgauge-harness
+      - name: Lint (deterministic, zero LLM cost; fails on BLOCKING findings only)
+        shell: bash   # bash with pipefail, so the lint exit code survives the tee below
+        run: agentgauge lint ./path/to/your_server.py | tee -a "$GITHUB_STEP_SUMMARY"
+
+  live-diff:
+    # OPT-IN. Skipped unless the repository variable AGENTGAUGE_LIVE_DIFF is 'true'.
+    if: ${{ vars.AGENTGAUGE_LIVE_DIFF == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      AGENTGAUGE_MODEL: gemma2:9b
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0   # need the base-branch file too, for the diff step
-
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-
       - name: Install agentgauge
         run: pip install agentgauge-harness
-
-      - name: Lint (deterministic, zero LLM cost)
-        id: lint
-        run: agentgauge lint ./path/to/your_server.py --json > lint.json || true
-
-      - name: Diff against base branch (requires Ollama reachable from the runner)
-        id: diff
+      - name: Install Ollama and pull the model
+        shell: bash
         run: |
-          git show origin/${{ github.base_ref }}:path/to/your_server.py > /tmp/before_server.py
+          curl -fsSL https://ollama.com/install.sh | sh
+          (ollama serve > ollama.log 2>&1 &)
+          for _ in $(seq 1 30); do
+            curl -fsS http://localhost:11434/api/version && break
+            sleep 2
+          done
+          ollama pull "$AGENTGAUGE_MODEL"
+      - name: Diff against base branch (fails on REGRESSION or a failed audit)
+        shell: bash
+        run: |
+          git show "origin/${{ github.base_ref }}:path/to/your_server.py" > /tmp/before_server.py
           agentgauge diff /tmp/before_server.py ./path/to/your_server.py \\
-            --tasks ./agentgauge_tasks.json --json > diff.json || true
-
-      - name: Comment results on the PR
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const fs = require('fs');
-            const lint = JSON.parse(fs.readFileSync('lint.json', 'utf8'));
-            const diff = JSON.parse(fs.readFileSync('diff.json', 'utf8'));
-            const blockingLines = lint.blocking.map(v => `- **${v.check}** (${v.tool_name}): ${v.detail}`).join('\\n') || '_none_';
-            const advisoryLines = lint.advisory.map(v => `- **${v.check}** (${v.tool_name}): ${v.detail}`).join('\\n') || '_none_';
-            const body = [
-              '### agentgauge results',
-              '',
-              `**Linter:** ${lint.n_blocking} BLOCKING finding(s) (fails CI), ${lint.n_advisory} ADVISORY finding(s) (does not fail CI)`,
-              blockingLines,
-              advisoryLines,
-              '',
-              `**Regression harness:** verdict = \\`${diff.verdict}\\``,
-              `delta=${diff.delta.toFixed(3)}, 95% CI [${diff.ci_lo.toFixed(3)}, ${diff.ci_hi.toFixed(3)}]`,
-              '',
-              `| | selection accuracy | argument accuracy | joint success |`,
-              `|---|---|---|---|`,
-              `| before | ${diff.before.selection_accuracy.toFixed(3)} | ${diff.before.argument_accuracy_given_correct_selection ?? 'n/a'} | ${diff.before.joint_success_rate.toFixed(3)} |`,
-              `| after  | ${diff.after.selection_accuracy.toFixed(3)} | ${diff.after.argument_accuracy_given_correct_selection ?? 'n/a'} | ${diff.after.joint_success_rate.toFixed(3)} |`,
-              '',
-              diff.message,
-            ].join('\\n');
-            await github.rest.issues.createComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
-              body,
-            });
-
-      - name: Fail on regression or BLOCKING lint finding (ADVISORY does not fail CI)
-        run: |
-          agentgauge lint ./path/to/your_server.py
-          agentgauge diff /tmp/before_server.py ./path/to/your_server.py --tasks ./agentgauge_tasks.json
+            --tasks ./agentgauge_tasks.json --model "$AGENTGAUGE_MODEL" \\
+            | tee -a "$GITHUB_STEP_SUMMARY"
 """
 
 
@@ -946,18 +1108,25 @@ def init(
     workflow_dir = out_dir / ".github" / "workflows"
     workflow_path = workflow_dir / "agentgauge.yml"
 
-    if tasks_path.exists():
-        console.print(f"[yellow]{tasks_path} already exists -- not overwriting.[/yellow]")
-    else:
-        tasks_path.write_text(_STARTER_TASKS_TEMPLATE, encoding="utf-8")
-        console.print(f"[green]Wrote {tasks_path}[/green]")
+    try:
+        workflow_dir.mkdir(parents=True, exist_ok=True)  # also creates out_dir (and parents)
+    except OSError as exc:
+        raise _fail(f"cannot create output directory {out_dir}: {exc.strerror or exc}") from None
 
-    workflow_dir.mkdir(parents=True, exist_ok=True)
-    if workflow_path.exists():
-        console.print(f"[yellow]{workflow_path} already exists -- not overwriting.[/yellow]")
-    else:
-        workflow_path.write_text(_GITHUB_ACTION_TEMPLATE, encoding="utf-8")
-        console.print(f"[green]Wrote {workflow_path}[/green]")
+    try:
+        if tasks_path.exists():
+            console.print(f"[yellow]{tasks_path} already exists -- not overwriting.[/yellow]")
+        else:
+            tasks_path.write_text(_STARTER_TASKS_TEMPLATE, encoding="utf-8")
+            console.print(f"[green]Wrote {tasks_path}[/green]")
+
+        if workflow_path.exists():
+            console.print(f"[yellow]{workflow_path} already exists -- not overwriting.[/yellow]")
+        else:
+            workflow_path.write_text(_GITHUB_ACTION_TEMPLATE, encoding="utf-8")
+            console.print(f"[green]Wrote {workflow_path}[/green]")
+    except OSError as exc:
+        raise _fail(f"cannot write scaffold files under {out_dir}: {exc.strerror or exc}") from None
 
     console.print(
         "\nNext steps:\n"
@@ -965,6 +1134,145 @@ def init(
         "  2. Run `agentgauge lint <your_server.py>` (zero LLM cost).\n"
         "  3. Run `agentgauge diff <before.py> <after.py> --tasks agentgauge_tasks.json` "
         "before merging a description/schema change.\n"
+        "  New here? `agentgauge demo` replays a bundled before/after run -- no model needed.\n"
+    )
+
+
+_DEMO_FILES = (
+    "before_server.py",
+    "after_server.py",
+    "tasks.json",
+    "replay_before.json",
+    "replay_after.json",
+    "PROVENANCE.md",
+)
+
+
+@app.command()
+def demo(
+    extract: Annotated[
+        Path | None,
+        typer.Option(
+            "--extract",
+            help=(
+                "Copy the bundled demo servers, tasks file and recorded replays into this "
+                "directory (created if missing) so you can run a live `agentgauge diff` on them."
+            ),
+        ),
+    ] = None,
+) -> None:
+    """Replay a bundled, pre-recorded before/after diff -- no GPU, keys or network needed.
+
+    The recording is a real gemma2:9b run over a tiny illustrative server pair (see
+    agentgauge/demo/PROVENANCE.md). With --extract DIR, copy the pair out instead of replaying.
+    """
+    console = Console()
+    assets = resources.files("agentgauge.demo")
+
+    if extract is not None:
+        _extract_demo(assets, extract, console)
+        return
+
+    with (
+        resources.as_file(assets / "replay_before.json") as before_path,
+        resources.as_file(assets / "replay_after.json") as after_path,
+    ):
+        before_trials = _load_demo_replay(before_path)
+        after_trials = _load_demo_replay(after_path)
+    with resources.as_file(assets / "tasks.json") as tasks_path:
+        demo_tasks = _load_tasks_file(tasks_path)
+    from agentgauge.demo import before_server  # tool schemas, so required params are known
+
+    demo_tools = [
+        SimpleNamespace(name=t["name"], inputSchema=t["inputSchema"]) for t in before_server.TOOLS
+    ]
+    coverage = summarize_constraint_coverage(demo_tasks, demo_tools)
+    result = diff_from_trials(before_trials, after_trials)
+    n = len(before_trials)
+    console.print(
+        f"[bold]agentgauge demo[/bold]: replaying {n} recorded gemma2:9b trials per arm "
+        "(no model, GPU, keys or network used)\n"
+    )
+    _trial_audit_or_exit(
+        run_audit([], before_trials=before_trials, after_trials=after_trials),
+        console=console,
+        json_output=False,
+    )
+    _print_diff_text(result, None, None, console, coverage=coverage)
+    console.print()
+    for line in _demo_explanation(result, n):
+        console.print(line)
+    console.print(
+        "\nRun it live on the same pair: `agentgauge demo --extract demo_files`, then "
+        "`agentgauge diff demo_files/before_server.py demo_files/after_server.py "
+        "--tasks demo_files/tasks.json` (needs Ollama + gemma2:9b). A live run is a "
+        "fresh sample and may differ from this recording."
+    )
+
+
+def _load_demo_replay(path: Path) -> list[TrialOutcome]:
+    try:
+        return _load_replay_trials(path)
+    except CliError as exc:
+        raise _fail(str(exc)) from None
+
+
+def _demo_explanation(result: DiffResult, n_tasks: int) -> list[str]:
+    """Two plain-language lines explaining a demo verdict (derived from the actual result)."""
+    b, a = result.before_decomposed, result.after_decomposed
+    line1 = (
+        f"What happened: with identical tool names, only the descriptions changed -- joint success "
+        f"went {b.joint_success_rate:.2f} -> {a.joint_success_rate:.2f} "
+        f"(delta {result.delta:+.2f}, 95% CI [{result.ci_lo:+.2f}, {result.ci_hi:+.2f}], "
+        f"{n_tasks} tasks)."
+    )
+    why = {
+        Verdict.INSUFFICIENT_SENSITIVITY: (
+            f"Why this verdict: {n_tasks} tasks is too few for the CI to be narrower than 2x the "
+            f"{result.threshold:.2f} threshold, so the harness declines to call it either way; "
+            "a real gate needs ~100 tasks per arm."
+        ),
+        Verdict.IMPROVEMENT: (
+            "Why this verdict: the whole 95% CI sits above the regression threshold, so the "
+            "description rewrite is a measured improvement, not noise."
+        ),
+        Verdict.NO_CHANGE: (
+            "Why this verdict: the 95% CI does not clear the threshold in either direction at "
+            "this task count."
+        ),
+        Verdict.REGRESSION: (
+            "Why this verdict: the whole 95% CI sits below minus the threshold, so the change "
+            "made the agent worse."
+        ),
+        Verdict.CEILING: "Why this verdict: every trial in both arms succeeded; no headroom.",
+        Verdict.FLOOR: "Why this verdict: every trial in both arms failed; no signal.",
+    }[result.verdict]
+    return [line1, why]
+
+
+def _extract_demo(assets: Any, dest: Path, console: Console) -> None:
+    """Copy the bundled demo files into `dest`; never overwrite anything already there."""
+    try:
+        dest.mkdir(parents=True, exist_ok=True)
+    except OSError as exc:
+        raise _fail(f"cannot create directory {dest}: {exc.strerror or exc}") from None
+    clashes = [name for name in _DEMO_FILES if (dest / name).exists()]
+    if clashes:
+        raise _fail(f"refusing to overwrite existing file(s) in {dest}: {', '.join(clashes)}")
+    try:
+        for name in _DEMO_FILES:
+            with resources.as_file(assets / name) as src:
+                shutil.copyfile(src, dest / name)
+    except OSError as exc:
+        raise _fail(f"cannot write demo files to {dest}: {exc.strerror or exc}") from None
+    console.print(f"[green]Extracted {len(_DEMO_FILES)} demo files to {dest}[/green]")
+    console.print(
+        "\nTry it:\n"
+        f"  agentgauge lint {dest / 'before_server.py'}\n"
+        f"  agentgauge diff --replay-before {dest / 'replay_before.json'} "
+        f"--replay-after {dest / 'replay_after.json'}\n"
+        f"  agentgauge diff {dest / 'before_server.py'} {dest / 'after_server.py'} "
+        f"--tasks {dest / 'tasks.json'}   # live: needs Ollama + gemma2:9b\n"
     )
 
 
@@ -1055,8 +1363,8 @@ def scan(
         bool, typer.Option("--mock", help="Use mock LLM provider (no network needed)")
     ] = False,
 ) -> None:
-    """Scan an MCP server and print an agent-readiness score."""
-    asyncio.run(_scan_async(target, model=model, trials=trials, out=out, mock=mock))
+    """(legacy) Scan an MCP server and print an agent-readiness score."""
+    _run(_scan_async(target, model=model, trials=trials, out=out, mock=mock))
 
 
 async def _scan_async(
@@ -1069,10 +1377,13 @@ async def _scan_async(
 ) -> float:
     console = Console()
     provider = MockProvider() if mock else OllamaProvider(model)
+    if not _is_url(target):
+        _check_server_target(target)
+    await _preflight_provider(provider)
 
     console.print(f"[dim]Connecting to [bold]{target}[/bold]...[/dim]")
 
-    if target.startswith("http://") or target.startswith("https://"):
+    if _is_url(target):
         client, ctx = await connect_http(target)
         base_url: str | None = target
     else:
@@ -1152,8 +1463,8 @@ def fix(
         bool, typer.Option("--mock", help="Use mock LLM provider (no network needed)")
     ] = False,
 ) -> None:
-    """Auto-generate improved descriptions and schema metadata for low-scoring tools."""
-    asyncio.run(
+    """(legacy) Auto-generate improved descriptions and schema metadata for low-scoring tools."""
+    _run(
         _fix_async(
             target,
             dims=dims,
@@ -1202,6 +1513,7 @@ async def _fix_async(
     else:
         generator = OllamaProvider(generator_model)
         judge = OllamaProvider(judge_model)
+    await _preflight_provider(generator)
 
     # Introspect tools by connecting to the server
     client, ctx = await connect_stdio(sys.executable, [target])
@@ -1286,8 +1598,8 @@ def ci(
         ),
     ] = 0,
 ) -> None:
-    """Scan an MCP server and exit 1 if the overall score is below --min-score."""
-    overall = asyncio.run(_scan_async(target, model=model, trials=trials, out=None, mock=mock))
+    """(legacy) Scan an MCP server and exit 1 if the overall score is below --min-score."""
+    overall = _run(_scan_async(target, model=model, trials=trials, out=None, mock=mock))
     if overall < min_score:
         raise typer.Exit(1)
 
@@ -1316,8 +1628,8 @@ def try_cmd(
         bool, typer.Option("--mock", help="Use mock LLM provider (no network needed)")
     ] = False,
 ) -> None:
-    """Scan + preview fixes in one read-only command. Writes nothing."""
-    asyncio.run(
+    """(legacy) Scan + preview fixes in one read-only command. Writes nothing."""
+    _run(
         _try_async(
             target,
             model=model,
@@ -1385,7 +1697,7 @@ _ATTRIBUTION_COST_FINDING = (
 )
 
 
-@app.command()
+@app.command(hidden=True)
 def attribute(
     experimental: Annotated[
         bool,
