@@ -76,21 +76,62 @@ def compute_num_ctx(messages: list[Message]) -> int:
     return 1 << (needed - 1).bit_length()
 
 
-def check_truncation(prompt_eval_count: int | None, num_ctx: int, model: str) -> None:
-    """Raise OllamaTruncationError if `prompt_eval_count` shows the prompt hit `num_ctx`.
+# Lower-bound token estimate (used only for the context-shift signature below). The measured
+# maximum bytes/token over 316 corpus prompts on llama3.1:8b was 5.50, so 6.0 gives
+# L <= true token count; per-message overhead is kept below the real template cost.
+_LOWER_BOUND_BYTES_PER_TOKEN: float = 6.0
+_LOWER_BOUND_PER_MESSAGE_TOKENS: int = 4
+_SHIFT_BELOW_FRACTION: float = 0.9  # count must be under 0.9 * L to look truncated
+_SHIFT_SLACK_FRACTION: float = 0.03  # +-3% of num_ctx // 2 ...
+_SHIFT_MIN_SLACK: int = 8  # ... but never less than 8 tokens
 
-    Exactly checkable: when a prompt exceeds num_ctx Ollama trims it to fit, so
-    prompt_eval_count lands at (about) num_ctx. A count far *below* the estimate is NOT
-    treated as truncation: Ollama's KV-cache prefix reuse reports only the newly evaluated
-    tokens, so a cached prefix legitimately lowers the count and the two cases cannot be
-    told apart from the response alone. A missing count (None) is not checkable and passes.
+
+def lower_bound_prompt_tokens(messages: list[Message]) -> int:
+    """Under-estimate of the tokens Ollama will evaluate for `messages` (L <= true count)."""
+    total = 0
+    for m in messages:
+        n_bytes = len(m.role.encode("utf-8")) + len(m.content.encode("utf-8"))
+        total += _LOWER_BOUND_PER_MESSAGE_TOKENS + math.ceil(n_bytes / _LOWER_BOUND_BYTES_PER_TOKEN)
+    return total
+
+
+def check_truncation(
+    prompt_eval_count: int | None,
+    num_ctx: int,
+    model: str,
+    lower_bound_tokens: int | None = None,
+) -> None:
+    """Raise OllamaTruncationError if `prompt_eval_count` shows the prompt was truncated.
+
+    Two signatures, because truncation reporting is version-dependent:
+
+    1. Window filled: `prompt_eval_count >= num_ctx - 64` (the naive expectation). Always
+       checked.
+    2. Context shift: MEASURED on Ollama 0.40.3 / llama3.1:8b, a truncated prompt reports
+       about num_ctx/2 + 2 (context shift keeps half the window), NOT num_ctx -- e.g. the
+       5307-token google_workspace selection prompt reported 2050 at num_ctx=4096 (3 runs),
+       1502 at 3000, 1026 at 2048, and 5325 (no truncation) at 8192. Checked only when
+       `lower_bound_tokens` (L, a guaranteed under-estimate) is given: raise when the count
+       is < 0.9*L AND within max(8, 3%) tokens of num_ctx//2, or within 64 of num_ctx.
+       Other Ollama versions may behave differently, hence both signatures.
+
+    A count below L that is NOWHERE near num_ctx/2 is NOT treated as truncation: KV-cache
+    prefix reuse reports only the newly evaluated tokens, so a cached prefix legitimately
+    lowers the count. A missing count (None) is not checkable and passes.
     """
     if prompt_eval_count is None:
         return
-    if prompt_eval_count >= num_ctx - TRUNCATION_MARGIN:
+    shifted = False
+    if lower_bound_tokens is not None and prompt_eval_count < _SHIFT_BELOW_FRACTION * (
+        lower_bound_tokens
+    ):
+        half = num_ctx // 2
+        slack = max(_SHIFT_MIN_SLACK, math.ceil(_SHIFT_SLACK_FRACTION * half))
+        shifted = abs(prompt_eval_count - half) <= slack
+    if shifted or prompt_eval_count >= num_ctx - TRUNCATION_MARGIN:
         raise OllamaTruncationError(
             f"Ollama model '{model}' evaluated {prompt_eval_count} prompt tokens with "
-            f"num_ctx={num_ctx}: the prompt filled the context window and was probably "
+            f"num_ctx={num_ctx}: the prompt did not fit the context window and was "
             "truncated, so the model did not see the whole catalog. Raise num_ctx (the "
             "token estimator may be too low for this text) or shorten the tool catalog."
         )
@@ -107,7 +148,8 @@ class OllamaProvider:
 
     Context window: Ollama silently truncates prompts longer than `num_ctx`, so every call
     sets `num_ctx` from `compute_num_ctx` (>= 4096, sized to the prompt) and afterwards
-    raises `OllamaTruncationError` if `prompt_eval_count` shows the window was filled.
+    raises `OllamaTruncationError` if `prompt_eval_count` shows truncation (window filled, or
+    the context-shift signature of about num_ctx/2 measured on Ollama 0.40.3).
     """
 
     BASE_URL = "http://localhost:11434"
@@ -132,7 +174,12 @@ class OllamaProvider:
             resp = await client.post(f"{self.BASE_URL}/api/chat", json=payload)
             resp.raise_for_status()
             body = resp.json()
-        check_truncation(body.get("prompt_eval_count"), num_ctx, self._model)
+        check_truncation(
+            body.get("prompt_eval_count"),
+            num_ctx,
+            self._model,
+            lower_bound_prompt_tokens(messages),
+        )
         return body["message"]["content"]
 
 

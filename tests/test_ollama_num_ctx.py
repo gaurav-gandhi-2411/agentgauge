@@ -15,6 +15,7 @@ from agentgauge.providers import (
     check_truncation,
     compute_num_ctx,
     estimate_prompt_tokens,
+    lower_bound_prompt_tokens,
 )
 
 URL = f"{OllamaProvider.BASE_URL}/api/chat"
@@ -131,3 +132,59 @@ async def test_response_below_limit_and_cached_prefix_ok() -> None:
     assert await p.chat(_msg(10)) == "ok"
     assert await p.chat(_msg(10)) == "ok"  # prompt_eval_count=12: cached prefix, not truncation
     assert await p.chat(_msg(10)) == "ok"  # count absent
+
+
+# -- context-shift signature (measured on Ollama 0.40.3: truncated count ~ num_ctx/2 + 2) -----
+
+# Real numbers: the 5307-token google_workspace selection prompt (about 26.5k utf-8 bytes,
+# so L = ceil(bytes/6) ~ 4400) reported 2050 at num_ctx=4096 and 5325 at 8192.
+_L_BIG = 4400
+
+
+@pytest.mark.parametrize(
+    ("count", "num_ctx"),
+    [(2050, 4096), (1502, 3000), (1026, 2048), (2048 - 8, 4096), (2048 + 8, 4096)],
+)
+def test_context_shift_signature_raises(count: int, num_ctx: int) -> None:
+    with pytest.raises(OllamaTruncationError) as exc:
+        check_truncation(count, num_ctx, "llama3.1:8b", _L_BIG)
+    assert f"num_ctx={num_ctx}" in str(exc.value) and "shorten" in str(exc.value)
+
+
+def test_untruncated_count_with_big_prompt_passes() -> None:
+    check_truncation(5325, 8192, "m", _L_BIG)  # measured: no truncation at 8192
+
+
+def test_cached_prefix_low_count_does_not_raise() -> None:
+    # Far below L but nowhere near num_ctx/2 (slack is 62 tokens here): KV-cache reuse.
+    for count in (12, 300, 1200, 1900, 2200, 3500):
+        check_truncation(count, 4096, "m", _L_BIG)
+
+
+def test_shift_signature_needs_count_below_point_nine_l() -> None:
+    check_truncation(2050, 4096, "m", 2200)  # 2050 >= 0.9*2200: plausibly a real count
+    with pytest.raises(OllamaTruncationError):
+        check_truncation(2050, 4096, "m", 2300)  # 2050 < 0.9*2300=2070
+
+
+def test_shift_signature_skipped_without_lower_bound() -> None:
+    check_truncation(2050, 4096, "m")  # old call shape: only the window-filled check
+
+
+def test_old_boundary_still_raises_with_lower_bound() -> None:
+    with pytest.raises(OllamaTruncationError):
+        check_truncation(4096 - TRUNCATION_MARGIN, 4096, "m", _L_BIG)
+    check_truncation(4096 - TRUNCATION_MARGIN - 1, 4096, "m", 100)
+
+
+def test_lower_bound_is_below_estimate_and_scales_with_bytes() -> None:
+    msgs = _msg(6000)
+    assert lower_bound_prompt_tokens(msgs) < estimate_prompt_tokens(msgs)
+    assert lower_bound_prompt_tokens(msgs) >= 1000
+
+
+@respx.mock
+async def test_small_prompt_with_count_near_half_window_unaffected() -> None:
+    # A tiny prompt has a tiny L, so a count near num_ctx/2 cannot look like a shift.
+    respx.post(URL).mock(return_value=_reply(2050))
+    assert await OllamaProvider().chat([Message("user", "hi")]) == "ok"
