@@ -4,6 +4,7 @@ import asyncio
 import hashlib
 import hmac
 import json
+import math
 import os
 from dataclasses import dataclass
 from datetime import UTC, datetime
@@ -29,13 +30,84 @@ class Provider(Protocol):
     def model_name(self) -> str: ...
 
 
+class OllamaTruncationError(RuntimeError):
+    """Raised when Ollama evaluated a prompt that filled (or overflowed) the context window.
+
+    Ollama silently drops the oldest tokens when a prompt does not fit in `num_ctx`; the
+    model then answers from a truncated catalog with no error. This makes that loud.
+    """
+
+
+# Prompt-size estimator used to size `options.num_ctx` before the call.
+# tokens = _TEMPLATE_OVERHEAD + sum over messages of
+#          (_PER_MESSAGE_OVERHEAD + ceil(utf-8 bytes of role+content / _BYTES_PER_TOKEN)).
+# Bytes (not characters) so CJK / emoji are over- not under-counted. 3.0 is deliberately
+# below the measured bytes/token of the audited corpus on llama3.1:8b (see
+# docs/evidence/ollama_numctx_impact_audit.json, "estimator_validation") so the estimate
+# is an upper bound on the real count there.
+_BYTES_PER_TOKEN: float = 3.0
+_PER_MESSAGE_OVERHEAD_TOKENS: int = 8
+_TEMPLATE_OVERHEAD_TOKENS: int = 32
+NUM_CTX_FLOOR: int = 4096
+NUM_CTX_HEADROOM: int = 1024  # room for the completion + estimator error
+# A correctly sized num_ctx leaves >= NUM_CTX_HEADROOM tokens spare, so an evaluated prompt
+# within this many tokens of num_ctx means the window was filled, i.e. truncation.
+TRUNCATION_MARGIN: int = 64
+
+
+def estimate_prompt_tokens(messages: list[Message]) -> int:
+    """Conservative (over-)estimate of the tokens Ollama will evaluate for `messages`."""
+    total = _TEMPLATE_OVERHEAD_TOKENS
+    for m in messages:
+        n_bytes = len(m.role.encode("utf-8")) + len(m.content.encode("utf-8"))
+        total += _PER_MESSAGE_OVERHEAD_TOKENS + math.ceil(n_bytes / _BYTES_PER_TOKEN)
+    return total
+
+
+def compute_num_ctx(messages: list[Message]) -> int:
+    """`max(4096, estimated_prompt_tokens + 1024)`, rounded up to a power of two.
+
+    Rounding is a deliberate deviation from the bare formula: Ollama reloads the model
+    runner whenever `num_ctx` changes between requests, so an exact per-prompt value would
+    reload on nearly every call. Power-of-two buckets keep reloads rare and never go below
+    the formula.
+    """
+    needed = max(NUM_CTX_FLOOR, estimate_prompt_tokens(messages) + NUM_CTX_HEADROOM)
+    return 1 << (needed - 1).bit_length()
+
+
+def check_truncation(prompt_eval_count: int | None, num_ctx: int, model: str) -> None:
+    """Raise OllamaTruncationError if `prompt_eval_count` shows the prompt hit `num_ctx`.
+
+    Exactly checkable: when a prompt exceeds num_ctx Ollama trims it to fit, so
+    prompt_eval_count lands at (about) num_ctx. A count far *below* the estimate is NOT
+    treated as truncation: Ollama's KV-cache prefix reuse reports only the newly evaluated
+    tokens, so a cached prefix legitimately lowers the count and the two cases cannot be
+    told apart from the response alone. A missing count (None) is not checkable and passes.
+    """
+    if prompt_eval_count is None:
+        return
+    if prompt_eval_count >= num_ctx - TRUNCATION_MARGIN:
+        raise OllamaTruncationError(
+            f"Ollama model '{model}' evaluated {prompt_eval_count} prompt tokens with "
+            f"num_ctx={num_ctx}: the prompt filled the context window and was probably "
+            "truncated, so the model did not see the whole catalog. Raise num_ctx (the "
+            "token estimator may be too low for this text) or shorten the tool catalog."
+        )
+
+
 class OllamaProvider:
     """Calls a local Ollama instance. Default for local dev.
 
-    Decoding: sends only `options.seed`; temperature/top_p/top_k are NOT set, so the model's
-    Modelfile / Ollama's runtime defaults apply (Ollama's documented default temperature is
-    0.8 -- sampling is on). Seed support: honoured (same seed + same prompt + same model
-    build -> same completion). `runner.run_tasks` passes a distinct seed per trial.
+    Decoding: sends `options.seed` and `options.num_ctx`; temperature/top_p/top_k are NOT
+    set, so the model's Modelfile / Ollama's runtime defaults apply (Ollama's documented
+    default temperature is 0.8 -- sampling is on). Seed support: honoured (same seed + same
+    prompt + same model build -> same completion). `runner.run_tasks` passes a distinct seed
+    per trial.
+
+    Context window: Ollama silently truncates prompts longer than `num_ctx`, so every call
+    sets `num_ctx` from `compute_num_ctx` (>= 4096, sized to the prompt) and afterwards
+    raises `OllamaTruncationError` if `prompt_eval_count` shows the window was filled.
     """
 
     BASE_URL = "http://localhost:11434"
@@ -49,16 +121,19 @@ class OllamaProvider:
         return self._model
 
     async def chat(self, messages: list[Message], *, seed: int = 42) -> str:
+        num_ctx = compute_num_ctx(messages)
         payload = {
             "model": self._model,
             "messages": [{"role": m.role, "content": m.content} for m in messages],
             "stream": False,
-            "options": {"seed": seed},
+            "options": {"seed": seed, "num_ctx": num_ctx},
         }
         async with httpx.AsyncClient(timeout=self._timeout) as client:
             resp = await client.post(f"{self.BASE_URL}/api/chat", json=payload)
             resp.raise_for_status()
-            return resp.json()["message"]["content"]
+            body = resp.json()
+        check_truncation(body.get("prompt_eval_count"), num_ctx, self._model)
+        return body["message"]["content"]
 
 
 class MockProvider:
