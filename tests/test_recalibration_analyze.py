@@ -123,8 +123,9 @@ def test_old_corpus_control_reproduces_published_numbers() -> None:
     full = ra.analyse_corpus(cs, jt, n_boot=20)
     assert full["n_groups_zero_within_group_variance"] == 650
     assert full["n_groups_with_multiple_trials"] == 720
-    # The published ICC is a float computed through numpy; Windows and Linux differ in the last
-    # digits (CI saw 0.7932642721759026), so compare to 1e-9, not bit-for-bit.
+    # The published ICC is a float built from sum() calls; the last digits differ across Python
+    # versions (CI saw 0.7932642721759026): Python 3.11's float sum() is naive left-to-right,
+    # 3.12's is compensated. Not an OS effect. Compare to 1e-9, not bit-for-bit.
     assert full["icc_detail"]["icc"] == pytest.approx(0.7932642721759006, rel=1e-9)
     assert round(full["variance_decomposition"]["pct_between_task_within_toolset"], 2) == 56.06
     assert full["suff_stat_vs_exact_max_abs_drift"] < 1e-6
