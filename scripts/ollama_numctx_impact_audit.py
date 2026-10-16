@@ -1,11 +1,9 @@
-from __future__ import annotations
-
 """READ-ONLY impact audit: which committed Ollama-path prompts exceed a 4096-token context?
 
 Ollama silently truncates prompts longer than num_ctx. This script rebuilds, for every bundled
 MCP server under examples/ (the catalogs the experiments connected to), the prompt classes the
 Ollama path sends, and asks the real tokenizer (Ollama itself) how many tokens each is, with
-num_ctx=32768 and num_predict=1 so that nothing truncates. It changes no published number.
+num_ctx=65536 and num_predict=1 so that nothing truncates. It changes no published number.
 
 Prompt classes (built with the same code/templates the harness uses):
   selection       runner.run_tasks selection prompt: full tool listing + longest corpus task
@@ -21,6 +19,8 @@ prefixed with a unique fixed-width nonce, and the nonce-only baseline is subtrac
 
 Usage: python scripts/ollama_numctx_impact_audit.py OUT_JSON [--model llama3.1:8b]
 """
+
+from __future__ import annotations
 
 import argparse
 import asyncio
