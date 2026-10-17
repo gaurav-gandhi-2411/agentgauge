@@ -18,6 +18,13 @@ updates:
       - gaurav-gandhi-2411
     labels:
       - dependencies
+    # mcp 2.x breaks agentgauge (McpError->MCPError, Tool.inputSchema->input_schema,
+    # FastMCP->MCPServer, low-level Server decorators removed); evidence in the compat
+    # check on branch chore/mcp-2-compat-check @ 79ec3fa. The migration needs its own PR,
+    # so major bumps must not arrive as an auto-PR that widens the pyproject cap (see #126).
+    ignore:
+      - dependency-name: "mcp"
+        update-types: ["version-update:semver-major"]
 
   # GitHub Actions — keep action versions current.
   # daily, not weekly: a newly-merged workflow job can introduce pins that are
