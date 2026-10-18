@@ -952,7 +952,9 @@ def build_control(old_full: dict[str, Any], joint_old_full: dict[str, Any]) -> d
         rows.append({"name": name, "expected": expected, "observed": observed, "match": ok})
 
     icc = old_full["icc_detail"]
-    add("ICC(1)", OLD_CONTROL["icc"], icc["icc"], icc["icc"] == OLD_CONTROL["icc"])
+    # Float, so compare to 1e-9: Windows and Linux differ in the last digits (2e-15 seen in CI).
+    icc_ok = math.isclose(icc["icc"], OLD_CONTROL["icc"], rel_tol=1e-9)
+    add("ICC(1)", OLD_CONTROL["icc"], icc["icc"], icc_ok)
     add(
         "zero-variance groups",
         OLD_CONTROL["n_zero"],
