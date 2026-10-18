@@ -19,6 +19,13 @@ class Message:
     content: str
 
 
+class ProviderUnreachableError(RuntimeError):
+    """The model backend could not be reached at all (connection refused / timed out).
+
+    Raised instead of a raw `httpx.ConnectError` so the CLI can print one actionable line.
+    """
+
+
 @runtime_checkable
 class Provider(Protocol):
     """Model-agnostic LLM provider interface."""
@@ -48,6 +55,22 @@ class OllamaProvider:
     def model_name(self) -> str:
         return self._model
 
+    async def ensure_reachable(self, *, timeout: float = 3.0) -> None:
+        """Cheap liveness probe (GET /api/version) so a missing Ollama fails in seconds.
+
+        Without it, the first trial's connect attempt can take ~25 s to give up on Windows
+        (localhost dual-stack fallback). Any transport-level failure -> ProviderUnreachableError.
+        """
+        try:
+            async with httpx.AsyncClient(timeout=timeout) as client:
+                resp = await client.get(f"{self.BASE_URL}/api/version")
+                resp.raise_for_status()
+        except (httpx.TransportError, httpx.HTTPStatusError) as exc:
+            raise ProviderUnreachableError(self._unreachable_message()) from exc
+
+    def _unreachable_message(self) -> str:
+        return f"Cannot reach Ollama at {self.BASE_URL}."
+
     async def chat(self, messages: list[Message], *, seed: int = 42) -> str:
         payload = {
             "model": self._model,
@@ -55,10 +78,13 @@ class OllamaProvider:
             "stream": False,
             "options": {"seed": seed},
         }
-        async with httpx.AsyncClient(timeout=self._timeout) as client:
-            resp = await client.post(f"{self.BASE_URL}/api/chat", json=payload)
-            resp.raise_for_status()
-            return resp.json()["message"]["content"]
+        try:
+            async with httpx.AsyncClient(timeout=self._timeout) as client:
+                resp = await client.post(f"{self.BASE_URL}/api/chat", json=payload)
+                resp.raise_for_status()
+                return str(resp.json()["message"]["content"])
+        except (httpx.ConnectError, httpx.ConnectTimeout) as exc:
+            raise ProviderUnreachableError(self._unreachable_message()) from exc
 
 
 class MockProvider:
