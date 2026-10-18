@@ -1,0 +1,680 @@
+{
+  "corpora": {
+    "argument_degradation_253": {
+      "by_group": {
+        "aws_s3": {
+          "full": 0,
+          "n_tasks": 20,
+          "partial": 20,
+          "partial_reasons": {
+            "required param unconstrained": 30,
+            "stated value unchecked": 3
+          },
+          "selection_only": 0,
+          "selection_only_label": false,
+          "share_full": 0.0
+        },
+        "call_constraints": {
+          "full": 0,
+          "n_tasks": 32,
+          "partial": 16,
+          "partial_reasons": {
+            "required param unconstrained": 16,
+            "stated value unchecked": 16
+          },
+          "selection_only": 16,
+          "selection_only_label": false,
+          "share_full": 0.0
+        },
+        "call_constraints_v2": {
+          "full": 0,
+          "n_tasks": 30,
+          "partial": 30,
+          "partial_reasons": {
+            "required param unconstrained": 35,
+            "stated value unchecked": 33
+          },
+          "selection_only": 0,
+          "selection_only_label": false,
+          "share_full": 0.0
+        },
+        "docker_containers": {
+          "full": 5,
+          "n_tasks": 20,
+          "partial": 15,
+          "partial_reasons": {
+            "required param unconstrained": 20,
+            "stated value unchecked": 1
+          },
+          "selection_only": 0,
+          "selection_only_label": false,
+          "share_full": 0.25
+        },
+        "gcal": {
+          "full": 0,
+          "n_tasks": 20,
+          "partial": 20,
+          "partial_reasons": {
+            "required param unconstrained": 35,
+            "stated value unchecked": 15
+          },
+          "selection_only": 0,
+          "selection_only_label": false,
+          "share_full": 0.0
+        },
+        "github_issues": {
+          "full": 0,
+          "n_tasks": 21,
+          "partial": 21,
+          "partial_reasons": {
+            "required param unconstrained": 37,
+            "stated value unchecked": 4
+          },
+          "selection_only": 0,
+          "selection_only_label": false,
+          "share_full": 0.0
+        },
+        "jira_issues": {
+          "full": 0,
+          "n_tasks": 20,
+          "partial": 20,
+          "partial_reasons": {
+            "required param unconstrained": 20,
+            "stated value unchecked": 1
+          },
+          "selection_only": 0,
+          "selection_only_label": false,
+          "share_full": 0.0
+        },
+        "k8s_workloads": {
+          "full": 5,
+          "n_tasks": 20,
+          "partial": 15,
+          "partial_reasons": {
+            "required param unconstrained": 35
+          },
+          "selection_only": 0,
+          "selection_only_label": false,
+          "share_full": 0.25
+        },
+        "slack_messaging": {
+          "full": 2,
+          "n_tasks": 15,
+          "partial": 13,
+          "partial_reasons": {
+            "required param unconstrained": 10,
+            "stated value unchecked": 4
+          },
+          "selection_only": 0,
+          "selection_only_label": false,
+          "share_full": 0.1333
+        },
+        "spotify_playlists": {
+          "full": 9,
+          "n_tasks": 20,
+          "partial": 11,
+          "partial_reasons": {
+            "required param unconstrained": 15,
+            "stated value unchecked": 2
+          },
+          "selection_only": 0,
+          "selection_only_label": false,
+          "share_full": 0.45
+        },
+        "stripe_payments": {
+          "full": 5,
+          "n_tasks": 15,
+          "partial": 10,
+          "partial_reasons": {
+            "required param unconstrained": 10,
+            "stated value unchecked": 2
+          },
+          "selection_only": 0,
+          "selection_only_label": false,
+          "share_full": 0.3333
+        },
+        "twilio_messaging": {
+          "full": 0,
+          "n_tasks": 20,
+          "partial": 20,
+          "partial_reasons": {
+            "required param unconstrained": 40,
+            "stated value unchecked": 4
+          },
+          "selection_only": 0,
+          "selection_only_label": false,
+          "share_full": 0.0
+        }
+      },
+      "full": 26,
+      "n_tasks": 253,
+      "partial": 211,
+      "partial_reasons": {
+        "required param unconstrained": 303,
+        "stated value unchecked": 85
+      },
+      "selection_only": 16,
+      "selection_only_label": false,
+      "share_full": 0.1028
+    },
+    "predictive_validity_44_tool_sets": {
+      "by_group": {
+        "call_constraints_server": {
+          "full": 0,
+          "n_tasks": 32,
+          "partial": 16,
+          "partial_reasons": {
+            "required param unconstrained": 16,
+            "stated value unchecked": 16
+          },
+          "selection_only": 16,
+          "selection_only_label": false,
+          "share_full": 0.0
+        },
+        "call_constraints_server_fixed": {
+          "full": 0,
+          "n_tasks": 32,
+          "partial": 16,
+          "partial_reasons": {
+            "required param unconstrained": 16,
+            "stated value unchecked": 16
+          },
+          "selection_only": 16,
+          "selection_only_label": false,
+          "share_full": 0.0
+        },
+        "call_constraints_server_oracle": {
+          "full": 0,
+          "n_tasks": 32,
+          "partial": 16,
+          "partial_reasons": {
+            "required param unconstrained": 16,
+            "stated value unchecked": 16
+          },
+          "selection_only": 16,
+          "selection_only_label": false,
+          "share_full": 0.0
+        },
+        "call_constraints_v2_server": {
+          "full": 0,
+          "n_tasks": 30,
+          "partial": 30,
+          "partial_reasons": {
+            "required param unconstrained": 35,
+            "stated value unchecked": 33
+          },
+          "selection_only": 0,
+          "selection_only_label": false,
+          "share_full": 0.0
+        },
+        "call_constraints_v2_server_fixed": {
+          "full": 0,
+          "n_tasks": 30,
+          "partial": 30,
+          "partial_reasons": {
+            "required param unconstrained": 35,
+            "stated value unchecked": 33
+          },
+          "selection_only": 0,
+          "selection_only_label": false,
+          "share_full": 0.0
+        },
+        "call_constraints_v2_server_oracle": {
+          "full": 0,
+          "n_tasks": 30,
+          "partial": 30,
+          "partial_reasons": {
+            "required param unconstrained": 35,
+            "stated value unchecked": 33
+          },
+          "selection_only": 0,
+          "selection_only_label": false,
+          "share_full": 0.0
+        },
+        "confusable_server": {
+          "full": 14,
+          "n_tasks": 32,
+          "partial": 10,
+          "partial_reasons": {
+            "required param unconstrained": 9,
+            "stated value unchecked": 2
+          },
+          "selection_only": 8,
+          "selection_only_label": false,
+          "share_full": 0.4375
+        },
+        "confusable_server_fixed": {
+          "full": 14,
+          "n_tasks": 32,
+          "partial": 10,
+          "partial_reasons": {
+            "required param unconstrained": 9,
+            "stated value unchecked": 2
+          },
+          "selection_only": 8,
+          "selection_only_label": false,
+          "share_full": 0.4375
+        },
+        "confusable_server_oracle": {
+          "full": 14,
+          "n_tasks": 32,
+          "partial": 10,
+          "partial_reasons": {
+            "required param unconstrained": 9,
+            "stated value unchecked": 2
+          },
+          "selection_only": 8,
+          "selection_only_label": false,
+          "share_full": 0.4375
+        },
+        "echo_server": {
+          "full": 6,
+          "n_tasks": 8,
+          "partial": 0,
+          "partial_reasons": {},
+          "selection_only": 2,
+          "selection_only_label": false,
+          "share_full": 0.75
+        },
+        "exp1_blazickjp_arxiv_mcp_server_mirror": {
+          "full": 0,
+          "n_tasks": 16,
+          "partial": 0,
+          "partial_reasons": {},
+          "selection_only": 16,
+          "selection_only_label": true,
+          "share_full": 0.0
+        },
+        "exp1_datalayer_jupyter_mcp_server_mirror": {
+          "full": 5,
+          "n_tasks": 34,
+          "partial": 21,
+          "partial_reasons": {
+            "required param unconstrained": 32,
+            "stated value unchecked": 1
+          },
+          "selection_only": 8,
+          "selection_only_label": false,
+          "share_full": 0.1471
+        },
+        "exp1_datalayer_jupyter_mcp_server_mirror_oracle": {
+          "full": 5,
+          "n_tasks": 34,
+          "partial": 21,
+          "partial_reasons": {
+            "required param unconstrained": 32,
+            "stated value unchecked": 1
+          },
+          "selection_only": 8,
+          "selection_only_label": false,
+          "share_full": 0.1471
+        },
+        "exp1_dataojitori_nocturne_memory_mirror": {
+          "full": 2,
+          "n_tasks": 14,
+          "partial": 10,
+          "partial_reasons": {
+            "required param unconstrained": 21,
+            "stated value unchecked": 3
+          },
+          "selection_only": 2,
+          "selection_only_label": false,
+          "share_full": 0.1429
+        },
+        "exp1_stickerdaniel_linkedin_mcp_server_mirror": {
+          "full": 0,
+          "n_tasks": 34,
+          "partial": 28,
+          "partial_reasons": {
+            "required param unconstrained": 63,
+            "stated value unchecked": 1
+          },
+          "selection_only": 6,
+          "selection_only_label": false,
+          "share_full": 0.0
+        },
+        "grounded_server": {
+          "full": 7,
+          "n_tasks": 10,
+          "partial": 3,
+          "partial_reasons": {
+            "stated value unchecked": 4
+          },
+          "selection_only": 0,
+          "selection_only_label": false,
+          "share_full": 0.7
+        },
+        "grounded_server_fixed": {
+          "full": 7,
+          "n_tasks": 10,
+          "partial": 3,
+          "partial_reasons": {
+            "stated value unchecked": 4
+          },
+          "selection_only": 0,
+          "selection_only_label": false,
+          "share_full": 0.7
+        },
+        "grounded_server_oracle": {
+          "full": 7,
+          "n_tasks": 10,
+          "partial": 3,
+          "partial_reasons": {
+            "stated value unchecked": 4
+          },
+          "selection_only": 0,
+          "selection_only_label": false,
+          "share_full": 0.7
+        },
+        "mediocre_server": {
+          "full": 11,
+          "n_tasks": 12,
+          "partial": 1,
+          "partial_reasons": {
+            "stated value unchecked": 1
+          },
+          "selection_only": 0,
+          "selection_only_label": false,
+          "share_full": 0.9167
+        },
+        "mediocre_server_fixed": {
+          "full": 10,
+          "n_tasks": 12,
+          "partial": 2,
+          "partial_reasons": {
+            "required param unconstrained": 1,
+            "stated value unchecked": 1
+          },
+          "selection_only": 0,
+          "selection_only_label": false,
+          "share_full": 0.8333
+        },
+        "p2a_arm_a": {
+          "full": 30,
+          "n_tasks": 48,
+          "partial": 14,
+          "partial_reasons": {
+            "required param unconstrained": 16,
+            "stated value unchecked": 3
+          },
+          "selection_only": 4,
+          "selection_only_label": false,
+          "share_full": 0.625
+        },
+        "p2a_arm_guardb": {
+          "full": 30,
+          "n_tasks": 48,
+          "partial": 14,
+          "partial_reasons": {
+            "required param unconstrained": 16,
+            "stated value unchecked": 3
+          },
+          "selection_only": 4,
+          "selection_only_label": false,
+          "share_full": 0.625
+        },
+        "p2a_arm_oracle": {
+          "full": 30,
+          "n_tasks": 48,
+          "partial": 14,
+          "partial_reasons": {
+            "required param unconstrained": 16,
+            "stated value unchecked": 3
+          },
+          "selection_only": 4,
+          "selection_only_label": false,
+          "share_full": 0.625
+        },
+        "p2a_internal_proxy_mirror": {
+          "full": 30,
+          "n_tasks": 48,
+          "partial": 14,
+          "partial_reasons": {
+            "required param unconstrained": 16,
+            "stated value unchecked": 3
+          },
+          "selection_only": 4,
+          "selection_only_label": false,
+          "share_full": 0.625
+        },
+        "q3_arm_a": {
+          "full": 7,
+          "n_tasks": 12,
+          "partial": 1,
+          "partial_reasons": {
+            "stated value unchecked": 1
+          },
+          "selection_only": 4,
+          "selection_only_label": false,
+          "share_full": 0.5833
+        },
+        "q3_arm_o": {
+          "full": 7,
+          "n_tasks": 12,
+          "partial": 1,
+          "partial_reasons": {
+            "stated value unchecked": 1
+          },
+          "selection_only": 4,
+          "selection_only_label": false,
+          "share_full": 0.5833
+        },
+        "q3_real_server": {
+          "full": 7,
+          "n_tasks": 12,
+          "partial": 1,
+          "partial_reasons": {
+            "stated value unchecked": 1
+          },
+          "selection_only": 4,
+          "selection_only_label": false,
+          "share_full": 0.5833
+        },
+        "q6_arm_a": {
+          "full": 13,
+          "n_tasks": 23,
+          "partial": 1,
+          "partial_reasons": {
+            "stated value unchecked": 1
+          },
+          "selection_only": 9,
+          "selection_only_label": false,
+          "share_full": 0.5652
+        },
+        "q6_arm_f_doc_guarded": {
+          "full": 13,
+          "n_tasks": 23,
+          "partial": 1,
+          "partial_reasons": {
+            "stated value unchecked": 1
+          },
+          "selection_only": 9,
+          "selection_only_label": false,
+          "share_full": 0.5652
+        },
+        "q6_real_server": {
+          "full": 13,
+          "n_tasks": 23,
+          "partial": 1,
+          "partial_reasons": {
+            "stated value unchecked": 1
+          },
+          "selection_only": 9,
+          "selection_only_label": false,
+          "share_full": 0.5652
+        },
+        "rw1_arm_a": {
+          "full": 19,
+          "n_tasks": 21,
+          "partial": 2,
+          "partial_reasons": {
+            "required param unconstrained": 3
+          },
+          "selection_only": 0,
+          "selection_only_label": false,
+          "share_full": 0.9048
+        },
+        "rw1_arm_guardb": {
+          "full": 19,
+          "n_tasks": 21,
+          "partial": 2,
+          "partial_reasons": {
+            "required param unconstrained": 3
+          },
+          "selection_only": 0,
+          "selection_only_label": false,
+          "share_full": 0.9048
+        },
+        "rw1_arm_oracle": {
+          "full": 19,
+          "n_tasks": 21,
+          "partial": 2,
+          "partial_reasons": {
+            "required param unconstrained": 3
+          },
+          "selection_only": 0,
+          "selection_only_label": false,
+          "share_full": 0.9048
+        },
+        "rw1_github_mirror": {
+          "full": 19,
+          "n_tasks": 21,
+          "partial": 2,
+          "partial_reasons": {
+            "required param unconstrained": 3
+          },
+          "selection_only": 0,
+          "selection_only_label": false,
+          "share_full": 0.9048
+        },
+        "rw2_arm_a": {
+          "full": 9,
+          "n_tasks": 29,
+          "partial": 17,
+          "partial_reasons": {
+            "required param unconstrained": 24,
+            "stated value unchecked": 2
+          },
+          "selection_only": 3,
+          "selection_only_label": false,
+          "share_full": 0.3103
+        },
+        "rw2_arm_guardb": {
+          "full": 9,
+          "n_tasks": 29,
+          "partial": 17,
+          "partial_reasons": {
+            "required param unconstrained": 24,
+            "stated value unchecked": 2
+          },
+          "selection_only": 3,
+          "selection_only_label": false,
+          "share_full": 0.3103
+        },
+        "rw2_aws_iam_mirror": {
+          "full": 9,
+          "n_tasks": 29,
+          "partial": 17,
+          "partial_reasons": {
+            "required param unconstrained": 24,
+            "stated value unchecked": 2
+          },
+          "selection_only": 3,
+          "selection_only_label": false,
+          "share_full": 0.3103
+        },
+        "t18_fixer_server": {
+          "full": 18,
+          "n_tasks": 24,
+          "partial": 0,
+          "partial_reasons": {},
+          "selection_only": 6,
+          "selection_only_label": false,
+          "share_full": 0.75
+        },
+        "t18_fixer_server_set2": {
+          "full": 15,
+          "n_tasks": 24,
+          "partial": 2,
+          "partial_reasons": {
+            "stated value unchecked": 2
+          },
+          "selection_only": 7,
+          "selection_only_label": false,
+          "share_full": 0.625
+        },
+        "t18_oracle_server": {
+          "full": 18,
+          "n_tasks": 24,
+          "partial": 0,
+          "partial_reasons": {},
+          "selection_only": 6,
+          "selection_only_label": false,
+          "share_full": 0.75
+        },
+        "t18_oracle_server_set2": {
+          "full": 15,
+          "n_tasks": 24,
+          "partial": 2,
+          "partial_reasons": {
+            "stated value unchecked": 2
+          },
+          "selection_only": 7,
+          "selection_only_label": false,
+          "share_full": 0.625
+        },
+        "t18_q2b_server": {
+          "full": 18,
+          "n_tasks": 24,
+          "partial": 0,
+          "partial_reasons": {},
+          "selection_only": 6,
+          "selection_only_label": false,
+          "share_full": 0.75
+        },
+        "t18_q2b_server_set2": {
+          "full": 15,
+          "n_tasks": 24,
+          "partial": 2,
+          "partial_reasons": {
+            "stated value unchecked": 2
+          },
+          "selection_only": 7,
+          "selection_only_label": false,
+          "share_full": 0.625
+        },
+        "t18_vague_server": {
+          "full": 18,
+          "n_tasks": 24,
+          "partial": 0,
+          "partial_reasons": {},
+          "selection_only": 6,
+          "selection_only_label": false,
+          "share_full": 0.75
+        },
+        "t18_vague_server_set2": {
+          "full": 15,
+          "n_tasks": 24,
+          "partial": 2,
+          "partial_reasons": {
+            "stated value unchecked": 2
+          },
+          "selection_only": 7,
+          "selection_only_label": false,
+          "share_full": 0.625
+        }
+      },
+      "full": 517,
+      "n_tasks": 1136,
+      "partial": 389,
+      "partial_reasons": {
+        "required param unconstrained": 477,
+        "stated value unchecked": 205
+      },
+      "selection_only": 230,
+      "selection_only_label": false,
+      "share_full": 0.4551
+    }
+  },
+  "note": "Task classes (agentgauge.audit): selection-only = no argument constraint; partial = some constraint but a required parameter or a value stated in the task text is unchecked; full = every required parameter constrained and every stated value covered. The 'stated value' detection is a heuristic (quoted strings and tokens containing a digit). The predictive_validity corpus overlaps the call_constraints fixtures of argument_degradation_253."
+}

@@ -160,6 +160,10 @@ class Verdict(StrEnum):
     IMPROVEMENT = "improvement"
     NO_CHANGE = "no_change"
     INSUFFICIENT_SENSITIVITY = "insufficient_sensitivity"
+    # Both arms constant at the same extreme: there is no delta to estimate, only a finding that
+    # the task set leaves no headroom (all 1.0) or no signal (all 0.0). Not an error: exit 0.
+    CEILING = "ceiling"
+    FLOOR = "floor"
 
 
 @dataclass
@@ -181,6 +185,18 @@ class DiffResult:
         return 1 if self.verdict == Verdict.REGRESSION else 0
 
 
+def _constant_extreme(values: list[float]) -> float | None:
+    """1.0 / 0.0 when every value equals it (and there is at least one), else None."""
+    if not values:
+        return None
+    distinct = set(values)
+    if distinct == {1.0}:
+        return 1.0
+    if distinct == {0.0}:
+        return 0.0
+    return None
+
+
 def diff_from_trials(
     before_trials: list[TrialOutcome],
     after_trials: list[TrialOutcome],
@@ -200,6 +216,33 @@ def diff_from_trials(
     after_dec = DecomposedRate.from_trials(after_trials)
     before_joint = [t.joint_success for t in before_trials]
     after_joint = [t.joint_success for t in after_trials]
+
+    # Both arms constant at 1.0 (or 0.0): the bootstrap CI would be a zero-width [0, 0] and
+    # NO_CHANGE would read as "descriptions do not matter". Report the finding instead of a delta.
+    extreme = _constant_extreme(before_joint + after_joint)
+    if extreme is not None:
+        verdict = Verdict.CEILING if extreme == 1.0 else Verdict.FLOOR
+        n_b, n_a = len(before_joint), len(after_joint)
+        message = (
+            f"All {n_b + n_a} trials in both arms scored {extreme:.1f} "
+            f"({n_b} before, {n_a} after), so there is no delta to estimate: "
+            + (
+                "the task set leaves no headroom -- add harder tasks to measure an effect."
+                if verdict == Verdict.CEILING
+                else "the agent never succeeds on this task set -- fix the tasks or the "
+                "server before comparing descriptions."
+            )
+        )
+        return DiffResult(
+            before_decomposed=before_dec,
+            after_decomposed=after_dec,
+            delta=0.0,
+            ci_lo=0.0,
+            ci_hi=0.0,
+            threshold=threshold,
+            verdict=verdict,
+            message=message,
+        )
 
     delta, ci_lo, ci_hi = bootstrap_delta_ci(
         before_joint, after_joint, n_resamples=n_resamples, seed=seed

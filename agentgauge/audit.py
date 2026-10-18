@@ -45,6 +45,7 @@ relative to a real deployment, independent of any one benchmark generator's inte
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -89,6 +90,159 @@ class AuditReport:
 def _tool_props(tool: Any) -> dict[str, Any]:
     schema = getattr(tool, "inputSchema", None) or {}
     return schema.get("properties", {}) or {}
+
+
+SELECTION_ONLY = "selection-only"
+PARTIAL = "partial"
+FULL = "full"
+
+# More than this share of selection-only tasks labels the whole verdict "selection-only".
+SELECTION_ONLY_LABEL_THRESHOLD = 0.5
+
+# Values a task states outright: quoted strings, then numbers / ID-like tokens (anything with a
+# digit). A heuristic, not a parser: it can over- or under-count, which the docs say.
+_QUOTED = re.compile(r"""'([^']{2,})'|"([^"]{2,})"|`([^`]{2,})`""")
+_DIGIT_TOKEN = re.compile(r"[A-Za-z0-9_.:/-]*\d[A-Za-z0-9_.:/-]*")
+
+
+@dataclass
+class TaskCoverage:
+    tool_name: str
+    description: str
+    klass: str  # SELECTION_ONLY | PARTIAL | FULL
+    unconstrained: list[str] = field(default_factory=list)
+
+
+@dataclass
+class CoverageSummary:
+    """Per-class counts of how much of each task's expected call the scorer actually checks."""
+
+    tasks: list[TaskCoverage] = field(default_factory=list)
+
+    def count(self, klass: str) -> int:
+        return sum(1 for t in self.tasks if t.klass == klass)
+
+    @property
+    def n(self) -> int:
+        return len(self.tasks)
+
+    @property
+    def selection_only_share(self) -> float:
+        return self.count(SELECTION_ONLY) / self.n if self.n else 0.0
+
+    @property
+    def verdict_is_selection_only(self) -> bool:
+        return self.n > 0 and self.selection_only_share > SELECTION_ONLY_LABEL_THRESHOLD
+
+    def line(self) -> str:
+        return (
+            f"constraint coverage over {self.n} tasks: {self.count(SELECTION_ONLY)} "
+            f"selection-only, {self.count(PARTIAL)} partial, {self.count(FULL)} full"
+        )
+
+    def as_dict(self) -> dict[str, Any]:
+        return {
+            "n_tasks": self.n,
+            "selection_only": self.count(SELECTION_ONLY),
+            "partial": self.count(PARTIAL),
+            "full": self.count(FULL),
+            "selection_only_label": self.verdict_is_selection_only,
+        }
+
+
+def _required_params(tool: Any) -> list[str]:
+    schema = getattr(tool, "inputSchema", None) or {}
+    return [str(p) for p in (schema.get("required") or [])]
+
+
+def _task_literals(description: str) -> list[str]:
+    """Argument values the task text states outright (quoted strings, numbers, ID-like tokens)."""
+    found: list[str] = []
+    for m in _QUOTED.finditer(description):
+        found.append(next(g for g in m.groups() if g is not None))
+    stripped = _QUOTED.sub(" ", description)
+    for m in _DIGIT_TOKEN.finditer(stripped):
+        tok = m.group(0).strip(".:/-")
+        if tok:
+            found.append(tok)
+    return found
+
+
+def _literal_is_checked(literal: str, constraints: list[Any]) -> bool:
+    low = literal.lower()
+    for c in constraints:
+        gold = str(c.gold_value or "").lower()
+        if c.kind in ("enum", "contains") and gold and (gold in low or low in gold):
+            return True
+        if c.kind == "numeric_equals" and gold:
+            try:
+                if abs(float(literal) - float(gold)) <= (c.tolerance or 1e-6):
+                    return True
+            except ValueError:
+                pass
+        if c.kind == "range" and c.min_val is not None and c.max_val is not None:
+            try:
+                if c.min_val <= int(literal) <= c.max_val:
+                    return True
+            except ValueError:
+                pass
+        if c.kind == "format" and c.pattern is not None and re.fullmatch(c.pattern, literal):
+            return True
+    return False
+
+
+def classify_task_coverage(task: BlindTask, required_params: list[str]) -> TaskCoverage:
+    """selection-only: the task registers no argument constraint at all (any arguments score 1.0
+    once the right tool is picked). full: every required parameter has a constraint and every
+    value the task text states is covered by one. partial: some constraint, but not all of that."""
+    if not task.constraints:
+        return TaskCoverage(task.tool_name, task.description, SELECTION_ONLY)
+    constrained = {c.param for c in task.constraints}
+    missing = [f"required param {p!r}" for p in required_params if p not in constrained]
+    missing += [
+        f"stated value {lit!r}"
+        for lit in _task_literals(task.description)
+        if not _literal_is_checked(lit, task.constraints)
+    ]
+    return TaskCoverage(
+        task.tool_name, task.description, PARTIAL if missing else FULL, unconstrained=missing
+    )
+
+
+def summarize_constraint_coverage(
+    tasks: list[BlindTask], tools: list[Any] | None = None
+) -> CoverageSummary:
+    """Classify every task. `tools` supplies the required params (without it only the
+    constraints and the task text are available, so `full` may be over-reported)."""
+    required = {
+        name: _required_params(t) for t in tools or [] if (name := getattr(t, "name", None))
+    }
+    return CoverageSummary(
+        [classify_task_coverage(t, required.get(t.tool_name, [])) for t in tasks]
+    )
+
+
+def check_constraint_coverage(
+    tasks: list[BlindTask], tools: list[Any] | None = None
+) -> list[AuditFinding]:
+    """WARN (never block) when more than half the tasks are selection-only: the verdict then
+    measures tool choice, not whether the agent built the right call. The coverage counts are
+    printed for every diff/eval regardless (see `summarize_constraint_coverage`)."""
+    summary = summarize_constraint_coverage(tasks, tools)
+    if not summary.verdict_is_selection_only:
+        return []
+    return [
+        AuditFinding(
+            check="constraint_coverage",
+            severity="warn",
+            detail=(
+                f"{summary.count(SELECTION_ONLY)}/{summary.n} tasks "
+                f"({summary.selection_only_share:.0%}) register no argument constraint, so this "
+                "is a selection-only verdict: it does not check whether arguments are right. "
+                "Add `constraints` to the tasks file (see `agentgauge init`)."
+            ),
+        )
+    ]
 
 
 def check_task_leakage(tasks: list[BlindTask]) -> list[AuditFinding]:
@@ -215,13 +369,15 @@ def check_ceiling_floor(
     r = rate.joint_success_rate
     if r <= margin or r >= 1.0 - margin:
         which = "floor" if r <= margin else "ceiling"
+        headroom = "below 0.0" if which == "floor" else "above 1.0"
         return [
             AuditFinding(
                 check="ceiling_floor",
                 severity="warn",
                 detail=(
-                    f"[{variant_label}] joint success rate {r:.3f} is at the {which} "
-                    f"(n={rate.n_trials}) -- little to no room for a before/after delta to show up"
+                    f"[{variant_label}] the {variant_label!r} arm's joint success rate {r:.3f} "
+                    f"is at the {which} (n={rate.n_trials}, flagged at <= {margin:.2f} or >= "
+                    f"{1.0 - margin:.2f}); effect size may be truncated (no headroom {headroom})"
                 ),
             )
         ]
@@ -252,6 +408,24 @@ def check_degenerate_metrics(
             )
         ]
     return []
+
+
+def check_degenerate_metrics_pooled(
+    before_trials: list[TrialOutcome], after_trials: list[TrialOutcome]
+) -> list[AuditFinding]:
+    """`check_degenerate_metrics` over both arms of a before/after comparison pooled.
+
+    One constant arm is not a degenerate metric: a perfect "after" arm next to an imperfect
+    "before" arm is the best case a description fix can produce, and the pooled outcomes still
+    vary. A pooled-constant corpus at exactly 0.0 or 1.0 is a ceiling/floor finding, which
+    `diff_from_trials` reports as the CEILING / FLOOR verdict (exit 0), so it does not block
+    here. Only a pooled-constant corpus at some other value (a scorer that returns one fixed
+    non-extreme number) is the "constant scoring function" defect and still BLOCKS."""
+    pooled = [*before_trials, *after_trials]
+    findings = check_degenerate_metrics(pooled, variant_label="before+after pooled")
+    if findings and {t.joint_success for t in pooled} <= {0.0, 1.0}:
+        return []
+    return findings
 
 
 def check_empty_tasks(tasks: list[BlindTask]) -> list[AuditFinding]:
@@ -538,6 +712,7 @@ def run_audit(
     findings: list[AuditFinding] = []
     findings += check_task_leakage(tasks)
     findings += check_empty_tasks(tasks)
+    findings += check_constraint_coverage(tasks, before_tools or after_tools)
 
     for label, tools in (("before", before_tools), ("after", after_tools)):
         if tools is None:
@@ -552,11 +727,15 @@ def run_audit(
     if before_tools is not None and after_tools is not None:
         findings += check_catalog_subset_mismatch(before_tools, after_tools)
 
+    both_arms = bool(before_trials and after_trials)
     for label, trials in (("before", before_trials), ("after", after_trials)):
         if not trials:
             continue
         findings += check_ceiling_floor(DecomposedRate.from_trials(trials), variant_label=label)
-        findings += check_degenerate_metrics(trials, variant_label=label)
+        if not both_arms:  # a single-arm run (eval) has nothing to pool with
+            findings += check_degenerate_metrics(trials, variant_label=label)
+    if before_trials and after_trials:
+        findings += check_degenerate_metrics_pooled(before_trials, after_trials)
 
     if benchmark_cases is not None:
         findings += check_benchmark_construction_diffsize_bias(benchmark_cases)
