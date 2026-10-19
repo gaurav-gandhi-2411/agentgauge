@@ -1,3 +1,5 @@
+> Historical — numbers superseded; see README (re-measured 2026-10-11).
+
 # AgentGauge v0.5 — MDE discrepancy investigation and resolution (measurement artifact #10)
 
 > **Follow-up (2026-07-30, Wave 1.6): the `sampled_shapley` scale reversal this report's section 6

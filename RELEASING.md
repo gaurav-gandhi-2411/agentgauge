@@ -48,6 +48,10 @@ steps lived only in whoever ran them last time. Written after running the flow f
    immediately after publish is not necessarily a real failure, re-check before concluding one.
    Confirm `agentgauge --version` reports the new version, and re-run whatever specific behavior
    this release changed against the actual published artifact — not the local build.
-9. **Do not yank or delete a published version, ever.** PyPI does not allow re-uploading a
-   version's metadata; a wrong claim in a published README stays wrong for that version
-   permanently. Ship a new version that supersedes it instead.
+9. **Never delete a published version; yank only a release that is broken for new installs.** PyPI
+   does not allow re-uploading a version's files or metadata, so a wrong claim in a published README
+   stays wrong for that version permanently: ship a new version that supersedes it. Yanking is the
+   one reversible lever (the files stay downloadable by exact pin; the version disappears from the web
+   listing and from default resolution) and was used for 0.4.0 and 0.5.0, which crashed on import with
+   `mcp>=2` (reason string: "ImportError with mcp>=2 (uncapped dependency); use 0.5.1 or later").
+   Always give a reason that names the fixed version, and record the yank in `CHANGELOG.md`.

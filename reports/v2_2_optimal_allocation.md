@@ -1,3 +1,5 @@
+> Historical — numbers superseded; see README (re-measured 2026-10-11).
+
 # AgentGauge v2.2 — optimal trial/task allocation (Task 1)
 
 Zero live inference. `agentgauge/harness.py` (`trials_per_task` parameter added to

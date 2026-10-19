@@ -1,0 +1,175 @@
+{
+  "description": "type_enum_contradiction-only (type_flipped + enum_dropped) causal effect on joint task success, per model, with tool-set-clustered CIs.",
+  "method": {
+    "seed": 42,
+    "bootstrap_replicates": 10000,
+    "cluster_unit": "tool set (6 clusters)",
+    "statistic": "pooled mean of per-task joint-success deltas (after-defect minus clean)",
+    "percentile_ci": "linear-interpolation 2.5/97.5 percentiles",
+    "cluster_t_ci": "pooled mean +/- t(0.975, G-1) * linearised cluster-robust SE",
+    "caveat": "6 clusters is few: percentile bootstrap undercovers; prefer cluster_t_ci. Defects are synthetic injections into hand-built mock servers."
+  },
+  "inputs": {
+    "evals/fixtures/v2_2_causal_chain_multimodel.json": {
+      "sha256": "f0d389046c2a4adac4194c846a35730c84bc643dd3445bb3ee599b216096bd88"
+    },
+    "evals/fixtures/v2_4_blocking_remeasurement.json": {
+      "sha256": "345ec2ad6c7ced57286d8af9403049e689f8862a56176218f72bbbc244dfc29f"
+    }
+  },
+  "v2_4_remeasurement_delta_values_identical_to_v2_2": true,
+  "type_enum_only": {
+    "gemma2:9b": {
+      "n_tasks": 30,
+      "n_tool_sets": 6,
+      "tasks_per_tool_set": {
+        "confusable_server_oracle": 4,
+        "call_constraints_server_oracle": 8,
+        "call_constraints_v2_server_oracle": 10,
+        "t18_oracle_server": 4,
+        "rw1_arm_oracle": 2,
+        "p2a_arm_oracle": 2
+      },
+      "mean_delta_pp": -37.78,
+      "cluster_bootstrap_ci_pp": [
+        -66.7,
+        -8.3
+      ],
+      "cluster_t_ci_pp": [
+        -87.2,
+        11.7
+      ],
+      "unclustered_task_bootstrap_ci_pp": [
+        -55.6,
+        -21.1
+      ]
+    },
+    "llama3.1:8b": {
+      "n_tasks": 30,
+      "n_tool_sets": 6,
+      "tasks_per_tool_set": {
+        "confusable_server_oracle": 4,
+        "call_constraints_server_oracle": 8,
+        "call_constraints_v2_server_oracle": 10,
+        "t18_oracle_server": 4,
+        "rw1_arm_oracle": 2,
+        "p2a_arm_oracle": 2
+      },
+      "mean_delta_pp": -33.33,
+      "cluster_bootstrap_ci_pp": [
+        -55.9,
+        -2.9
+      ],
+      "cluster_t_ci_pp": [
+        -77.4,
+        10.7
+      ],
+      "unclustered_task_bootstrap_ci_pp": [
+        -53.3,
+        -13.3
+      ]
+    },
+    "qwen2.5:7b": {
+      "n_tasks": 30,
+      "n_tool_sets": 6,
+      "tasks_per_tool_set": {
+        "confusable_server_oracle": 4,
+        "call_constraints_server_oracle": 8,
+        "call_constraints_v2_server_oracle": 10,
+        "t18_oracle_server": 4,
+        "rw1_arm_oracle": 2,
+        "p2a_arm_oracle": 2
+      },
+      "mean_delta_pp": -16.67,
+      "cluster_bootstrap_ci_pp": [
+        -34.4,
+        -2.8
+      ],
+      "cluster_t_ci_pp": [
+        -40.9,
+        7.6
+      ],
+      "unclustered_task_bootstrap_ci_pp": [
+        -33.3,
+        0.0
+      ]
+    }
+  },
+  "all_blocking_pooled_for_comparison": {
+    "gemma2:9b": {
+      "n_tasks": 45,
+      "n_tool_sets": 6,
+      "tasks_per_tool_set": {
+        "confusable_server_oracle": 6,
+        "call_constraints_server_oracle": 12,
+        "call_constraints_v2_server_oracle": 15,
+        "t18_oracle_server": 6,
+        "rw1_arm_oracle": 3,
+        "p2a_arm_oracle": 3
+      },
+      "mean_delta_pp": -25.19,
+      "cluster_bootstrap_ci_pp": [
+        -44.4,
+        -5.6
+      ],
+      "cluster_t_ci_pp": [
+        -58.1,
+        7.8
+      ],
+      "unclustered_task_bootstrap_ci_pp": [
+        -40.0,
+        -11.9
+      ]
+    },
+    "llama3.1:8b": {
+      "n_tasks": 45,
+      "n_tool_sets": 6,
+      "tasks_per_tool_set": {
+        "confusable_server_oracle": 6,
+        "call_constraints_server_oracle": 12,
+        "call_constraints_v2_server_oracle": 15,
+        "t18_oracle_server": 6,
+        "rw1_arm_oracle": 3,
+        "p2a_arm_oracle": 3
+      },
+      "mean_delta_pp": -28.89,
+      "cluster_bootstrap_ci_pp": [
+        -51.3,
+        -4.5
+      ],
+      "cluster_t_ci_pp": [
+        -63.3,
+        5.5
+      ],
+      "unclustered_task_bootstrap_ci_pp": [
+        -44.4,
+        -15.6
+      ]
+    },
+    "qwen2.5:7b": {
+      "n_tasks": 45,
+      "n_tool_sets": 6,
+      "tasks_per_tool_set": {
+        "confusable_server_oracle": 6,
+        "call_constraints_server_oracle": 12,
+        "call_constraints_v2_server_oracle": 15,
+        "t18_oracle_server": 6,
+        "rw1_arm_oracle": 3,
+        "p2a_arm_oracle": 3
+      },
+      "mean_delta_pp": -13.33,
+      "cluster_bootstrap_ci_pp": [
+        -23.8,
+        -3.5
+      ],
+      "cluster_t_ci_pp": [
+        -29.4,
+        2.7
+      ],
+      "unclustered_task_bootstrap_ci_pp": [
+        -26.7,
+        -2.2
+      ]
+    }
+  }
+}

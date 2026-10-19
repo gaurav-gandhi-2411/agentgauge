@@ -1,3 +1,57 @@
+# Paper 2 (power analysis and measurement-artifact screening)
+
+**Superseded draft — not peer-reviewed. Known false or unsupported claims:**
+
+`main.tex` and `main.pdf` have not been corrected; the PDF still contains every claim below. The
+list is the Paper-2 half of the Phase 0 audit of 2026-10-11 (findings 2, 3, 4 and 8; findings 1,
+6 and 7 concern [Paper 1](../paper/README.md)). Pointers are to files and commits in this
+repository; the audit's working tables were kept locally and are not committed.
+
+1. **The variance finding was attributed to a fixed-seed artifact; a re-measurement shows that
+   attribution was mostly wrong, but the numbers in `main.tex` are superseded.** Before
+   `4c3ba84`, `agentgauge/runner.py` passed no seed, so every repeat trial used the default seed
+   42, and 650/720 (90.3%) groups were exactly zero-variance. Re-measured with a distinct seed per
+   trial (5,535 trials, 44 tool sets, `gemma2:9b`): 597/720 = 82.9% zero-variance, ICC(1)
+   0.731 [0.653, 0.809] (was 0.793), resid_sd 0.169 (was 0.139), MDE at 100 tasks x 1 trial
+   0.0878 (was 0.0848), sensitivity range 0.0768 to 0.1001. The identical scores come mostly from
+   a lenient argument check, not from sampler determinism.
+   Evidence: `evals/fixtures/recalibration_seedfix/` (`results.md`, `output_diversity.json`,
+   `zero_variance_audit.json`, `decoding_temperature_check.json`, `MANIFEST.json`),
+   `evals/fixtures/constraint_coverage_corpora.json`, and the generated block in the root
+   README. The audit's own earlier claim that this was "a fixed-seed artifact" is withdrawn.
+2. **The abstract misdescribes its data** (`main.tex:50`, "a 253-task, 3-model tool-use corpus").
+   The ICC comes from 5,535 trials over 44 tool sets and one model (`gemma2:9b`). The MDE of
+   0.0537 at n=253 is a simulation of a synthetic Gaussian model, not a measurement
+   (`main.tex:615`). Evidence: `evals/fixtures/predictive_validity/results_raw.json`,
+   `reports/v2_5_task3_mde_completion.md`.
+3. **The strategy inversion (artifact #10) is omitted.** The paper reports only
+   `greedy_bisection` degrading (93 to 80 to 73 to 47% top-1). Under the corrected noise model,
+   `sampled_shapley` goes 50 to 83 to 90 to 100% and clears the ship bar at n=10/20/40. The
+   "5-20x at every strategy" cost claim (`main.tex:138`, `main.tex:658`) is false: the measured
+   range is 2.53x to 20.24x. Evidence: `reports/v0_5_mde_discrepancy.md`,
+   `reports/v0_5_probe_power_fix.md`.
+4. **Stale or mislabelled numbers:**
+   - False alarm 13/2200 = 0.59% and 21.6% abstention (`main.tex:411`): re-running the committed
+     script on the audited commit gave 12/2200 = 0.545% and 26.7%; the per-trial-seed
+     re-measurement gives 7/2200 = 0.32% and 28.0%
+     (`evals/fixtures/recalibration_seedfix/results.md`).
+   - "-13.3 to -28.9 pp type_enum_contradiction" pools a defect type with no measurable effect;
+     `type_enum_contradiction` alone (n=30 per model) is -37.8 / -33.3 / -16.7 pp, and the
+     confidence intervals ignore tool-set clustering (with 6 tool sets the t-based interval
+     includes zero for every model): `evals/fixtures/type_enum_contradiction_clustered.json`.
+   - "`required_references_missing_property` clean null 0.0 pp in all three models" is
+     +0.0 / -20.0 / -6.7 pp, and "clean null in all three models" is false for `llama3.1:8b`
+     (-13.3 pp, CI [-40.8, +14.1]).
+   - The rewrite experiment's `llama3.1:8b` delta (+0.0553) is above its own MDE with a CI that
+     excludes zero.
+   - "Attribution has never been run against a real agent" (`main.tex:702`) is contradicted by a
+     one-case pilot; "all model calls are cassette-recorded" is false for the live run.
+
+Numbers in the README (project root) were re-checked and corrected on 2026-10-11; this paper's
+text was not.
+
+---
+
 # Building the methods paper
 
 `main.tex` compiles with [tectonic](https://tectonic-typesetting.github.io/), a self-contained

@@ -1,3 +1,5 @@
+> Historical — numbers superseded; see README (re-measured 2026-10-11).
+
 # AgentGauge v2.2 — Task A: was 4b adequately powered? (reorder addendum)
 
 Addendum to `reports/v2_2_optimal_allocation.md` (Task 1) and the original

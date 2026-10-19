@@ -1,3 +1,5 @@
+> Historical — numbers superseded; see README (re-measured 2026-10-11).
+
 # Gaps — outline items without a measured source
 
 Per spec §5: "No new experiments. If a section needs a number that does not exist, flag the gap
