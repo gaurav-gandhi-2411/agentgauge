@@ -13,7 +13,14 @@ from rich.console import Console
 
 from agentgauge import __version__
 from agentgauge.audit import AuditReport, CoverageSummary, run_audit, summarize_constraint_coverage
-from agentgauge.client import cleanup_connection, connect_http, connect_stdio
+from agentgauge.client import (
+    STDERR_TAIL_LINES,
+    MCPClient,
+    ServerStartError,
+    cleanup_connection,
+    connect_http,
+    connect_stdio,
+)
 from agentgauge.constraints import BlindTask, constraint_satisfaction
 from agentgauge.fixer import (
     DEFAULT_MIN_DELTA,
@@ -92,11 +99,31 @@ def main(
 # ─────────────────────────────────────────────────────────────────────────────
 
 
+async def _connect_stdio(target: str) -> tuple[MCPClient, Any]:
+    """Start a stdio server script; a crash on start becomes a short stderr message + exit 2.
+
+    Without this the user saw a ~100-line async traceback ending in `McpError: Connection
+    closed`, which says nothing about WHY the server died -- its own stderr does.
+    """
+    try:
+        # sys.executable so the subprocess inherits the active venv, not system Python.
+        return await connect_stdio(sys.executable, [target])
+    except ServerStartError as exc:
+        typer.echo(f"Error: {exc}", err=True)
+        if exc.stderr_tail:
+            indented = "\n".join(f"  | {ln}" for ln in exc.stderr_tail.splitlines())
+            typer.echo(f"Server stderr (last {STDERR_TAIL_LINES} lines max):\n{indented}", err=True)
+        else:
+            typer.echo("The server wrote nothing to stderr.", err=True)
+        typer.echo(f"Run `{Path(sys.executable).name} {target}` directly to reproduce.", err=True)
+        raise typer.Exit(2) from None
+
+
 async def _connect(target: str) -> tuple[Any, Any, str | None]:
     if target.startswith("http://") or target.startswith("https://"):
         client, ctx = await connect_http(target)
         return client, ctx, target
-    client, ctx = await connect_stdio(sys.executable, [target])
+    client, ctx = await _connect_stdio(target)
     return client, ctx, None
 
 
@@ -1076,8 +1103,7 @@ async def _scan_async(
         client, ctx = await connect_http(target)
         base_url: str | None = target
     else:
-        # Use sys.executable so the subprocess inherits the active venv, not system Python.
-        client, ctx = await connect_stdio(sys.executable, [target])
+        client, ctx = await _connect_stdio(target)
         base_url = None  # stdio servers have no HTTP base URL; no llms.txt to fetch
 
     try:
@@ -1204,7 +1230,7 @@ async def _fix_async(
         judge = OllamaProvider(judge_model)
 
     # Introspect tools by connecting to the server
-    client, ctx = await connect_stdio(sys.executable, [target])
+    client, ctx = await _connect_stdio(target)
     try:
         info = await client.introspect()
         console.print(f"[dim]Found {len(info.tools)} tools[/dim]")

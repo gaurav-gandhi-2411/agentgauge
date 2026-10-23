@@ -23,6 +23,7 @@ tag are documentation, CI and dependency-lockfile updates:
 - Docs and papers: README badges and a bug-report template (#108); brand hero image (#107);
   corrections to the two papers and their submission notes (#98-#101, #103-#106); consistency-check
   scripts for the papers (#100, #102); a version-pin checklist in `RELEASING.md` (#105).
+- A stdio server script that crashes on start now gives a one-line `Error: server failed to start: ...` plus the last <=20 lines of its stderr and exit code 2, instead of a ~140-line async traceback ending in `McpError: Connection closed` (exit 1).
 
 ## [0.5.3] - 2026-08-21
 
