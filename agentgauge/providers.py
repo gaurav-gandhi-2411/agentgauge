@@ -84,7 +84,13 @@ def compute_num_ctx(messages: list[Message]) -> int:
 # L <= true token count; per-message overhead is kept below the real template cost.
 _LOWER_BOUND_BYTES_PER_TOKEN: float = 6.0
 _LOWER_BOUND_PER_MESSAGE_TOKENS: int = 4
-_SHIFT_BELOW_FRACTION: float = 0.9  # count must be under 0.9 * L to look truncated
+# A count must be below L itself to look truncated. L is already a deliberate under-estimate
+# (6 bytes/token vs 3.8 measured on gemma2:9b), so a smaller factor (the earlier 0.9) would
+# miss a real shift: google_workspace on gemma2:9b has L ~4,400 and shifts to 4,099.
+_SHIFT_BELOW_FRACTION: float = 1.0
+# Tokens reserved for the completion when deciding a prompt CERTAINLY cannot fit the model:
+# agent/judge replies here are a tool name or a short score line (well under 256 tokens).
+OUTPUT_RESERVE_TOKENS: int = 256
 _SHIFT_SLACK_FRACTION: float = 0.03  # +-3% of num_ctx // 2 ...
 _SHIFT_MIN_SLACK: int = 8  # ... but never less than 8 tokens
 
@@ -115,7 +121,7 @@ def check_truncation(
        5307-token google_workspace selection prompt reported 2050 at num_ctx=4096 (3 runs),
        1502 at 3000, 1026 at 2048, and 5325 (no truncation) at 8192. Checked only when
        `lower_bound_tokens` (L, a guaranteed under-estimate) is given: raise when the count
-       is < 0.9*L AND within max(8, 3%) tokens of num_ctx//2, or within 64 of num_ctx.
+       is < L AND within max(8, 3%) tokens of num_ctx//2, or within 64 of num_ctx.
        Other Ollama versions may behave differently, hence both signatures.
 
     A count below L that is NOWHERE near num_ctx/2 is NOT treated as truncation: KV-cache
@@ -156,8 +162,10 @@ class OllamaProvider:
 
     Ollama also clamps `num_ctx` to the model's maximum context (gemma2:9b: 8192), so the
     model's `context_length` is read once from `/api/show`: the requested `num_ctx` is
-    clamped to it, the call fails up front when the estimated prompt plus headroom cannot
-    fit, and the truncation check uses the EFFECTIVE window. If `/api/show` is unavailable
+    clamped to it, the call fails up front only when the LOWER-bound prompt estimate plus
+    `OUTPUT_RESERVE_TOKENS` already exceeds the model maximum (it certainly cannot fit),
+    and the truncation check uses the EFFECTIVE window (so a prompt that the conservative
+    upper estimate would not fit, but that really does, is sent and verified post-call). If `/api/show` is unavailable
     the previous (unclamped) behaviour applies, with one warning.
     """
 
@@ -203,14 +211,14 @@ class OllamaProvider:
         async with httpx.AsyncClient(timeout=self._timeout) as client:
             max_ctx = await self._model_max_ctx(client)
             if max_ctx is not None:
-                est = estimate_prompt_tokens(messages)
-                if est + NUM_CTX_HEADROOM > max_ctx:
+                lower = lower_bound_prompt_tokens(messages)
+                if lower + OUTPUT_RESERVE_TOKENS > max_ctx:
                     raise OllamaTruncationError(
                         f"Ollama model '{self._model}' has a maximum context of {max_ctx} "
-                        f"tokens, but this prompt is estimated at {est} tokens plus "
-                        f"{NUM_CTX_HEADROOM} tokens of headroom, so it cannot fit and would "
-                        "be silently truncated. Shorten the tool catalog or use a model with "
-                        "a larger context window."
+                        f"tokens, but this prompt is at least {lower} tokens (a lower bound) "
+                        f"plus {OUTPUT_RESERVE_TOKENS} reserved for the reply, so it cannot "
+                        "fit and would be silently truncated. Shorten the tool catalog or use "
+                        "a model with a larger context window."
                     )
                 num_ctx = min(num_ctx, max_ctx)
             payload = {

@@ -8,6 +8,7 @@ import respx
 
 from agentgauge.providers import (
     NUM_CTX_FLOOR,
+    OUTPUT_RESERVE_TOKENS,
     TRUNCATION_MARGIN,
     Message,
     OllamaProvider,
@@ -161,10 +162,11 @@ def test_cached_prefix_low_count_does_not_raise() -> None:
         check_truncation(count, 4096, "m", _L_BIG)
 
 
-def test_shift_signature_needs_count_below_point_nine_l() -> None:
-    check_truncation(2050, 4096, "m", 2200)  # 2050 >= 0.9*2200: plausibly a real count
+def test_shift_signature_needs_count_below_l() -> None:
+    check_truncation(2050, 4096, "m", 2050)  # count == L: L is a lower bound, so a real count
+    check_truncation(2050, 4096, "m", 2000)
     with pytest.raises(OllamaTruncationError):
-        check_truncation(2050, 4096, "m", 2300)  # 2050 < 0.9*2300=2070
+        check_truncation(2050, 4096, "m", 2051)  # count < L: tokens were dropped
 
 
 def test_shift_signature_skipped_without_lower_bound() -> None:
@@ -209,9 +211,10 @@ async def test_prompt_larger_than_model_max_raises_before_chat() -> None:
     respx.post(SHOW_URL).mock(return_value=_show(8192))
     chat = respx.post(URL).mock(return_value=_reply(100))
     with pytest.raises(OllamaTruncationError) as exc:
-        await OllamaProvider("gemma2:9b").chat(_msg(42_000))  # ~14k tokens
+        await OllamaProvider("gemma2:9b").chat(_msg(60_000))  # lower bound ~10k > 8192
     text = str(exc.value)
     assert "8192" in text and "gemma2:9b" in text and "Shorten" in text
+    assert "lower bound" in text
     assert chat.call_count == 0
 
 
@@ -241,20 +244,43 @@ def test_context_shift_detected_at_the_clamped_window() -> None:
         check_truncation(4099, 8192, "gemma2:9b", 4600)
 
 
-@respx.mock
-async def test_provider_checks_shift_against_effective_num_ctx(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    import agentgauge.providers as P
+# google_workspace on gemma2:9b: 26,451 bytes = ~7,029 real tokens. The conservative upper
+# estimate (3 bytes/token, 8,859) + 1024 exceeds 8192, but the prompt really fits.
+_GW_BYTES = 26_451
 
-    monkeypatch.setattr(P, "compute_num_ctx", lambda _m: 32768)  # what the audit saw requested
-    monkeypatch.setattr(P, "lower_bound_prompt_tokens", lambda _m: 4600)
+
+@respx.mock
+async def test_gw_sized_prompt_is_sent_clamped_and_passes_when_it_fits() -> None:
+    assert estimate_prompt_tokens(_msg(_GW_BYTES)) + 1024 > 8192
+    assert lower_bound_prompt_tokens(_msg(_GW_BYTES)) + 256 < 8192
+    respx.post(SHOW_URL).mock(return_value=_show(8192))
+    chat = respx.post(URL).mock(return_value=_reply(7029, "tool"))
+    assert await OllamaProvider("gemma2:9b").chat(_msg(_GW_BYTES)) == "tool"
+    assert json.loads(chat.calls[0].request.content)["options"]["num_ctx"] == 8192
+
+
+@respx.mock
+async def test_gw_sized_prompt_context_shift_at_effective_window_raises_post_call() -> None:
+    # Requested 16384, effective 8192; count 4099 == 8192 // 2 + 3 (context shift). Keyed to
+    # 16384 (half-window 8192) this was silent.
     respx.post(SHOW_URL).mock(return_value=_show(8192))
     chat = respx.post(URL).mock(return_value=_reply(4099))
     with pytest.raises(OllamaTruncationError) as exc:
-        await OllamaProvider("gemma2:9b").chat(_msg(10))
+        await OllamaProvider("gemma2:9b").chat(_msg(_GW_BYTES))
     assert "num_ctx=8192" in str(exc.value)
-    assert json.loads(chat.calls[0].request.content)["options"]["num_ctx"] == 8192
+    assert chat.call_count == 1
+
+
+@respx.mock
+async def test_up_front_threshold_is_lower_bound_plus_output_reserve() -> None:
+    msgs = _msg(30_000)
+    lower = lower_bound_prompt_tokens(msgs)
+    respx.post(URL).mock(return_value=_reply(100))
+    respx.post(SHOW_URL).mock(return_value=_show(lower + OUTPUT_RESERVE_TOKENS))
+    await OllamaProvider().chat(msgs)  # exactly fits the reserve: sent
+    respx.post(SHOW_URL).mock(return_value=_show(lower + OUTPUT_RESERVE_TOKENS - 1))
+    with pytest.raises(OllamaTruncationError):
+        await OllamaProvider().chat(msgs)
 
 
 @respx.mock
