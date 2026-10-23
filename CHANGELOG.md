@@ -104,6 +104,7 @@ dependency-lockfile updates only).
 - Docs and papers: README badges and a bug-report template (#108); brand hero image (#107);
   corrections to the two papers and their submission notes (#98-#101, #103-#106); consistency-check
   scripts for the papers (#100, #102); a version-pin checklist in `RELEASING.md` (#105).
+- `agentgauge diff` with a single trial per arm now returns `INSUFFICIENT_SENSITIVITY` (exit 0) instead of `NO_CHANGE` / `IMPROVEMENT` / `REGRESSION` / `CEILING` / `FLOOR` computed from a zero-width bootstrap CI; JSON `ci_lo`/`ci_hi` are `null` in that case.
 
 ## [0.5.3] - 2026-08-21
 

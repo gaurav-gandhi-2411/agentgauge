@@ -31,7 +31,14 @@ from agentgauge.fixer import (
     assert_generator_ne_judge,
     run_fixer,
 )
-from agentgauge.harness import DecomposedRate, DiffResult, TrialOutcome, Verdict, diff_from_trials
+from agentgauge.harness import (
+    MIN_TRIALS_PER_ARM,
+    DecomposedRate,
+    DiffResult,
+    TrialOutcome,
+    Verdict,
+    diff_from_trials,
+)
 from agentgauge.linter import LintReport, lint_tool_set
 from agentgauge.provider_config import create_provider, load_provider_config
 from agentgauge.providers import MockProvider, OllamaProvider, Provider, ProviderUnreachableError
@@ -408,11 +415,13 @@ async def _diff_async(
 
     if json_output:
         no_delta = result.verdict in (Verdict.CEILING, Verdict.FLOOR)  # nothing to estimate
+        # An arm with < MIN_TRIALS_PER_ARM trials has a point difference but no interval.
+        no_ci = min(len(before_trials), len(after_trials)) < MIN_TRIALS_PER_ARM
         payload = {
             "verdict": result.verdict.value,
             "delta": None if no_delta else result.delta,
-            "ci_lo": None if no_delta else result.ci_lo,
-            "ci_hi": None if no_delta else result.ci_hi,
+            "ci_lo": None if no_delta or no_ci else result.ci_lo,
+            "ci_hi": None if no_delta or no_ci else result.ci_hi,
             "threshold": result.threshold,
             "message": result.message,
             "before": {
