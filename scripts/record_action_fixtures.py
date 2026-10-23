@@ -9,7 +9,12 @@ tool-schema hash of the actual server it claims, `examples/echo_server.py` (befo
 `examples/echo_server_fixed.py` (after). The self-test then proves the staleness gate both ways:
 the matching servers pass; pointing `after-server` at the unfixed server makes the CLI exit 2.
 
-Output: tests/fixtures/action/{before,after}.json (committed). Re-run after editing either
+A second pair, regress_{before,after}.json, is a deterministic REGRESSION: "before" (recorded from
+echo_server_fixed.py) succeeds on every trial, "after" (echo_server.py) selects nothing on any
+trial. Both arms are constant but at different extremes, so the bootstrap CI is degenerate
+([-1, -1]) and the verdict is `regression` without depending on resampling.
+
+Output: tests/fixtures/action/{before,after,regress_before,regress_after}.json (committed). Re-run after editing either
 example server, otherwise the self-test's "fresh" job would start failing.
 """
 
@@ -31,6 +36,19 @@ TOOLS = ("echo", "add", "mystery", "greet")
 CREATED_UTC = "2026-10-23T00:00:00Z"
 
 
+def _all(*, ok: bool) -> list[TrialOutcome]:
+    """Every trial succeeds (`ok`) or selects no tool at all."""
+    return [
+        TrialOutcome(
+            task_tool_name=tool,
+            selected_tool=tool if ok else None,
+            constraint_satisfaction=1.0 if ok else 0.0,
+        )
+        for tool in TOOLS
+        for _ in range(TRIALS_PER_TASK)
+    ]
+
+
 def _trials(*, fixed: bool) -> list[TrialOutcome]:
     """Hand-written outcomes. Before: the two undocumented tools are never selected correctly."""
     out: list[TrialOutcome] = []
@@ -48,14 +66,16 @@ def _trials(*, fixed: bool) -> list[TrialOutcome]:
 
 
 async def _record() -> None:
-    for arm, server, fixed in (
-        ("before", "examples/echo_server.py", False),
-        ("after", "examples/echo_server_fixed.py", True),
+    for arm, server, trials in (
+        ("before", "examples/echo_server.py", _trials(fixed=False)),
+        ("after", "examples/echo_server_fixed.py", _trials(fixed=True)),
+        ("regress_before", "examples/echo_server_fixed.py", _all(ok=True)),
+        ("regress_after", "examples/echo_server.py", _all(ok=False)),
     ):
         tools = await _introspect_tools(str(ROOT / server))
         save_replay(
             OUT_DIR / f"{arm}.json",
-            _trials(fixed=fixed),
+            trials,
             model="hand-written-fixture",
             seed=SEED,
             trials_per_task=TRIALS_PER_TASK,
