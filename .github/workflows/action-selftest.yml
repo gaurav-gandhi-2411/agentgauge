@@ -1,0 +1,134 @@
+name: action-selftest
+
+# Exercises the composite action in the repo root (`uses: ./`) on all three hosted runner OSes,
+# using only committed replay files: no model, no GPU, no secrets.
+
+on:
+  push:
+    branches: [feat/github-action]
+  pull_request:
+    paths:
+      - action.yml
+      - action/**
+      - tests/fixtures/action/**
+      - scripts/record_action_fixtures.py
+      - .github/workflows/action-selftest.yml
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  demo-pair:
+    name: demo pair passes (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Gate the bundled demo replays (legacy files, no servers)
+        id: gate
+        uses: ./
+        with:
+          replay-before: agentgauge/demo/replay_before.json
+          replay-after: agentgauge/demo/replay_after.json
+
+      - name: Assert verdict and outputs
+        shell: bash
+        env:
+          VERDICT: ${{ steps.gate.outputs.verdict }}
+          EXIT_CODE: ${{ steps.gate.outputs.exit-code }}
+          CI_LOW: ${{ steps.gate.outputs.ci-low }}
+        run: |
+          set -eu
+          test "$VERDICT" = "insufficient_sensitivity" || { echo "verdict was '$VERDICT'"; exit 1; }
+          test "$EXIT_CODE" = "0"
+          test -n "$CI_LOW"
+
+      - name: Same pair with fail-on=insufficient_sensitivity must fail the step
+        id: strict
+        uses: ./
+        continue-on-error: true
+        with:
+          replay-before: agentgauge/demo/replay_before.json
+          replay-after: agentgauge/demo/replay_after.json
+          fail-on: insufficient_sensitivity
+
+      - name: Assert the strict run failed
+        shell: bash
+        env:
+          OUTCOME: ${{ steps.strict.outcome }}
+        run: test "$OUTCOME" = "failure" || { echo "outcome was '$OUTCOME'"; exit 1; }
+
+  fresh-servers:
+    name: fresh replays pass the staleness check (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Gate v1 replays against the servers they were recorded from
+        id: gate
+        uses: ./
+        with:
+          replay-before: tests/fixtures/action/before.json
+          replay-after: tests/fixtures/action/after.json
+          before-server: examples/echo_server.py
+          after-server: examples/echo_server_fixed.py
+
+      - name: Assert verdict
+        shell: bash
+        env:
+          VERDICT: ${{ steps.gate.outputs.verdict }}
+        run: test "$VERDICT" = "insufficient_sensitivity" || { echo "verdict was '$VERDICT'"; exit 1; }
+
+  stale-pair:
+    name: stale replay fails the step (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      # after.json was recorded from echo_server_fixed.py; pointing after-server at the unfixed
+      # server makes its recorded tool-schema hash stale, so the CLI exits 2.
+      - name: Gate with a mismatched after-server (expected to fail)
+        id: gate
+        uses: ./
+        continue-on-error: true
+        with:
+          replay-before: tests/fixtures/action/before.json
+          replay-after: tests/fixtures/action/after.json
+          before-server: examples/echo_server.py
+          after-server: examples/echo_server.py
+
+      - name: Assert the step failed with exit code 2
+        shell: bash
+        env:
+          OUTCOME: ${{ steps.gate.outcome }}
+          EXIT_CODE: ${{ steps.gate.outputs.exit-code }}
+        run: |
+          set -eu
+          test "$OUTCOME" = "failure" || { echo "outcome was '$OUTCOME'"; exit 1; }
+          test "$EXIT_CODE" = "2" || { echo "exit-code was '$EXIT_CODE'"; exit 1; }
+
+      - name: allow-stale-replay downgrades it to a warning
+        id: allowed
+        uses: ./
+        with:
+          replay-before: tests/fixtures/action/before.json
+          replay-after: tests/fixtures/action/after.json
+          before-server: examples/echo_server.py
+          after-server: examples/echo_server.py
+          allow-stale-replay: "true"
