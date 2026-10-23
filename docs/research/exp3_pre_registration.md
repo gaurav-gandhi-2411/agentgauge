@@ -98,6 +98,17 @@ excluded from ground truth: its 0% Arm-A result is catalog-overwhelm
 selection — using it would mislabel noise as a confusability signal (STATUS.md,
 EXP-1 section).
 
+> **Erratum (2026-10-23) — original text above left unchanged.** The observation
+> this paragraph relies on ("0% Arm-A result is catalog-overwhelm") was an Ollama
+> context-truncation artifact: the ~7k-token 116-tool listing was silently truncated
+> at the default 4096-token window (control at num_ctx 4096 reproduced 0%/0% with
+> prompt_eval_count 2051). A rerun with the window sized (num_ctx 16384, gemma2:9b,
+> same procedure, seeds 42+trial) gives 65% (13/20) in both arms, +0pp, with a
+> genuine wrong-tool failure on gws_4 (manage_deployment x5). The catalog-overwhelm
+> rationale for excluding this server is therefore withdrawn. Whether the server's
+> corrected results should enter the ground-truth set is a separate decision that
+> this erratum does not make. Evidence: `docs/evidence/gw_rerun_check.json`.
+
 A pair is `CONFUSED` iff at least one real trial shows the agent selecting one
 tool of the pair when the other was gold (`SELECTED-WRONG`, not
 `ABSTAINED-OR-HEDGED`). A pair is `NOT_CONFUSED` iff both tools were tested with

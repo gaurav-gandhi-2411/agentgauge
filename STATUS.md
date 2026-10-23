@@ -159,7 +159,7 @@ would require real per-language AST parsers, not regex heuristics — out of sco
 | stickerdaniel-linkedin-mcp-server | thin | search_companies/jobs/people/conversations | 100% | — | n/a | OUT-OF-REGIME |
 | mrexodia-ida-pro-mcp | near_empty | xrefs_to vs xrefs_to_field | 90% | — | n/a | OUT-OF-REGIME |
 | AminForou-mcp-gsc | well_documented | delete_site vs delete_sitemap | 75% | 75% | +0pp | OUT-OF-REGIME (real functional overlap — manage_sitemaps can also delete; no description fixes that) |
-| taylorwilsdon-google_workspace_mcp | thin | send_message vs send_gmail_message | 0% | 0% | +0pp | OUT-OF-REGIME (catalog-overwhelm failure mode — 116-tool listing produces malformed/hedged output, not confident wrong-tool picks; oracle description can't fix a different failure mode) |
+| taylorwilsdon-google_workspace_mcp | thin | send_message vs send_gmail_message | 65% (rerun with num_ctx sized; the originally published 0% was a truncation artifact) | 65% | +0pp | OUT-OF-REGIME (headroom exists but the oracle gives no recovery. CORRECTED 2026-10-23: the originally published 0%/0% "catalog-overwhelm" reading was an artifact of Ollama silently truncating the ~7k-token 116-tool listing at the default 4096-token window; with the window sized the agent picks real tool names. Remaining failure is gws_4 -> manage_deployment x5 in both arms, a genuine wrong-tool pick the oracle description does not fix. Evidence: `docs/evidence/gw_rerun_check.json`) |
 | datalayer-jupyter-mcp-server | near_empty | read_notebook vs read_cell | 70% | 55% | −15pp | OUT-OF-REGIME (HARM — oracle description made selection WORSE, replicating P2-A's account_query HARM pattern in a fresh real-world server) |
 | Dataojitori-nocturne_memory | well_documented | none found | — | — | — | no testable family |
 | blazickjp-arxiv-mcp-server | well_documented | none found | — | — | — | no testable family |
@@ -186,9 +186,15 @@ converts a 5-trial design into 5 identical repeats.
 **Two genuinely interesting non-recovery negatives (real, seed-confirmed):** (1) AminForou-mcp-gsc's
 `delete_sitemap`/`manage_sitemaps` confusion reflects real overlapping tool CAPABILITY, not a wording
 ambiguity — no description can fix a case where two tools can legitimately both do the same thing.
-(2) taylorwilsdon-google_workspace_mcp's 0%/0% result is driven by malformed/hedged model output
-under a 116-tool catalog, not confident wrong-tool selection — a catalog-SIZE failure mode, orthogonal
-to the paper's description-QUALITY thesis, and correctly not fixed by an oracle description either.
+(2) taylorwilsdon-google_workspace_mcp: **Correction (2026-10-23).** This entry originally read the
+0%/0% result as malformed/hedged model output under a 116-tool catalog (a catalog-SIZE failure mode).
+That mechanism claim is withdrawn: the 0%/0% was an Ollama context-truncation artifact (the ~7k-token
+listing was silently cut at the 4096-token default window; control rerun at num_ctx 4096 reproduced
+0%/0% with prompt_eval_count 2051). Rerun with the window sized (num_ctx 16384, gemma2:9b, same
+procedure and seeds) gives 65%/65%, +0pp; the one genuine failure (gws_4, manage_deployment x5 in both
+arms) is a wrong-tool pick the oracle description does not fix. Evidence: `docs/evidence/gw_rerun_check.json`.
+The raw trial fixtures `evals/fixtures/exp1_trial_*` and `exp1_trial_batch_summary.json` are left as the
+historical record of what was run; they carry the truncated 0.0 values and are superseded for this server.
 
 **Scope decision — RATIFIED, 2026-07-04:** paper = EXP-4 + EXP-1 + EXP-3. EXP-2 (capability
 ladder) is DROPPED, justification "regime uncommon in sampled population → capability-ladder
