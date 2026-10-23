@@ -113,15 +113,13 @@ jobs:
           before-server: examples/echo_server.py
           after-server: examples/echo_server.py
 
-      - name: Assert the step failed with exit code 2
+      - name: Assert the step failed (a failed composite step exposes no outputs)
         shell: bash
         env:
           OUTCOME: ${{ steps.gate.outcome }}
-          EXIT_CODE: ${{ steps.gate.outputs.exit-code }}
         run: |
           set -eu
           test "$OUTCOME" = "failure" || { echo "outcome was '$OUTCOME'"; exit 1; }
-          test "$EXIT_CODE" = "2" || { echo "exit-code was '$EXIT_CODE'"; exit 1; }
 
       - name: allow-stale-replay downgrades it to a warning
         id: allowed
