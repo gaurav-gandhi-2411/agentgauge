@@ -314,6 +314,38 @@ agentgauge diff before_server.py after_server.py --tasks agentgauge_tasks.json \
   --provider-config configs/provider.anthropic.yaml
 ```
 
+**GitHub Action.** This repo's root `action.yml` is a composite action that gates a pull request on committed replay
+files: no model, no GPU, no secrets, and `permissions: contents: read` is enough. Record once
+locally with `--save-before/--save-after`, commit the two files, then:
+
+```yaml
+jobs:
+  agentgauge:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+      - uses: gaurav-gandhi-2411/agentgauge@<ref>   # pin a commit SHA
+        with:
+          replay-before: replays/before.json
+          replay-after: replays/after.json
+          # Optional: with both servers set, a replay recorded against a different tool schema
+          # fails the step instead of being trusted.
+          before-server: servers/before.py
+          after-server: servers/after.py
+```
+
+The step fails on a `regression` verdict by default. `insufficient_sensitivity`, `ceiling` and
+`floor` pass (they mean "not enough evidence", not "worse"); set `fail-on:
+regression,insufficient_sensitivity` to be stricter. An exit 2 from the CLI (stale replay, blocked
+audit, usage error) always fails the step. The result is written to the job summary and to the
+outputs `verdict`, `delta`, `ci-low`, `ci-high` and `exit-code`. By default the CLI is installed from
+the action's own checkout, so action and CLI versions match; `agentgauge-version` installs a pinned
+PyPI release instead. Other inputs: `tasks`, `allow-stale-replay`, `python-version`. A self-test
+runs the action on ubuntu, macOS and Windows runners (`.github/workflows/action-selftest.yml`). It is
+not published to the GitHub Marketplace; reference it by repository and ref as above.
+
 `agentgauge lint` needs no LLM at all — try it right now against the bundled example fixture,
 which demonstrates the re-tiering story directly: this file's only defects are
 `required_references_missing_property` and `required_not_mentioned`, both of which measured a null

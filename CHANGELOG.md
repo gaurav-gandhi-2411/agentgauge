@@ -12,6 +12,12 @@ re-measured here; their provenance is in `reports/` at each tag.
 
 ## [Unreleased]
 
+- **GitHub Action (prototype).** Root `action.yml` is a composite action that gates a PR on committed
+  replay files with no model, GPU or secrets: `agentgauge diff --replay-before/--replay-after`, a job
+  summary, outputs (`verdict`, `delta`, `ci-low`, `ci-high`, `exit-code`) and a `fail-on` input
+  (default `regression`; `insufficient_sensitivity` does not fail). Exit 2 (stale replay, blocked
+  audit) always fails. Not on the Marketplace. Self-tested on ubuntu/macOS/Windows by
+  `.github/workflows/action-selftest.yml`.
 - **Replay files can now be written and checked.** New `agentgauge.replay` module (public
   `load_replay` / `save_replay` / `tools_sha256`); `diff --save-before/--save-after` and
   `eval --save` write a v1 file (`"format": "agentgauge-replay"`) recording model, seed,
