@@ -113,13 +113,19 @@ jobs:
           before-server: examples/echo_server.py
           after-server: examples/echo_server.py
 
-      - name: Assert the step failed (a failed composite step exposes no outputs)
+      # A failed composite step exposes no outputs, so the cause is read from the summary file the
+      # action keeps under $RUNNER_TEMP. This proves the CLI's exit 2 reached summarize.py (a bare
+      # `bash -e` abort would leave no file) and that the stale message is in the summary.
+      - name: Assert the step failed and the stale cause was reported
         shell: bash
         env:
           OUTCOME: ${{ steps.gate.outcome }}
+          SUMMARY: ${{ runner.temp }}/agentgauge-action/summary.md
         run: |
           set -eu
           test "$OUTCOME" = "failure" || { echo "outcome was '$OUTCOME'"; exit 1; }
+          grep -q "agentgauge diff: FAIL" "$SUMMARY"
+          grep -q "replay-after is stale" "$SUMMARY" || { cat "$SUMMARY"; exit 1; }
 
       - name: allow-stale-replay downgrades it to a warning
         id: allowed
@@ -130,3 +136,54 @@ jobs:
           before-server: examples/echo_server.py
           after-server: examples/echo_server.py
           allow-stale-replay: "true"
+
+  regression-pair:
+    name: regression fails by default, fail-on none passes (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Gate a deterministic regression with the default fail-on (expected to fail)
+        id: default
+        uses: ./
+        continue-on-error: true
+        with:
+          replay-before: tests/fixtures/action/regress_before.json
+          replay-after: tests/fixtures/action/regress_after.json
+          before-server: examples/echo_server_fixed.py
+          after-server: examples/echo_server.py
+
+      - name: Assert the step failed and named the regression
+        shell: bash
+        env:
+          OUTCOME: ${{ steps.default.outcome }}
+          SUMMARY: ${{ runner.temp }}/agentgauge-action/summary.md
+        run: |
+          set -eu
+          test "$OUTCOME" = "failure" || { echo "outcome was '$OUTCOME'"; exit 1; }
+          grep -q 'Verdict | `regression`' "$SUMMARY" || { cat "$SUMMARY"; exit 1; }
+          grep -q "agentgauge diff: FAIL" "$SUMMARY"
+
+      - name: Same regression with fail-on none must pass and report it
+        id: relaxed
+        uses: ./
+        with:
+          replay-before: tests/fixtures/action/regress_before.json
+          replay-after: tests/fixtures/action/regress_after.json
+          before-server: examples/echo_server_fixed.py
+          after-server: examples/echo_server.py
+          fail-on: none
+
+      - name: Assert the relaxed run reported a regression
+        shell: bash
+        env:
+          VERDICT: ${{ steps.relaxed.outputs.verdict }}
+          EXIT_CODE: ${{ steps.relaxed.outputs.exit-code }}
+        run: |
+          set -eu
+          test "$VERDICT" = "regression" || { echo "verdict was '$VERDICT'"; exit 1; }
+          test "$EXIT_CODE" = "1"
