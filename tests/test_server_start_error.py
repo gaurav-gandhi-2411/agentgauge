@@ -102,7 +102,11 @@ class TestCliCrashOutput:
         result = self._run(tmp_path, None)
         out = result.output  # type: ignore[attr-defined]
         assert result.exit_code == 2, out  # type: ignore[attr-defined]
-        assert out.splitlines()[0].startswith("Error: server failed to start:")
+        # #123 now rejects a missing path before any subprocess (its own one-line message);
+        # P4b alone produced "server failed to start" for this case. Either is a one-line error.
+        assert out.splitlines()[0].startswith(
+            ("Error: server script not found:", "Error: server failed to start:")
+        )
         assert "nope.py" in out
         assert "McpError" not in out
         assert "Traceback" not in out
