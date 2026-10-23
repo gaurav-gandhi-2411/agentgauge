@@ -294,7 +294,10 @@ shipping a bad measurement.
 the live trials as a replay file that also records the model, seed, tasks-file hash and a hash of
 the server's tool schemas. Pass the server paths alongside the replays in CI and `diff` exits 2 if a
 tool description or schema changed since recording (re-record, or `--allow-stale-replay` to
-override). Older bare-list replay files still load, with a "no provenance" warning.
+override). `eval --replay` runs the same check against its target. The hash covers each tool's
+name, description and `inputSchema` (not `outputSchema` or annotations). The tasks-file hash is
+compared only when `--tasks` is also passed, and it is byte-exact, so reformatting the file counts as a
+change. Older bare-list replay files still load, with a "no provenance" warning.
 
 ```bash
 agentgauge diff before.py after.py --tasks agentgauge_tasks.json \
