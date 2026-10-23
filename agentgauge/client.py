@@ -163,7 +163,10 @@ async def connect_stdio(command: str, args: list[str]) -> tuple[MCPClient, Any]:
         tail = capture.tail()
         capture.close()
         raise ServerStartError(command, args, tail) from exc
-    capture.forward()  # startup logs of a healthy server, as before when stderr was inherited
+    # Startup logs of a healthy server, as before when stderr was inherited. A broken stderr of our
+    # own (closed, detached) must not fail an otherwise good connection.
+    with contextlib.suppress(Exception):
+        capture.forward()
     return MCPClient(session), (ctx, session_ctx, read, write, capture)
 
 

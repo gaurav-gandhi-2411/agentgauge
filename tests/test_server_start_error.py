@@ -171,6 +171,22 @@ class TestHealthyServerStderrIsNotSwallowed:
         assert created[0].closed
         assert not Path(created[0].path).exists()
 
+    async def test_broken_own_stderr_does_not_fail_a_healthy_connect(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        def broken_forward(self: StderrCapture) -> None:
+            raise ValueError("I/O operation on closed file")
+
+        monkeypatch.setattr(StderrCapture, "forward", broken_forward)
+        client, ctx = await connect_stdio(sys.executable, [str(_noisy_healthy_server(tmp_path))])
+        capture = ctx[4]
+        try:
+            assert (await client.call_tool("echo", {"message": "hi"})).success
+        finally:
+            await cleanup_connection(ctx)
+        assert capture.closed
+        assert not Path(capture.path).exists()
+
     def test_message_does_not_claim_the_process_exited(self) -> None:
         msg = str(ServerStartError(sys.executable, ["x.py"], ""))
         assert "did not complete the MCP handshake" in msg
