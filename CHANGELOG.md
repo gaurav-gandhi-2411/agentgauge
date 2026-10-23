@@ -12,10 +12,14 @@ re-measured here; their provenance is in `reports/` at each tag.
 
 ## [Unreleased]
 
-Nothing under `agentgauge/` or in `pyproject.toml` has changed since 0.5.3
-(`git diff --stat v0.5.3 origin/main -- agentgauge pyproject.toml` is empty); the commits since the
-tag are documentation, CI and dependency-lockfile updates:
+Nothing under `agentgauge/` has changed since 0.5.3 (`git diff --stat v0.5.3 origin/main --
+agentgauge` is empty); the commits since the tag are documentation, CI, dependency-lockfile updates
+and one dependency-floor change:
 
+- **Security:** `mcp` floor raised to `>=1.30.0,<2.0.0` in `pyproject.toml` and `uv.lock` 1.29.0 ->
+  1.30.0, for CVE-2026-59951 (pip-audit red on `main`). The `<2` cap stays: mcp 2.x is a breaking
+  major. `uv.lock`: transitive `certifi` 2026.5.20 -> 2026.10.19 for PYSEC-2026-4320, found by the
+  same audit.
 - `uv.lock`: `pyjwt` 2.13.0 -> 2.15.0, which cleared a red `pip-audit` check (#112), and minor/patch
   groups (#92, #113). `pyjwt` is transitive; it is not a direct dependency.
 - CI: stale action pins fixed, daily Dependabot cadence for GitHub Actions (#109); a
