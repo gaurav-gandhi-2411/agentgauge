@@ -35,6 +35,7 @@ from agentgauge.harness import DecomposedRate, DiffResult, TrialOutcome, Verdict
 from agentgauge.linter import LintReport, lint_tool_set
 from agentgauge.provider_config import create_provider, load_provider_config
 from agentgauge.providers import MockProvider, OllamaProvider, Provider, ProviderUnreachableError
+from agentgauge.replay import ReplayError, ReplayFile, load_replay
 from agentgauge.report import render_html, render_json_stable, render_text
 from agentgauge.runner import RunResult, run_tasks
 from agentgauge.scorer import score_all
@@ -709,18 +710,18 @@ def _print_audit_report(report: AuditReport, console: Console) -> None:
         console.print(f"[yellow]AUDIT WARN[/yellow] ({f.check}): {escape(f.detail)}")
 
 
-def _load_replay_trials(path: Path) -> list[TrialOutcome]:
-    """Load pre-collected trial outcomes from a JSON file shaped like
-    evals/fixtures/predictive_validity/results_raw.json's `run_results` field
-    -- lets `diff`/`eval` be tested and used with zero live inference."""
+def _load_replay(path: Path) -> ReplayFile:
+    """`replay.load_replay` with failures surfaced as one-line CLI errors (exit 2)."""
     try:
-        with path.open(encoding="utf-8") as f:
-            raw = json.load(f)
-    except FileNotFoundError:
-        raise CliError(f"replay file not found: {path}") from None
-    except (OSError, json.JSONDecodeError) as exc:
-        raise CliError(f"cannot read replay file {path}: {exc}") from None
-    return [TrialOutcome.from_dict(r) for r in raw]
+        return load_replay(path)
+    except ReplayError as exc:
+        raise CliError(str(exc)) from None
+
+
+def _load_replay_trials(path: Path) -> list[TrialOutcome]:
+    """Load pre-collected trial outcomes (legacy bare list or v1 file) -- lets `diff`/`eval`
+    be tested and used with zero live inference."""
+    return _load_replay(path).trials
 
 
 def _print_decomposed(label: str, rate: DecomposedRate, console: Console) -> None:
