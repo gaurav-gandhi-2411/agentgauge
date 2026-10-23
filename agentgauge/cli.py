@@ -35,7 +35,14 @@ from agentgauge.harness import DecomposedRate, DiffResult, TrialOutcome, Verdict
 from agentgauge.linter import LintReport, lint_tool_set
 from agentgauge.provider_config import create_provider, load_provider_config
 from agentgauge.providers import MockProvider, OllamaProvider, Provider, ProviderUnreachableError
-from agentgauge.replay import ReplayError, ReplayFile, load_replay
+from agentgauge.replay import (
+    ReplayError,
+    ReplayFile,
+    file_sha256,
+    load_replay,
+    save_replay,
+    tools_sha256,
+)
 from agentgauge.report import render_html, render_json_stable, render_text
 from agentgauge.runner import RunResult, run_tasks
 from agentgauge.scorer import score_all
@@ -223,6 +230,30 @@ def diff(
     ] = None,
     replay_before: Annotated[Path | None, typer.Option("--replay-before")] = None,
     replay_after: Annotated[Path | None, typer.Option("--replay-after")] = None,
+    save_before: Annotated[
+        Path | None,
+        typer.Option(
+            "--save-before",
+            help="Live runs only: write the 'before' trials (with provenance) to this replay file",
+        ),
+    ] = None,
+    save_after: Annotated[
+        Path | None,
+        typer.Option(
+            "--save-after",
+            help="Live runs only: write the 'after' trials (with provenance) to this replay file",
+        ),
+    ] = None,
+    allow_stale_replay: Annotated[
+        bool,
+        typer.Option(
+            "--allow-stale-replay",
+            help=(
+                "With replay files AND server paths: warn instead of failing when a replay was "
+                "recorded against a different tool schema or tasks file"
+            ),
+        ),
+    ] = False,
     model: Annotated[str, typer.Option("--model", "-m", help="Ollama agent model")] = "gemma2:9b",
     provider_config: Annotated[
         Path | None,
@@ -296,6 +327,9 @@ def diff(
             tasks_file=tasks_file,
             replay_before=replay_before,
             replay_after=replay_after,
+            save_before=save_before,
+            save_after=save_after,
+            allow_stale_replay=allow_stale_replay,
             model=model,
             provider_config=provider_config,
             trials=trials,
@@ -314,6 +348,9 @@ async def _diff_async(
     tasks_file: Path | None,
     replay_before: Path | None,
     replay_after: Path | None,
+    save_before: Path | None = None,
+    save_after: Path | None = None,
+    allow_stale_replay: bool = False,
     model: str,
     provider_config: Path | None = None,
     trials: int,
@@ -323,14 +360,46 @@ async def _diff_async(
     json_output: bool,
 ) -> None:
     console = Console()
+    if save_before is not None or save_after is not None:
+        if replay_before is not None or replay_after is not None or mock:
+            raise CliError(
+                "--save-before/--save-after record a LIVE run; they cannot be combined with "
+                "--replay-before/--replay-after or --mock."
+            )
+        if save_before is not None and save_before == save_after:
+            raise CliError("--save-before and --save-after must be different files.")
     before_tools: list[Any] | None = None
     after_tools: list[Any] | None = None
     before_stats: TrialCollectionStats | None = None
     after_stats: TrialCollectionStats | None = None
     coverage: CoverageSummary | None = None  # needs the tasks file, so live runs only
     if replay_before is not None and replay_after is not None:
-        before_trials = _load_replay_trials(replay_before)
-        after_trials = _load_replay_trials(replay_after)
+        before_replay = _load_replay(replay_before)
+        after_replay = _load_replay(replay_after)
+        before_trials, after_trials = before_replay.trials, after_replay.trials
+        if before is not None and after is not None:
+            # Server paths alongside the replays = the CI case: refuse a replay that was recorded
+            # against a different tool schema (needs the server only, never a model).
+            for server_path in (before, after):
+                if not _is_url(server_path):
+                    _check_server_target(server_path)
+            tasks_sha = file_sha256(tasks_file) if tasks_file is not None else None
+            for flag, rf, target in (
+                ("--save-before", before_replay, before),
+                ("--save-after", after_replay, after),
+            ):
+                _check_replay_fresh(
+                    rf,
+                    live_tools_sha=tools_sha256(await _introspect_tools(target)),
+                    live_tasks_sha=tasks_sha,
+                    label=flag.replace("--save", "replay"),
+                    rerecord_flag=flag,
+                    allow_stale=allow_stale_replay,
+                )
+        if not json_output:
+            for label, rf in (("before", before_replay), ("after", after_replay)):
+                if (line := rf.describe()) is not None:
+                    console.print(f"[dim]replay {label}: {escape(line)}[/dim]")
         # Same trial-level audit as a live run (a replay file carries no tasks or schemas, so
         # only the checks that need trial outcomes apply).
         _trial_audit_or_exit(
@@ -377,6 +446,11 @@ async def _diff_async(
             provider_config=provider_config,
             seed=seed,
         )
+        if save_before is not None:
+            _save_trials(
+                save_before, before_trials, before_stats, target=before, tools=before_tools,
+                tasks_file=tasks_file, trials=trials, seed=seed,
+            )  # fmt: skip
         after_trials, after_stats = await _collect_trials(
             after,
             tasks,
@@ -386,6 +460,11 @@ async def _diff_async(
             provider_config=provider_config,
             seed=seed,
         )
+        if save_after is not None:
+            _save_trials(
+                save_after, after_trials, after_stats, target=after, tools=after_tools,
+                tasks_file=tasks_file, trials=trials, seed=seed,
+            )  # fmt: skip
         _trial_audit_or_exit(
             run_audit(
                 tasks,
@@ -710,6 +789,76 @@ def _print_audit_report(report: AuditReport, console: Console) -> None:
         console.print(f"[yellow]AUDIT WARN[/yellow] ({f.check}): {escape(f.detail)}")
 
 
+def _save_trials(
+    path: Path,
+    outcomes: list[TrialOutcome],
+    stats: TrialCollectionStats,
+    *,
+    target: str,
+    tools: list[Any],
+    tasks_file: Path,
+    trials: int,
+    seed: int,
+) -> None:
+    """Write a live run's trials as a v1 replay file (provenance: model, seed, schema/tasks hashes).
+
+    Called right after collection, before the trial audit, so an expensive run is never lost; a
+    run the audit would block is blocked again on replay, so saving it cannot launder it.
+    """
+    try:
+        save_replay(
+            path,
+            outcomes,
+            model=stats.provider_label,
+            seed=seed,
+            trials_per_task=trials,
+            target=target,
+            tools_sha=tools_sha256(tools),
+            tasks_sha=file_sha256(tasks_file),
+        )
+    except ReplayError as exc:
+        raise CliError(str(exc)) from None
+    typer.echo(f"Saved {len(outcomes)} trials -> {path}", err=True)  # stderr keeps --json clean
+
+
+def _check_replay_fresh(
+    replay: ReplayFile,
+    *,
+    live_tools_sha: str,
+    live_tasks_sha: str | None,
+    label: str,
+    rerecord_flag: str,
+    allow_stale: bool,
+) -> None:
+    """Refuse (CliError, exit 2) a v1 replay whose recorded tool-schema or tasks hash differs from
+    the live server/tasks file; `allow_stale` downgrades that to a warning. A legacy file has no
+    hashes to compare, so it only gets a warning -- it can never be proven stale."""
+    if replay.provenance is None:
+        typer.echo(
+            f"Warning: {label} is a legacy replay with no provenance; cannot verify it matches "
+            "the server (re-record with the save flags to get a checkable file).",
+            err=True,
+        )
+        return
+    problems: list[str] = []
+    recorded = replay.tools_sha256
+    if recorded != live_tools_sha:
+        problems.append(
+            f"tool schema changed (recorded {str(recorded)[:12]} vs live {live_tools_sha[:12]})"
+        )
+    if live_tasks_sha is not None and replay.tasks_sha256 != live_tasks_sha:
+        problems.append("tasks file changed")
+    if not problems:
+        return
+    message = f"{label} is stale: {'; '.join(problems)}."
+    if allow_stale:
+        typer.echo(f"Warning: {message} Continuing (--allow-stale-replay).", err=True)
+        return
+    raise CliError(
+        f"{message} Re-record it with {rerecord_flag} (or pass --allow-stale-replay to override).",
+    )
+
+
 def _load_replay(path: Path) -> ReplayFile:
     """`replay.load_replay` with failures surfaced as one-line CLI errors (exit 2)."""
     try:
@@ -749,6 +898,23 @@ def eval_cmd(
             "--replay", help="Replay pre-collected trial outcomes instead of running live"
         ),
     ] = None,
+    save: Annotated[
+        Path | None,
+        typer.Option(
+            "--save",
+            help="Live runs only: write the trials (with provenance) to this replay file",
+        ),
+    ] = None,
+    allow_stale_replay: Annotated[
+        bool,
+        typer.Option(
+            "--allow-stale-replay",
+            help=(
+                "With --replay: warn instead of failing when the replay was recorded against a "
+                "different tool schema or tasks file"
+            ),
+        ),
+    ] = False,
     model: Annotated[str, typer.Option("--model", "-m", help="Ollama agent model")] = "gemma2:9b",
     provider_config: Annotated[
         Path | None,
@@ -797,6 +963,8 @@ def eval_cmd(
             target,
             tasks_file=tasks_file,
             replay=replay,
+            save=save,
+            allow_stale_replay=allow_stale_replay,
             model=model,
             provider_config=provider_config,
             trials=trials,
@@ -812,6 +980,8 @@ async def _eval_async(
     *,
     tasks_file: Path | None,
     replay: Path | None,
+    save: Path | None = None,
+    allow_stale_replay: bool = False,
     model: str,
     provider_config: Path | None = None,
     trials: int,
@@ -820,6 +990,8 @@ async def _eval_async(
     json_output: bool,
 ) -> None:
     console = Console()
+    if save is not None and (replay is not None or mock):
+        raise CliError("--save records a LIVE run; it cannot be combined with --replay or --mock.")
     if not _is_url(target):
         _check_server_target(target)
     if tasks_file is not None and replay is None:
@@ -842,7 +1014,18 @@ async def _eval_async(
     stats: TrialCollectionStats | None = None
     coverage: CoverageSummary | None = None  # needs the tasks file, so live runs only
     if replay is not None:
-        outcomes = _load_replay_trials(replay)
+        replay_file = _load_replay(replay)
+        outcomes = replay_file.trials
+        _check_replay_fresh(
+            replay_file,
+            live_tools_sha=tools_sha256(info.tools),
+            live_tasks_sha=file_sha256(tasks_file) if tasks_file is not None else None,
+            label="replay",
+            rerecord_flag="--save",
+            allow_stale=allow_stale_replay,
+        )
+        if not json_output and (line := replay_file.describe()) is not None:
+            console.print(f"[dim]replay: {escape(line)}[/dim]")
     elif tasks_file is not None:
         tasks = _load_tasks_file(tasks_file)
         tools = list(info.tools)
@@ -868,6 +1051,11 @@ async def _eval_async(
             provider_config=provider_config,
             seed=seed,
         )
+        if save is not None:
+            _save_trials(
+                save, outcomes, stats, target=target, tools=tools, tasks_file=tasks_file,
+                trials=trials, seed=seed,
+            )  # fmt: skip
         audit_report = run_audit(tasks, before_tools=tools, before_trials=outcomes)
         if not json_output:
             _print_audit_report(audit_report, console)
@@ -1037,8 +1225,11 @@ _GITHUB_ACTION_TEMPLATE = """\
 #   Cost/time: the job installs Ollama on the runner and pulls gemma2:9b (~5.4 GB). GitHub-hosted
 #   runners have no GPU, so every model call runs on CPU -- expect it to be slow for ~100
 #   tasks (the job is capped at 90 minutes). To skip a runner-hosted model entirely,
-#   run `agentgauge diff` locally or on your own GPU runner and commit the recorded trials, then
-#   call `agentgauge diff --replay-before before.json --replay-after after.json` in CI.
+#   run `agentgauge diff before.py after.py --tasks agentgauge_tasks.json --save-before
+#   before.json --save-after after.json` locally or on your own GPU runner and commit the two
+#   files, then in CI call `agentgauge diff before.py after.py --replay-before before.json
+#   --replay-after after.json` -- with the server paths given it fails if the tool schema
+#   changed since recording (re-record, or pass --allow-stale-replay to override).
 #
 # Edit the two `path/to/your_server.py` placeholders below to your real MCP server path.
 name: agentgauge

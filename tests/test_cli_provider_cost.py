@@ -157,8 +157,6 @@ class TestDiffCostAccounting:
             app,
             [
                 "diff",
-                "unused_before.py",
-                "unused_after.py",
                 "--replay-before",
                 str(replay_before),
                 "--replay-after",
@@ -181,8 +179,6 @@ class TestDiffCostAccounting:
             app,
             [
                 "diff",
-                "unused_before.py",
-                "unused_after.py",
                 "--replay-before",
                 str(replay_before),
                 "--replay-after",
