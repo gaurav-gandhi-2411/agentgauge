@@ -3,6 +3,10 @@
 output"). Live-mode runs use `--mock` (MockProvider has no token/cost tracking, which
 exercises the "n/a" path); replay-mode runs prove the explicit "no live cost to
 report" message never degrades to printed zeros.
+
+Updated for the first-run-experience change: `--mock` now REFUSES to produce a verdict (see
+tests/test_first_run.py), so the live-mode cost tests drive the same code path with a stub
+provider (no token/cost attributes -> the same "n/a" path MockProvider exercised) instead.
 """
 
 from __future__ import annotations
@@ -16,6 +20,7 @@ from typer.testing import CliRunner
 
 from agentgauge.cli import app
 from agentgauge.client import MCPClient, ServerInfo, ToolCallResult
+from agentgauge.providers import Message
 
 ECHO_TOOL = Tool(
     name="echo",
@@ -26,6 +31,22 @@ ECHO_TOOL = Tool(
         "required": ["message"],
     },
 )
+
+
+class _StubProvider:
+    """Answers the select-tool and construct-args prompts correctly for the `echo` tool; has no
+    token/cost tracking (so cost output must say "n/a")."""
+
+    @property
+    def model_name(self) -> str:
+        return "stub"
+
+    async def chat(self, messages: list[Message], *, seed: int = 42) -> str:
+        return "echo" if "Reply with ONLY the tool name" in messages[0].content else "{}"
+
+
+def _use_stub_provider():  # type: ignore[no-untyped-def]
+    return patch("agentgauge.cli._resolve_provider", return_value=(_StubProvider(), "stub"))
 
 
 def _make_mock_client() -> MCPClient:
@@ -76,6 +97,7 @@ class TestDiffCostAccounting:
                 new=AsyncMock(return_value=(mock_client, fake_ctx)),
             ),
             patch("agentgauge.cli.cleanup_connection", new=AsyncMock()),
+            _use_stub_provider(),
         ):
             result = runner.invoke(
                 app,
@@ -85,13 +107,12 @@ class TestDiffCostAccounting:
                     "examples/echo_server_fixed.py",
                     "--tasks",
                     str(tasks_file),
-                    "--mock",
                 ],
             )
 
         assert result.exit_code in (0, 1), result.output
-        assert "before cost: provider=mock" in result.output
-        assert "after cost: provider=mock" in result.output
+        assert "before cost: provider=stub" in result.output
+        assert "after cost: provider=stub" in result.output
         # MockProvider has no token/cost tracking -- must say "n/a", never a fake $0.000000.
         assert "est_spend=n/a" in result.output
 
@@ -107,6 +128,7 @@ class TestDiffCostAccounting:
                 new=AsyncMock(return_value=(mock_client, fake_ctx)),
             ),
             patch("agentgauge.cli.cleanup_connection", new=AsyncMock()),
+            _use_stub_provider(),
         ):
             result = runner.invoke(
                 app,
@@ -116,14 +138,13 @@ class TestDiffCostAccounting:
                     "examples/echo_server_fixed.py",
                     "--tasks",
                     str(tasks_file),
-                    "--mock",
                     "--json",
                 ],
             )
 
         payload = json.loads(result.output)
         assert payload["before_cost"]["live"] is True
-        assert payload["before_cost"]["provider"] == "mock"
+        assert payload["before_cost"]["provider"] == "stub"
         assert payload["before_cost"]["cost_usd"] is None
         assert payload["after_cost"]["live"] is True
 
@@ -194,13 +215,14 @@ class TestEvalCostAccounting:
                 new=AsyncMock(return_value=(mock_client, fake_ctx)),
             ),
             patch("agentgauge.cli.cleanup_connection", new=AsyncMock()),
+            _use_stub_provider(),
         ):
             result = runner.invoke(
                 app,
-                ["eval", "examples/echo_server.py", "--tasks", str(tasks_file), "--mock"],
+                ["eval", "examples/echo_server.py", "--tasks", str(tasks_file)],
             )
 
-        assert "cost: provider=mock" in result.output
+        assert "cost: provider=stub" in result.output
 
     def test_json_mode_includes_cost_key(self, tmp_path: Path) -> None:
         runner = CliRunner()
@@ -214,6 +236,7 @@ class TestEvalCostAccounting:
                 new=AsyncMock(return_value=(mock_client, fake_ctx)),
             ),
             patch("agentgauge.cli.cleanup_connection", new=AsyncMock()),
+            _use_stub_provider(),
         ):
             result = runner.invoke(
                 app,
@@ -222,11 +245,10 @@ class TestEvalCostAccounting:
                     "examples/echo_server.py",
                     "--tasks",
                     str(tasks_file),
-                    "--mock",
                     "--json",
                 ],
             )
 
         payload = json.loads(result.output)
         assert payload["cost"]["live"] is True
-        assert payload["cost"]["provider"] == "mock"
+        assert payload["cost"]["provider"] == "stub"

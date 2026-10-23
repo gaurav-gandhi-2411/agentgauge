@@ -6,6 +6,7 @@ import json
 import re
 from pathlib import Path
 
+import pytest
 from typer.testing import CliRunner
 
 from agentgauge.audit import check_degenerate_metrics_pooled, run_audit
@@ -119,9 +120,7 @@ class TestReplayRunsTheAudit:
     def test_replay_ceiling_exits_zero_with_no_delta_text(self, tmp_path: Path) -> None:
         b = _write(tmp_path / "b.json", _trials(24, 0))
         a = _write(tmp_path / "a.json", _trials(24, 0))
-        result = CliRunner().invoke(
-            app, ["diff", "before.py", "after.py", "--replay-before", b, "--replay-after", a]
-        )
+        result = CliRunner().invoke(app, ["diff", "--replay-before", b, "--replay-after", a])
         out = _flat(result.output)
         assert result.exit_code == 0, result.output
         assert "CEILING" in out and "no delta to estimate" in out
@@ -131,8 +130,7 @@ class TestReplayRunsTheAudit:
         b = _write(tmp_path / "b.json", _trials(0, 24))
         a = _write(tmp_path / "a.json", _trials(0, 24))
         result = CliRunner().invoke(
-            app,
-            ["diff", "before.py", "after.py", "--replay-before", b, "--replay-after", a, "--json"],
+            app, ["diff", "--replay-before", b, "--replay-after", a, "--json"]
         )
         assert result.exit_code == 0, result.output
         payload = json.loads(result.output[result.output.index("{") :])
@@ -141,9 +139,7 @@ class TestReplayRunsTheAudit:
     def test_replay_with_a_perfect_after_arm_reports_the_delta(self, tmp_path: Path) -> None:
         b = _write(tmp_path / "b.json", _trials(16, 8))
         a = _write(tmp_path / "a.json", _trials(24, 0))
-        result = CliRunner().invoke(
-            app, ["diff", "before.py", "after.py", "--replay-before", b, "--replay-after", a]
-        )
+        result = CliRunner().invoke(app, ["diff", "--replay-before", b, "--replay-after", a])
         assert result.exit_code == 0, result.output
         assert "AUDIT BLOCK" not in result.output
 
@@ -151,8 +147,19 @@ class TestReplayRunsTheAudit:
         """Proves the replay path runs the audit: this input only fails if run_audit executes."""
         b = _write(tmp_path / "b.json", _trials(10, 0, 0.5))
         a = _write(tmp_path / "a.json", _trials(10, 0, 0.5))
-        result = CliRunner().invoke(
-            app, ["diff", "before.py", "after.py", "--replay-before", b, "--replay-after", a]
-        )
+        result = CliRunner().invoke(app, ["diff", "--replay-before", b, "--replay-after", a])
         assert result.exit_code == 2
         assert "degenerate_metrics" in result.output
+
+    def test_bundled_demo_still_exits_zero(self) -> None:
+        result = CliRunner().invoke(app, ["demo"])
+        assert result.exit_code == 0, result.output
+
+
+@pytest.mark.parametrize("verdict", [Verdict.CEILING, Verdict.FLOOR])
+def test_demo_explanation_covers_new_verdicts(verdict: Verdict) -> None:
+    from agentgauge import cli
+
+    trials = _trials(24, 0) if verdict == Verdict.CEILING else _trials(0, 24)
+    lines = cli._demo_explanation(diff_from_trials(trials, trials), 24)
+    assert "Why this verdict" in lines[1]

@@ -1,0 +1,122 @@
+[
+  {
+    "task_tool_name": "ticket_comment",
+    "selected_tool": "ticket_comment",
+    "constraint_satisfaction": 1.0
+  },
+  {
+    "task_tool_name": "ticket_remark",
+    "selected_tool": "ticket_comment",
+    "constraint_satisfaction": 0.0
+  },
+  {
+    "task_tool_name": "ticket_assign",
+    "selected_tool": "ticket_assign",
+    "constraint_satisfaction": 1.0
+  },
+  {
+    "task_tool_name": "ticket_delegate",
+    "selected_tool": "ticket_assign",
+    "constraint_satisfaction": 0.0
+  },
+  {
+    "task_tool_name": "ticket_close",
+    "selected_tool": "ticket_close",
+    "constraint_satisfaction": 1.0
+  },
+  {
+    "task_tool_name": "ticket_retire",
+    "selected_tool": "ticket_retire",
+    "constraint_satisfaction": 1.0
+  },
+  {
+    "task_tool_name": "ticket_comment",
+    "selected_tool": "ticket_comment",
+    "constraint_satisfaction": 1.0
+  },
+  {
+    "task_tool_name": "ticket_remark",
+    "selected_tool": "ticket_comment",
+    "constraint_satisfaction": 0.0
+  },
+  {
+    "task_tool_name": "ticket_assign",
+    "selected_tool": "ticket_assign",
+    "constraint_satisfaction": 1.0
+  },
+  {
+    "task_tool_name": "ticket_delegate",
+    "selected_tool": "ticket_assign",
+    "constraint_satisfaction": 0.0
+  },
+  {
+    "task_tool_name": "ticket_close",
+    "selected_tool": "ticket_close",
+    "constraint_satisfaction": 1.0
+  },
+  {
+    "task_tool_name": "ticket_retire",
+    "selected_tool": "ticket_retire",
+    "constraint_satisfaction": 1.0
+  },
+  {
+    "task_tool_name": "ticket_comment",
+    "selected_tool": "ticket_comment",
+    "constraint_satisfaction": 1.0
+  },
+  {
+    "task_tool_name": "ticket_remark",
+    "selected_tool": "ticket_comment",
+    "constraint_satisfaction": 0.0
+  },
+  {
+    "task_tool_name": "ticket_assign",
+    "selected_tool": "ticket_assign",
+    "constraint_satisfaction": 1.0
+  },
+  {
+    "task_tool_name": "ticket_delegate",
+    "selected_tool": "ticket_assign",
+    "constraint_satisfaction": 0.0
+  },
+  {
+    "task_tool_name": "ticket_close",
+    "selected_tool": "ticket_close",
+    "constraint_satisfaction": 1.0
+  },
+  {
+    "task_tool_name": "ticket_retire",
+    "selected_tool": "ticket_retire",
+    "constraint_satisfaction": 1.0
+  },
+  {
+    "task_tool_name": "ticket_comment",
+    "selected_tool": "ticket_comment",
+    "constraint_satisfaction": 1.0
+  },
+  {
+    "task_tool_name": "ticket_remark",
+    "selected_tool": "ticket_remark",
+    "constraint_satisfaction": 1.0
+  },
+  {
+    "task_tool_name": "ticket_assign",
+    "selected_tool": "ticket_assign",
+    "constraint_satisfaction": 1.0
+  },
+  {
+    "task_tool_name": "ticket_delegate",
+    "selected_tool": "ticket_assign",
+    "constraint_satisfaction": 0.0
+  },
+  {
+    "task_tool_name": "ticket_close",
+    "selected_tool": "ticket_close",
+    "constraint_satisfaction": 1.0
+  },
+  {
+    "task_tool_name": "ticket_retire",
+    "selected_tool": "ticket_close",
+    "constraint_satisfaction": 0.0
+  }
+]
