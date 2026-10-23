@@ -2,8 +2,8 @@
 
 Runs the repo's own live collection path (`agentgauge.cli._collect_trials`: `run_tasks` ->
 OllamaProvider -> constraint scoring) over the bundled before/after demo servers with
-`--trials 1 --seed 42`, and writes the trial outcomes in the exact JSON shape
-`agentgauge diff --replay-before/--replay-after` loads. Not run in CI (needs a local Ollama).
+`--trials 1 --seed 42`, and writes the trial outcomes with `agentgauge.replay.save_replay` (v1 file,
+with provenance; the files currently bundled predate it and are legacy bare lists). Not run in CI.
 
     python scripts/record_demo_replays.py [--model gemma2:9b] [--max-calls 120]
 
@@ -15,12 +15,12 @@ from __future__ import annotations
 
 import argparse
 import asyncio
-import json
 import sys
 from pathlib import Path
 
-from agentgauge.cli import _collect_trials, _load_tasks_file
+from agentgauge.cli import _collect_trials, _introspect_tools, _load_tasks_file
 from agentgauge.providers import OllamaProvider
+from agentgauge.replay import file_sha256, save_replay, tools_sha256
 
 DEMO_DIR = Path(__file__).resolve().parent.parent / "agentgauge" / "demo"
 SEED = 42  # repo-wide convention; per-trial seeds are derived from it by runner.trial_seed
@@ -41,17 +41,19 @@ async def _record(model: str, max_calls: int, out_dir: Path) -> None:
             mock=False,
             seed=SEED,
         )
-        payload = [
-            {
-                "task_tool_name": o.task_tool_name,
-                "selected_tool": o.selected_tool,
-                "constraint_satisfaction": o.constraint_satisfaction,
-            }
-            for o in outcomes
-        ]
+        server = str(DEMO_DIR / f"{arm}_server.py")
         path = out_dir / f"replay_{arm}.json"
-        path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
-        print(f"{arm}: {len(payload)} trials, {stats.duration_s:.1f}s -> {path}")  # noqa: T201
+        save_replay(
+            path,
+            outcomes,
+            model=stats.provider_label,
+            seed=SEED,
+            trials_per_task=1,
+            target=server,
+            tools_sha=tools_sha256(await _introspect_tools(server)),
+            tasks_sha=file_sha256(DEMO_DIR / "tasks.json"),
+        )
+        print(f"{arm}: {len(outcomes)} trials, {stats.duration_s:.1f}s -> {path}")  # noqa: T201
 
 
 def main() -> None:
