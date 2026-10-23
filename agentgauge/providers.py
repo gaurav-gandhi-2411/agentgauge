@@ -4,6 +4,7 @@ import asyncio
 import hashlib
 import hmac
 import json
+import logging
 import math
 import os
 from dataclasses import dataclass
@@ -12,6 +13,8 @@ from typing import Protocol, runtime_checkable
 from urllib.parse import quote
 
 import httpx
+
+_log = logging.getLogger(__name__)
 
 
 @dataclass
@@ -150,6 +153,12 @@ class OllamaProvider:
     sets `num_ctx` from `compute_num_ctx` (>= 4096, sized to the prompt) and afterwards
     raises `OllamaTruncationError` if `prompt_eval_count` shows truncation (window filled, or
     the context-shift signature of about num_ctx/2 measured on Ollama 0.40.3).
+
+    Ollama also clamps `num_ctx` to the model's maximum context (gemma2:9b: 8192), so the
+    model's `context_length` is read once from `/api/show`: the requested `num_ctx` is
+    clamped to it, the call fails up front when the estimated prompt plus headroom cannot
+    fit, and the truncation check uses the EFFECTIVE window. If `/api/show` is unavailable
+    the previous (unclamped) behaviour applies, with one warning.
     """
 
     BASE_URL = "http://localhost:11434"
@@ -157,20 +166,59 @@ class OllamaProvider:
     def __init__(self, model: str = "llama3.2", *, timeout: float = 180.0) -> None:
         self._model = model
         self._timeout = timeout
+        self._max_ctx: int | None = None
+        self._max_ctx_probed = False
 
     @property
     def model_name(self) -> str:
         return self._model
 
+    async def _model_max_ctx(self, client: httpx.AsyncClient) -> int | None:
+        """Model's maximum context length from `/api/show` (cached; None if unavailable)."""
+        if self._max_ctx_probed:
+            return self._max_ctx
+        self._max_ctx_probed = True
+        try:
+            resp = await client.post(f"{self.BASE_URL}/api/show", json={"model": self._model})
+            resp.raise_for_status()
+            info = resp.json().get("model_info") or {}
+            values = [
+                v
+                for k, v in info.items()
+                if k.endswith(".context_length") and isinstance(v, int) and v > 0
+            ]
+            self._max_ctx = values[0] if values else None
+        except Exception:  # best-effort probe; must never break the chat call
+            self._max_ctx = None
+        if self._max_ctx is None:
+            _log.warning(
+                "Ollama /api/show gave no context_length for %s; num_ctx is not clamped to "
+                "the model maximum and truncation is checked against the requested num_ctx.",
+                self._model,
+            )
+        return self._max_ctx
+
     async def chat(self, messages: list[Message], *, seed: int = 42) -> str:
         num_ctx = compute_num_ctx(messages)
-        payload = {
-            "model": self._model,
-            "messages": [{"role": m.role, "content": m.content} for m in messages],
-            "stream": False,
-            "options": {"seed": seed, "num_ctx": num_ctx},
-        }
         async with httpx.AsyncClient(timeout=self._timeout) as client:
+            max_ctx = await self._model_max_ctx(client)
+            if max_ctx is not None:
+                est = estimate_prompt_tokens(messages)
+                if est + NUM_CTX_HEADROOM > max_ctx:
+                    raise OllamaTruncationError(
+                        f"Ollama model '{self._model}' has a maximum context of {max_ctx} "
+                        f"tokens, but this prompt is estimated at {est} tokens plus "
+                        f"{NUM_CTX_HEADROOM} tokens of headroom, so it cannot fit and would "
+                        "be silently truncated. Shorten the tool catalog or use a model with "
+                        "a larger context window."
+                    )
+                num_ctx = min(num_ctx, max_ctx)
+            payload = {
+                "model": self._model,
+                "messages": [{"role": m.role, "content": m.content} for m in messages],
+                "stream": False,
+                "options": {"seed": seed, "num_ctx": num_ctx},
+            }
             resp = await client.post(f"{self.BASE_URL}/api/chat", json=payload)
             resp.raise_for_status()
             body = resp.json()

@@ -188,3 +188,103 @@ async def test_small_prompt_with_count_near_half_window_unaffected() -> None:
     # A tiny prompt has a tiny L, so a count near num_ctx/2 cannot look like a shift.
     respx.post(URL).mock(return_value=_reply(2050))
     assert await OllamaProvider().chat([Message("user", "hi")]) == "ok"
+
+
+# -- clamp to the model's maximum context (/api/show) ----------------------------------------
+# Audit 2026-10-18: gemma2:9b (max 8192) was asked for num_ctx=32768, ran at 8192, reported
+# prompt_eval_count 4099 (= 8192/2 + 3, context shift) and the guard keyed to 32768 stayed quiet.
+
+SHOW_URL = f"{OllamaProvider.BASE_URL}/api/show"
+
+
+def _show(context_length: int | None, arch: str = "gemma2") -> httpx.Response:
+    info: dict = {"general.architecture": arch}
+    if context_length is not None:
+        info[f"{arch}.context_length"] = context_length
+    return httpx.Response(200, json={"model_info": info})
+
+
+@respx.mock
+async def test_prompt_larger_than_model_max_raises_before_chat() -> None:
+    respx.post(SHOW_URL).mock(return_value=_show(8192))
+    chat = respx.post(URL).mock(return_value=_reply(100))
+    with pytest.raises(OllamaTruncationError) as exc:
+        await OllamaProvider("gemma2:9b").chat(_msg(42_000))  # ~14k tokens
+    text = str(exc.value)
+    assert "8192" in text and "gemma2:9b" in text and "Shorten" in text
+    assert chat.call_count == 0
+
+
+@respx.mock
+async def test_prompt_that_fits_is_sent_with_num_ctx_clamped_to_model_max() -> None:
+    respx.post(SHOW_URL).mock(return_value=_show(6000))
+    chat = respx.post(URL).mock(return_value=_reply(4000))
+    # ~4.0k estimated tokens + 1024 headroom fits 6000, but the power-of-two bucket is 8192.
+    assert compute_num_ctx(_msg(12_000)) == 8192
+    await OllamaProvider("gemma2:9b").chat(_msg(12_000))
+    assert json.loads(chat.calls[0].request.content)["options"]["num_ctx"] == 6000
+
+
+@respx.mock
+async def test_fitting_prompt_unchanged_when_model_max_is_large() -> None:
+    respx.post(SHOW_URL).mock(return_value=_show(131072, "llama"))
+    chat = respx.post(URL).mock(return_value=_reply(20_000))
+    await OllamaProvider().chat(_msg(60_000))
+    assert json.loads(chat.calls[0].request.content)["options"]["num_ctx"] == 32768
+
+
+def test_context_shift_detected_at_the_clamped_window() -> None:
+    # Requested 32768, effective 8192: count 4099 == 8192 // 2 + 3. Keyed to 32768 the
+    # half-window is 16384 and nothing fires.
+    check_truncation(4099, 32768, "gemma2:9b", 4600)
+    with pytest.raises(OllamaTruncationError):
+        check_truncation(4099, 8192, "gemma2:9b", 4600)
+
+
+@respx.mock
+async def test_provider_checks_shift_against_effective_num_ctx(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import agentgauge.providers as P
+
+    monkeypatch.setattr(P, "compute_num_ctx", lambda _m: 32768)  # what the audit saw requested
+    monkeypatch.setattr(P, "lower_bound_prompt_tokens", lambda _m: 4600)
+    respx.post(SHOW_URL).mock(return_value=_show(8192))
+    chat = respx.post(URL).mock(return_value=_reply(4099))
+    with pytest.raises(OllamaTruncationError) as exc:
+        await OllamaProvider("gemma2:9b").chat(_msg(10))
+    assert "num_ctx=8192" in str(exc.value)
+    assert json.loads(chat.calls[0].request.content)["options"]["num_ctx"] == 8192
+
+
+@respx.mock
+@pytest.mark.parametrize(
+    "show",
+    [
+        httpx.Response(404, json={"error": "model not found"}),
+        httpx.Response(200, json={"model_info": {"general.architecture": "x"}}),
+        httpx.Response(200, text="not json"),
+        httpx.ConnectError("down"),
+    ],
+)
+async def test_show_unavailable_falls_back_to_old_behaviour(
+    show: httpx.Response | Exception, caplog: pytest.LogCaptureFixture
+) -> None:
+    respx.post(SHOW_URL).mock(side_effect=show if isinstance(show, Exception) else [show] * 3)
+    chat = respx.post(URL).mock(return_value=_reply(20_000))
+    p = OllamaProvider()
+    with caplog.at_level("WARNING", logger="agentgauge.providers"):
+        await p.chat(_msg(60_000))
+        await p.chat(_msg(60_000))
+    assert json.loads(chat.calls[0].request.content)["options"]["num_ctx"] == 32768
+    assert len([r for r in caplog.records if "/api/show" in r.getMessage()]) == 1  # logged once
+
+
+@respx.mock
+async def test_show_called_once_per_provider_instance() -> None:
+    show = respx.post(SHOW_URL).mock(return_value=_show(8192))
+    respx.post(URL).mock(return_value=_reply(50))
+    p = OllamaProvider("gemma2:9b")
+    for _ in range(3):
+        await p.chat([Message("user", "hi")])
+    assert show.call_count == 1
