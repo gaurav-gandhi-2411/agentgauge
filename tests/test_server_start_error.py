@@ -15,6 +15,8 @@ from agentgauge.client import (
     STDERR_TAIL_LINE_CHARS,
     STDERR_TAIL_LINES,
     ServerStartError,
+    StderrCapture,
+    cleanup_connection,
     connect_stdio,
 )
 
@@ -104,3 +106,72 @@ class TestCliCrashOutput:
         assert "nope.py" in out
         assert "McpError" not in out
         assert "Traceback" not in out
+
+
+def _noisy_healthy_server(tmp_path: Path) -> Path:
+    """examples/echo_server.py plus one stderr line at startup and one per `echo` call."""
+    src = (Path(__file__).parent.parent / "examples" / "echo_server.py").read_text(encoding="utf-8")
+    src = src.replace(
+        "server = Server(",
+        "import sys\nprint('HEALTHY-STARTUP-LINE', file=sys.stderr, flush=True)\nserver = Server(",
+        1,
+    )
+    src = src.replace(
+        '    if name == "echo":\n',
+        '    if name == "echo":\n        print("LATE-LINE-AFTER-HANDSHAKE", file=sys.stderr, flush=True)\n',
+        1,
+    )
+    assert "HEALTHY-STARTUP-LINE" in src and "LATE-LINE-AFTER-HANDSHAKE" in src
+    path = tmp_path / "noisy_server.py"
+    path.write_text(src, encoding="utf-8")
+    return path
+
+
+class TestHealthyServerStderrIsNotSwallowed:
+    async def test_startup_and_post_handshake_stderr_reach_our_stderr(
+        self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
+    ) -> None:
+        script = _noisy_healthy_server(tmp_path)
+        client, ctx = await connect_stdio(sys.executable, [str(script)])
+        try:
+            assert "HEALTHY-STARTUP-LINE" in capfd.readouterr().err  # replayed after handshake
+            result = await client.call_tool("echo", {"message": "hi"})
+            assert result.success
+        finally:
+            await cleanup_connection(ctx)
+        err = capfd.readouterr().err
+        assert "LATE-LINE-AFTER-HANDSHAKE" in err  # replayed at cleanup
+        assert "HEALTHY-STARTUP-LINE" not in err  # and not duplicated
+
+    async def test_cleanup_closes_and_removes_the_capture_file(self, tmp_path: Path) -> None:
+        script = _noisy_healthy_server(tmp_path)
+        _client, ctx = await connect_stdio(sys.executable, [str(script)])
+        capture = ctx[4]
+        assert isinstance(capture, StderrCapture)
+        assert Path(capture.path).exists()
+        await cleanup_connection(ctx)
+        assert capture.closed
+        assert capture.writer.closed
+        assert not Path(capture.path).exists()
+
+    async def test_failed_start_also_removes_the_capture_file(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        created: list[StderrCapture] = []
+        original = StderrCapture.__init__
+
+        def spy(self: StderrCapture) -> None:
+            original(self)
+            created.append(self)
+
+        monkeypatch.setattr(StderrCapture, "__init__", spy)
+        with pytest.raises(ServerStartError):
+            await connect_stdio(sys.executable, [str(_server(tmp_path, CRASHING_SERVER))])
+        assert created
+        assert created[0].closed
+        assert not Path(created[0].path).exists()
+
+    def test_message_does_not_claim_the_process_exited(self) -> None:
+        msg = str(ServerStartError(sys.executable, ["x.py"], ""))
+        assert "did not complete the MCP handshake" in msg
+        assert "exited" not in msg

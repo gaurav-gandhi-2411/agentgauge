@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import contextlib
+import os
+import sys
 import tempfile
 from dataclasses import dataclass, field
-from typing import IO, Any, TextIO, cast
+from typing import Any
 
 import httpx
 from mcp import ClientSession, StdioServerParameters
@@ -32,7 +34,6 @@ class MCPClient:
 
     def __init__(self, session: ClientSession) -> None:
         self._session = session
-        self._stderr_file: IO[str] | None = None
 
     async def introspect(self) -> ServerInfo:
         tools_resp = await self._session.list_tools()
@@ -71,7 +72,7 @@ STDERR_TAIL_LINE_CHARS = 300
 
 
 class ServerStartError(Exception):
-    """A stdio server process exited (or failed the MCP handshake) before it was usable.
+    """A stdio server did not complete the MCP handshake (it crashed, exited, or failed it).
 
     `stderr_tail` is the last STDERR_TAIL_LINES lines of what the server wrote to stderr,
     each capped at STDERR_TAIL_LINE_CHARS; empty if it wrote nothing.
@@ -82,40 +83,73 @@ class ServerStartError(Exception):
         self.args_ = args
         self.stderr_tail = stderr_tail
         target = args[-1] if args else command
-        super().__init__(
-            f"server failed to start: {target} exited before completing the MCP handshake"
+        super().__init__(f"server failed to start: {target} did not complete the MCP handshake")
+
+
+class StderrCapture:
+    """The server's stderr, captured in a temp FILE instead of a pipe.
+
+    A file can never fill and block the child, and needs no reader task (the Windows deadlock
+    class). The child writes through `writer`; we never seek it, because an inherited handle
+    shares its file pointer with the child. All reads go through a separate handle opened by
+    path. Output is forwarded to our own stderr after the handshake and again at cleanup, so a
+    healthy server's logs still reach the terminal, just not live.
+    """
+
+    def __init__(self) -> None:
+        fd, self.path = tempfile.mkstemp(prefix="agentgauge_server_", suffix=".stderr")
+        self.writer = os.fdopen(fd, "w", encoding="utf-8", errors="replace")
+        self._forwarded = 0  # byte offset already forwarded to sys.stderr
+        self.closed = False
+
+    def _read_all(self) -> str:
+        with open(self.path, "rb") as f:  # noqa: PTH123 - same handle style as os.fdopen above
+            return f.read().decode("utf-8", errors="replace")
+
+    def tail(self) -> str:
+        """Last STDERR_TAIL_LINES lines, each length-capped, stock traceback header dropped."""
+        # The header word "Traceback" in our output would read as agentgauge itself crashing;
+        # the frames and the exception line carry the information.
+        lines = [ln for ln in self._read_all().splitlines() if not ln.startswith("Traceback (most")]
+        return "\n".join(
+            (ln if len(ln) <= STDERR_TAIL_LINE_CHARS else ln[:STDERR_TAIL_LINE_CHARS] + "...")
+            for ln in lines[-STDERR_TAIL_LINES:]
         )
 
+    def forward(self) -> None:
+        """Write everything captured since the last forward() to our own stderr."""
+        if self.closed:
+            return
+        with open(self.path, "rb") as f:  # noqa: PTH123
+            f.seek(self._forwarded)
+            data = f.read()
+        self._forwarded += len(data)
+        if data:
+            sys.stderr.write(data.decode("utf-8", errors="replace"))
+            sys.stderr.flush()
 
-def _tail_of(stream: IO[str]) -> str:
-    """Last STDERR_TAIL_LINES lines of a seekable text stream, each line length-capped."""
-    stream.flush()
-    stream.seek(0)
-    # Drop the stock traceback header: the frames and exception line carry the information, and
-    # the bare word "Traceback" in our output reads as agentgauge itself having crashed.
-    lines = [ln for ln in stream.read().splitlines() if not ln.startswith("Traceback (most")]
-    lines = lines[-STDERR_TAIL_LINES:]
-    return "\n".join(
-        (ln if len(ln) <= STDERR_TAIL_LINE_CHARS else ln[:STDERR_TAIL_LINE_CHARS] + "...")
-        for ln in lines
-    )
+    def close(self) -> None:
+        """Close and delete the temp file (idempotent)."""
+        if self.closed:
+            return
+        self.closed = True
+        with contextlib.suppress(OSError):
+            self.writer.close()
+        with contextlib.suppress(OSError):
+            os.unlink(self.path)  # noqa: PTH108
 
 
 async def connect_stdio(command: str, args: list[str]) -> tuple[MCPClient, Any]:
     """Returns (client, context) — caller must use as async context or call cleanup.
 
-    Raises ServerStartError (not a bare McpError / anyio traceback) when the server process
-    dies before the handshake completes. The server's stderr goes to a temp FILE rather than a
-    pipe: a file can never fill and block the child, so there is no reader task to deadlock on
-    Windows, and the tail stays readable after the process is gone.
+    Raises ServerStartError (not a bare McpError / anyio traceback) when the handshake fails.
+    On success the context is a 5-tuple whose last item is the StderrCapture;
+    `cleanup_connection` forwards what the server wrote after the handshake and closes it.
     """
     params = StdioServerParameters(command=command, args=args)
-    # cast: TemporaryFile returns a wrapper typeshed does not model as TextIO; it is one at runtime.
-    errlog = cast(
-        TextIO,
-        tempfile.TemporaryFile("w+", encoding="utf-8", errors="replace"),  # noqa: SIM115
-    )
-    ctx = stdio_client(params, errlog=errlog)
+    capture = StderrCapture()
+    # cast-free: stdio_client only needs a file with a fileno(), which the writer provides.
+    ctx = stdio_client(params, errlog=capture.writer)
     try:
         read, write = await ctx.__aenter__()
         session_ctx = ClientSession(read, write)
@@ -126,12 +160,11 @@ async def connect_stdio(command: str, args: list[str]) -> tuple[MCPClient, Any]:
         # would otherwise reach the terminal as a second traceback.
         with contextlib.suppress(BaseException):
             await ctx.__aexit__(None, None, None)
-        tail = _tail_of(errlog)
-        errlog.close()
+        tail = capture.tail()
+        capture.close()
         raise ServerStartError(command, args, tail) from exc
-    client = MCPClient(session)
-    client._stderr_file = errlog  # keep the handle alive for the life of the child process
-    return client, (ctx, session_ctx, read, write)
+    capture.forward()  # startup logs of a healthy server, as before when stderr was inherited
+    return MCPClient(session), (ctx, session_ctx, read, write, capture)
 
 
 async def connect_http(url: str) -> tuple[MCPClient, Any]:
@@ -145,11 +178,18 @@ async def connect_http(url: str) -> tuple[MCPClient, Any]:
 
 
 async def cleanup_connection(ctx_tuple: Any) -> None:
-    ctx, session_ctx, read, write = ctx_tuple
-    with contextlib.suppress(Exception):
-        await session_ctx.__aexit__(None, None, None)
-    with contextlib.suppress(Exception):
-        await ctx.__aexit__(None, None, None)
+    ctx, session_ctx, read, write, *extra = ctx_tuple
+    capture = extra[0] if extra and isinstance(extra[0], StderrCapture) else None
+    try:
+        with contextlib.suppress(Exception):
+            await session_ctx.__aexit__(None, None, None)
+        with contextlib.suppress(Exception):
+            await ctx.__aexit__(None, None, None)
+    finally:
+        if capture is not None:
+            with contextlib.suppress(Exception):
+                capture.forward()  # whatever the server wrote after the handshake
+            capture.close()
 
 
 async def fetch_llms_txt(base_url: str | None) -> str | None:
