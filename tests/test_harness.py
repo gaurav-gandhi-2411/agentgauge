@@ -145,6 +145,40 @@ class TestDiffFromTrials:
         assert result.verdict == Verdict.INSUFFICIENT_SENSITIVITY
         assert "does not have enough trials" in result.message
 
+    @pytest.mark.parametrize(
+        ("before_score", "after_score"),
+        [(0.8, 0.8), (1.0, 0.0), (0.0, 1.0), (1.0, 1.0), (0.0, 0.0)],
+    )
+    def test_single_trial_per_arm_is_insufficient_sensitivity(
+        self, before_score: float, after_score: float
+    ) -> None:
+        """n=1 per arm has no variance estimate: whatever the two scores, no NO_CHANGE /
+        IMPROVEMENT / REGRESSION / CEILING / FLOOR verdict may be issued (on main these
+        returned NO_CHANGE, REGRESSION, IMPROVEMENT, CEILING, FLOOR with a zero-width CI)."""
+        result = diff_from_trials(
+            [TrialOutcome("t", "t", before_score)], [TrialOutcome("t", "t", after_score)]
+        )
+        assert result.verdict == Verdict.INSUFFICIENT_SENSITIVITY
+        assert result.exit_code == 0  # a non-verdict must not fail a CI gate
+        assert result.delta == pytest.approx(after_score - before_score)
+        assert "no confidence interval" in result.message
+
+    def test_one_short_arm_is_insufficient_sensitivity(self) -> None:
+        many = [TrialOutcome("t", "t", 1.0) for _ in range(20)]
+        one = [TrialOutcome("t", "t", 0.0)]
+        assert diff_from_trials(many, one).verdict == Verdict.INSUFFICIENT_SENSITIVITY
+        assert diff_from_trials(one, many).verdict == Verdict.INSUFFICIENT_SENSITIVITY
+
+    def test_empty_arm_is_insufficient_sensitivity_not_a_crash(self) -> None:
+        result = diff_from_trials([], [TrialOutcome("t", "t", 1.0)])
+        assert result.verdict == Verdict.INSUFFICIENT_SENSITIVITY
+
+    def test_two_trials_per_arm_still_reach_the_ci_gate(self) -> None:
+        """MIN_TRIALS_PER_ARM boundary: n=2 is decided by the existing CI-width gate (here
+        identical arms -> NO_CHANGE; a noisy pair is covered by the few-trials test above)."""
+        trials = [TrialOutcome("t", "t", 0.8) for _ in range(2)]
+        assert diff_from_trials(trials, trials).verdict == Verdict.NO_CHANGE
+
     def test_decomposition_reported_separately_in_result(self) -> None:
         """The call_constraints regression pattern: selection stays perfect,
         argument accuracy drops -- both must be visible in the diff result,

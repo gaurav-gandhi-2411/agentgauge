@@ -155,6 +155,10 @@ def bootstrap_delta_ci(
     return point_delta, deltas[lo_idx], deltas[hi_idx]
 
 
+# Smallest per-arm sample for which a bootstrap CI is non-degenerate (n=1 resamples to itself).
+MIN_TRIALS_PER_ARM = 2
+
+
 class Verdict(StrEnum):
     REGRESSION = "regression"
     IMPROVEMENT = "improvement"
@@ -217,12 +221,37 @@ def diff_from_trials(
     before_joint = [t.joint_success for t in before_trials]
     after_joint = [t.joint_success for t in after_trials]
 
+    # Fewer than MIN_TRIALS_PER_ARM in either arm: resampling a single value always returns that
+    # value, so the bootstrap CI collapses to a zero-width [delta, delta] and the gate below would
+    # read it as perfect precision (NO_CHANGE / IMPROVEMENT / REGRESSION / CEILING from one
+    # observation). One trial per arm has no variance estimate, hence no sensitivity to a change
+    # of any size; say so instead of issuing a verdict. Checked before the ceiling/floor branch
+    # because "no headroom" is also a claim a single trial cannot support.
+    n_b, n_a = len(before_joint), len(after_joint)
+    if n_b < MIN_TRIALS_PER_ARM or n_a < MIN_TRIALS_PER_ARM:
+        point = (sum(after_joint) / n_a - sum(before_joint) / n_b) if n_a and n_b else 0.0
+        return DiffResult(
+            before_decomposed=before_dec,
+            after_decomposed=after_dec,
+            delta=point,
+            ci_lo=point,
+            ci_hi=point,
+            threshold=threshold,
+            verdict=Verdict.INSUFFICIENT_SENSITIVITY,
+            message=(
+                f"Only {n_b} trial(s) before and {n_a} after (need at least "
+                f"{MIN_TRIALS_PER_ARM} per arm): with one observation per arm there is no "
+                f"variance estimate, so this run cannot detect a change of any size -- the point "
+                f"difference ({point:+.3f}) is shown but no confidence interval exists and "
+                f"no verdict is drawn. Increase --trials (or add tasks) and re-run."
+            ),
+        )
+
     # Both arms constant at 1.0 (or 0.0): the bootstrap CI would be a zero-width [0, 0] and
     # NO_CHANGE would read as "descriptions do not matter". Report the finding instead of a delta.
     extreme = _constant_extreme(before_joint + after_joint)
     if extreme is not None:
         verdict = Verdict.CEILING if extreme == 1.0 else Verdict.FLOOR
-        n_b, n_a = len(before_joint), len(after_joint)
         message = (
             f"All {n_b + n_a} trials in both arms scored {extreme:.1f} "
             f"({n_b} before, {n_a} after), so there is no delta to estimate: "

@@ -11,6 +11,7 @@ import json
 from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, patch
 
+import pytest
 from mcp.types import Tool
 from typer.testing import CliRunner
 
@@ -230,3 +231,48 @@ class TestEvalCostAccounting:
         payload = json.loads(result.output)
         assert payload["cost"]["live"] is True
         assert payload["cost"]["provider"] == "mock"
+
+
+class TestDiffSingleTrialVerdict:
+    """n=1 per arm must surface INSUFFICIENT_SENSITIVITY in text and JSON output."""
+
+    @staticmethod
+    def _one_trial(tmp_path: Path, name: str, score: float) -> Path:
+        path = tmp_path / name
+        path.write_text(
+            json.dumps(
+                [
+                    {
+                        "task_tool_name": "echo",
+                        "selected_tool": "echo",
+                        "constraint_satisfaction": score,
+                    }
+                ]
+            ),
+            encoding="utf-8",
+        )
+        return path
+
+    def _invoke(self, tmp_path: Path, extra: list[str]) -> object:
+        before = self._one_trial(tmp_path, "b.json", 0.8)
+        after = self._one_trial(tmp_path, "a.json", 0.6)
+        return CliRunner().invoke(
+            app,
+            ["diff", "x.py", "y.py", "--replay-before", str(before), "--replay-after", str(after)]
+            + extra,
+        )
+
+    def test_text_output_names_the_verdict(self, tmp_path: Path) -> None:
+        result = self._invoke(tmp_path, [])
+        assert result.exit_code == 0, result.output  # type: ignore[attr-defined]
+        assert "INSUFFICIENT_SENSITIVITY" in result.output  # type: ignore[attr-defined]
+        assert "NO_CHANGE" not in result.output  # type: ignore[attr-defined]
+
+    def test_json_output_has_verdict_and_null_ci(self, tmp_path: Path) -> None:
+        result = self._invoke(tmp_path, ["--json"])
+        assert result.exit_code == 0, result.output  # type: ignore[attr-defined]
+        payload = json.loads(result.output)  # type: ignore[attr-defined]
+        assert payload["verdict"] == "insufficient_sensitivity"
+        assert payload["delta"] == pytest.approx(-0.2)
+        assert payload["ci_lo"] is None
+        assert payload["ci_hi"] is None
