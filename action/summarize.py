@@ -232,6 +232,7 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--replay-before", type=Path)
     ap.add_argument("--replay-after", type=Path)
     ap.add_argument("--fail-on", default="")
+    ap.add_argument("--summary-file", type=Path, help="also write the summary Markdown here")
     ns = ap.parse_args(argv)
 
     try:
@@ -258,6 +259,8 @@ def main(argv: list[str] | None = None) -> int:
         ns.exit_code,
     )
     _append(os.environ.get("GITHUB_STEP_SUMMARY"), summary + "\n")
+    if ns.summary_file is not None:
+        ns.summary_file.write_text(summary + "\n", encoding="utf-8", newline="\n")
     _append(
         os.environ.get("GITHUB_OUTPUT"),
         "".join(f"{k}={v}\n" for k, v in output_values(data, ns.exit_code).items()),

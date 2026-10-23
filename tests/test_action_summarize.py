@@ -235,3 +235,18 @@ def test_main_bad_fail_on_fails(tmp_path: Path) -> None:
     f = tmp_path / "diff.json"
     f.write_text(json.dumps(_diff("no_change")), encoding="utf-8")
     assert S.main(["--diff-json", str(f), "--exit-code", "0", "--fail-on", "typo"]) == 1
+
+
+def test_main_writes_summary_file_even_on_failure(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.delenv("GITHUB_STEP_SUMMARY", raising=False)
+    monkeypatch.delenv("GITHUB_OUTPUT", raising=False)
+    f, err, out = tmp_path / "diff.json", tmp_path / "err.txt", tmp_path / "summary.md"
+    f.write_text("", encoding="utf-8")
+    err.write_text("Error: replay-after is stale: tool schema changed.\n", encoding="utf-8")
+    args = ["--diff-json", str(f), "--stderr", str(err), "--exit-code", "2"]
+    assert S.main([*args, "--summary-file", str(out)]) == 1
+    text = out.read_text(encoding="utf-8")
+    assert "agentgauge diff: FAIL" in text
+    assert "replay-after is stale" in text

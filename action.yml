@@ -125,10 +125,16 @@ runs:
         if [ -n "$TASKS" ]; then args+=(--tasks "$TASKS"); fi
         if [ "$ALLOW_STALE" = "true" ]; then args+=(--allow-stale-replay); fi
         args+=(--json)
-        # No `set -e` here: the CLI's exit code is captured, never swallowed (summarize.py decides).
-        "$AG_BIN/agentgauge" "${args[@]}" > "$out/diff.json" 2> "$out/stderr.txt"
-        code=$?
+        # GitHub runs this as `bash -e -o pipefail`, so a bare non-zero CLI exit would abort the step
+        # before the summary is written. `|| code=$?` captures 1 (regression) and 2 (stale/audit/usage)
+        # without tripping -e; summarize.py then decides pass/fail and its status is the step's.
+        code=0
+        "$AG_BIN/agentgauge" "${args[@]}" > "$out/diff.json" 2> "$out/stderr.txt" || code=$?
         cat "$out/stderr.txt" >&2
+        # Besides $GITHUB_STEP_SUMMARY the summary is kept at $RUNNER_TEMP/agentgauge-action/
+        # summary.md: a failed composite step exposes no outputs, so this file is how a later step
+        # (or the self-test) can still read why it failed.
         "$AG_BIN/python" "$ACTION_PATH/action/summarize.py" \
           --diff-json "$out/diff.json" --stderr "$out/stderr.txt" --exit-code "$code" \
-          --replay-before "$REPLAY_BEFORE" --replay-after "$REPLAY_AFTER" --fail-on "$FAIL_ON"
+          --replay-before "$REPLAY_BEFORE" --replay-after "$REPLAY_AFTER" --fail-on "$FAIL_ON" \
+          --summary-file "$out/summary.md"

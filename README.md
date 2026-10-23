@@ -340,7 +340,7 @@ The step fails on a `regression` verdict by default. `insufficient_sensitivity`,
 `floor` pass (they mean "not enough evidence", not "worse"); set `fail-on:
 regression,insufficient_sensitivity` to be stricter. An exit 2 from the CLI (stale replay, blocked
 audit, usage error) always fails the step. The result is written to the job summary and to the
-outputs `verdict`, `delta`, `ci-low`, `ci-high` and `exit-code` (GitHub exposes a composite action's outputs only when the step succeeds). By default the CLI is installed from
+outputs `verdict`, `delta`, `ci-low`, `ci-high` and `exit-code` (GitHub exposes a composite action's outputs only when the step succeeds; on failure the same Markdown is kept at `$RUNNER_TEMP/agentgauge-action/summary.md`). By default the CLI is installed from
 the action's own checkout, so action and CLI versions match; `agentgauge-version` installs a pinned
 PyPI release instead. Other inputs: `tasks`, `allow-stale-replay`, `python-version`. A self-test
 runs the action on ubuntu, macOS and Windows runners (`.github/workflows/action-selftest.yml`). It is
