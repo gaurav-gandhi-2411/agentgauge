@@ -4,6 +4,8 @@ import asyncio
 import hashlib
 import hmac
 import json
+import logging
+import math
 import os
 from dataclasses import dataclass
 from datetime import UTC, datetime
@@ -11,6 +13,8 @@ from typing import Protocol, runtime_checkable
 from urllib.parse import quote
 
 import httpx
+
+_log = logging.getLogger(__name__)
 
 
 @dataclass
@@ -36,13 +40,140 @@ class Provider(Protocol):
     def model_name(self) -> str: ...
 
 
+class OllamaTruncationError(RuntimeError):
+    """Raised when Ollama evaluated a prompt that filled (or overflowed) the context window.
+
+    Ollama silently drops the oldest tokens when a prompt does not fit in `num_ctx`; the
+    model then answers from a truncated catalog with no error. This makes that loud.
+    """
+
+
+# Prompt-size estimator used to size `options.num_ctx` before the call.
+# tokens = _TEMPLATE_OVERHEAD + sum over messages of
+#          (_PER_MESSAGE_OVERHEAD + ceil(utf-8 bytes of role+content / _BYTES_PER_TOKEN)).
+# Bytes (not characters) so CJK / emoji are over- not under-counted. 3.0 is deliberately
+# below the measured bytes/token of the audited corpus on llama3.1:8b (see
+# docs/evidence/ollama_numctx_impact_audit.json, "estimator_validation") so the estimate
+# is an upper bound on the real count there.
+_BYTES_PER_TOKEN: float = 3.0
+_PER_MESSAGE_OVERHEAD_TOKENS: int = 8
+_TEMPLATE_OVERHEAD_TOKENS: int = 32
+NUM_CTX_FLOOR: int = 4096
+NUM_CTX_HEADROOM: int = 1024  # room for the completion + estimator error
+# A correctly sized num_ctx leaves >= NUM_CTX_HEADROOM tokens spare, so an evaluated prompt
+# within this many tokens of num_ctx means the window was filled, i.e. truncation.
+TRUNCATION_MARGIN: int = 64
+
+
+def estimate_prompt_tokens(messages: list[Message]) -> int:
+    """Conservative (over-)estimate of the tokens Ollama will evaluate for `messages`."""
+    total = _TEMPLATE_OVERHEAD_TOKENS
+    for m in messages:
+        n_bytes = len(m.role.encode("utf-8")) + len(m.content.encode("utf-8"))
+        total += _PER_MESSAGE_OVERHEAD_TOKENS + math.ceil(n_bytes / _BYTES_PER_TOKEN)
+    return total
+
+
+def compute_num_ctx(messages: list[Message]) -> int:
+    """`max(4096, estimated_prompt_tokens + 1024)`, rounded up to a power of two.
+
+    Rounding is a deliberate deviation from the bare formula: Ollama reloads the model
+    runner whenever `num_ctx` changes between requests, so an exact per-prompt value would
+    reload on nearly every call. Power-of-two buckets keep reloads rare and never go below
+    the formula.
+    """
+    needed = max(NUM_CTX_FLOOR, estimate_prompt_tokens(messages) + NUM_CTX_HEADROOM)
+    return 1 << (needed - 1).bit_length()
+
+
+# Lower-bound token estimate (used only for the context-shift signature below). The measured
+# maximum bytes/token over 316 corpus prompts on llama3.1:8b was 5.50, so 6.0 gives
+# L <= true token count; per-message overhead is kept below the real template cost.
+_LOWER_BOUND_BYTES_PER_TOKEN: float = 6.0
+_LOWER_BOUND_PER_MESSAGE_TOKENS: int = 4
+# A count must be below L itself to look truncated. L is already a deliberate under-estimate
+# (6 bytes/token vs 3.8 measured on gemma2:9b), so a smaller factor (the earlier 0.9) would
+# miss a real shift: google_workspace on gemma2:9b has L ~4,400 and shifts to 4,099.
+_SHIFT_BELOW_FRACTION: float = 1.0
+# Tokens reserved for the completion when deciding a prompt CERTAINLY cannot fit the model:
+# agent/judge replies here are a tool name or a short score line (well under 256 tokens).
+OUTPUT_RESERVE_TOKENS: int = 256
+_SHIFT_SLACK_FRACTION: float = 0.03  # +-3% of num_ctx // 2 ...
+_SHIFT_MIN_SLACK: int = 8  # ... but never less than 8 tokens
+
+
+def lower_bound_prompt_tokens(messages: list[Message]) -> int:
+    """Under-estimate of the tokens Ollama will evaluate for `messages` (L <= true count)."""
+    total = 0
+    for m in messages:
+        n_bytes = len(m.role.encode("utf-8")) + len(m.content.encode("utf-8"))
+        total += _LOWER_BOUND_PER_MESSAGE_TOKENS + math.ceil(n_bytes / _LOWER_BOUND_BYTES_PER_TOKEN)
+    return total
+
+
+def check_truncation(
+    prompt_eval_count: int | None,
+    num_ctx: int,
+    model: str,
+    lower_bound_tokens: int | None = None,
+) -> None:
+    """Raise OllamaTruncationError if `prompt_eval_count` shows the prompt was truncated.
+
+    Two signatures, because truncation reporting is version-dependent:
+
+    1. Window filled: `prompt_eval_count >= num_ctx - 64` (the naive expectation). Always
+       checked.
+    2. Context shift: MEASURED on Ollama 0.40.3 / llama3.1:8b, a truncated prompt reports
+       about num_ctx/2 + 2 (context shift keeps half the window), NOT num_ctx -- e.g. the
+       5307-token google_workspace selection prompt reported 2050 at num_ctx=4096 (3 runs),
+       1502 at 3000, 1026 at 2048, and 5325 (no truncation) at 8192. Checked only when
+       `lower_bound_tokens` (L, a guaranteed under-estimate) is given: raise when the count
+       is < L AND within max(8, 3%) tokens of num_ctx//2, or within 64 of num_ctx.
+       Other Ollama versions may behave differently, hence both signatures.
+
+    A count below L that is NOWHERE near num_ctx/2 is NOT treated as truncation: KV-cache
+    prefix reuse reports only the newly evaluated tokens, so a cached prefix legitimately
+    lowers the count. A missing count (None) is not checkable and passes.
+    """
+    if prompt_eval_count is None:
+        return
+    shifted = False
+    if lower_bound_tokens is not None and prompt_eval_count < _SHIFT_BELOW_FRACTION * (
+        lower_bound_tokens
+    ):
+        half = num_ctx // 2
+        slack = max(_SHIFT_MIN_SLACK, math.ceil(_SHIFT_SLACK_FRACTION * half))
+        shifted = abs(prompt_eval_count - half) <= slack
+    if shifted or prompt_eval_count >= num_ctx - TRUNCATION_MARGIN:
+        raise OllamaTruncationError(
+            f"Ollama model '{model}' evaluated {prompt_eval_count} prompt tokens with "
+            f"num_ctx={num_ctx}: the prompt did not fit the context window and was "
+            "truncated, so the model did not see the whole catalog. Raise num_ctx (the "
+            "token estimator may be too low for this text) or shorten the tool catalog."
+        )
+
+
 class OllamaProvider:
     """Calls a local Ollama instance. Default for local dev.
 
-    Decoding: sends only `options.seed`; temperature/top_p/top_k are NOT set, so the model's
-    Modelfile / Ollama's runtime defaults apply (Ollama's documented default temperature is
-    0.8 -- sampling is on). Seed support: honoured (same seed + same prompt + same model
-    build -> same completion). `runner.run_tasks` passes a distinct seed per trial.
+    Decoding: sends `options.seed` and `options.num_ctx`; temperature/top_p/top_k are NOT
+    set, so the model's Modelfile / Ollama's runtime defaults apply (Ollama's documented
+    default temperature is 0.8 -- sampling is on). Seed support: honoured (same seed + same
+    prompt + same model build -> same completion). `runner.run_tasks` passes a distinct seed
+    per trial.
+
+    Context window: Ollama silently truncates prompts longer than `num_ctx`, so every call
+    sets `num_ctx` from `compute_num_ctx` (>= 4096, sized to the prompt) and afterwards
+    raises `OllamaTruncationError` if `prompt_eval_count` shows truncation (window filled, or
+    the context-shift signature of about num_ctx/2 measured on Ollama 0.40.3).
+
+    Ollama also clamps `num_ctx` to the model's maximum context (gemma2:9b: 8192), so the
+    model's `context_length` is read once from `/api/show`: the requested `num_ctx` is
+    clamped to it, the call fails up front only when the LOWER-bound prompt estimate plus
+    `OUTPUT_RESERVE_TOKENS` already exceeds the model maximum (it certainly cannot fit),
+    and the truncation check uses the EFFECTIVE window (so a prompt that the conservative
+    upper estimate would not fit, but that really does, is sent and verified post-call). If `/api/show` is unavailable
+    the previous (unclamped) behaviour applies, with one warning.
     """
 
     BASE_URL = "http://localhost:11434"
@@ -50,6 +181,8 @@ class OllamaProvider:
     def __init__(self, model: str = "llama3.2", *, timeout: float = 180.0) -> None:
         self._model = model
         self._timeout = timeout
+        self._max_ctx: int | None = None
+        self._max_ctx_probed = False
 
     @property
     def model_name(self) -> str:
@@ -71,20 +204,66 @@ class OllamaProvider:
     def _unreachable_message(self) -> str:
         return f"Cannot reach Ollama at {self.BASE_URL}."
 
+    async def _model_max_ctx(self, client: httpx.AsyncClient) -> int | None:
+        """Model's maximum context length from `/api/show` (cached; None if unavailable)."""
+        if self._max_ctx_probed:
+            return self._max_ctx
+        self._max_ctx_probed = True
+        try:
+            resp = await client.post(f"{self.BASE_URL}/api/show", json={"model": self._model})
+            resp.raise_for_status()
+            info = resp.json().get("model_info") or {}
+            values = [
+                v
+                for k, v in info.items()
+                if k.endswith(".context_length") and isinstance(v, int) and v > 0
+            ]
+            self._max_ctx = values[0] if values else None
+        except Exception:  # best-effort probe; must never break the chat call
+            self._max_ctx = None
+        if self._max_ctx is None:
+            _log.warning(
+                "Ollama /api/show gave no context_length for %s; num_ctx is not clamped to "
+                "the model maximum and truncation is checked against the requested num_ctx.",
+                self._model,
+            )
+        return self._max_ctx
+
     async def chat(self, messages: list[Message], *, seed: int = 42) -> str:
-        payload = {
-            "model": self._model,
-            "messages": [{"role": m.role, "content": m.content} for m in messages],
-            "stream": False,
-            "options": {"seed": seed},
-        }
+        num_ctx = compute_num_ctx(messages)
         try:
             async with httpx.AsyncClient(timeout=self._timeout) as client:
+                max_ctx = await self._model_max_ctx(client)
+                if max_ctx is not None:
+                    lower = lower_bound_prompt_tokens(messages)
+                    if lower + OUTPUT_RESERVE_TOKENS > max_ctx:
+                        raise OllamaTruncationError(
+                            f"Ollama model '{self._model}' has a maximum context of {max_ctx} "
+                            f"tokens, but this prompt is at least {lower} tokens (a lower bound) "
+                            f"plus {OUTPUT_RESERVE_TOKENS} reserved for the reply, so it cannot "
+                            "fit and would be silently truncated. Shorten the tool catalog or use "
+                            "a model with a larger context window."
+                        )
+                    num_ctx = min(num_ctx, max_ctx)
+                payload = {
+                    "model": self._model,
+                    "messages": [{"role": m.role, "content": m.content} for m in messages],
+                    "stream": False,
+                    "options": {"seed": seed, "num_ctx": num_ctx},
+                }
                 resp = await client.post(f"{self.BASE_URL}/api/chat", json=payload)
                 resp.raise_for_status()
-                return str(resp.json()["message"]["content"])
+                body = resp.json()
         except (httpx.ConnectError, httpx.ConnectTimeout) as exc:
             raise ProviderUnreachableError(self._unreachable_message()) from exc
+
+        check_truncation(
+            body.get("prompt_eval_count"),
+            num_ctx,
+            self._model,
+            lower_bound_prompt_tokens(messages),
+        )
+        return body["message"]["content"]
 
 
 class MockProvider:

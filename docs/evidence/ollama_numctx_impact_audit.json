@@ -1,0 +1,5603 @@
+{
+ "model": "llama3.1:8b",
+ "ollama_version": "0.40.3",
+ "limit": 4096,
+ "longest_task_chars": 129,
+ "rows": [
+  {
+   "prompt_id": "examples/aws_s3_server.py::selection",
+   "source_file": "examples/aws_s3_server.py",
+   "prompt_class": "selection",
+   "n_tools": 4,
+   "chars": 509,
+   "utf8_bytes": 519,
+   "tokens": 119,
+   "bytes_per_token": 4.361,
+   "exceeded_4096": false,
+   "estimated_tokens": 215,
+   "estimate_over_actual": 1.807
+  },
+  {
+   "prompt_id": "examples/aws_s3_server.py::args",
+   "source_file": "examples/aws_s3_server.py",
+   "prompt_class": "args",
+   "n_tools": 4,
+   "chars": 414,
+   "utf8_bytes": 416,
+   "tokens": 113,
+   "bytes_per_token": 3.681,
+   "exceeded_4096": false,
+   "estimated_tokens": 180,
+   "estimate_over_actual": 1.593
+  },
+  {
+   "prompt_id": "examples/aws_s3_server.py::discoverability",
+   "source_file": "examples/aws_s3_server.py",
+   "prompt_class": "discoverability",
+   "n_tools": 4,
+   "chars": 336,
+   "utf8_bytes": 336,
+   "tokens": 76,
+   "bytes_per_token": 4.421,
+   "exceeded_4096": false,
+   "estimated_tokens": 154,
+   "estimate_over_actual": 2.026
+  },
+  {
+   "prompt_id": "examples/aws_s3_server.py::fixer_source",
+   "source_file": "examples/aws_s3_server.py",
+   "prompt_class": "fixer_source",
+   "n_tools": 4,
+   "chars": 5128,
+   "utf8_bytes": 5398,
+   "tokens": 1088,
+   "bytes_per_token": 4.961,
+   "exceeded_4096": false,
+   "estimated_tokens": 1841,
+   "estimate_over_actual": 1.692
+  },
+  {
+   "prompt_id": "examples/aws_s3_server_fixed.py::selection",
+   "source_file": "examples/aws_s3_server_fixed.py",
+   "prompt_class": "selection",
+   "n_tools": 4,
+   "chars": 3208,
+   "utf8_bytes": 3226,
+   "tokens": 718,
+   "bytes_per_token": 4.493,
+   "exceeded_4096": false,
+   "estimated_tokens": 1117,
+   "estimate_over_actual": 1.556
+  },
+  {
+   "prompt_id": "examples/aws_s3_server_fixed.py::args",
+   "source_file": "examples/aws_s3_server_fixed.py",
+   "prompt_class": "args",
+   "n_tools": 4,
+   "chars": 414,
+   "utf8_bytes": 416,
+   "tokens": 113,
+   "bytes_per_token": 3.681,
+   "exceeded_4096": false,
+   "estimated_tokens": 180,
+   "estimate_over_actual": 1.593
+  },
+  {
+   "prompt_id": "examples/aws_s3_server_fixed.py::discoverability",
+   "source_file": "examples/aws_s3_server_fixed.py",
+   "prompt_class": "discoverability",
+   "n_tools": 4,
+   "chars": 3035,
+   "utf8_bytes": 3043,
+   "tokens": 675,
+   "bytes_per_token": 4.508,
+   "exceeded_4096": false,
+   "estimated_tokens": 1056,
+   "estimate_over_actual": 1.564
+  },
+  {
+   "prompt_id": "examples/aws_s3_server_fixed.py::fixer_source",
+   "source_file": "examples/aws_s3_server_fixed.py",
+   "prompt_class": "fixer_source",
+   "n_tools": 4,
+   "chars": 9756,
+   "utf8_bytes": 10036,
+   "tokens": 2054,
+   "bytes_per_token": 4.886,
+   "exceeded_4096": false,
+   "estimated_tokens": 3387,
+   "estimate_over_actual": 1.649
+  },
+  {
+   "prompt_id": "examples/call_constraints_server.py::selection",
+   "source_file": "examples/call_constraints_server.py",
+   "prompt_class": "selection",
+   "n_tools": 8,
+   "chars": 688,
+   "utf8_bytes": 706,
+   "tokens": 164,
+   "bytes_per_token": 4.305,
+   "exceeded_4096": false,
+   "estimated_tokens": 277,
+   "estimate_over_actual": 1.689
+  },
+  {
+   "prompt_id": "examples/call_constraints_server.py::args",
+   "source_file": "examples/call_constraints_server.py",
+   "prompt_class": "args",
+   "n_tools": 8,
+   "chars": 366,
+   "utf8_bytes": 368,
+   "tokens": 94,
+   "bytes_per_token": 3.915,
+   "exceeded_4096": false,
+   "estimated_tokens": 164,
+   "estimate_over_actual": 1.745
+  },
+  {
+   "prompt_id": "examples/call_constraints_server.py::discoverability",
+   "source_file": "examples/call_constraints_server.py",
+   "prompt_class": "discoverability",
+   "n_tools": 8,
+   "chars": 493,
+   "utf8_bytes": 493,
+   "tokens": 111,
+   "bytes_per_token": 4.441,
+   "exceeded_4096": false,
+   "estimated_tokens": 206,
+   "estimate_over_actual": 1.856
+  },
+  {
+   "prompt_id": "examples/call_constraints_server.py::fixer_source",
+   "source_file": "examples/call_constraints_server.py",
+   "prompt_class": "fixer_source",
+   "n_tools": 8,
+   "chars": 5842,
+   "utf8_bytes": 5982,
+   "tokens": 1188,
+   "bytes_per_token": 5.035,
+   "exceeded_4096": false,
+   "estimated_tokens": 2036,
+   "estimate_over_actual": 1.714
+  },
+  {
+   "prompt_id": "examples/call_constraints_server_fixed.py::selection",
+   "source_file": "examples/call_constraints_server_fixed.py",
+   "prompt_class": "selection",
+   "n_tools": 8,
+   "chars": 2303,
+   "utf8_bytes": 2321,
+   "tokens": 436,
+   "bytes_per_token": 5.323,
+   "exceeded_4096": false,
+   "estimated_tokens": 815,
+   "estimate_over_actual": 1.869
+  },
+  {
+   "prompt_id": "examples/call_constraints_server_fixed.py::args",
+   "source_file": "examples/call_constraints_server_fixed.py",
+   "prompt_class": "args",
+   "n_tools": 8,
+   "chars": 366,
+   "utf8_bytes": 368,
+   "tokens": 94,
+   "bytes_per_token": 3.915,
+   "exceeded_4096": false,
+   "estimated_tokens": 164,
+   "estimate_over_actual": 1.745
+  },
+  {
+   "prompt_id": "examples/call_constraints_server_fixed.py::discoverability",
+   "source_file": "examples/call_constraints_server_fixed.py",
+   "prompt_class": "discoverability",
+   "n_tools": 8,
+   "chars": 2108,
+   "utf8_bytes": 2108,
+   "tokens": 383,
+   "bytes_per_token": 5.504,
+   "exceeded_4096": false,
+   "estimated_tokens": 744,
+   "estimate_over_actual": 1.943
+  },
+  {
+   "prompt_id": "examples/call_constraints_server_fixed.py::fixer_source",
+   "source_file": "examples/call_constraints_server_fixed.py",
+   "prompt_class": "fixer_source",
+   "n_tools": 8,
+   "chars": 7866,
+   "utf8_bytes": 8006,
+   "tokens": 1537,
+   "bytes_per_token": 5.209,
+   "exceeded_4096": false,
+   "estimated_tokens": 2710,
+   "estimate_over_actual": 1.763
+  },
+  {
+   "prompt_id": "examples/call_constraints_server_oracle.py::selection",
+   "source_file": "examples/call_constraints_server_oracle.py",
+   "prompt_class": "selection",
+   "n_tools": 8,
+   "chars": 960,
+   "utf8_bytes": 978,
+   "tokens": 213,
+   "bytes_per_token": 4.592,
+   "exceeded_4096": false,
+   "estimated_tokens": 368,
+   "estimate_over_actual": 1.728
+  },
+  {
+   "prompt_id": "examples/call_constraints_server_oracle.py::args",
+   "source_file": "examples/call_constraints_server_oracle.py",
+   "prompt_class": "args",
+   "n_tools": 8,
+   "chars": 657,
+   "utf8_bytes": 659,
+   "tokens": 176,
+   "bytes_per_token": 3.744,
+   "exceeded_4096": false,
+   "estimated_tokens": 261,
+   "estimate_over_actual": 1.483
+  },
+  {
+   "prompt_id": "examples/call_constraints_server_oracle.py::discoverability",
+   "source_file": "examples/call_constraints_server_oracle.py",
+   "prompt_class": "discoverability",
+   "n_tools": 8,
+   "chars": 765,
+   "utf8_bytes": 765,
+   "tokens": 160,
+   "bytes_per_token": 4.781,
+   "exceeded_4096": false,
+   "estimated_tokens": 297,
+   "estimate_over_actual": 1.856
+  },
+  {
+   "prompt_id": "examples/call_constraints_server_oracle.py::fixer_source",
+   "source_file": "examples/call_constraints_server_oracle.py",
+   "prompt_class": "fixer_source",
+   "n_tools": 8,
+   "chars": 8229,
+   "utf8_bytes": 8321,
+   "tokens": 1604,
+   "bytes_per_token": 5.188,
+   "exceeded_4096": false,
+   "estimated_tokens": 2815,
+   "estimate_over_actual": 1.755
+  },
+  {
+   "prompt_id": "examples/call_constraints_v2_server.py::selection",
+   "source_file": "examples/call_constraints_v2_server.py",
+   "prompt_class": "selection",
+   "n_tools": 6,
+   "chars": 658,
+   "utf8_bytes": 672,
+   "tokens": 154,
+   "bytes_per_token": 4.364,
+   "exceeded_4096": false,
+   "estimated_tokens": 266,
+   "estimate_over_actual": 1.727
+  },
+  {
+   "prompt_id": "examples/call_constraints_v2_server.py::args",
+   "source_file": "examples/call_constraints_v2_server.py",
+   "prompt_class": "args",
+   "n_tools": 6,
+   "chars": 398,
+   "utf8_bytes": 400,
+   "tokens": 107,
+   "bytes_per_token": 3.738,
+   "exceeded_4096": false,
+   "estimated_tokens": 175,
+   "estimate_over_actual": 1.636
+  },
+  {
+   "prompt_id": "examples/call_constraints_v2_server.py::discoverability",
+   "source_file": "examples/call_constraints_v2_server.py",
+   "prompt_class": "discoverability",
+   "n_tools": 6,
+   "chars": 416,
+   "utf8_bytes": 416,
+   "tokens": 94,
+   "bytes_per_token": 4.426,
+   "exceeded_4096": false,
+   "estimated_tokens": 180,
+   "estimate_over_actual": 1.915
+  },
+  {
+   "prompt_id": "examples/call_constraints_v2_server.py::fixer_source",
+   "source_file": "examples/call_constraints_v2_server.py",
+   "prompt_class": "fixer_source",
+   "n_tools": 6,
+   "chars": 5662,
+   "utf8_bytes": 5942,
+   "tokens": 1160,
+   "bytes_per_token": 5.122,
+   "exceeded_4096": false,
+   "estimated_tokens": 2022,
+   "estimate_over_actual": 1.743
+  },
+  {
+   "prompt_id": "examples/call_constraints_v2_server_fixed.py::selection",
+   "source_file": "examples/call_constraints_v2_server_fixed.py",
+   "prompt_class": "selection",
+   "n_tools": 6,
+   "chars": 2197,
+   "utf8_bytes": 2211,
+   "tokens": 431,
+   "bytes_per_token": 5.13,
+   "exceeded_4096": false,
+   "estimated_tokens": 779,
+   "estimate_over_actual": 1.807
+  },
+  {
+   "prompt_id": "examples/call_constraints_v2_server_fixed.py::args",
+   "source_file": "examples/call_constraints_v2_server_fixed.py",
+   "prompt_class": "args",
+   "n_tools": 6,
+   "chars": 398,
+   "utf8_bytes": 400,
+   "tokens": 107,
+   "bytes_per_token": 3.738,
+   "exceeded_4096": false,
+   "estimated_tokens": 175,
+   "estimate_over_actual": 1.636
+  },
+  {
+   "prompt_id": "examples/call_constraints_v2_server_fixed.py::discoverability",
+   "source_file": "examples/call_constraints_v2_server_fixed.py",
+   "prompt_class": "discoverability",
+   "n_tools": 6,
+   "chars": 1955,
+   "utf8_bytes": 1955,
+   "tokens": 371,
+   "bytes_per_token": 5.27,
+   "exceeded_4096": false,
+   "estimated_tokens": 693,
+   "estimate_over_actual": 1.868
+  },
+  {
+   "prompt_id": "examples/call_constraints_v2_server_fixed.py::fixer_source",
+   "source_file": "examples/call_constraints_v2_server_fixed.py",
+   "prompt_class": "fixer_source",
+   "n_tools": 6,
+   "chars": 7609,
+   "utf8_bytes": 7889,
+   "tokens": 1507,
+   "bytes_per_token": 5.235,
+   "exceeded_4096": false,
+   "estimated_tokens": 2671,
+   "estimate_over_actual": 1.772
+  },
+  {
+   "prompt_id": "examples/call_constraints_v2_server_oracle.py::selection",
+   "source_file": "examples/call_constraints_v2_server_oracle.py",
+   "prompt_class": "selection",
+   "n_tools": 6,
+   "chars": 933,
+   "utf8_bytes": 947,
+   "tokens": 211,
+   "bytes_per_token": 4.488,
+   "exceeded_4096": false,
+   "estimated_tokens": 357,
+   "estimate_over_actual": 1.692
+  },
+  {
+   "prompt_id": "examples/call_constraints_v2_server_oracle.py::args",
+   "source_file": "examples/call_constraints_v2_server_oracle.py",
+   "prompt_class": "args",
+   "n_tools": 6,
+   "chars": 643,
+   "utf8_bytes": 645,
+   "tokens": 162,
+   "bytes_per_token": 3.981,
+   "exceeded_4096": false,
+   "estimated_tokens": 257,
+   "estimate_over_actual": 1.586
+  },
+  {
+   "prompt_id": "examples/call_constraints_v2_server_oracle.py::discoverability",
+   "source_file": "examples/call_constraints_v2_server_oracle.py",
+   "prompt_class": "discoverability",
+   "n_tools": 6,
+   "chars": 691,
+   "utf8_bytes": 691,
+   "tokens": 151,
+   "bytes_per_token": 4.576,
+   "exceeded_4096": false,
+   "estimated_tokens": 272,
+   "estimate_over_actual": 1.801
+  },
+  {
+   "prompt_id": "examples/call_constraints_v2_server_oracle.py::fixer_source",
+   "source_file": "examples/call_constraints_v2_server_oracle.py",
+   "prompt_class": "fixer_source",
+   "n_tools": 6,
+   "chars": 8471,
+   "utf8_bytes": 8747,
+   "tokens": 1646,
+   "bytes_per_token": 5.314,
+   "exceeded_4096": false,
+   "estimated_tokens": 2957,
+   "estimate_over_actual": 1.796
+  },
+  {
+   "prompt_id": "examples/confusable_server.py::selection",
+   "source_file": "examples/confusable_server.py",
+   "prompt_class": "selection",
+   "n_tools": 16,
+   "chars": 1101,
+   "utf8_bytes": 1135,
+   "tokens": 257,
+   "bytes_per_token": 4.416,
+   "exceeded_4096": false,
+   "estimated_tokens": 420,
+   "estimate_over_actual": 1.634
+  },
+  {
+   "prompt_id": "examples/confusable_server.py::args",
+   "source_file": "examples/confusable_server.py",
+   "prompt_class": "args",
+   "n_tools": 16,
+   "chars": 376,
+   "utf8_bytes": 378,
+   "tokens": 101,
+   "bytes_per_token": 3.743,
+   "exceeded_4096": false,
+   "estimated_tokens": 168,
+   "estimate_over_actual": 1.663
+  },
+  {
+   "prompt_id": "examples/confusable_server.py::discoverability",
+   "source_file": "examples/confusable_server.py",
+   "prompt_class": "discoverability",
+   "n_tools": 16,
+   "chars": 733,
+   "utf8_bytes": 733,
+   "tokens": 169,
+   "bytes_per_token": 4.337,
+   "exceeded_4096": false,
+   "estimated_tokens": 286,
+   "estimate_over_actual": 1.692
+  },
+  {
+   "prompt_id": "examples/confusable_server.py::fixer_source",
+   "source_file": "examples/confusable_server.py",
+   "prompt_class": "fixer_source",
+   "n_tools": 16,
+   "chars": 9496,
+   "utf8_bytes": 9516,
+   "tokens": 1882,
+   "bytes_per_token": 5.056,
+   "exceeded_4096": false,
+   "estimated_tokens": 3214,
+   "estimate_over_actual": 1.708
+  },
+  {
+   "prompt_id": "examples/confusable_server_fixed.py::selection",
+   "source_file": "examples/confusable_server_fixed.py",
+   "prompt_class": "selection",
+   "n_tools": 16,
+   "chars": 3994,
+   "utf8_bytes": 4028,
+   "tokens": 802,
+   "bytes_per_token": 5.022,
+   "exceeded_4096": false,
+   "estimated_tokens": 1384,
+   "estimate_over_actual": 1.726
+  },
+  {
+   "prompt_id": "examples/confusable_server_fixed.py::args",
+   "source_file": "examples/confusable_server_fixed.py",
+   "prompt_class": "args",
+   "n_tools": 16,
+   "chars": 376,
+   "utf8_bytes": 378,
+   "tokens": 101,
+   "bytes_per_token": 3.743,
+   "exceeded_4096": false,
+   "estimated_tokens": 168,
+   "estimate_over_actual": 1.663
+  },
+  {
+   "prompt_id": "examples/confusable_server_fixed.py::discoverability",
+   "source_file": "examples/confusable_server_fixed.py",
+   "prompt_class": "discoverability",
+   "n_tools": 16,
+   "chars": 3626,
+   "utf8_bytes": 3626,
+   "tokens": 714,
+   "bytes_per_token": 5.078,
+   "exceeded_4096": false,
+   "estimated_tokens": 1250,
+   "estimate_over_actual": 1.751
+  },
+  {
+   "prompt_id": "examples/confusable_server_fixed.py::fixer_source",
+   "source_file": "examples/confusable_server_fixed.py",
+   "prompt_class": "fixer_source",
+   "n_tools": 16,
+   "chars": 12833,
+   "utf8_bytes": 12853,
+   "tokens": 2516,
+   "bytes_per_token": 5.109,
+   "exceeded_4096": false,
+   "estimated_tokens": 4326,
+   "estimate_over_actual": 1.719
+  },
+  {
+   "prompt_id": "examples/confusable_server_oracle.py::selection",
+   "source_file": "examples/confusable_server_oracle.py",
+   "prompt_class": "selection",
+   "n_tools": 16,
+   "chars": 2888,
+   "utf8_bytes": 2926,
+   "tokens": 611,
+   "bytes_per_token": 4.789,
+   "exceeded_4096": false,
+   "estimated_tokens": 1017,
+   "estimate_over_actual": 1.664
+  },
+  {
+   "prompt_id": "examples/confusable_server_oracle.py::args",
+   "source_file": "examples/confusable_server_oracle.py",
+   "prompt_class": "args",
+   "n_tools": 16,
+   "chars": 376,
+   "utf8_bytes": 378,
+   "tokens": 101,
+   "bytes_per_token": 3.743,
+   "exceeded_4096": false,
+   "estimated_tokens": 168,
+   "estimate_over_actual": 1.663
+  },
+  {
+   "prompt_id": "examples/confusable_server_oracle.py::discoverability",
+   "source_file": "examples/confusable_server_oracle.py",
+   "prompt_class": "discoverability",
+   "n_tools": 16,
+   "chars": 2520,
+   "utf8_bytes": 2524,
+   "tokens": 523,
+   "bytes_per_token": 4.826,
+   "exceeded_4096": false,
+   "estimated_tokens": 883,
+   "estimate_over_actual": 1.688
+  },
+  {
+   "prompt_id": "examples/confusable_server_oracle.py::fixer_source",
+   "source_file": "examples/confusable_server_oracle.py",
+   "prompt_class": "fixer_source",
+   "n_tools": 16,
+   "chars": 11153,
+   "utf8_bytes": 11161,
+   "tokens": 2133,
+   "bytes_per_token": 5.233,
+   "exceeded_4096": false,
+   "estimated_tokens": 3762,
+   "estimate_over_actual": 1.764
+  },
+  {
+   "prompt_id": "examples/docker_containers_server.py::selection",
+   "source_file": "examples/docker_containers_server.py",
+   "prompt_class": "selection",
+   "n_tools": 4,
+   "chars": 542,
+   "utf8_bytes": 552,
+   "tokens": 124,
+   "bytes_per_token": 4.452,
+   "exceeded_4096": false,
+   "estimated_tokens": 226,
+   "estimate_over_actual": 1.823
+  },
+  {
+   "prompt_id": "examples/docker_containers_server.py::args",
+   "source_file": "examples/docker_containers_server.py",
+   "prompt_class": "args",
+   "n_tools": 4,
+   "chars": 421,
+   "utf8_bytes": 423,
+   "tokens": 111,
+   "bytes_per_token": 3.811,
+   "exceeded_4096": false,
+   "estimated_tokens": 183,
+   "estimate_over_actual": 1.649
+  },
+  {
+   "prompt_id": "examples/docker_containers_server.py::discoverability",
+   "source_file": "examples/docker_containers_server.py",
+   "prompt_class": "discoverability",
+   "n_tools": 4,
+   "chars": 331,
+   "utf8_bytes": 331,
+   "tokens": 73,
+   "bytes_per_token": 4.534,
+   "exceeded_4096": false,
+   "estimated_tokens": 152,
+   "estimate_over_actual": 2.082
+  },
+  {
+   "prompt_id": "examples/docker_containers_server.py::fixer_source",
+   "source_file": "examples/docker_containers_server.py",
+   "prompt_class": "fixer_source",
+   "n_tools": 4,
+   "chars": 5270,
+   "utf8_bytes": 5630,
+   "tokens": 1080,
+   "bytes_per_token": 5.213,
+   "exceeded_4096": false,
+   "estimated_tokens": 1918,
+   "estimate_over_actual": 1.776
+  },
+  {
+   "prompt_id": "examples/docker_containers_server_fixed.py::selection",
+   "source_file": "examples/docker_containers_server_fixed.py",
+   "prompt_class": "selection",
+   "n_tools": 4,
+   "chars": 3519,
+   "utf8_bytes": 3553,
+   "tokens": 739,
+   "bytes_per_token": 4.808,
+   "exceeded_4096": false,
+   "estimated_tokens": 1226,
+   "estimate_over_actual": 1.659
+  },
+  {
+   "prompt_id": "examples/docker_containers_server_fixed.py::args",
+   "source_file": "examples/docker_containers_server_fixed.py",
+   "prompt_class": "args",
+   "n_tools": 4,
+   "chars": 421,
+   "utf8_bytes": 423,
+   "tokens": 111,
+   "bytes_per_token": 3.811,
+   "exceeded_4096": false,
+   "estimated_tokens": 183,
+   "estimate_over_actual": 1.649
+  },
+  {
+   "prompt_id": "examples/docker_containers_server_fixed.py::discoverability",
+   "source_file": "examples/docker_containers_server_fixed.py",
+   "prompt_class": "discoverability",
+   "n_tools": 4,
+   "chars": 3308,
+   "utf8_bytes": 3332,
+   "tokens": 688,
+   "bytes_per_token": 4.843,
+   "exceeded_4096": false,
+   "estimated_tokens": 1152,
+   "estimate_over_actual": 1.674
+  },
+  {
+   "prompt_id": "examples/docker_containers_server_fixed.py::fixer_source",
+   "source_file": "examples/docker_containers_server_fixed.py",
+   "prompt_class": "fixer_source",
+   "n_tools": 4,
+   "chars": 10027,
+   "utf8_bytes": 10421,
+   "tokens": 2023,
+   "bytes_per_token": 5.151,
+   "exceeded_4096": false,
+   "estimated_tokens": 3515,
+   "estimate_over_actual": 1.738
+  },
+  {
+   "prompt_id": "examples/echo_server.py::selection",
+   "source_file": "examples/echo_server.py",
+   "prompt_class": "selection",
+   "n_tools": 4,
+   "chars": 463,
+   "utf8_bytes": 473,
+   "tokens": 117,
+   "bytes_per_token": 4.043,
+   "exceeded_4096": false,
+   "estimated_tokens": 199,
+   "estimate_over_actual": 1.701
+  },
+  {
+   "prompt_id": "examples/echo_server.py::args",
+   "source_file": "examples/echo_server.py",
+   "prompt_class": "args",
+   "n_tools": 4,
+   "chars": 387,
+   "utf8_bytes": 389,
+   "tokens": 104,
+   "bytes_per_token": 3.74,
+   "exceeded_4096": false,
+   "estimated_tokens": 171,
+   "estimate_over_actual": 1.644
+  },
+  {
+   "prompt_id": "examples/echo_server.py::discoverability",
+   "source_file": "examples/echo_server.py",
+   "prompt_class": "discoverability",
+   "n_tools": 4,
+   "chars": 393,
+   "utf8_bytes": 393,
+   "tokens": 87,
+   "bytes_per_token": 4.517,
+   "exceeded_4096": false,
+   "estimated_tokens": 173,
+   "estimate_over_actual": 1.989
+  },
+  {
+   "prompt_id": "examples/echo_server.py::fixer_source",
+   "source_file": "examples/echo_server.py",
+   "prompt_class": "fixer_source",
+   "n_tools": 4,
+   "chars": 4490,
+   "utf8_bytes": 4498,
+   "tokens": 902,
+   "bytes_per_token": 4.987,
+   "exceeded_4096": false,
+   "estimated_tokens": 1541,
+   "estimate_over_actual": 1.708
+  },
+  {
+   "prompt_id": "examples/echo_server_fixed.py::selection",
+   "source_file": "examples/echo_server_fixed.py",
+   "prompt_class": "selection",
+   "n_tools": 4,
+   "chars": 949,
+   "utf8_bytes": 959,
+   "tokens": 198,
+   "bytes_per_token": 4.843,
+   "exceeded_4096": false,
+   "estimated_tokens": 361,
+   "estimate_over_actual": 1.823
+  },
+  {
+   "prompt_id": "examples/echo_server_fixed.py::args",
+   "source_file": "examples/echo_server_fixed.py",
+   "prompt_class": "args",
+   "n_tools": 4,
+   "chars": 397,
+   "utf8_bytes": 399,
+   "tokens": 106,
+   "bytes_per_token": 3.764,
+   "exceeded_4096": false,
+   "estimated_tokens": 175,
+   "estimate_over_actual": 1.651
+  },
+  {
+   "prompt_id": "examples/echo_server_fixed.py::discoverability",
+   "source_file": "examples/echo_server_fixed.py",
+   "prompt_class": "discoverability",
+   "n_tools": 4,
+   "chars": 858,
+   "utf8_bytes": 858,
+   "tokens": 165,
+   "bytes_per_token": 5.2,
+   "exceeded_4096": false,
+   "estimated_tokens": 328,
+   "estimate_over_actual": 1.988
+  },
+  {
+   "prompt_id": "examples/echo_server_fixed.py::fixer_source",
+   "source_file": "examples/echo_server_fixed.py",
+   "prompt_class": "fixer_source",
+   "n_tools": 4,
+   "chars": 5432,
+   "utf8_bytes": 5440,
+   "tokens": 1077,
+   "bytes_per_token": 5.051,
+   "exceeded_4096": false,
+   "estimated_tokens": 1855,
+   "estimate_over_actual": 1.722
+  },
+  {
+   "prompt_id": "examples/echo_server_fixed_dqonly.py::selection",
+   "source_file": "examples/echo_server_fixed_dqonly.py",
+   "prompt_class": "selection",
+   "n_tools": 4,
+   "chars": 922,
+   "utf8_bytes": 932,
+   "tokens": 197,
+   "bytes_per_token": 4.731,
+   "exceeded_4096": false,
+   "estimated_tokens": 352,
+   "estimate_over_actual": 1.787
+  },
+  {
+   "prompt_id": "examples/echo_server_fixed_dqonly.py::args",
+   "source_file": "examples/echo_server_fixed_dqonly.py",
+   "prompt_class": "args",
+   "n_tools": 4,
+   "chars": 387,
+   "utf8_bytes": 389,
+   "tokens": 104,
+   "bytes_per_token": 3.74,
+   "exceeded_4096": false,
+   "estimated_tokens": 171,
+   "estimate_over_actual": 1.644
+  },
+  {
+   "prompt_id": "examples/echo_server_fixed_dqonly.py::discoverability",
+   "source_file": "examples/echo_server_fixed_dqonly.py",
+   "prompt_class": "discoverability",
+   "n_tools": 4,
+   "chars": 852,
+   "utf8_bytes": 852,
+   "tokens": 167,
+   "bytes_per_token": 5.102,
+   "exceeded_4096": false,
+   "estimated_tokens": 326,
+   "estimate_over_actual": 1.952
+  },
+  {
+   "prompt_id": "examples/echo_server_fixed_dqonly.py::fixer_source",
+   "source_file": "examples/echo_server_fixed_dqonly.py",
+   "prompt_class": "fixer_source",
+   "n_tools": 4,
+   "chars": 4981,
+   "utf8_bytes": 4989,
+   "tokens": 988,
+   "bytes_per_token": 5.05,
+   "exceeded_4096": false,
+   "estimated_tokens": 1705,
+   "estimate_over_actual": 1.726
+  },
+  {
+   "prompt_id": "examples/exp1_AminForou_mcp_gsc_mirror.py::selection",
+   "source_file": "examples/exp1_AminForou_mcp_gsc_mirror.py",
+   "prompt_class": "selection",
+   "n_tools": 21,
+   "chars": 2991,
+   "utf8_bytes": 3035,
+   "tokens": 655,
+   "bytes_per_token": 4.634,
+   "exceeded_4096": false,
+   "estimated_tokens": 1053,
+   "estimate_over_actual": 1.608
+  },
+  {
+   "prompt_id": "examples/exp1_AminForou_mcp_gsc_mirror.py::args",
+   "source_file": "examples/exp1_AminForou_mcp_gsc_mirror.py",
+   "prompt_class": "args",
+   "n_tools": 21,
+   "chars": 980,
+   "utf8_bytes": 982,
+   "tokens": 262,
+   "bytes_per_token": 3.748,
+   "exceeded_4096": false,
+   "estimated_tokens": 369,
+   "estimate_over_actual": 1.408
+  },
+  {
+   "prompt_id": "examples/exp1_AminForou_mcp_gsc_mirror.py::discoverability",
+   "source_file": "examples/exp1_AminForou_mcp_gsc_mirror.py",
+   "prompt_class": "discoverability",
+   "n_tools": 21,
+   "chars": 1968,
+   "utf8_bytes": 1968,
+   "tokens": 419,
+   "bytes_per_token": 4.697,
+   "exceeded_4096": false,
+   "estimated_tokens": 698,
+   "estimate_over_actual": 1.666
+  },
+  {
+   "prompt_id": "examples/exp1_AminForou_mcp_gsc_mirror.py::fixer_source",
+   "source_file": "examples/exp1_AminForou_mcp_gsc_mirror.py",
+   "prompt_class": "fixer_source",
+   "n_tools": 21,
+   "chars": 24143,
+   "utf8_bytes": 24183,
+   "tokens": 5447,
+   "bytes_per_token": 4.44,
+   "exceeded_4096": true,
+   "estimated_tokens": 8103,
+   "estimate_over_actual": 1.488
+  },
+  {
+   "prompt_id": "examples/exp1_AminForou_mcp_gsc_mirror_oracle.py::selection",
+   "source_file": "examples/exp1_AminForou_mcp_gsc_mirror_oracle.py",
+   "prompt_class": "selection",
+   "n_tools": 21,
+   "chars": 3127,
+   "utf8_bytes": 3171,
+   "tokens": 676,
+   "bytes_per_token": 4.691,
+   "exceeded_4096": false,
+   "estimated_tokens": 1099,
+   "estimate_over_actual": 1.626
+  },
+  {
+   "prompt_id": "examples/exp1_AminForou_mcp_gsc_mirror_oracle.py::args",
+   "source_file": "examples/exp1_AminForou_mcp_gsc_mirror_oracle.py",
+   "prompt_class": "args",
+   "n_tools": 21,
+   "chars": 980,
+   "utf8_bytes": 982,
+   "tokens": 262,
+   "bytes_per_token": 3.748,
+   "exceeded_4096": false,
+   "estimated_tokens": 369,
+   "estimate_over_actual": 1.408
+  },
+  {
+   "prompt_id": "examples/exp1_AminForou_mcp_gsc_mirror_oracle.py::discoverability",
+   "source_file": "examples/exp1_AminForou_mcp_gsc_mirror_oracle.py",
+   "prompt_class": "discoverability",
+   "n_tools": 21,
+   "chars": 2104,
+   "utf8_bytes": 2104,
+   "tokens": 440,
+   "bytes_per_token": 4.782,
+   "exceeded_4096": false,
+   "estimated_tokens": 743,
+   "estimate_over_actual": 1.689
+  },
+  {
+   "prompt_id": "examples/exp1_AminForou_mcp_gsc_mirror_oracle.py::fixer_source",
+   "source_file": "examples/exp1_AminForou_mcp_gsc_mirror_oracle.py",
+   "prompt_class": "fixer_source",
+   "n_tools": 21,
+   "chars": 23388,
+   "utf8_bytes": 23424,
+   "tokens": 5255,
+   "bytes_per_token": 4.457,
+   "exceeded_4096": true,
+   "estimated_tokens": 7850,
+   "estimate_over_actual": 1.494
+  },
+  {
+   "prompt_id": "examples/exp1_blazickjp_arxiv_mcp_server_mirror.py::selection",
+   "source_file": "examples/exp1_blazickjp_arxiv_mcp_server_mirror.py",
+   "prompt_class": "selection",
+   "n_tools": 8,
+   "chars": 2330,
+   "utf8_bytes": 2352,
+   "tokens": 484,
+   "bytes_per_token": 4.86,
+   "exceeded_4096": false,
+   "estimated_tokens": 826,
+   "estimate_over_actual": 1.707
+  },
+  {
+   "prompt_id": "examples/exp1_blazickjp_arxiv_mcp_server_mirror.py::args",
+   "source_file": "examples/exp1_blazickjp_arxiv_mcp_server_mirror.py",
+   "prompt_class": "args",
+   "n_tools": 8,
+   "chars": 273,
+   "utf8_bytes": 275,
+   "tokens": 70,
+   "bytes_per_token": 3.929,
+   "exceeded_4096": false,
+   "estimated_tokens": 133,
+   "estimate_over_actual": 1.9
+  },
+  {
+   "prompt_id": "examples/exp1_blazickjp_arxiv_mcp_server_mirror.py::discoverability",
+   "source_file": "examples/exp1_blazickjp_arxiv_mcp_server_mirror.py",
+   "prompt_class": "discoverability",
+   "n_tools": 8,
+   "chars": 2214,
+   "utf8_bytes": 2218,
+   "tokens": 443,
+   "bytes_per_token": 5.007,
+   "exceeded_4096": false,
+   "estimated_tokens": 781,
+   "estimate_over_actual": 1.763
+  },
+  {
+   "prompt_id": "examples/exp1_blazickjp_arxiv_mcp_server_mirror.py::fixer_source",
+   "source_file": "examples/exp1_blazickjp_arxiv_mcp_server_mirror.py",
+   "prompt_class": "fixer_source",
+   "n_tools": 8,
+   "chars": 9509,
+   "utf8_bytes": 9517,
+   "tokens": 2211,
+   "bytes_per_token": 4.304,
+   "exceeded_4096": false,
+   "estimated_tokens": 3214,
+   "estimate_over_actual": 1.454
+  },
+  {
+   "prompt_id": "examples/exp1_datalayer_jupyter_mcp_server_mirror.py::selection",
+   "source_file": "examples/exp1_datalayer_jupyter_mcp_server_mirror.py",
+   "prompt_class": "selection",
+   "n_tools": 17,
+   "chars": 2737,
+   "utf8_bytes": 2773,
+   "tokens": 560,
+   "bytes_per_token": 4.952,
+   "exceeded_4096": false,
+   "estimated_tokens": 966,
+   "estimate_over_actual": 1.725
+  },
+  {
+   "prompt_id": "examples/exp1_datalayer_jupyter_mcp_server_mirror.py::args",
+   "source_file": "examples/exp1_datalayer_jupyter_mcp_server_mirror.py",
+   "prompt_class": "args",
+   "n_tools": 17,
+   "chars": 479,
+   "utf8_bytes": 481,
+   "tokens": 131,
+   "bytes_per_token": 3.672,
+   "exceeded_4096": false,
+   "estimated_tokens": 202,
+   "estimate_over_actual": 1.542
+  },
+  {
+   "prompt_id": "examples/exp1_datalayer_jupyter_mcp_server_mirror.py::discoverability",
+   "source_file": "examples/exp1_datalayer_jupyter_mcp_server_mirror.py",
+   "prompt_class": "discoverability",
+   "n_tools": 17,
+   "chars": 1880,
+   "utf8_bytes": 1880,
+   "tokens": 383,
+   "bytes_per_token": 4.909,
+   "exceeded_4096": false,
+   "estimated_tokens": 668,
+   "estimate_over_actual": 1.744
+  },
+  {
+   "prompt_id": "examples/exp1_datalayer_jupyter_mcp_server_mirror.py::fixer_source",
+   "source_file": "examples/exp1_datalayer_jupyter_mcp_server_mirror.py",
+   "prompt_class": "fixer_source",
+   "n_tools": 17,
+   "chars": 15204,
+   "utf8_bytes": 15214,
+   "tokens": 3287,
+   "bytes_per_token": 4.629,
+   "exceeded_4096": false,
+   "estimated_tokens": 5113,
+   "estimate_over_actual": 1.556
+  },
+  {
+   "prompt_id": "examples/exp1_datalayer_jupyter_mcp_server_mirror_oracle.py::selection",
+   "source_file": "examples/exp1_datalayer_jupyter_mcp_server_mirror_oracle.py",
+   "prompt_class": "selection",
+   "n_tools": 17,
+   "chars": 2788,
+   "utf8_bytes": 2824,
+   "tokens": 569,
+   "bytes_per_token": 4.963,
+   "exceeded_4096": false,
+   "estimated_tokens": 983,
+   "estimate_over_actual": 1.728
+  },
+  {
+   "prompt_id": "examples/exp1_datalayer_jupyter_mcp_server_mirror_oracle.py::args",
+   "source_file": "examples/exp1_datalayer_jupyter_mcp_server_mirror_oracle.py",
+   "prompt_class": "args",
+   "n_tools": 17,
+   "chars": 479,
+   "utf8_bytes": 481,
+   "tokens": 131,
+   "bytes_per_token": 3.672,
+   "exceeded_4096": false,
+   "estimated_tokens": 202,
+   "estimate_over_actual": 1.542
+  },
+  {
+   "prompt_id": "examples/exp1_datalayer_jupyter_mcp_server_mirror_oracle.py::discoverability",
+   "source_file": "examples/exp1_datalayer_jupyter_mcp_server_mirror_oracle.py",
+   "prompt_class": "discoverability",
+   "n_tools": 17,
+   "chars": 1931,
+   "utf8_bytes": 1931,
+   "tokens": 391,
+   "bytes_per_token": 4.939,
+   "exceeded_4096": false,
+   "estimated_tokens": 685,
+   "estimate_over_actual": 1.752
+  },
+  {
+   "prompt_id": "examples/exp1_datalayer_jupyter_mcp_server_mirror_oracle.py::fixer_source",
+   "source_file": "examples/exp1_datalayer_jupyter_mcp_server_mirror_oracle.py",
+   "prompt_class": "fixer_source",
+   "n_tools": 17,
+   "chars": 14776,
+   "utf8_bytes": 14786,
+   "tokens": 3204,
+   "bytes_per_token": 4.615,
+   "exceeded_4096": false,
+   "estimated_tokens": 4970,
+   "estimate_over_actual": 1.551
+  },
+  {
+   "prompt_id": "examples/exp1_Dataojitori_nocturne_memory_mirror.py::selection",
+   "source_file": "examples/exp1_Dataojitori_nocturne_memory_mirror.py",
+   "prompt_class": "selection",
+   "n_tools": 7,
+   "chars": 1076,
+   "utf8_bytes": 1092,
+   "tokens": 231,
+   "bytes_per_token": 4.727,
+   "exceeded_4096": false,
+   "estimated_tokens": 406,
+   "estimate_over_actual": 1.758
+  },
+  {
+   "prompt_id": "examples/exp1_Dataojitori_nocturne_memory_mirror.py::args",
+   "source_file": "examples/exp1_Dataojitori_nocturne_memory_mirror.py",
+   "prompt_class": "args",
+   "n_tools": 7,
+   "chars": 532,
+   "utf8_bytes": 534,
+   "tokens": 145,
+   "bytes_per_token": 3.683,
+   "exceeded_4096": false,
+   "estimated_tokens": 220,
+   "estimate_over_actual": 1.517
+  },
+  {
+   "prompt_id": "examples/exp1_Dataojitori_nocturne_memory_mirror.py::discoverability",
+   "source_file": "examples/exp1_Dataojitori_nocturne_memory_mirror.py",
+   "prompt_class": "discoverability",
+   "n_tools": 7,
+   "chars": 701,
+   "utf8_bytes": 701,
+   "tokens": 148,
+   "bytes_per_token": 4.736,
+   "exceeded_4096": false,
+   "estimated_tokens": 275,
+   "estimate_over_actual": 1.858
+  },
+  {
+   "prompt_id": "examples/exp1_Dataojitori_nocturne_memory_mirror.py::fixer_source",
+   "source_file": "examples/exp1_Dataojitori_nocturne_memory_mirror.py",
+   "prompt_class": "fixer_source",
+   "n_tools": 7,
+   "chars": 17547,
+   "utf8_bytes": 17581,
+   "tokens": 3994,
+   "bytes_per_token": 4.402,
+   "exceeded_4096": false,
+   "estimated_tokens": 5902,
+   "estimate_over_actual": 1.478
+  },
+  {
+   "prompt_id": "examples/exp1_dataojitori_nocturne_memory_mirror_fixed.py::selection",
+   "source_file": "examples/exp1_dataojitori_nocturne_memory_mirror_fixed.py",
+   "prompt_class": "selection",
+   "n_tools": 7,
+   "chars": 1076,
+   "utf8_bytes": 1092,
+   "tokens": 231,
+   "bytes_per_token": 4.727,
+   "exceeded_4096": false,
+   "estimated_tokens": 406,
+   "estimate_over_actual": 1.758
+  },
+  {
+   "prompt_id": "examples/exp1_dataojitori_nocturne_memory_mirror_fixed.py::args",
+   "source_file": "examples/exp1_dataojitori_nocturne_memory_mirror_fixed.py",
+   "prompt_class": "args",
+   "n_tools": 7,
+   "chars": 532,
+   "utf8_bytes": 534,
+   "tokens": 145,
+   "bytes_per_token": 3.683,
+   "exceeded_4096": false,
+   "estimated_tokens": 220,
+   "estimate_over_actual": 1.517
+  },
+  {
+   "prompt_id": "examples/exp1_dataojitori_nocturne_memory_mirror_fixed.py::discoverability",
+   "source_file": "examples/exp1_dataojitori_nocturne_memory_mirror_fixed.py",
+   "prompt_class": "discoverability",
+   "n_tools": 7,
+   "chars": 701,
+   "utf8_bytes": 701,
+   "tokens": 148,
+   "bytes_per_token": 4.736,
+   "exceeded_4096": false,
+   "estimated_tokens": 275,
+   "estimate_over_actual": 1.858
+  },
+  {
+   "prompt_id": "examples/exp1_dataojitori_nocturne_memory_mirror_fixed.py::fixer_source",
+   "source_file": "examples/exp1_dataojitori_nocturne_memory_mirror_fixed.py",
+   "prompt_class": "fixer_source",
+   "n_tools": 7,
+   "chars": 17547,
+   "utf8_bytes": 17581,
+   "tokens": 3994,
+   "bytes_per_token": 4.402,
+   "exceeded_4096": false,
+   "estimated_tokens": 5902,
+   "estimate_over_actual": 1.478
+  },
+  {
+   "prompt_id": "examples/exp1_lucasastorian_llmwiki_mirror.py::selection",
+   "source_file": "examples/exp1_lucasastorian_llmwiki_mirror.py",
+   "prompt_class": "selection",
+   "n_tools": 12,
+   "chars": 1969,
+   "utf8_bytes": 1997,
+   "tokens": 417,
+   "bytes_per_token": 4.789,
+   "exceeded_4096": false,
+   "estimated_tokens": 707,
+   "estimate_over_actual": 1.695
+  },
+  {
+   "prompt_id": "examples/exp1_lucasastorian_llmwiki_mirror.py::args",
+   "source_file": "examples/exp1_lucasastorian_llmwiki_mirror.py",
+   "prompt_class": "args",
+   "n_tools": 12,
+   "chars": 597,
+   "utf8_bytes": 599,
+   "tokens": 168,
+   "bytes_per_token": 3.565,
+   "exceeded_4096": false,
+   "estimated_tokens": 241,
+   "estimate_over_actual": 1.435
+  },
+  {
+   "prompt_id": "examples/exp1_lucasastorian_llmwiki_mirror.py::discoverability",
+   "source_file": "examples/exp1_lucasastorian_llmwiki_mirror.py",
+   "prompt_class": "discoverability",
+   "n_tools": 12,
+   "chars": 1275,
+   "utf8_bytes": 1277,
+   "tokens": 269,
+   "bytes_per_token": 4.747,
+   "exceeded_4096": false,
+   "estimated_tokens": 467,
+   "estimate_over_actual": 1.736
+  },
+  {
+   "prompt_id": "examples/exp1_lucasastorian_llmwiki_mirror.py::fixer_source",
+   "source_file": "examples/exp1_lucasastorian_llmwiki_mirror.py",
+   "prompt_class": "fixer_source",
+   "n_tools": 12,
+   "chars": 14674,
+   "utf8_bytes": 14722,
+   "tokens": 3361,
+   "bytes_per_token": 4.38,
+   "exceeded_4096": false,
+   "estimated_tokens": 4949,
+   "estimate_over_actual": 1.472
+  },
+  {
+   "prompt_id": "examples/exp1_LycheeMem_LycheeMem_mirror.py::selection",
+   "source_file": "examples/exp1_LycheeMem_LycheeMem_mirror.py",
+   "prompt_class": "selection",
+   "n_tools": 4,
+   "chars": 609,
+   "utf8_bytes": 619,
+   "tokens": 148,
+   "bytes_per_token": 4.182,
+   "exceeded_4096": false,
+   "estimated_tokens": 248,
+   "estimate_over_actual": 1.676
+  },
+  {
+   "prompt_id": "examples/exp1_LycheeMem_LycheeMem_mirror.py::args",
+   "source_file": "examples/exp1_LycheeMem_LycheeMem_mirror.py",
+   "prompt_class": "args",
+   "n_tools": 4,
+   "chars": 277,
+   "utf8_bytes": 279,
+   "tokens": 71,
+   "bytes_per_token": 3.93,
+   "exceeded_4096": false,
+   "estimated_tokens": 135,
+   "estimate_over_actual": 1.901
+  },
+  {
+   "prompt_id": "examples/exp1_LycheeMem_LycheeMem_mirror.py::discoverability",
+   "source_file": "examples/exp1_LycheeMem_LycheeMem_mirror.py",
+   "prompt_class": "discoverability",
+   "n_tools": 4,
+   "chars": 545,
+   "utf8_bytes": 545,
+   "tokens": 123,
+   "bytes_per_token": 4.431,
+   "exceeded_4096": false,
+   "estimated_tokens": 223,
+   "estimate_over_actual": 1.813
+  },
+  {
+   "prompt_id": "examples/exp1_LycheeMem_LycheeMem_mirror.py::fixer_source",
+   "source_file": "examples/exp1_LycheeMem_LycheeMem_mirror.py",
+   "prompt_class": "fixer_source",
+   "n_tools": 4,
+   "chars": 3873,
+   "utf8_bytes": 3875,
+   "tokens": 926,
+   "bytes_per_token": 4.185,
+   "exceeded_4096": false,
+   "estimated_tokens": 1333,
+   "estimate_over_actual": 1.44
+  },
+  {
+   "prompt_id": "examples/exp1_mrexodia_ida_pro_mcp_mirror.py::selection",
+   "source_file": "examples/exp1_mrexodia_ida_pro_mcp_mirror.py",
+   "prompt_class": "selection",
+   "n_tools": 90,
+   "chars": 9051,
+   "utf8_bytes": 9233,
+   "tokens": 1932,
+   "bytes_per_token": 4.779,
+   "exceeded_4096": false,
+   "estimated_tokens": 3119,
+   "estimate_over_actual": 1.614
+  },
+  {
+   "prompt_id": "examples/exp1_mrexodia_ida_pro_mcp_mirror.py::args",
+   "source_file": "examples/exp1_mrexodia_ida_pro_mcp_mirror.py",
+   "prompt_class": "args",
+   "n_tools": 90,
+   "chars": 599,
+   "utf8_bytes": 601,
+   "tokens": 162,
+   "bytes_per_token": 3.71,
+   "exceeded_4096": false,
+   "estimated_tokens": 242,
+   "estimate_over_actual": 1.494
+  },
+  {
+   "prompt_id": "examples/exp1_mrexodia_ida_pro_mcp_mirror.py::discoverability",
+   "source_file": "examples/exp1_mrexodia_ida_pro_mcp_mirror.py",
+   "prompt_class": "discoverability",
+   "n_tools": 90,
+   "chars": 6770,
+   "utf8_bytes": 6770,
+   "tokens": 1441,
+   "bytes_per_token": 4.698,
+   "exceeded_4096": false,
+   "estimated_tokens": 2298,
+   "estimate_over_actual": 1.595
+  },
+  {
+   "prompt_id": "examples/exp1_mrexodia_ida_pro_mcp_mirror.py::fixer_source",
+   "source_file": "examples/exp1_mrexodia_ida_pro_mcp_mirror.py",
+   "prompt_class": "fixer_source",
+   "n_tools": 90,
+   "chars": 38684,
+   "utf8_bytes": 38700,
+   "tokens": 8644,
+   "bytes_per_token": 4.477,
+   "exceeded_4096": true,
+   "estimated_tokens": 12942,
+   "estimate_over_actual": 1.497
+  },
+  {
+   "prompt_id": "examples/exp1_stefanoamorelli_sec_edgar_mcp_mirror.py::selection",
+   "source_file": "examples/exp1_stefanoamorelli_sec_edgar_mcp_mirror.py",
+   "prompt_class": "selection",
+   "n_tools": 21,
+   "chars": 2435,
+   "utf8_bytes": 2479,
+   "tokens": 515,
+   "bytes_per_token": 4.814,
+   "exceeded_4096": false,
+   "estimated_tokens": 868,
+   "estimate_over_actual": 1.685
+  },
+  {
+   "prompt_id": "examples/exp1_stefanoamorelli_sec_edgar_mcp_mirror.py::args",
+   "source_file": "examples/exp1_stefanoamorelli_sec_edgar_mcp_mirror.py",
+   "prompt_class": "args",
+   "n_tools": 21,
+   "chars": 493,
+   "utf8_bytes": 495,
+   "tokens": 127,
+   "bytes_per_token": 3.898,
+   "exceeded_4096": false,
+   "estimated_tokens": 207,
+   "estimate_over_actual": 1.63
+  },
+  {
+   "prompt_id": "examples/exp1_stefanoamorelli_sec_edgar_mcp_mirror.py::discoverability",
+   "source_file": "examples/exp1_stefanoamorelli_sec_edgar_mcp_mirror.py",
+   "prompt_class": "discoverability",
+   "n_tools": 21,
+   "chars": 1464,
+   "utf8_bytes": 1464,
+   "tokens": 331,
+   "bytes_per_token": 4.423,
+   "exceeded_4096": false,
+   "estimated_tokens": 530,
+   "estimate_over_actual": 1.601
+  },
+  {
+   "prompt_id": "examples/exp1_stefanoamorelli_sec_edgar_mcp_mirror.py::fixer_source",
+   "source_file": "examples/exp1_stefanoamorelli_sec_edgar_mcp_mirror.py",
+   "prompt_class": "fixer_source",
+   "n_tools": 21,
+   "chars": 16214,
+   "utf8_bytes": 16216,
+   "tokens": 3658,
+   "bytes_per_token": 4.433,
+   "exceeded_4096": false,
+   "estimated_tokens": 5447,
+   "estimate_over_actual": 1.489
+  },
+  {
+   "prompt_id": "examples/exp1_stickerdaniel_linkedin_mcp_server_mirror.py::selection",
+   "source_file": "examples/exp1_stickerdaniel_linkedin_mcp_server_mirror.py",
+   "prompt_class": "selection",
+   "n_tools": 17,
+   "chars": 2403,
+   "utf8_bytes": 2439,
+   "tokens": 482,
+   "bytes_per_token": 5.06,
+   "exceeded_4096": false,
+   "estimated_tokens": 855,
+   "estimate_over_actual": 1.774
+  },
+  {
+   "prompt_id": "examples/exp1_stickerdaniel_linkedin_mcp_server_mirror.py::args",
+   "source_file": "examples/exp1_stickerdaniel_linkedin_mcp_server_mirror.py",
+   "prompt_class": "args",
+   "n_tools": 17,
+   "chars": 738,
+   "utf8_bytes": 740,
+   "tokens": 205,
+   "bytes_per_token": 3.61,
+   "exceeded_4096": false,
+   "estimated_tokens": 288,
+   "estimate_over_actual": 1.405
+  },
+  {
+   "prompt_id": "examples/exp1_stickerdaniel_linkedin_mcp_server_mirror.py::discoverability",
+   "source_file": "examples/exp1_stickerdaniel_linkedin_mcp_server_mirror.py",
+   "prompt_class": "discoverability",
+   "n_tools": 17,
+   "chars": 1351,
+   "utf8_bytes": 1351,
+   "tokens": 273,
+   "bytes_per_token": 4.949,
+   "exceeded_4096": false,
+   "estimated_tokens": 492,
+   "estimate_over_actual": 1.802
+  },
+  {
+   "prompt_id": "examples/exp1_stickerdaniel_linkedin_mcp_server_mirror.py::fixer_source",
+   "source_file": "examples/exp1_stickerdaniel_linkedin_mcp_server_mirror.py",
+   "prompt_class": "fixer_source",
+   "n_tools": 17,
+   "chars": 26059,
+   "utf8_bytes": 26067,
+   "tokens": 5848,
+   "bytes_per_token": 4.457,
+   "exceeded_4096": true,
+   "estimated_tokens": 8731,
+   "estimate_over_actual": 1.493
+  },
+  {
+   "prompt_id": "examples/exp1_taylorwilsdon_google_workspace_mcp_mirror.py::selection",
+   "source_file": "examples/exp1_taylorwilsdon_google_workspace_mcp_mirror.py",
+   "prompt_class": "selection",
+   "n_tools": 116,
+   "chars": 26336,
+   "utf8_bytes": 26570,
+   "tokens": 5307,
+   "bytes_per_token": 5.007,
+   "exceeded_4096": true,
+   "estimated_tokens": 8898,
+   "estimate_over_actual": 1.677
+  },
+  {
+   "prompt_id": "examples/exp1_taylorwilsdon_google_workspace_mcp_mirror.py::args",
+   "source_file": "examples/exp1_taylorwilsdon_google_workspace_mcp_mirror.py",
+   "prompt_class": "args",
+   "n_tools": 116,
+   "chars": 1909,
+   "utf8_bytes": 1911,
+   "tokens": 521,
+   "bytes_per_token": 3.668,
+   "exceeded_4096": false,
+   "estimated_tokens": 679,
+   "estimate_over_actual": 1.303
+  },
+  {
+   "prompt_id": "examples/exp1_taylorwilsdon_google_workspace_mcp_mirror.py::discoverability",
+   "source_file": "examples/exp1_taylorwilsdon_google_workspace_mcp_mirror.py",
+   "prompt_class": "discoverability",
+   "n_tools": 116,
+   "chars": 10470,
+   "utf8_bytes": 10470,
+   "tokens": 2166,
+   "bytes_per_token": 4.834,
+   "exceeded_4096": false,
+   "estimated_tokens": 3532,
+   "estimate_over_actual": 1.631
+  },
+  {
+   "prompt_id": "examples/exp1_taylorwilsdon_google_workspace_mcp_mirror.py::fixer_source",
+   "source_file": "examples/exp1_taylorwilsdon_google_workspace_mcp_mirror.py",
+   "prompt_class": "fixer_source",
+   "n_tools": 116,
+   "chars": 229839,
+   "utf8_bytes": 229893,
+   "tokens": 50668,
+   "bytes_per_token": 4.537,
+   "exceeded_4096": true,
+   "estimated_tokens": 76673,
+   "estimate_over_actual": 1.513
+  },
+  {
+   "prompt_id": "examples/exp1_taylorwilsdon_google_workspace_mcp_mirror_oracle.py::selection",
+   "source_file": "examples/exp1_taylorwilsdon_google_workspace_mcp_mirror_oracle.py",
+   "prompt_class": "selection",
+   "n_tools": 116,
+   "chars": 26350,
+   "utf8_bytes": 26584,
+   "tokens": 5311,
+   "bytes_per_token": 5.005,
+   "exceeded_4096": true,
+   "estimated_tokens": 8903,
+   "estimate_over_actual": 1.676
+  },
+  {
+   "prompt_id": "examples/exp1_taylorwilsdon_google_workspace_mcp_mirror_oracle.py::args",
+   "source_file": "examples/exp1_taylorwilsdon_google_workspace_mcp_mirror_oracle.py",
+   "prompt_class": "args",
+   "n_tools": 116,
+   "chars": 1909,
+   "utf8_bytes": 1911,
+   "tokens": 521,
+   "bytes_per_token": 3.668,
+   "exceeded_4096": false,
+   "estimated_tokens": 679,
+   "estimate_over_actual": 1.303
+  },
+  {
+   "prompt_id": "examples/exp1_taylorwilsdon_google_workspace_mcp_mirror_oracle.py::discoverability",
+   "source_file": "examples/exp1_taylorwilsdon_google_workspace_mcp_mirror_oracle.py",
+   "prompt_class": "discoverability",
+   "n_tools": 116,
+   "chars": 10484,
+   "utf8_bytes": 10484,
+   "tokens": 2169,
+   "bytes_per_token": 4.834,
+   "exceeded_4096": false,
+   "estimated_tokens": 3536,
+   "estimate_over_actual": 1.63
+  },
+  {
+   "prompt_id": "examples/exp1_taylorwilsdon_google_workspace_mcp_mirror_oracle.py::fixer_source",
+   "source_file": "examples/exp1_taylorwilsdon_google_workspace_mcp_mirror_oracle.py",
+   "prompt_class": "fixer_source",
+   "n_tools": 116,
+   "chars": 224129,
+   "utf8_bytes": 224183,
+   "tokens": 49311,
+   "bytes_per_token": 4.546,
+   "exceeded_4096": true,
+   "estimated_tokens": 74769,
+   "estimate_over_actual": 1.516
+  },
+  {
+   "prompt_id": "examples/gcal_server.py::selection",
+   "source_file": "examples/gcal_server.py",
+   "prompt_class": "selection",
+   "n_tools": 4,
+   "chars": 589,
+   "utf8_bytes": 599,
+   "tokens": 130,
+   "bytes_per_token": 4.608,
+   "exceeded_4096": false,
+   "estimated_tokens": 241,
+   "estimate_over_actual": 1.854
+  },
+  {
+   "prompt_id": "examples/gcal_server.py::args",
+   "source_file": "examples/gcal_server.py",
+   "prompt_class": "args",
+   "n_tools": 4,
+   "chars": 487,
+   "utf8_bytes": 489,
+   "tokens": 130,
+   "bytes_per_token": 3.762,
+   "exceeded_4096": false,
+   "estimated_tokens": 205,
+   "estimate_over_actual": 1.577
+  },
+  {
+   "prompt_id": "examples/gcal_server.py::discoverability",
+   "source_file": "examples/gcal_server.py",
+   "prompt_class": "discoverability",
+   "n_tools": 4,
+   "chars": 353,
+   "utf8_bytes": 353,
+   "tokens": 77,
+   "bytes_per_token": 4.584,
+   "exceeded_4096": false,
+   "estimated_tokens": 159,
+   "estimate_over_actual": 2.065
+  },
+  {
+   "prompt_id": "examples/gcal_server.py::fixer_source",
+   "source_file": "examples/gcal_server.py",
+   "prompt_class": "fixer_source",
+   "n_tools": 4,
+   "chars": 5294,
+   "utf8_bytes": 5484,
+   "tokens": 1108,
+   "bytes_per_token": 4.949,
+   "exceeded_4096": false,
+   "estimated_tokens": 1870,
+   "estimate_over_actual": 1.688
+  },
+  {
+   "prompt_id": "examples/gcal_server_fixed.py::selection",
+   "source_file": "examples/gcal_server_fixed.py",
+   "prompt_class": "selection",
+   "n_tools": 4,
+   "chars": 2600,
+   "utf8_bytes": 2612,
+   "tokens": 578,
+   "bytes_per_token": 4.519,
+   "exceeded_4096": false,
+   "estimated_tokens": 912,
+   "estimate_over_actual": 1.578
+  },
+  {
+   "prompt_id": "examples/gcal_server_fixed.py::args",
+   "source_file": "examples/gcal_server_fixed.py",
+   "prompt_class": "args",
+   "n_tools": 4,
+   "chars": 487,
+   "utf8_bytes": 489,
+   "tokens": 130,
+   "bytes_per_token": 3.762,
+   "exceeded_4096": false,
+   "estimated_tokens": 205,
+   "estimate_over_actual": 1.577
+  },
+  {
+   "prompt_id": "examples/gcal_server_fixed.py::discoverability",
+   "source_file": "examples/gcal_server_fixed.py",
+   "prompt_class": "discoverability",
+   "n_tools": 4,
+   "chars": 2364,
+   "utf8_bytes": 2366,
+   "tokens": 525,
+   "bytes_per_token": 4.507,
+   "exceeded_4096": false,
+   "estimated_tokens": 830,
+   "estimate_over_actual": 1.581
+  },
+  {
+   "prompt_id": "examples/gcal_server_fixed.py::fixer_source",
+   "source_file": "examples/gcal_server_fixed.py",
+   "prompt_class": "fixer_source",
+   "n_tools": 4,
+   "chars": 8634,
+   "utf8_bytes": 8826,
+   "tokens": 1806,
+   "bytes_per_token": 4.887,
+   "exceeded_4096": false,
+   "estimated_tokens": 2984,
+   "estimate_over_actual": 1.652
+  },
+  {
+   "prompt_id": "examples/github_issues_server.py::selection",
+   "source_file": "examples/github_issues_server.py",
+   "prompt_class": "selection",
+   "n_tools": 4,
+   "chars": 583,
+   "utf8_bytes": 593,
+   "tokens": 139,
+   "bytes_per_token": 4.266,
+   "exceeded_4096": false,
+   "estimated_tokens": 239,
+   "estimate_over_actual": 1.719
+  },
+  {
+   "prompt_id": "examples/github_issues_server.py::args",
+   "source_file": "examples/github_issues_server.py",
+   "prompt_class": "args",
+   "n_tools": 4,
+   "chars": 432,
+   "utf8_bytes": 434,
+   "tokens": 119,
+   "bytes_per_token": 3.647,
+   "exceeded_4096": false,
+   "estimated_tokens": 186,
+   "estimate_over_actual": 1.563
+  },
+  {
+   "prompt_id": "examples/github_issues_server.py::discoverability",
+   "source_file": "examples/github_issues_server.py",
+   "prompt_class": "discoverability",
+   "n_tools": 4,
+   "chars": 329,
+   "utf8_bytes": 329,
+   "tokens": 75,
+   "bytes_per_token": 4.387,
+   "exceeded_4096": false,
+   "estimated_tokens": 151,
+   "estimate_over_actual": 2.013
+  },
+  {
+   "prompt_id": "examples/github_issues_server.py::fixer_source",
+   "source_file": "examples/github_issues_server.py",
+   "prompt_class": "fixer_source",
+   "n_tools": 4,
+   "chars": 5159,
+   "utf8_bytes": 5347,
+   "tokens": 1073,
+   "bytes_per_token": 4.983,
+   "exceeded_4096": false,
+   "estimated_tokens": 1824,
+   "estimate_over_actual": 1.7
+  },
+  {
+   "prompt_id": "examples/github_issues_server_fixed.py::selection",
+   "source_file": "examples/github_issues_server_fixed.py",
+   "prompt_class": "selection",
+   "n_tools": 4,
+   "chars": 2586,
+   "utf8_bytes": 2600,
+   "tokens": 567,
+   "bytes_per_token": 4.586,
+   "exceeded_4096": false,
+   "estimated_tokens": 908,
+   "estimate_over_actual": 1.601
+  },
+  {
+   "prompt_id": "examples/github_issues_server_fixed.py::args",
+   "source_file": "examples/github_issues_server_fixed.py",
+   "prompt_class": "args",
+   "n_tools": 4,
+   "chars": 432,
+   "utf8_bytes": 434,
+   "tokens": 119,
+   "bytes_per_token": 3.647,
+   "exceeded_4096": false,
+   "estimated_tokens": 186,
+   "estimate_over_actual": 1.563
+  },
+  {
+   "prompt_id": "examples/github_issues_server_fixed.py::discoverability",
+   "source_file": "examples/github_issues_server_fixed.py",
+   "prompt_class": "discoverability",
+   "n_tools": 4,
+   "chars": 2332,
+   "utf8_bytes": 2336,
+   "tokens": 503,
+   "bytes_per_token": 4.644,
+   "exceeded_4096": false,
+   "estimated_tokens": 820,
+   "estimate_over_actual": 1.63
+  },
+  {
+   "prompt_id": "examples/github_issues_server_fixed.py::fixer_source",
+   "source_file": "examples/github_issues_server_fixed.py",
+   "prompt_class": "fixer_source",
+   "n_tools": 4,
+   "chars": 8364,
+   "utf8_bytes": 8556,
+   "tokens": 1714,
+   "bytes_per_token": 4.992,
+   "exceeded_4096": false,
+   "estimated_tokens": 2894,
+   "estimate_over_actual": 1.688
+  },
+  {
+   "prompt_id": "examples/grounded_server.py::selection",
+   "source_file": "examples/grounded_server.py",
+   "prompt_class": "selection",
+   "n_tools": 5,
+   "chars": 477,
+   "utf8_bytes": 489,
+   "tokens": 116,
+   "bytes_per_token": 4.216,
+   "exceeded_4096": false,
+   "estimated_tokens": 205,
+   "estimate_over_actual": 1.767
+  },
+  {
+   "prompt_id": "examples/grounded_server.py::args",
+   "source_file": "examples/grounded_server.py",
+   "prompt_class": "args",
+   "n_tools": 5,
+   "chars": 346,
+   "utf8_bytes": 348,
+   "tokens": 91,
+   "bytes_per_token": 3.824,
+   "exceeded_4096": false,
+   "estimated_tokens": 158,
+   "estimate_over_actual": 1.736
+  },
+  {
+   "prompt_id": "examples/grounded_server.py::discoverability",
+   "source_file": "examples/grounded_server.py",
+   "prompt_class": "discoverability",
+   "n_tools": 5,
+   "chars": 375,
+   "utf8_bytes": 375,
+   "tokens": 81,
+   "bytes_per_token": 4.63,
+   "exceeded_4096": false,
+   "estimated_tokens": 167,
+   "estimate_over_actual": 2.062
+  },
+  {
+   "prompt_id": "examples/grounded_server.py::fixer_source",
+   "source_file": "examples/grounded_server.py",
+   "prompt_class": "fixer_source",
+   "n_tools": 5,
+   "chars": 7806,
+   "utf8_bytes": 7816,
+   "tokens": 1752,
+   "bytes_per_token": 4.461,
+   "exceeded_4096": false,
+   "estimated_tokens": 2647,
+   "estimate_over_actual": 1.511
+  },
+  {
+   "prompt_id": "examples/grounded_server_fixed.py::selection",
+   "source_file": "examples/grounded_server_fixed.py",
+   "prompt_class": "selection",
+   "n_tools": 5,
+   "chars": 1774,
+   "utf8_bytes": 1786,
+   "tokens": 385,
+   "bytes_per_token": 4.639,
+   "exceeded_4096": false,
+   "estimated_tokens": 637,
+   "estimate_over_actual": 1.655
+  },
+  {
+   "prompt_id": "examples/grounded_server_fixed.py::args",
+   "source_file": "examples/grounded_server_fixed.py",
+   "prompt_class": "args",
+   "n_tools": 5,
+   "chars": 537,
+   "utf8_bytes": 539,
+   "tokens": 137,
+   "bytes_per_token": 3.934,
+   "exceeded_4096": false,
+   "estimated_tokens": 221,
+   "estimate_over_actual": 1.613
+  },
+  {
+   "prompt_id": "examples/grounded_server_fixed.py::discoverability",
+   "source_file": "examples/grounded_server_fixed.py",
+   "prompt_class": "discoverability",
+   "n_tools": 5,
+   "chars": 1609,
+   "utf8_bytes": 1609,
+   "tokens": 341,
+   "bytes_per_token": 4.718,
+   "exceeded_4096": false,
+   "estimated_tokens": 578,
+   "estimate_over_actual": 1.695
+  },
+  {
+   "prompt_id": "examples/grounded_server_fixed.py::fixer_source",
+   "source_file": "examples/grounded_server_fixed.py",
+   "prompt_class": "fixer_source",
+   "n_tools": 5,
+   "chars": 10238,
+   "utf8_bytes": 10248,
+   "tokens": 2290,
+   "bytes_per_token": 4.475,
+   "exceeded_4096": false,
+   "estimated_tokens": 3458,
+   "estimate_over_actual": 1.51
+  },
+  {
+   "prompt_id": "examples/grounded_server_oracle.py::selection",
+   "source_file": "examples/grounded_server_oracle.py",
+   "prompt_class": "selection",
+   "n_tools": 5,
+   "chars": 1189,
+   "utf8_bytes": 1207,
+   "tokens": 286,
+   "bytes_per_token": 4.22,
+   "exceeded_4096": false,
+   "estimated_tokens": 444,
+   "estimate_over_actual": 1.552
+  },
+  {
+   "prompt_id": "examples/grounded_server_oracle.py::args",
+   "source_file": "examples/grounded_server_oracle.py",
+   "prompt_class": "args",
+   "n_tools": 5,
+   "chars": 346,
+   "utf8_bytes": 348,
+   "tokens": 91,
+   "bytes_per_token": 3.824,
+   "exceeded_4096": false,
+   "estimated_tokens": 158,
+   "estimate_over_actual": 1.736
+  },
+  {
+   "prompt_id": "examples/grounded_server_oracle.py::discoverability",
+   "source_file": "examples/grounded_server_oracle.py",
+   "prompt_class": "discoverability",
+   "n_tools": 5,
+   "chars": 1087,
+   "utf8_bytes": 1093,
+   "tokens": 251,
+   "bytes_per_token": 4.355,
+   "exceeded_4096": false,
+   "estimated_tokens": 406,
+   "estimate_over_actual": 1.618
+  },
+  {
+   "prompt_id": "examples/grounded_server_oracle.py::fixer_source",
+   "source_file": "examples/grounded_server_oracle.py",
+   "prompt_class": "fixer_source",
+   "n_tools": 5,
+   "chars": 6939,
+   "utf8_bytes": 6951,
+   "tokens": 1432,
+   "bytes_per_token": 4.854,
+   "exceeded_4096": false,
+   "estimated_tokens": 2359,
+   "estimate_over_actual": 1.647
+  },
+  {
+   "prompt_id": "examples/jira_issues_server.py::selection",
+   "source_file": "examples/jira_issues_server.py",
+   "prompt_class": "selection",
+   "n_tools": 4,
+   "chars": 539,
+   "utf8_bytes": 549,
+   "tokens": 120,
+   "bytes_per_token": 4.575,
+   "exceeded_4096": false,
+   "estimated_tokens": 225,
+   "estimate_over_actual": 1.875
+  },
+  {
+   "prompt_id": "examples/jira_issues_server.py::args",
+   "source_file": "examples/jira_issues_server.py",
+   "prompt_class": "args",
+   "n_tools": 4,
+   "chars": 444,
+   "utf8_bytes": 446,
+   "tokens": 116,
+   "bytes_per_token": 3.845,
+   "exceeded_4096": false,
+   "estimated_tokens": 190,
+   "estimate_over_actual": 1.638
+  },
+  {
+   "prompt_id": "examples/jira_issues_server.py::discoverability",
+   "source_file": "examples/jira_issues_server.py",
+   "prompt_class": "discoverability",
+   "n_tools": 4,
+   "chars": 341,
+   "utf8_bytes": 341,
+   "tokens": 75,
+   "bytes_per_token": 4.547,
+   "exceeded_4096": false,
+   "estimated_tokens": 155,
+   "estimate_over_actual": 2.067
+  },
+  {
+   "prompt_id": "examples/jira_issues_server.py::fixer_source",
+   "source_file": "examples/jira_issues_server.py",
+   "prompt_class": "fixer_source",
+   "n_tools": 4,
+   "chars": 5161,
+   "utf8_bytes": 5427,
+   "tokens": 1071,
+   "bytes_per_token": 5.067,
+   "exceeded_4096": false,
+   "estimated_tokens": 1851,
+   "estimate_over_actual": 1.728
+  },
+  {
+   "prompt_id": "examples/jira_issues_server_fixed.py::selection",
+   "source_file": "examples/jira_issues_server_fixed.py",
+   "prompt_class": "selection",
+   "n_tools": 4,
+   "chars": 2447,
+   "utf8_bytes": 2467,
+   "tokens": 562,
+   "bytes_per_token": 4.39,
+   "exceeded_4096": false,
+   "estimated_tokens": 864,
+   "estimate_over_actual": 1.537
+  },
+  {
+   "prompt_id": "examples/jira_issues_server_fixed.py::args",
+   "source_file": "examples/jira_issues_server_fixed.py",
+   "prompt_class": "args",
+   "n_tools": 4,
+   "chars": 444,
+   "utf8_bytes": 446,
+   "tokens": 116,
+   "bytes_per_token": 3.845,
+   "exceeded_4096": false,
+   "estimated_tokens": 190,
+   "estimate_over_actual": 1.638
+  },
+  {
+   "prompt_id": "examples/jira_issues_server_fixed.py::discoverability",
+   "source_file": "examples/jira_issues_server_fixed.py",
+   "prompt_class": "discoverability",
+   "n_tools": 4,
+   "chars": 2249,
+   "utf8_bytes": 2259,
+   "tokens": 517,
+   "bytes_per_token": 4.369,
+   "exceeded_4096": false,
+   "estimated_tokens": 795,
+   "estimate_over_actual": 1.538
+  },
+  {
+   "prompt_id": "examples/jira_issues_server_fixed.py::fixer_source",
+   "source_file": "examples/jira_issues_server_fixed.py",
+   "prompt_class": "fixer_source",
+   "n_tools": 4,
+   "chars": 8499,
+   "utf8_bytes": 8779,
+   "tokens": 1780,
+   "bytes_per_token": 4.932,
+   "exceeded_4096": false,
+   "estimated_tokens": 2968,
+   "estimate_over_actual": 1.667
+  },
+  {
+   "prompt_id": "examples/k8s_workloads_server.py::selection",
+   "source_file": "examples/k8s_workloads_server.py",
+   "prompt_class": "selection",
+   "n_tools": 4,
+   "chars": 580,
+   "utf8_bytes": 590,
+   "tokens": 131,
+   "bytes_per_token": 4.504,
+   "exceeded_4096": false,
+   "estimated_tokens": 238,
+   "estimate_over_actual": 1.817
+  },
+  {
+   "prompt_id": "examples/k8s_workloads_server.py::args",
+   "source_file": "examples/k8s_workloads_server.py",
+   "prompt_class": "args",
+   "n_tools": 4,
+   "chars": 478,
+   "utf8_bytes": 480,
+   "tokens": 124,
+   "bytes_per_token": 3.871,
+   "exceeded_4096": false,
+   "estimated_tokens": 202,
+   "estimate_over_actual": 1.629
+  },
+  {
+   "prompt_id": "examples/k8s_workloads_server.py::discoverability",
+   "source_file": "examples/k8s_workloads_server.py",
+   "prompt_class": "discoverability",
+   "n_tools": 4,
+   "chars": 345,
+   "utf8_bytes": 345,
+   "tokens": 77,
+   "bytes_per_token": 4.481,
+   "exceeded_4096": false,
+   "estimated_tokens": 157,
+   "estimate_over_actual": 2.039
+  },
+  {
+   "prompt_id": "examples/k8s_workloads_server.py::fixer_source",
+   "source_file": "examples/k8s_workloads_server.py",
+   "prompt_class": "fixer_source",
+   "n_tools": 4,
+   "chars": 5555,
+   "utf8_bytes": 5917,
+   "tokens": 1164,
+   "bytes_per_token": 5.083,
+   "exceeded_4096": false,
+   "estimated_tokens": 2014,
+   "estimate_over_actual": 1.73
+  },
+  {
+   "prompt_id": "examples/k8s_workloads_server_fixed.py::selection",
+   "source_file": "examples/k8s_workloads_server_fixed.py",
+   "prompt_class": "selection",
+   "n_tools": 4,
+   "chars": 3566,
+   "utf8_bytes": 3608,
+   "tokens": 749,
+   "bytes_per_token": 4.817,
+   "exceeded_4096": false,
+   "estimated_tokens": 1244,
+   "estimate_over_actual": 1.661
+  },
+  {
+   "prompt_id": "examples/k8s_workloads_server_fixed.py::args",
+   "source_file": "examples/k8s_workloads_server_fixed.py",
+   "prompt_class": "args",
+   "n_tools": 4,
+   "chars": 478,
+   "utf8_bytes": 480,
+   "tokens": 124,
+   "bytes_per_token": 3.871,
+   "exceeded_4096": false,
+   "estimated_tokens": 202,
+   "estimate_over_actual": 1.629
+  },
+  {
+   "prompt_id": "examples/k8s_workloads_server_fixed.py::discoverability",
+   "source_file": "examples/k8s_workloads_server_fixed.py",
+   "prompt_class": "discoverability",
+   "n_tools": 4,
+   "chars": 3331,
+   "utf8_bytes": 3363,
+   "tokens": 695,
+   "bytes_per_token": 4.839,
+   "exceeded_4096": false,
+   "estimated_tokens": 1163,
+   "estimate_over_actual": 1.673
+  },
+  {
+   "prompt_id": "examples/k8s_workloads_server_fixed.py::fixer_source",
+   "source_file": "examples/k8s_workloads_server_fixed.py",
+   "prompt_class": "fixer_source",
+   "n_tools": 4,
+   "chars": 10412,
+   "utf8_bytes": 10818,
+   "tokens": 2112,
+   "bytes_per_token": 5.122,
+   "exceeded_4096": false,
+   "estimated_tokens": 3648,
+   "estimate_over_actual": 1.727
+  },
+  {
+   "prompt_id": "examples/mediocre_server.py::selection",
+   "source_file": "examples/mediocre_server.py",
+   "prompt_class": "selection",
+   "n_tools": 5,
+   "chars": 335,
+   "utf8_bytes": 347,
+   "tokens": 104,
+   "bytes_per_token": 3.337,
+   "exceeded_4096": false,
+   "estimated_tokens": 157,
+   "estimate_over_actual": 1.51
+  },
+  {
+   "prompt_id": "examples/mediocre_server.py::args",
+   "source_file": "examples/mediocre_server.py",
+   "prompt_class": "args",
+   "n_tools": 5,
+   "chars": 291,
+   "utf8_bytes": 293,
+   "tokens": 81,
+   "bytes_per_token": 3.617,
+   "exceeded_4096": false,
+   "estimated_tokens": 139,
+   "estimate_over_actual": 1.716
+  },
+  {
+   "prompt_id": "examples/mediocre_server.py::discoverability",
+   "source_file": "examples/mediocre_server.py",
+   "prompt_class": "discoverability",
+   "n_tools": 5,
+   "chars": 264,
+   "utf8_bytes": 264,
+   "tokens": 71,
+   "bytes_per_token": 3.718,
+   "exceeded_4096": false,
+   "estimated_tokens": 130,
+   "estimate_over_actual": 1.831
+  },
+  {
+   "prompt_id": "examples/mediocre_server.py::fixer_source",
+   "source_file": "examples/mediocre_server.py",
+   "prompt_class": "fixer_source",
+   "n_tools": 5,
+   "chars": 11718,
+   "utf8_bytes": 11770,
+   "tokens": 2851,
+   "bytes_per_token": 4.128,
+   "exceeded_4096": false,
+   "estimated_tokens": 3965,
+   "estimate_over_actual": 1.391
+  },
+  {
+   "prompt_id": "examples/mediocre_server_fixed.py::selection",
+   "source_file": "examples/mediocre_server_fixed.py",
+   "prompt_class": "selection",
+   "n_tools": 5,
+   "chars": 419,
+   "utf8_bytes": 431,
+   "tokens": 116,
+   "bytes_per_token": 3.716,
+   "exceeded_4096": false,
+   "estimated_tokens": 185,
+   "estimate_over_actual": 1.595
+  },
+  {
+   "prompt_id": "examples/mediocre_server_fixed.py::args",
+   "source_file": "examples/mediocre_server_fixed.py",
+   "prompt_class": "args",
+   "n_tools": 5,
+   "chars": 627,
+   "utf8_bytes": 629,
+   "tokens": 161,
+   "bytes_per_token": 3.907,
+   "exceeded_4096": false,
+   "estimated_tokens": 251,
+   "estimate_over_actual": 1.559
+  },
+  {
+   "prompt_id": "examples/mediocre_server_fixed.py::discoverability",
+   "source_file": "examples/mediocre_server_fixed.py",
+   "prompt_class": "discoverability",
+   "n_tools": 5,
+   "chars": 264,
+   "utf8_bytes": 264,
+   "tokens": 71,
+   "bytes_per_token": 3.718,
+   "exceeded_4096": false,
+   "estimated_tokens": 130,
+   "estimate_over_actual": 1.831
+  },
+  {
+   "prompt_id": "examples/mediocre_server_fixed.py::fixer_source",
+   "source_file": "examples/mediocre_server_fixed.py",
+   "prompt_class": "fixer_source",
+   "n_tools": 5,
+   "chars": 13265,
+   "utf8_bytes": 13317,
+   "tokens": 3192,
+   "bytes_per_token": 4.172,
+   "exceeded_4096": false,
+   "estimated_tokens": 4481,
+   "estimate_over_actual": 1.404
+  },
+  {
+   "prompt_id": "examples/p2a_arm_a.py::selection",
+   "source_file": "examples/p2a_arm_a.py",
+   "prompt_class": "selection",
+   "n_tools": 48,
+   "chars": 3572,
+   "utf8_bytes": 3670,
+   "tokens": 805,
+   "bytes_per_token": 4.559,
+   "exceeded_4096": false,
+   "estimated_tokens": 1265,
+   "estimate_over_actual": 1.571
+  },
+  {
+   "prompt_id": "examples/p2a_arm_a.py::args",
+   "source_file": "examples/p2a_arm_a.py",
+   "prompt_class": "args",
+   "n_tools": 48,
+   "chars": 450,
+   "utf8_bytes": 452,
+   "tokens": 117,
+   "bytes_per_token": 3.863,
+   "exceeded_4096": false,
+   "estimated_tokens": 192,
+   "estimate_over_actual": 1.641
+  },
+  {
+   "prompt_id": "examples/p2a_arm_a.py::discoverability",
+   "source_file": "examples/p2a_arm_a.py",
+   "prompt_class": "discoverability",
+   "n_tools": 48,
+   "chars": 2029,
+   "utf8_bytes": 2029,
+   "tokens": 455,
+   "bytes_per_token": 4.459,
+   "exceeded_4096": false,
+   "estimated_tokens": 718,
+   "estimate_over_actual": 1.578
+  },
+  {
+   "prompt_id": "examples/p2a_arm_a.py::fixer_source",
+   "source_file": "examples/p2a_arm_a.py",
+   "prompt_class": "fixer_source",
+   "n_tools": 48,
+   "chars": 2808,
+   "utf8_bytes": 2812,
+   "tokens": 614,
+   "bytes_per_token": 4.58,
+   "exceeded_4096": false,
+   "estimated_tokens": 979,
+   "estimate_over_actual": 1.594
+  },
+  {
+   "prompt_id": "examples/p2a_arm_guardb.py::selection",
+   "source_file": "examples/p2a_arm_guardb.py",
+   "prompt_class": "selection",
+   "n_tools": 48,
+   "chars": 7891,
+   "utf8_bytes": 7991,
+   "tokens": 1599,
+   "bytes_per_token": 4.997,
+   "exceeded_4096": false,
+   "estimated_tokens": 2705,
+   "estimate_over_actual": 1.692
+  },
+  {
+   "prompt_id": "examples/p2a_arm_guardb.py::args",
+   "source_file": "examples/p2a_arm_guardb.py",
+   "prompt_class": "args",
+   "n_tools": 48,
+   "chars": 450,
+   "utf8_bytes": 452,
+   "tokens": 117,
+   "bytes_per_token": 3.863,
+   "exceeded_4096": false,
+   "estimated_tokens": 192,
+   "estimate_over_actual": 1.641
+  },
+  {
+   "prompt_id": "examples/p2a_arm_guardb.py::discoverability",
+   "source_file": "examples/p2a_arm_guardb.py",
+   "prompt_class": "discoverability",
+   "n_tools": 48,
+   "chars": 6348,
+   "utf8_bytes": 6350,
+   "tokens": 1249,
+   "bytes_per_token": 5.084,
+   "exceeded_4096": false,
+   "estimated_tokens": 2158,
+   "estimate_over_actual": 1.728
+  },
+  {
+   "prompt_id": "examples/p2a_arm_guardb.py::fixer_source",
+   "source_file": "examples/p2a_arm_guardb.py",
+   "prompt_class": "fixer_source",
+   "n_tools": 48,
+   "chars": 3515,
+   "utf8_bytes": 3519,
+   "tokens": 791,
+   "bytes_per_token": 4.449,
+   "exceeded_4096": false,
+   "estimated_tokens": 1215,
+   "estimate_over_actual": 1.536
+  },
+  {
+   "prompt_id": "examples/p2a_arm_oracle.py::selection",
+   "source_file": "examples/p2a_arm_oracle.py",
+   "prompt_class": "selection",
+   "n_tools": 48,
+   "chars": 8800,
+   "utf8_bytes": 8908,
+   "tokens": 1806,
+   "bytes_per_token": 4.932,
+   "exceeded_4096": false,
+   "estimated_tokens": 3011,
+   "estimate_over_actual": 1.667
+  },
+  {
+   "prompt_id": "examples/p2a_arm_oracle.py::args",
+   "source_file": "examples/p2a_arm_oracle.py",
+   "prompt_class": "args",
+   "n_tools": 48,
+   "chars": 450,
+   "utf8_bytes": 452,
+   "tokens": 117,
+   "bytes_per_token": 3.863,
+   "exceeded_4096": false,
+   "estimated_tokens": 192,
+   "estimate_over_actual": 1.641
+  },
+  {
+   "prompt_id": "examples/p2a_arm_oracle.py::discoverability",
+   "source_file": "examples/p2a_arm_oracle.py",
+   "prompt_class": "discoverability",
+   "n_tools": 48,
+   "chars": 7257,
+   "utf8_bytes": 7267,
+   "tokens": 1456,
+   "bytes_per_token": 4.991,
+   "exceeded_4096": false,
+   "estimated_tokens": 2464,
+   "estimate_over_actual": 1.692
+  },
+  {
+   "prompt_id": "examples/p2a_arm_oracle.py::fixer_source",
+   "source_file": "examples/p2a_arm_oracle.py",
+   "prompt_class": "fixer_source",
+   "n_tools": 48,
+   "chars": 3067,
+   "utf8_bytes": 3073,
+   "tokens": 664,
+   "bytes_per_token": 4.628,
+   "exceeded_4096": false,
+   "estimated_tokens": 1066,
+   "estimate_over_actual": 1.605
+  },
+  {
+   "prompt_id": "examples/p2a_internal_proxy_mirror.py::selection",
+   "source_file": "examples/p2a_internal_proxy_mirror.py",
+   "prompt_class": "selection",
+   "n_tools": 48,
+   "chars": 3572,
+   "utf8_bytes": 3670,
+   "tokens": 805,
+   "bytes_per_token": 4.559,
+   "exceeded_4096": false,
+   "estimated_tokens": 1265,
+   "estimate_over_actual": 1.571
+  },
+  {
+   "prompt_id": "examples/p2a_internal_proxy_mirror.py::args",
+   "source_file": "examples/p2a_internal_proxy_mirror.py",
+   "prompt_class": "args",
+   "n_tools": 48,
+   "chars": 450,
+   "utf8_bytes": 452,
+   "tokens": 117,
+   "bytes_per_token": 3.863,
+   "exceeded_4096": false,
+   "estimated_tokens": 192,
+   "estimate_over_actual": 1.641
+  },
+  {
+   "prompt_id": "examples/p2a_internal_proxy_mirror.py::discoverability",
+   "source_file": "examples/p2a_internal_proxy_mirror.py",
+   "prompt_class": "discoverability",
+   "n_tools": 48,
+   "chars": 2029,
+   "utf8_bytes": 2029,
+   "tokens": 455,
+   "bytes_per_token": 4.459,
+   "exceeded_4096": false,
+   "estimated_tokens": 718,
+   "estimate_over_actual": 1.578
+  },
+  {
+   "prompt_id": "examples/p2a_internal_proxy_mirror.py::fixer_source",
+   "source_file": "examples/p2a_internal_proxy_mirror.py",
+   "prompt_class": "fixer_source",
+   "n_tools": 48,
+   "chars": 23723,
+   "utf8_bytes": 24603,
+   "tokens": 5614,
+   "bytes_per_token": 4.382,
+   "exceeded_4096": true,
+   "estimated_tokens": 8243,
+   "estimate_over_actual": 1.468
+  },
+  {
+   "prompt_id": "examples/q3_arm_a.py::selection",
+   "source_file": "examples/q3_arm_a.py",
+   "prompt_class": "selection",
+   "n_tools": 12,
+   "chars": 759,
+   "utf8_bytes": 785,
+   "tokens": 183,
+   "bytes_per_token": 4.29,
+   "exceeded_4096": false,
+   "estimated_tokens": 303,
+   "estimate_over_actual": 1.656
+  },
+  {
+   "prompt_id": "examples/q3_arm_a.py::args",
+   "source_file": "examples/q3_arm_a.py",
+   "prompt_class": "args",
+   "n_tools": 12,
+   "chars": 305,
+   "utf8_bytes": 307,
+   "tokens": 79,
+   "bytes_per_token": 3.886,
+   "exceeded_4096": false,
+   "estimated_tokens": 144,
+   "estimate_over_actual": 1.823
+  },
+  {
+   "prompt_id": "examples/q3_arm_a.py::discoverability",
+   "source_file": "examples/q3_arm_a.py",
+   "prompt_class": "discoverability",
+   "n_tools": 12,
+   "chars": 579,
+   "utf8_bytes": 579,
+   "tokens": 137,
+   "bytes_per_token": 4.226,
+   "exceeded_4096": false,
+   "estimated_tokens": 235,
+   "estimate_over_actual": 1.715
+  },
+  {
+   "prompt_id": "examples/q3_arm_a.py::fixer_source",
+   "source_file": "examples/q3_arm_a.py",
+   "prompt_class": "fixer_source",
+   "n_tools": 12,
+   "chars": 2607,
+   "utf8_bytes": 2611,
+   "tokens": 573,
+   "bytes_per_token": 4.557,
+   "exceeded_4096": false,
+   "estimated_tokens": 912,
+   "estimate_over_actual": 1.592
+  },
+  {
+   "prompt_id": "examples/q3_arm_f_body.py::selection",
+   "source_file": "examples/q3_arm_f_body.py",
+   "prompt_class": "selection",
+   "n_tools": 12,
+   "chars": 2867,
+   "utf8_bytes": 2893,
+   "tokens": 595,
+   "bytes_per_token": 4.862,
+   "exceeded_4096": false,
+   "estimated_tokens": 1006,
+   "estimate_over_actual": 1.691
+  },
+  {
+   "prompt_id": "examples/q3_arm_f_body.py::args",
+   "source_file": "examples/q3_arm_f_body.py",
+   "prompt_class": "args",
+   "n_tools": 12,
+   "chars": 305,
+   "utf8_bytes": 307,
+   "tokens": 79,
+   "bytes_per_token": 3.886,
+   "exceeded_4096": false,
+   "estimated_tokens": 144,
+   "estimate_over_actual": 1.823
+  },
+  {
+   "prompt_id": "examples/q3_arm_f_body.py::discoverability",
+   "source_file": "examples/q3_arm_f_body.py",
+   "prompt_class": "discoverability",
+   "n_tools": 12,
+   "chars": 2687,
+   "utf8_bytes": 2687,
+   "tokens": 549,
+   "bytes_per_token": 4.894,
+   "exceeded_4096": false,
+   "estimated_tokens": 937,
+   "estimate_over_actual": 1.707
+  },
+  {
+   "prompt_id": "examples/q3_arm_f_body.py::fixer_source",
+   "source_file": "examples/q3_arm_f_body.py",
+   "prompt_class": "fixer_source",
+   "n_tools": 12,
+   "chars": 3125,
+   "utf8_bytes": 3129,
+   "tokens": 703,
+   "bytes_per_token": 4.451,
+   "exceeded_4096": false,
+   "estimated_tokens": 1085,
+   "estimate_over_actual": 1.543
+  },
+  {
+   "prompt_id": "examples/q3_arm_f_doc.py::selection",
+   "source_file": "examples/q3_arm_f_doc.py",
+   "prompt_class": "selection",
+   "n_tools": 12,
+   "chars": 3080,
+   "utf8_bytes": 3106,
+   "tokens": 636,
+   "bytes_per_token": 4.884,
+   "exceeded_4096": false,
+   "estimated_tokens": 1077,
+   "estimate_over_actual": 1.693
+  },
+  {
+   "prompt_id": "examples/q3_arm_f_doc.py::args",
+   "source_file": "examples/q3_arm_f_doc.py",
+   "prompt_class": "args",
+   "n_tools": 12,
+   "chars": 305,
+   "utf8_bytes": 307,
+   "tokens": 79,
+   "bytes_per_token": 3.886,
+   "exceeded_4096": false,
+   "estimated_tokens": 144,
+   "estimate_over_actual": 1.823
+  },
+  {
+   "prompt_id": "examples/q3_arm_f_doc.py::discoverability",
+   "source_file": "examples/q3_arm_f_doc.py",
+   "prompt_class": "discoverability",
+   "n_tools": 12,
+   "chars": 2900,
+   "utf8_bytes": 2900,
+   "tokens": 590,
+   "bytes_per_token": 4.915,
+   "exceeded_4096": false,
+   "estimated_tokens": 1008,
+   "estimate_over_actual": 1.708
+  },
+  {
+   "prompt_id": "examples/q3_arm_f_doc.py::fixer_source",
+   "source_file": "examples/q3_arm_f_doc.py",
+   "prompt_class": "fixer_source",
+   "n_tools": 12,
+   "chars": 3221,
+   "utf8_bytes": 3225,
+   "tokens": 731,
+   "bytes_per_token": 4.412,
+   "exceeded_4096": false,
+   "estimated_tokens": 1117,
+   "estimate_over_actual": 1.528
+  },
+  {
+   "prompt_id": "examples/q3_arm_o.py::selection",
+   "source_file": "examples/q3_arm_o.py",
+   "prompt_class": "selection",
+   "n_tools": 12,
+   "chars": 1975,
+   "utf8_bytes": 2005,
+   "tokens": 414,
+   "bytes_per_token": 4.843,
+   "exceeded_4096": false,
+   "estimated_tokens": 710,
+   "estimate_over_actual": 1.715
+  },
+  {
+   "prompt_id": "examples/q3_arm_o.py::args",
+   "source_file": "examples/q3_arm_o.py",
+   "prompt_class": "args",
+   "n_tools": 12,
+   "chars": 305,
+   "utf8_bytes": 307,
+   "tokens": 79,
+   "bytes_per_token": 3.886,
+   "exceeded_4096": false,
+   "estimated_tokens": 144,
+   "estimate_over_actual": 1.823
+  },
+  {
+   "prompt_id": "examples/q3_arm_o.py::discoverability",
+   "source_file": "examples/q3_arm_o.py",
+   "prompt_class": "discoverability",
+   "n_tools": 12,
+   "chars": 1795,
+   "utf8_bytes": 1799,
+   "tokens": 368,
+   "bytes_per_token": 4.889,
+   "exceeded_4096": false,
+   "estimated_tokens": 641,
+   "estimate_over_actual": 1.742
+  },
+  {
+   "prompt_id": "examples/q3_arm_o.py::fixer_source",
+   "source_file": "examples/q3_arm_o.py",
+   "prompt_class": "fixer_source",
+   "n_tools": 12,
+   "chars": 2693,
+   "utf8_bytes": 2697,
+   "tokens": 584,
+   "bytes_per_token": 4.618,
+   "exceeded_4096": false,
+   "estimated_tokens": 941,
+   "estimate_over_actual": 1.611
+  },
+  {
+   "prompt_id": "examples/q3_real_server.py::selection",
+   "source_file": "examples/q3_real_server.py",
+   "prompt_class": "selection",
+   "n_tools": 12,
+   "chars": 759,
+   "utf8_bytes": 785,
+   "tokens": 183,
+   "bytes_per_token": 4.29,
+   "exceeded_4096": false,
+   "estimated_tokens": 303,
+   "estimate_over_actual": 1.656
+  },
+  {
+   "prompt_id": "examples/q3_real_server.py::args",
+   "source_file": "examples/q3_real_server.py",
+   "prompt_class": "args",
+   "n_tools": 12,
+   "chars": 305,
+   "utf8_bytes": 307,
+   "tokens": 79,
+   "bytes_per_token": 3.886,
+   "exceeded_4096": false,
+   "estimated_tokens": 144,
+   "estimate_over_actual": 1.823
+  },
+  {
+   "prompt_id": "examples/q3_real_server.py::discoverability",
+   "source_file": "examples/q3_real_server.py",
+   "prompt_class": "discoverability",
+   "n_tools": 12,
+   "chars": 579,
+   "utf8_bytes": 579,
+   "tokens": 137,
+   "bytes_per_token": 4.226,
+   "exceeded_4096": false,
+   "estimated_tokens": 235,
+   "estimate_over_actual": 1.715
+  },
+  {
+   "prompt_id": "examples/q3_real_server.py::fixer_source",
+   "source_file": "examples/q3_real_server.py",
+   "prompt_class": "fixer_source",
+   "n_tools": 12,
+   "chars": 9279,
+   "utf8_bytes": 9913,
+   "tokens": 2184,
+   "bytes_per_token": 4.539,
+   "exceeded_4096": false,
+   "estimated_tokens": 3346,
+   "estimate_over_actual": 1.532
+  },
+  {
+   "prompt_id": "examples/q3_real_server_fixed.py::selection",
+   "source_file": "examples/q3_real_server_fixed.py",
+   "prompt_class": "selection",
+   "n_tools": 12,
+   "chars": 759,
+   "utf8_bytes": 785,
+   "tokens": 183,
+   "bytes_per_token": 4.29,
+   "exceeded_4096": false,
+   "estimated_tokens": 303,
+   "estimate_over_actual": 1.656
+  },
+  {
+   "prompt_id": "examples/q3_real_server_fixed.py::args",
+   "source_file": "examples/q3_real_server_fixed.py",
+   "prompt_class": "args",
+   "n_tools": 12,
+   "chars": 305,
+   "utf8_bytes": 307,
+   "tokens": 79,
+   "bytes_per_token": 3.886,
+   "exceeded_4096": false,
+   "estimated_tokens": 144,
+   "estimate_over_actual": 1.823
+  },
+  {
+   "prompt_id": "examples/q3_real_server_fixed.py::discoverability",
+   "source_file": "examples/q3_real_server_fixed.py",
+   "prompt_class": "discoverability",
+   "n_tools": 12,
+   "chars": 579,
+   "utf8_bytes": 579,
+   "tokens": 137,
+   "bytes_per_token": 4.226,
+   "exceeded_4096": false,
+   "estimated_tokens": 235,
+   "estimate_over_actual": 1.715
+  },
+  {
+   "prompt_id": "examples/q3_real_server_fixed.py::fixer_source",
+   "source_file": "examples/q3_real_server_fixed.py",
+   "prompt_class": "fixer_source",
+   "n_tools": 12,
+   "chars": 9279,
+   "utf8_bytes": 9913,
+   "tokens": 2184,
+   "bytes_per_token": 4.539,
+   "exceeded_4096": false,
+   "estimated_tokens": 3346,
+   "estimate_over_actual": 1.532
+  },
+  {
+   "prompt_id": "examples/q3_real_server_fixed_dqonly.py::selection",
+   "source_file": "examples/q3_real_server_fixed_dqonly.py",
+   "prompt_class": "selection",
+   "n_tools": 12,
+   "chars": 759,
+   "utf8_bytes": 785,
+   "tokens": 183,
+   "bytes_per_token": 4.29,
+   "exceeded_4096": false,
+   "estimated_tokens": 303,
+   "estimate_over_actual": 1.656
+  },
+  {
+   "prompt_id": "examples/q3_real_server_fixed_dqonly.py::args",
+   "source_file": "examples/q3_real_server_fixed_dqonly.py",
+   "prompt_class": "args",
+   "n_tools": 12,
+   "chars": 305,
+   "utf8_bytes": 307,
+   "tokens": 79,
+   "bytes_per_token": 3.886,
+   "exceeded_4096": false,
+   "estimated_tokens": 144,
+   "estimate_over_actual": 1.823
+  },
+  {
+   "prompt_id": "examples/q3_real_server_fixed_dqonly.py::discoverability",
+   "source_file": "examples/q3_real_server_fixed_dqonly.py",
+   "prompt_class": "discoverability",
+   "n_tools": 12,
+   "chars": 579,
+   "utf8_bytes": 579,
+   "tokens": 137,
+   "bytes_per_token": 4.226,
+   "exceeded_4096": false,
+   "estimated_tokens": 235,
+   "estimate_over_actual": 1.715
+  },
+  {
+   "prompt_id": "examples/q3_real_server_fixed_dqonly.py::fixer_source",
+   "source_file": "examples/q3_real_server_fixed_dqonly.py",
+   "prompt_class": "fixer_source",
+   "n_tools": 12,
+   "chars": 9279,
+   "utf8_bytes": 9913,
+   "tokens": 2184,
+   "bytes_per_token": 4.539,
+   "exceeded_4096": false,
+   "estimated_tokens": 3346,
+   "estimate_over_actual": 1.532
+  },
+  {
+   "prompt_id": "examples/q4_arm_f_body_scoped.py::selection",
+   "source_file": "examples/q4_arm_f_body_scoped.py",
+   "prompt_class": "selection",
+   "n_tools": 12,
+   "chars": 3224,
+   "utf8_bytes": 3250,
+   "tokens": 661,
+   "bytes_per_token": 4.917,
+   "exceeded_4096": false,
+   "estimated_tokens": 1125,
+   "estimate_over_actual": 1.702
+  },
+  {
+   "prompt_id": "examples/q4_arm_f_body_scoped.py::args",
+   "source_file": "examples/q4_arm_f_body_scoped.py",
+   "prompt_class": "args",
+   "n_tools": 12,
+   "chars": 305,
+   "utf8_bytes": 307,
+   "tokens": 79,
+   "bytes_per_token": 3.886,
+   "exceeded_4096": false,
+   "estimated_tokens": 144,
+   "estimate_over_actual": 1.823
+  },
+  {
+   "prompt_id": "examples/q4_arm_f_body_scoped.py::discoverability",
+   "source_file": "examples/q4_arm_f_body_scoped.py",
+   "prompt_class": "discoverability",
+   "n_tools": 12,
+   "chars": 3044,
+   "utf8_bytes": 3044,
+   "tokens": 615,
+   "bytes_per_token": 4.95,
+   "exceeded_4096": false,
+   "estimated_tokens": 1056,
+   "estimate_over_actual": 1.717
+  },
+  {
+   "prompt_id": "examples/q4_arm_f_body_scoped.py::fixer_source",
+   "source_file": "examples/q4_arm_f_body_scoped.py",
+   "prompt_class": "fixer_source",
+   "n_tools": 12,
+   "chars": 3158,
+   "utf8_bytes": 3162,
+   "tokens": 716,
+   "bytes_per_token": 4.416,
+   "exceeded_4096": false,
+   "estimated_tokens": 1096,
+   "estimate_over_actual": 1.531
+  },
+  {
+   "prompt_id": "examples/q4_arm_f_doc_scoped.py::selection",
+   "source_file": "examples/q4_arm_f_doc_scoped.py",
+   "prompt_class": "selection",
+   "n_tools": 12,
+   "chars": 3249,
+   "utf8_bytes": 3275,
+   "tokens": 657,
+   "bytes_per_token": 4.985,
+   "exceeded_4096": false,
+   "estimated_tokens": 1133,
+   "estimate_over_actual": 1.725
+  },
+  {
+   "prompt_id": "examples/q4_arm_f_doc_scoped.py::args",
+   "source_file": "examples/q4_arm_f_doc_scoped.py",
+   "prompt_class": "args",
+   "n_tools": 12,
+   "chars": 305,
+   "utf8_bytes": 307,
+   "tokens": 79,
+   "bytes_per_token": 3.886,
+   "exceeded_4096": false,
+   "estimated_tokens": 144,
+   "estimate_over_actual": 1.823
+  },
+  {
+   "prompt_id": "examples/q4_arm_f_doc_scoped.py::discoverability",
+   "source_file": "examples/q4_arm_f_doc_scoped.py",
+   "prompt_class": "discoverability",
+   "n_tools": 12,
+   "chars": 3069,
+   "utf8_bytes": 3069,
+   "tokens": 611,
+   "bytes_per_token": 5.023,
+   "exceeded_4096": false,
+   "estimated_tokens": 1065,
+   "estimate_over_actual": 1.743
+  },
+  {
+   "prompt_id": "examples/q4_arm_f_doc_scoped.py::fixer_source",
+   "source_file": "examples/q4_arm_f_doc_scoped.py",
+   "prompt_class": "fixer_source",
+   "n_tools": 12,
+   "chars": 3190,
+   "utf8_bytes": 3194,
+   "tokens": 718,
+   "bytes_per_token": 4.448,
+   "exceeded_4096": false,
+   "estimated_tokens": 1106,
+   "estimate_over_actual": 1.54
+  },
+  {
+   "prompt_id": "examples/q5_arm_f_doc_guarded.py::selection",
+   "source_file": "examples/q5_arm_f_doc_guarded.py",
+   "prompt_class": "selection",
+   "n_tools": 12,
+   "chars": 2010,
+   "utf8_bytes": 2036,
+   "tokens": 405,
+   "bytes_per_token": 5.027,
+   "exceeded_4096": false,
+   "estimated_tokens": 720,
+   "estimate_over_actual": 1.778
+  },
+  {
+   "prompt_id": "examples/q5_arm_f_doc_guarded.py::args",
+   "source_file": "examples/q5_arm_f_doc_guarded.py",
+   "prompt_class": "args",
+   "n_tools": 12,
+   "chars": 305,
+   "utf8_bytes": 307,
+   "tokens": 79,
+   "bytes_per_token": 3.886,
+   "exceeded_4096": false,
+   "estimated_tokens": 144,
+   "estimate_over_actual": 1.823
+  },
+  {
+   "prompt_id": "examples/q5_arm_f_doc_guarded.py::discoverability",
+   "source_file": "examples/q5_arm_f_doc_guarded.py",
+   "prompt_class": "discoverability",
+   "n_tools": 12,
+   "chars": 1830,
+   "utf8_bytes": 1830,
+   "tokens": 359,
+   "bytes_per_token": 5.097,
+   "exceeded_4096": false,
+   "estimated_tokens": 652,
+   "estimate_over_actual": 1.816
+  },
+  {
+   "prompt_id": "examples/q5_arm_f_doc_guarded.py::fixer_source",
+   "source_file": "examples/q5_arm_f_doc_guarded.py",
+   "prompt_class": "fixer_source",
+   "n_tools": 12,
+   "chars": 3146,
+   "utf8_bytes": 3150,
+   "tokens": 711,
+   "bytes_per_token": 4.43,
+   "exceeded_4096": false,
+   "estimated_tokens": 1092,
+   "estimate_over_actual": 1.536
+  },
+  {
+   "prompt_id": "examples/q6_arm_a.py::selection",
+   "source_file": "examples/q6_arm_a.py",
+   "prompt_class": "selection",
+   "n_tools": 23,
+   "chars": 1287,
+   "utf8_bytes": 1335,
+   "tokens": 306,
+   "bytes_per_token": 4.363,
+   "exceeded_4096": false,
+   "estimated_tokens": 487,
+   "estimate_over_actual": 1.592
+  },
+  {
+   "prompt_id": "examples/q6_arm_a.py::args",
+   "source_file": "examples/q6_arm_a.py",
+   "prompt_class": "args",
+   "n_tools": 23,
+   "chars": 305,
+   "utf8_bytes": 307,
+   "tokens": 79,
+   "bytes_per_token": 3.886,
+   "exceeded_4096": false,
+   "estimated_tokens": 144,
+   "estimate_over_actual": 1.823
+  },
+  {
+   "prompt_id": "examples/q6_arm_a.py::discoverability",
+   "source_file": "examples/q6_arm_a.py",
+   "prompt_class": "discoverability",
+   "n_tools": 23,
+   "chars": 953,
+   "utf8_bytes": 953,
+   "tokens": 227,
+   "bytes_per_token": 4.198,
+   "exceeded_4096": false,
+   "estimated_tokens": 359,
+   "estimate_over_actual": 1.581
+  },
+  {
+   "prompt_id": "examples/q6_arm_a.py::fixer_source",
+   "source_file": "examples/q6_arm_a.py",
+   "prompt_class": "fixer_source",
+   "n_tools": 23,
+   "chars": 2659,
+   "utf8_bytes": 2663,
+   "tokens": 589,
+   "bytes_per_token": 4.521,
+   "exceeded_4096": false,
+   "estimated_tokens": 929,
+   "estimate_over_actual": 1.577
+  },
+  {
+   "prompt_id": "examples/q6_arm_f_doc_guarded.py::selection",
+   "source_file": "examples/q6_arm_f_doc_guarded.py",
+   "prompt_class": "selection",
+   "n_tools": 23,
+   "chars": 3972,
+   "utf8_bytes": 4020,
+   "tokens": 805,
+   "bytes_per_token": 4.994,
+   "exceeded_4096": false,
+   "estimated_tokens": 1382,
+   "estimate_over_actual": 1.717
+  },
+  {
+   "prompt_id": "examples/q6_arm_f_doc_guarded.py::args",
+   "source_file": "examples/q6_arm_f_doc_guarded.py",
+   "prompt_class": "args",
+   "n_tools": 23,
+   "chars": 305,
+   "utf8_bytes": 307,
+   "tokens": 79,
+   "bytes_per_token": 3.886,
+   "exceeded_4096": false,
+   "estimated_tokens": 144,
+   "estimate_over_actual": 1.823
+  },
+  {
+   "prompt_id": "examples/q6_arm_f_doc_guarded.py::discoverability",
+   "source_file": "examples/q6_arm_f_doc_guarded.py",
+   "prompt_class": "discoverability",
+   "n_tools": 23,
+   "chars": 3638,
+   "utf8_bytes": 3638,
+   "tokens": 726,
+   "bytes_per_token": 5.011,
+   "exceeded_4096": false,
+   "estimated_tokens": 1254,
+   "estimate_over_actual": 1.727
+  },
+  {
+   "prompt_id": "examples/q6_arm_f_doc_guarded.py::fixer_source",
+   "source_file": "examples/q6_arm_f_doc_guarded.py",
+   "prompt_class": "fixer_source",
+   "n_tools": 23,
+   "chars": 3232,
+   "utf8_bytes": 3236,
+   "tokens": 737,
+   "bytes_per_token": 4.391,
+   "exceeded_4096": false,
+   "estimated_tokens": 1120,
+   "estimate_over_actual": 1.52
+  },
+  {
+   "prompt_id": "examples/q6_real_server.py::selection",
+   "source_file": "examples/q6_real_server.py",
+   "prompt_class": "selection",
+   "n_tools": 23,
+   "chars": 1287,
+   "utf8_bytes": 1335,
+   "tokens": 306,
+   "bytes_per_token": 4.363,
+   "exceeded_4096": false,
+   "estimated_tokens": 487,
+   "estimate_over_actual": 1.592
+  },
+  {
+   "prompt_id": "examples/q6_real_server.py::args",
+   "source_file": "examples/q6_real_server.py",
+   "prompt_class": "args",
+   "n_tools": 23,
+   "chars": 305,
+   "utf8_bytes": 307,
+   "tokens": 79,
+   "bytes_per_token": 3.886,
+   "exceeded_4096": false,
+   "estimated_tokens": 144,
+   "estimate_over_actual": 1.823
+  },
+  {
+   "prompt_id": "examples/q6_real_server.py::discoverability",
+   "source_file": "examples/q6_real_server.py",
+   "prompt_class": "discoverability",
+   "n_tools": 23,
+   "chars": 953,
+   "utf8_bytes": 953,
+   "tokens": 227,
+   "bytes_per_token": 4.198,
+   "exceeded_4096": false,
+   "estimated_tokens": 359,
+   "estimate_over_actual": 1.581
+  },
+  {
+   "prompt_id": "examples/q6_real_server.py::fixer_source",
+   "source_file": "examples/q6_real_server.py",
+   "prompt_class": "fixer_source",
+   "n_tools": 23,
+   "chars": 17147,
+   "utf8_bytes": 18047,
+   "tokens": 4077,
+   "bytes_per_token": 4.427,
+   "exceeded_4096": false,
+   "estimated_tokens": 6057,
+   "estimate_over_actual": 1.486
+  },
+  {
+   "prompt_id": "examples/rw1_arm_a.py::selection",
+   "source_file": "examples/rw1_arm_a.py",
+   "prompt_class": "selection",
+   "n_tools": 21,
+   "chars": 3012,
+   "utf8_bytes": 3056,
+   "tokens": 646,
+   "bytes_per_token": 4.731,
+   "exceeded_4096": false,
+   "estimated_tokens": 1060,
+   "estimate_over_actual": 1.641
+  },
+  {
+   "prompt_id": "examples/rw1_arm_a.py::args",
+   "source_file": "examples/rw1_arm_a.py",
+   "prompt_class": "args",
+   "n_tools": 21,
+   "chars": 1052,
+   "utf8_bytes": 1056,
+   "tokens": 276,
+   "bytes_per_token": 3.826,
+   "exceeded_4096": false,
+   "estimated_tokens": 394,
+   "estimate_over_actual": 1.428
+  },
+  {
+   "prompt_id": "examples/rw1_arm_a.py::discoverability",
+   "source_file": "examples/rw1_arm_a.py",
+   "prompt_class": "discoverability",
+   "n_tools": 21,
+   "chars": 1541,
+   "utf8_bytes": 1541,
+   "tokens": 322,
+   "bytes_per_token": 4.786,
+   "exceeded_4096": false,
+   "estimated_tokens": 555,
+   "estimate_over_actual": 1.724
+  },
+  {
+   "prompt_id": "examples/rw1_arm_a.py::fixer_source",
+   "source_file": "examples/rw1_arm_a.py",
+   "prompt_class": "fixer_source",
+   "n_tools": 21,
+   "chars": 3438,
+   "utf8_bytes": 3446,
+   "tokens": 774,
+   "bytes_per_token": 4.452,
+   "exceeded_4096": false,
+   "estimated_tokens": 1190,
+   "estimate_over_actual": 1.537
+  },
+  {
+   "prompt_id": "examples/rw1_arm_guardb.py::selection",
+   "source_file": "examples/rw1_arm_guardb.py",
+   "prompt_class": "selection",
+   "n_tools": 21,
+   "chars": 5518,
+   "utf8_bytes": 5570,
+   "tokens": 1118,
+   "bytes_per_token": 4.982,
+   "exceeded_4096": false,
+   "estimated_tokens": 1898,
+   "estimate_over_actual": 1.698
+  },
+  {
+   "prompt_id": "examples/rw1_arm_guardb.py::args",
+   "source_file": "examples/rw1_arm_guardb.py",
+   "prompt_class": "args",
+   "n_tools": 21,
+   "chars": 1052,
+   "utf8_bytes": 1056,
+   "tokens": 276,
+   "bytes_per_token": 3.826,
+   "exceeded_4096": false,
+   "estimated_tokens": 394,
+   "estimate_over_actual": 1.428
+  },
+  {
+   "prompt_id": "examples/rw1_arm_guardb.py::discoverability",
+   "source_file": "examples/rw1_arm_guardb.py",
+   "prompt_class": "discoverability",
+   "n_tools": 21,
+   "chars": 4047,
+   "utf8_bytes": 4055,
+   "tokens": 773,
+   "bytes_per_token": 5.246,
+   "exceeded_4096": false,
+   "estimated_tokens": 1393,
+   "estimate_over_actual": 1.802
+  },
+  {
+   "prompt_id": "examples/rw1_arm_guardb.py::fixer_source",
+   "source_file": "examples/rw1_arm_guardb.py",
+   "prompt_class": "fixer_source",
+   "n_tools": 21,
+   "chars": 4135,
+   "utf8_bytes": 4143,
+   "tokens": 949,
+   "bytes_per_token": 4.366,
+   "exceeded_4096": false,
+   "estimated_tokens": 1423,
+   "estimate_over_actual": 1.499
+  },
+  {
+   "prompt_id": "examples/rw1_arm_oracle.py::selection",
+   "source_file": "examples/rw1_arm_oracle.py",
+   "prompt_class": "selection",
+   "n_tools": 21,
+   "chars": 6530,
+   "utf8_bytes": 6604,
+   "tokens": 1373,
+   "bytes_per_token": 4.81,
+   "exceeded_4096": false,
+   "estimated_tokens": 2243,
+   "estimate_over_actual": 1.634
+  },
+  {
+   "prompt_id": "examples/rw1_arm_oracle.py::args",
+   "source_file": "examples/rw1_arm_oracle.py",
+   "prompt_class": "args",
+   "n_tools": 21,
+   "chars": 1052,
+   "utf8_bytes": 1056,
+   "tokens": 276,
+   "bytes_per_token": 3.826,
+   "exceeded_4096": false,
+   "estimated_tokens": 394,
+   "estimate_over_actual": 1.428
+  },
+  {
+   "prompt_id": "examples/rw1_arm_oracle.py::discoverability",
+   "source_file": "examples/rw1_arm_oracle.py",
+   "prompt_class": "discoverability",
+   "n_tools": 21,
+   "chars": 5059,
+   "utf8_bytes": 5089,
+   "tokens": 1028,
+   "bytes_per_token": 4.95,
+   "exceeded_4096": false,
+   "estimated_tokens": 1738,
+   "estimate_over_actual": 1.691
+  },
+  {
+   "prompt_id": "examples/rw1_arm_oracle.py::fixer_source",
+   "source_file": "examples/rw1_arm_oracle.py",
+   "prompt_class": "fixer_source",
+   "n_tools": 21,
+   "chars": 3566,
+   "utf8_bytes": 3574,
+   "tokens": 796,
+   "bytes_per_token": 4.49,
+   "exceeded_4096": false,
+   "estimated_tokens": 1233,
+   "estimate_over_actual": 1.549
+  },
+  {
+   "prompt_id": "examples/rw1_github_mirror.py::selection",
+   "source_file": "examples/rw1_github_mirror.py",
+   "prompt_class": "selection",
+   "n_tools": 21,
+   "chars": 3012,
+   "utf8_bytes": 3056,
+   "tokens": 646,
+   "bytes_per_token": 4.731,
+   "exceeded_4096": false,
+   "estimated_tokens": 1060,
+   "estimate_over_actual": 1.641
+  },
+  {
+   "prompt_id": "examples/rw1_github_mirror.py::args",
+   "source_file": "examples/rw1_github_mirror.py",
+   "prompt_class": "args",
+   "n_tools": 21,
+   "chars": 1052,
+   "utf8_bytes": 1056,
+   "tokens": 276,
+   "bytes_per_token": 3.826,
+   "exceeded_4096": false,
+   "estimated_tokens": 394,
+   "estimate_over_actual": 1.428
+  },
+  {
+   "prompt_id": "examples/rw1_github_mirror.py::discoverability",
+   "source_file": "examples/rw1_github_mirror.py",
+   "prompt_class": "discoverability",
+   "n_tools": 21,
+   "chars": 1541,
+   "utf8_bytes": 1541,
+   "tokens": 322,
+   "bytes_per_token": 4.786,
+   "exceeded_4096": false,
+   "estimated_tokens": 555,
+   "estimate_over_actual": 1.724
+  },
+  {
+   "prompt_id": "examples/rw1_github_mirror.py::fixer_source",
+   "source_file": "examples/rw1_github_mirror.py",
+   "prompt_class": "fixer_source",
+   "n_tools": 21,
+   "chars": 17034,
+   "utf8_bytes": 17832,
+   "tokens": 3950,
+   "bytes_per_token": 4.514,
+   "exceeded_4096": false,
+   "estimated_tokens": 5986,
+   "estimate_over_actual": 1.515
+  },
+  {
+   "prompt_id": "examples/rw2_arm_a.py::selection",
+   "source_file": "examples/rw2_arm_a.py",
+   "prompt_class": "selection",
+   "n_tools": 29,
+   "chars": 5490,
+   "utf8_bytes": 5550,
+   "tokens": 1122,
+   "bytes_per_token": 4.947,
+   "exceeded_4096": false,
+   "estimated_tokens": 1892,
+   "estimate_over_actual": 1.686
+  },
+  {
+   "prompt_id": "examples/rw2_arm_a.py::args",
+   "source_file": "examples/rw2_arm_a.py",
+   "prompt_class": "args",
+   "n_tools": 29,
+   "chars": 1105,
+   "utf8_bytes": 1107,
+   "tokens": 266,
+   "bytes_per_token": 4.162,
+   "exceeded_4096": false,
+   "estimated_tokens": 411,
+   "estimate_over_actual": 1.545
+  },
+  {
+   "prompt_id": "examples/rw2_arm_a.py::discoverability",
+   "source_file": "examples/rw2_arm_a.py",
+   "prompt_class": "discoverability",
+   "n_tools": 29,
+   "chars": 3897,
+   "utf8_bytes": 3897,
+   "tokens": 792,
+   "bytes_per_token": 4.92,
+   "exceeded_4096": false,
+   "estimated_tokens": 1341,
+   "estimate_over_actual": 1.693
+  },
+  {
+   "prompt_id": "examples/rw2_arm_a.py::fixer_source",
+   "source_file": "examples/rw2_arm_a.py",
+   "prompt_class": "fixer_source",
+   "n_tools": 29,
+   "chars": 3285,
+   "utf8_bytes": 3291,
+   "tokens": 730,
+   "bytes_per_token": 4.508,
+   "exceeded_4096": false,
+   "estimated_tokens": 1139,
+   "estimate_over_actual": 1.56
+  },
+  {
+   "prompt_id": "examples/rw2_arm_guardb.py::selection",
+   "source_file": "examples/rw2_arm_guardb.py",
+   "prompt_class": "selection",
+   "n_tools": 29,
+   "chars": 6238,
+   "utf8_bytes": 6304,
+   "tokens": 1236,
+   "bytes_per_token": 5.1,
+   "exceeded_4096": false,
+   "estimated_tokens": 2143,
+   "estimate_over_actual": 1.734
+  },
+  {
+   "prompt_id": "examples/rw2_arm_guardb.py::args",
+   "source_file": "examples/rw2_arm_guardb.py",
+   "prompt_class": "args",
+   "n_tools": 29,
+   "chars": 1105,
+   "utf8_bytes": 1107,
+   "tokens": 266,
+   "bytes_per_token": 4.162,
+   "exceeded_4096": false,
+   "estimated_tokens": 411,
+   "estimate_over_actual": 1.545
+  },
+  {
+   "prompt_id": "examples/rw2_arm_guardb.py::discoverability",
+   "source_file": "examples/rw2_arm_guardb.py",
+   "prompt_class": "discoverability",
+   "n_tools": 29,
+   "chars": 4645,
+   "utf8_bytes": 4651,
+   "tokens": 906,
+   "bytes_per_token": 5.134,
+   "exceeded_4096": false,
+   "estimated_tokens": 1592,
+   "estimate_over_actual": 1.757
+  },
+  {
+   "prompt_id": "examples/rw2_arm_guardb.py::fixer_source",
+   "source_file": "examples/rw2_arm_guardb.py",
+   "prompt_class": "fixer_source",
+   "n_tools": 29,
+   "chars": 3789,
+   "utf8_bytes": 3793,
+   "tokens": 864,
+   "bytes_per_token": 4.39,
+   "exceeded_4096": false,
+   "estimated_tokens": 1306,
+   "estimate_over_actual": 1.512
+  },
+  {
+   "prompt_id": "examples/rw2_aws_iam_mirror.py::selection",
+   "source_file": "examples/rw2_aws_iam_mirror.py",
+   "prompt_class": "selection",
+   "n_tools": 29,
+   "chars": 5490,
+   "utf8_bytes": 5550,
+   "tokens": 1122,
+   "bytes_per_token": 4.947,
+   "exceeded_4096": false,
+   "estimated_tokens": 1892,
+   "estimate_over_actual": 1.686
+  },
+  {
+   "prompt_id": "examples/rw2_aws_iam_mirror.py::args",
+   "source_file": "examples/rw2_aws_iam_mirror.py",
+   "prompt_class": "args",
+   "n_tools": 29,
+   "chars": 1105,
+   "utf8_bytes": 1107,
+   "tokens": 266,
+   "bytes_per_token": 4.162,
+   "exceeded_4096": false,
+   "estimated_tokens": 411,
+   "estimate_over_actual": 1.545
+  },
+  {
+   "prompt_id": "examples/rw2_aws_iam_mirror.py::discoverability",
+   "source_file": "examples/rw2_aws_iam_mirror.py",
+   "prompt_class": "discoverability",
+   "n_tools": 29,
+   "chars": 3897,
+   "utf8_bytes": 3897,
+   "tokens": 792,
+   "bytes_per_token": 4.92,
+   "exceeded_4096": false,
+   "estimated_tokens": 1341,
+   "estimate_over_actual": 1.693
+  },
+  {
+   "prompt_id": "examples/rw2_aws_iam_mirror.py::fixer_source",
+   "source_file": "examples/rw2_aws_iam_mirror.py",
+   "prompt_class": "fixer_source",
+   "n_tools": 29,
+   "chars": 18886,
+   "utf8_bytes": 20312,
+   "tokens": 4384,
+   "bytes_per_token": 4.633,
+   "exceeded_4096": true,
+   "estimated_tokens": 6812,
+   "estimate_over_actual": 1.554
+  },
+  {
+   "prompt_id": "examples/slack_messaging_server.py::selection",
+   "source_file": "examples/slack_messaging_server.py",
+   "prompt_class": "selection",
+   "n_tools": 4,
+   "chars": 476,
+   "utf8_bytes": 486,
+   "tokens": 110,
+   "bytes_per_token": 4.418,
+   "exceeded_4096": false,
+   "estimated_tokens": 204,
+   "estimate_over_actual": 1.855
+  },
+  {
+   "prompt_id": "examples/slack_messaging_server.py::args",
+   "source_file": "examples/slack_messaging_server.py",
+   "prompt_class": "args",
+   "n_tools": 4,
+   "chars": 380,
+   "utf8_bytes": 382,
+   "tokens": 101,
+   "bytes_per_token": 3.782,
+   "exceeded_4096": false,
+   "estimated_tokens": 169,
+   "estimate_over_actual": 1.673
+  },
+  {
+   "prompt_id": "examples/slack_messaging_server.py::discoverability",
+   "source_file": "examples/slack_messaging_server.py",
+   "prompt_class": "discoverability",
+   "n_tools": 4,
+   "chars": 341,
+   "utf8_bytes": 341,
+   "tokens": 76,
+   "bytes_per_token": 4.487,
+   "exceeded_4096": false,
+   "estimated_tokens": 155,
+   "estimate_over_actual": 2.039
+  },
+  {
+   "prompt_id": "examples/slack_messaging_server.py::fixer_source",
+   "source_file": "examples/slack_messaging_server.py",
+   "prompt_class": "fixer_source",
+   "n_tools": 4,
+   "chars": 4935,
+   "utf8_bytes": 5157,
+   "tokens": 1027,
+   "bytes_per_token": 5.021,
+   "exceeded_4096": false,
+   "estimated_tokens": 1761,
+   "estimate_over_actual": 1.715
+  },
+  {
+   "prompt_id": "examples/slack_messaging_server_fixed.py::selection",
+   "source_file": "examples/slack_messaging_server_fixed.py",
+   "prompt_class": "selection",
+   "n_tools": 4,
+   "chars": 2293,
+   "utf8_bytes": 2319,
+   "tokens": 522,
+   "bytes_per_token": 4.443,
+   "exceeded_4096": false,
+   "estimated_tokens": 815,
+   "estimate_over_actual": 1.561
+  },
+  {
+   "prompt_id": "examples/slack_messaging_server_fixed.py::args",
+   "source_file": "examples/slack_messaging_server_fixed.py",
+   "prompt_class": "args",
+   "n_tools": 4,
+   "chars": 380,
+   "utf8_bytes": 382,
+   "tokens": 101,
+   "bytes_per_token": 3.782,
+   "exceeded_4096": false,
+   "estimated_tokens": 169,
+   "estimate_over_actual": 1.673
+  },
+  {
+   "prompt_id": "examples/slack_messaging_server_fixed.py::discoverability",
+   "source_file": "examples/slack_messaging_server_fixed.py",
+   "prompt_class": "discoverability",
+   "n_tools": 4,
+   "chars": 2158,
+   "utf8_bytes": 2174,
+   "tokens": 488,
+   "bytes_per_token": 4.455,
+   "exceeded_4096": false,
+   "estimated_tokens": 766,
+   "estimate_over_actual": 1.57
+  },
+  {
+   "prompt_id": "examples/slack_messaging_server_fixed.py::fixer_source",
+   "source_file": "examples/slack_messaging_server_fixed.py",
+   "prompt_class": "fixer_source",
+   "n_tools": 4,
+   "chars": 8011,
+   "utf8_bytes": 8255,
+   "tokens": 1673,
+   "bytes_per_token": 4.934,
+   "exceeded_4096": false,
+   "estimated_tokens": 2793,
+   "estimate_over_actual": 1.669
+  },
+  {
+   "prompt_id": "examples/spotify_playlists_server.py::selection",
+   "source_file": "examples/spotify_playlists_server.py",
+   "prompt_class": "selection",
+   "n_tools": 4,
+   "chars": 547,
+   "utf8_bytes": 557,
+   "tokens": 127,
+   "bytes_per_token": 4.386,
+   "exceeded_4096": false,
+   "estimated_tokens": 227,
+   "estimate_over_actual": 1.787
+  },
+  {
+   "prompt_id": "examples/spotify_playlists_server.py::args",
+   "source_file": "examples/spotify_playlists_server.py",
+   "prompt_class": "args",
+   "n_tools": 4,
+   "chars": 425,
+   "utf8_bytes": 427,
+   "tokens": 114,
+   "bytes_per_token": 3.746,
+   "exceeded_4096": false,
+   "estimated_tokens": 184,
+   "estimate_over_actual": 1.614
+  },
+  {
+   "prompt_id": "examples/spotify_playlists_server.py::discoverability",
+   "source_file": "examples/spotify_playlists_server.py",
+   "prompt_class": "discoverability",
+   "n_tools": 4,
+   "chars": 354,
+   "utf8_bytes": 354,
+   "tokens": 78,
+   "bytes_per_token": 4.538,
+   "exceeded_4096": false,
+   "estimated_tokens": 160,
+   "estimate_over_actual": 2.051
+  },
+  {
+   "prompt_id": "examples/spotify_playlists_server.py::fixer_source",
+   "source_file": "examples/spotify_playlists_server.py",
+   "prompt_class": "fixer_source",
+   "n_tools": 4,
+   "chars": 5103,
+   "utf8_bytes": 5293,
+   "tokens": 1065,
+   "bytes_per_token": 4.97,
+   "exceeded_4096": false,
+   "estimated_tokens": 1806,
+   "estimate_over_actual": 1.696
+  },
+  {
+   "prompt_id": "examples/spotify_playlists_server_fixed.py::selection",
+   "source_file": "examples/spotify_playlists_server_fixed.py",
+   "prompt_class": "selection",
+   "n_tools": 4,
+   "chars": 2684,
+   "utf8_bytes": 2702,
+   "tokens": 572,
+   "bytes_per_token": 4.724,
+   "exceeded_4096": false,
+   "estimated_tokens": 942,
+   "estimate_over_actual": 1.647
+  },
+  {
+   "prompt_id": "examples/spotify_playlists_server_fixed.py::args",
+   "source_file": "examples/spotify_playlists_server_fixed.py",
+   "prompt_class": "args",
+   "n_tools": 4,
+   "chars": 425,
+   "utf8_bytes": 427,
+   "tokens": 114,
+   "bytes_per_token": 3.746,
+   "exceeded_4096": false,
+   "estimated_tokens": 184,
+   "estimate_over_actual": 1.614
+  },
+  {
+   "prompt_id": "examples/spotify_playlists_server_fixed.py::discoverability",
+   "source_file": "examples/spotify_playlists_server_fixed.py",
+   "prompt_class": "discoverability",
+   "n_tools": 4,
+   "chars": 2491,
+   "utf8_bytes": 2499,
+   "tokens": 523,
+   "bytes_per_token": 4.778,
+   "exceeded_4096": false,
+   "estimated_tokens": 875,
+   "estimate_over_actual": 1.673
+  },
+  {
+   "prompt_id": "examples/spotify_playlists_server_fixed.py::fixer_source",
+   "source_file": "examples/spotify_playlists_server_fixed.py",
+   "prompt_class": "fixer_source",
+   "n_tools": 4,
+   "chars": 8545,
+   "utf8_bytes": 8745,
+   "tokens": 1739,
+   "bytes_per_token": 5.029,
+   "exceeded_4096": false,
+   "estimated_tokens": 2957,
+   "estimate_over_actual": 1.7
+  },
+  {
+   "prompt_id": "examples/stripe_payments_server.py::selection",
+   "source_file": "examples/stripe_payments_server.py",
+   "prompt_class": "selection",
+   "n_tools": 4,
+   "chars": 551,
+   "utf8_bytes": 561,
+   "tokens": 121,
+   "bytes_per_token": 4.636,
+   "exceeded_4096": false,
+   "estimated_tokens": 229,
+   "estimate_over_actual": 1.893
+  },
+  {
+   "prompt_id": "examples/stripe_payments_server.py::args",
+   "source_file": "examples/stripe_payments_server.py",
+   "prompt_class": "args",
+   "n_tools": 4,
+   "chars": 422,
+   "utf8_bytes": 424,
+   "tokens": 109,
+   "bytes_per_token": 3.89,
+   "exceeded_4096": false,
+   "estimated_tokens": 183,
+   "estimate_over_actual": 1.679
+  },
+  {
+   "prompt_id": "examples/stripe_payments_server.py::discoverability",
+   "source_file": "examples/stripe_payments_server.py",
+   "prompt_class": "discoverability",
+   "n_tools": 4,
+   "chars": 338,
+   "utf8_bytes": 338,
+   "tokens": 74,
+   "bytes_per_token": 4.568,
+   "exceeded_4096": false,
+   "estimated_tokens": 154,
+   "estimate_over_actual": 2.081
+  },
+  {
+   "prompt_id": "examples/stripe_payments_server.py::fixer_source",
+   "source_file": "examples/stripe_payments_server.py",
+   "prompt_class": "fixer_source",
+   "n_tools": 4,
+   "chars": 5159,
+   "utf8_bytes": 5369,
+   "tokens": 1068,
+   "bytes_per_token": 5.027,
+   "exceeded_4096": false,
+   "estimated_tokens": 1831,
+   "estimate_over_actual": 1.714
+  },
+  {
+   "prompt_id": "examples/stripe_payments_server_fixed.py::selection",
+   "source_file": "examples/stripe_payments_server_fixed.py",
+   "prompt_class": "selection",
+   "n_tools": 4,
+   "chars": 2989,
+   "utf8_bytes": 3023,
+   "tokens": 631,
+   "bytes_per_token": 4.791,
+   "exceeded_4096": false,
+   "estimated_tokens": 1049,
+   "estimate_over_actual": 1.662
+  },
+  {
+   "prompt_id": "examples/stripe_payments_server_fixed.py::args",
+   "source_file": "examples/stripe_payments_server_fixed.py",
+   "prompt_class": "args",
+   "n_tools": 4,
+   "chars": 422,
+   "utf8_bytes": 424,
+   "tokens": 109,
+   "bytes_per_token": 3.89,
+   "exceeded_4096": false,
+   "estimated_tokens": 183,
+   "estimate_over_actual": 1.679
+  },
+  {
+   "prompt_id": "examples/stripe_payments_server_fixed.py::discoverability",
+   "source_file": "examples/stripe_payments_server_fixed.py",
+   "prompt_class": "discoverability",
+   "n_tools": 4,
+   "chars": 2776,
+   "utf8_bytes": 2800,
+   "tokens": 584,
+   "bytes_per_token": 4.795,
+   "exceeded_4096": false,
+   "estimated_tokens": 975,
+   "estimate_over_actual": 1.67
+  },
+  {
+   "prompt_id": "examples/stripe_payments_server_fixed.py::fixer_source",
+   "source_file": "examples/stripe_payments_server_fixed.py",
+   "prompt_class": "fixer_source",
+   "n_tools": 4,
+   "chars": 9054,
+   "utf8_bytes": 9296,
+   "tokens": 1850,
+   "bytes_per_token": 5.025,
+   "exceeded_4096": false,
+   "estimated_tokens": 3140,
+   "estimate_over_actual": 1.697
+  },
+  {
+   "prompt_id": "examples/t18_fixer_server.py::selection",
+   "source_file": "examples/t18_fixer_server.py",
+   "prompt_class": "selection",
+   "n_tools": 60,
+   "chars": 14475,
+   "utf8_bytes": 14597,
+   "tokens": 2727,
+   "bytes_per_token": 5.353,
+   "exceeded_4096": false,
+   "estimated_tokens": 4907,
+   "estimate_over_actual": 1.799
+  },
+  {
+   "prompt_id": "examples/t18_fixer_server.py::args",
+   "source_file": "examples/t18_fixer_server.py",
+   "prompt_class": "args",
+   "n_tools": 60,
+   "chars": 305,
+   "utf8_bytes": 307,
+   "tokens": 79,
+   "bytes_per_token": 3.886,
+   "exceeded_4096": false,
+   "estimated_tokens": 144,
+   "estimate_over_actual": 1.823
+  },
+  {
+   "prompt_id": "examples/t18_fixer_server.py::discoverability",
+   "source_file": "examples/t18_fixer_server.py",
+   "prompt_class": "discoverability",
+   "n_tools": 60,
+   "chars": 13623,
+   "utf8_bytes": 13623,
+   "tokens": 2531,
+   "bytes_per_token": 5.382,
+   "exceeded_4096": false,
+   "estimated_tokens": 4583,
+   "estimate_over_actual": 1.811
+  },
+  {
+   "prompt_id": "examples/t18_fixer_server.py::fixer_source",
+   "source_file": "examples/t18_fixer_server.py",
+   "prompt_class": "fixer_source",
+   "n_tools": 60,
+   "chars": 3412,
+   "utf8_bytes": 3416,
+   "tokens": 737,
+   "bytes_per_token": 4.635,
+   "exceeded_4096": false,
+   "estimated_tokens": 1180,
+   "estimate_over_actual": 1.601
+  },
+  {
+   "prompt_id": "examples/t18_oracle_server.py::selection",
+   "source_file": "examples/t18_oracle_server.py",
+   "prompt_class": "selection",
+   "n_tools": 60,
+   "chars": 8032,
+   "utf8_bytes": 8162,
+   "tokens": 1671,
+   "bytes_per_token": 4.885,
+   "exceeded_4096": false,
+   "estimated_tokens": 2762,
+   "estimate_over_actual": 1.653
+  },
+  {
+   "prompt_id": "examples/t18_oracle_server.py::args",
+   "source_file": "examples/t18_oracle_server.py",
+   "prompt_class": "args",
+   "n_tools": 60,
+   "chars": 305,
+   "utf8_bytes": 307,
+   "tokens": 79,
+   "bytes_per_token": 3.886,
+   "exceeded_4096": false,
+   "estimated_tokens": 144,
+   "estimate_over_actual": 1.823
+  },
+  {
+   "prompt_id": "examples/t18_oracle_server.py::discoverability",
+   "source_file": "examples/t18_oracle_server.py",
+   "prompt_class": "discoverability",
+   "n_tools": 60,
+   "chars": 7180,
+   "utf8_bytes": 7188,
+   "tokens": 1475,
+   "bytes_per_token": 4.873,
+   "exceeded_4096": false,
+   "estimated_tokens": 2438,
+   "estimate_over_actual": 1.653
+  },
+  {
+   "prompt_id": "examples/t18_oracle_server.py::fixer_source",
+   "source_file": "examples/t18_oracle_server.py",
+   "prompt_class": "fixer_source",
+   "n_tools": 60,
+   "chars": 3147,
+   "utf8_bytes": 3151,
+   "tokens": 680,
+   "bytes_per_token": 4.634,
+   "exceeded_4096": false,
+   "estimated_tokens": 1092,
+   "estimate_over_actual": 1.606
+  },
+  {
+   "prompt_id": "examples/t18_q2b_server.py::selection",
+   "source_file": "examples/t18_q2b_server.py",
+   "prompt_class": "selection",
+   "n_tools": 60,
+   "chars": 12512,
+   "utf8_bytes": 12636,
+   "tokens": 2360,
+   "bytes_per_token": 5.354,
+   "exceeded_4096": false,
+   "estimated_tokens": 4254,
+   "estimate_over_actual": 1.803
+  },
+  {
+   "prompt_id": "examples/t18_q2b_server.py::args",
+   "source_file": "examples/t18_q2b_server.py",
+   "prompt_class": "args",
+   "n_tools": 60,
+   "chars": 305,
+   "utf8_bytes": 307,
+   "tokens": 79,
+   "bytes_per_token": 3.886,
+   "exceeded_4096": false,
+   "estimated_tokens": 144,
+   "estimate_over_actual": 1.823
+  },
+  {
+   "prompt_id": "examples/t18_q2b_server.py::discoverability",
+   "source_file": "examples/t18_q2b_server.py",
+   "prompt_class": "discoverability",
+   "n_tools": 60,
+   "chars": 11660,
+   "utf8_bytes": 11662,
+   "tokens": 2164,
+   "bytes_per_token": 5.389,
+   "exceeded_4096": false,
+   "estimated_tokens": 3929,
+   "estimate_over_actual": 1.816
+  },
+  {
+   "prompt_id": "examples/t18_q2b_server.py::fixer_source",
+   "source_file": "examples/t18_q2b_server.py",
+   "prompt_class": "fixer_source",
+   "n_tools": 60,
+   "chars": 3576,
+   "utf8_bytes": 3580,
+   "tokens": 826,
+   "bytes_per_token": 4.334,
+   "exceeded_4096": false,
+   "estimated_tokens": 1235,
+   "estimate_over_actual": 1.495
+  },
+  {
+   "prompt_id": "examples/t18_vague_server.py::selection",
+   "source_file": "examples/t18_vague_server.py",
+   "prompt_class": "selection",
+   "n_tools": 60,
+   "chars": 3053,
+   "utf8_bytes": 3175,
+   "tokens": 717,
+   "bytes_per_token": 4.428,
+   "exceeded_4096": false,
+   "estimated_tokens": 1100,
+   "estimate_over_actual": 1.534
+  },
+  {
+   "prompt_id": "examples/t18_vague_server.py::args",
+   "source_file": "examples/t18_vague_server.py",
+   "prompt_class": "args",
+   "n_tools": 60,
+   "chars": 305,
+   "utf8_bytes": 307,
+   "tokens": 79,
+   "bytes_per_token": 3.886,
+   "exceeded_4096": false,
+   "estimated_tokens": 144,
+   "estimate_over_actual": 1.823
+  },
+  {
+   "prompt_id": "examples/t18_vague_server.py::discoverability",
+   "source_file": "examples/t18_vague_server.py",
+   "prompt_class": "discoverability",
+   "n_tools": 60,
+   "chars": 2201,
+   "utf8_bytes": 2201,
+   "tokens": 521,
+   "bytes_per_token": 4.225,
+   "exceeded_4096": false,
+   "estimated_tokens": 775,
+   "estimate_over_actual": 1.488
+  },
+  {
+   "prompt_id": "examples/t18_vague_server.py::fixer_source",
+   "source_file": "examples/t18_vague_server.py",
+   "prompt_class": "fixer_source",
+   "n_tools": 60,
+   "chars": 2971,
+   "utf8_bytes": 2977,
+   "tokens": 648,
+   "bytes_per_token": 4.594,
+   "exceeded_4096": false,
+   "estimated_tokens": 1034,
+   "estimate_over_actual": 1.596
+  },
+  {
+   "prompt_id": "examples/twilio_messaging_server.py::selection",
+   "source_file": "examples/twilio_messaging_server.py",
+   "prompt_class": "selection",
+   "n_tools": 4,
+   "chars": 593,
+   "utf8_bytes": 603,
+   "tokens": 136,
+   "bytes_per_token": 4.434,
+   "exceeded_4096": false,
+   "estimated_tokens": 243,
+   "estimate_over_actual": 1.787
+  },
+  {
+   "prompt_id": "examples/twilio_messaging_server.py::args",
+   "source_file": "examples/twilio_messaging_server.py",
+   "prompt_class": "args",
+   "n_tools": 4,
+   "chars": 443,
+   "utf8_bytes": 445,
+   "tokens": 113,
+   "bytes_per_token": 3.938,
+   "exceeded_4096": false,
+   "estimated_tokens": 190,
+   "estimate_over_actual": 1.681
+  },
+  {
+   "prompt_id": "examples/twilio_messaging_server.py::discoverability",
+   "source_file": "examples/twilio_messaging_server.py",
+   "prompt_class": "discoverability",
+   "n_tools": 4,
+   "chars": 338,
+   "utf8_bytes": 338,
+   "tokens": 76,
+   "bytes_per_token": 4.447,
+   "exceeded_4096": false,
+   "estimated_tokens": 154,
+   "estimate_over_actual": 2.026
+  },
+  {
+   "prompt_id": "examples/twilio_messaging_server.py::fixer_source",
+   "source_file": "examples/twilio_messaging_server.py",
+   "prompt_class": "fixer_source",
+   "n_tools": 4,
+   "chars": 5278,
+   "utf8_bytes": 5470,
+   "tokens": 1103,
+   "bytes_per_token": 4.959,
+   "exceeded_4096": false,
+   "estimated_tokens": 1865,
+   "estimate_over_actual": 1.691
+  },
+  {
+   "prompt_id": "examples/twilio_messaging_server_fixed.py::selection",
+   "source_file": "examples/twilio_messaging_server_fixed.py",
+   "prompt_class": "selection",
+   "n_tools": 4,
+   "chars": 3504,
+   "utf8_bytes": 3532,
+   "tokens": 781,
+   "bytes_per_token": 4.522,
+   "exceeded_4096": false,
+   "estimated_tokens": 1219,
+   "estimate_over_actual": 1.561
+  },
+  {
+   "prompt_id": "examples/twilio_messaging_server_fixed.py::args",
+   "source_file": "examples/twilio_messaging_server_fixed.py",
+   "prompt_class": "args",
+   "n_tools": 4,
+   "chars": 443,
+   "utf8_bytes": 445,
+   "tokens": 113,
+   "bytes_per_token": 3.938,
+   "exceeded_4096": false,
+   "estimated_tokens": 190,
+   "estimate_over_actual": 1.681
+  },
+  {
+   "prompt_id": "examples/twilio_messaging_server_fixed.py::discoverability",
+   "source_file": "examples/twilio_messaging_server_fixed.py",
+   "prompt_class": "discoverability",
+   "n_tools": 4,
+   "chars": 3249,
+   "utf8_bytes": 3267,
+   "tokens": 721,
+   "bytes_per_token": 4.531,
+   "exceeded_4096": false,
+   "estimated_tokens": 1131,
+   "estimate_over_actual": 1.569
+  },
+  {
+   "prompt_id": "examples/twilio_messaging_server_fixed.py::fixer_source",
+   "source_file": "examples/twilio_messaging_server_fixed.py",
+   "prompt_class": "fixer_source",
+   "n_tools": 4,
+   "chars": 9969,
+   "utf8_bytes": 10189,
+   "tokens": 2068,
+   "bytes_per_token": 4.927,
+   "exceeded_4096": false,
+   "estimated_tokens": 3438,
+   "estimate_over_actual": 1.662
+  }
+ ],
+ "servers_failed_to_start": [],
+ "estimator_validation": {
+  "estimator": "32 + 8 + ceil((4 + utf8_bytes)/3.0) tokens, single user message (agentgauge.providers.estimate_prompt_tokens)",
+  "n_prompts": 316,
+  "min_estimate_over_actual": 1.303,
+  "n_underestimates": 0,
+  "min_bytes_per_token": 3.337,
+  "max_bytes_per_token": 5.504,
+  "note": "estimate_over_actual >= 1 means the estimator is an upper bound for that prompt (llama3.1:8b tokenizer). Token counts are net of a ~nonce baseline (+/-2 tokens)."
+ },
+ "summary": {
+  "audit_only": true,
+  "note": "Read-only audit. No published number, fixture, result or README figure was changed.",
+  "default_num_ctx_observed": "4096 (ollama ps CONTEXT column, Ollama 0.40.3, llama3.1:8b, no num_ctx sent), 2026-10-16 on the audit machine; earlier runs may have had a different default (not verified).",
+  "n_prompts": 316,
+  "n_exceeded_4096": 10,
+  "by_class": {
+   "args": {
+    "n": 79,
+    "max_tokens": 521,
+    "n_exceeded_4096": 0
+   },
+   "discoverability": {
+    "n": 79,
+    "max_tokens": 2531,
+    "n_exceeded_4096": 0
+   },
+   "fixer_source": {
+    "n": 79,
+    "max_tokens": 50668,
+    "n_exceeded_4096": 8
+   },
+   "selection": {
+    "n": 79,
+    "max_tokens": 5311,
+    "n_exceeded_4096": 2
+   }
+  },
+  "exceeding_prompt_ids": [
+   "examples/exp1_AminForou_mcp_gsc_mirror.py::fixer_source",
+   "examples/exp1_AminForou_mcp_gsc_mirror_oracle.py::fixer_source",
+   "examples/exp1_mrexodia_ida_pro_mcp_mirror.py::fixer_source",
+   "examples/exp1_stickerdaniel_linkedin_mcp_server_mirror.py::fixer_source",
+   "examples/exp1_taylorwilsdon_google_workspace_mcp_mirror.py::selection",
+   "examples/exp1_taylorwilsdon_google_workspace_mcp_mirror.py::fixer_source",
+   "examples/exp1_taylorwilsdon_google_workspace_mcp_mirror_oracle.py::selection",
+   "examples/exp1_taylorwilsdon_google_workspace_mcp_mirror_oracle.py::fixer_source",
+   "examples/p2a_internal_proxy_mirror.py::fixer_source",
+   "examples/rw2_aws_iam_mirror.py::fixer_source"
+  ],
+  "caveats": [
+   "Agent model for the exp1 trials was gemma2:9b (not installed locally); counts here are llama3.1:8b, with a gemma3:4b proxy in proxy_gemma3_4b (same two selection prompts exceed, at ~7.0k tokens).",
+   "fixer_source rows are an upper bound: scripts used per-tool scoped source (q4-q6, p2a, rw1, rw2) which is far smaller; only generate_q3_descriptions.py passed whole-file source (q3_real_server.py = 2184 tokens, under the limit).",
+   "Task text is the longest in the committed TASKS lists, not every exp1 task.",
+   "Only examples/*.py servers were enumerated; real third-party servers a user scans via the CLI are outside the committed corpus."
+  ]
+ },
+ "proxy_gemma3_4b": {
+  "model": "gemma3:4b",
+  "classes": "selection,args,discoverability",
+  "n_prompts": 237,
+  "n_exceeded_4096": 2,
+  "rows": [
+   {
+    "prompt_id": "examples/aws_s3_server.py::selection",
+    "prompt_class": "selection",
+    "tokens": 142,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/aws_s3_server.py::args",
+    "prompt_class": "args",
+    "tokens": 120,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/aws_s3_server.py::discoverability",
+    "prompt_class": "discoverability",
+    "tokens": 92,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/aws_s3_server_fixed.py::selection",
+    "prompt_class": "selection",
+    "tokens": 764,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/aws_s3_server_fixed.py::args",
+    "prompt_class": "args",
+    "tokens": 120,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/aws_s3_server_fixed.py::discoverability",
+    "prompt_class": "discoverability",
+    "tokens": 714,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/call_constraints_server.py::selection",
+    "prompt_class": "selection",
+    "tokens": 195,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/call_constraints_server.py::args",
+    "prompt_class": "args",
+    "tokens": 103,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/call_constraints_server.py::discoverability",
+    "prompt_class": "discoverability",
+    "tokens": 135,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/call_constraints_server_fixed.py::selection",
+    "prompt_class": "selection",
+    "tokens": 478,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/call_constraints_server_fixed.py::args",
+    "prompt_class": "args",
+    "tokens": 103,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/call_constraints_server_fixed.py::discoverability",
+    "prompt_class": "discoverability",
+    "tokens": 418,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/call_constraints_server_oracle.py::selection",
+    "prompt_class": "selection",
+    "tokens": 247,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/call_constraints_server_oracle.py::args",
+    "prompt_class": "args",
+    "tokens": 201,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/call_constraints_server_oracle.py::discoverability",
+    "prompt_class": "discoverability",
+    "tokens": 187,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/call_constraints_v2_server.py::selection",
+    "prompt_class": "selection",
+    "tokens": 188,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/call_constraints_v2_server.py::args",
+    "prompt_class": "args",
+    "tokens": 117,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/call_constraints_v2_server.py::discoverability",
+    "prompt_class": "discoverability",
+    "tokens": 114,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/call_constraints_v2_server_fixed.py::selection",
+    "prompt_class": "selection",
+    "tokens": 473,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/call_constraints_v2_server_fixed.py::args",
+    "prompt_class": "args",
+    "tokens": 117,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/call_constraints_v2_server_fixed.py::discoverability",
+    "prompt_class": "discoverability",
+    "tokens": 399,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/call_constraints_v2_server_oracle.py::selection",
+    "prompt_class": "selection",
+    "tokens": 247,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/call_constraints_v2_server_oracle.py::args",
+    "prompt_class": "args",
+    "tokens": 175,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/call_constraints_v2_server_oracle.py::discoverability",
+    "prompt_class": "discoverability",
+    "tokens": 173,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/confusable_server.py::selection",
+    "prompt_class": "selection",
+    "tokens": 303,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/confusable_server.py::args",
+    "prompt_class": "args",
+    "tokens": 106,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/confusable_server.py::discoverability",
+    "prompt_class": "discoverability",
+    "tokens": 207,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/confusable_server_fixed.py::selection",
+    "prompt_class": "selection",
+    "tokens": 869,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/confusable_server_fixed.py::args",
+    "prompt_class": "args",
+    "tokens": 106,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/confusable_server_fixed.py::discoverability",
+    "prompt_class": "discoverability",
+    "tokens": 773,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/confusable_server_oracle.py::selection",
+    "prompt_class": "selection",
+    "tokens": 665,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/confusable_server_oracle.py::args",
+    "prompt_class": "args",
+    "tokens": 106,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/confusable_server_oracle.py::discoverability",
+    "prompt_class": "discoverability",
+    "tokens": 569,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/docker_containers_server.py::selection",
+    "prompt_class": "selection",
+    "tokens": 147,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/docker_containers_server.py::args",
+    "prompt_class": "args",
+    "tokens": 119,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/docker_containers_server.py::discoverability",
+    "prompt_class": "discoverability",
+    "tokens": 87,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/docker_containers_server_fixed.py::selection",
+    "prompt_class": "selection",
+    "tokens": 791,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/docker_containers_server_fixed.py::args",
+    "prompt_class": "args",
+    "tokens": 119,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/docker_containers_server_fixed.py::discoverability",
+    "prompt_class": "discoverability",
+    "tokens": 731,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/echo_server.py::selection",
+    "prompt_class": "selection",
+    "tokens": 121,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/echo_server.py::args",
+    "prompt_class": "args",
+    "tokens": 109,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/echo_server.py::discoverability",
+    "prompt_class": "discoverability",
+    "tokens": 97,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/echo_server_fixed.py::selection",
+    "prompt_class": "selection",
+    "tokens": 204,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/echo_server_fixed.py::args",
+    "prompt_class": "args",
+    "tokens": 111,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/echo_server_fixed.py::discoverability",
+    "prompt_class": "discoverability",
+    "tokens": 174,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/echo_server_fixed_dqonly.py::selection",
+    "prompt_class": "selection",
+    "tokens": 201,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/echo_server_fixed_dqonly.py::args",
+    "prompt_class": "args",
+    "tokens": 109,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/echo_server_fixed_dqonly.py::discoverability",
+    "prompt_class": "discoverability",
+    "tokens": 177,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/exp1_AminForou_mcp_gsc_mirror.py::selection",
+    "prompt_class": "selection",
+    "tokens": 785,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/exp1_AminForou_mcp_gsc_mirror.py::args",
+    "prompt_class": "args",
+    "tokens": 293,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/exp1_AminForou_mcp_gsc_mirror.py::discoverability",
+    "prompt_class": "discoverability",
+    "tokens": 472,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/exp1_AminForou_mcp_gsc_mirror_oracle.py::selection",
+    "prompt_class": "selection",
+    "tokens": 805,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/exp1_AminForou_mcp_gsc_mirror_oracle.py::args",
+    "prompt_class": "args",
+    "tokens": 293,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/exp1_AminForou_mcp_gsc_mirror_oracle.py::discoverability",
+    "prompt_class": "discoverability",
+    "tokens": 492,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/exp1_blazickjp_arxiv_mcp_server_mirror.py::selection",
+    "prompt_class": "selection",
+    "tokens": 510,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/exp1_blazickjp_arxiv_mcp_server_mirror.py::args",
+    "prompt_class": "args",
+    "tokens": 75,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/exp1_blazickjp_arxiv_mcp_server_mirror.py::discoverability",
+    "prompt_class": "discoverability",
+    "tokens": 470,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/exp1_datalayer_jupyter_mcp_server_mirror.py::selection",
+    "prompt_class": "selection",
+    "tokens": 666,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/exp1_datalayer_jupyter_mcp_server_mirror.py::args",
+    "prompt_class": "args",
+    "tokens": 141,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/exp1_datalayer_jupyter_mcp_server_mirror.py::discoverability",
+    "prompt_class": "discoverability",
+    "tokens": 427,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/exp1_datalayer_jupyter_mcp_server_mirror_oracle.py::selection",
+    "prompt_class": "selection",
+    "tokens": 678,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/exp1_datalayer_jupyter_mcp_server_mirror_oracle.py::args",
+    "prompt_class": "args",
+    "tokens": 141,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/exp1_datalayer_jupyter_mcp_server_mirror_oracle.py::discoverability",
+    "prompt_class": "discoverability",
+    "tokens": 439,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/exp1_Dataojitori_nocturne_memory_mirror.py::selection",
+    "prompt_class": "selection",
+    "tokens": 274,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/exp1_Dataojitori_nocturne_memory_mirror.py::args",
+    "prompt_class": "args",
+    "tokens": 153,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/exp1_Dataojitori_nocturne_memory_mirror.py::discoverability",
+    "prompt_class": "discoverability",
+    "tokens": 171,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/exp1_dataojitori_nocturne_memory_mirror_fixed.py::selection",
+    "prompt_class": "selection",
+    "tokens": 274,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/exp1_dataojitori_nocturne_memory_mirror_fixed.py::args",
+    "prompt_class": "args",
+    "tokens": 153,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/exp1_dataojitori_nocturne_memory_mirror_fixed.py::discoverability",
+    "prompt_class": "discoverability",
+    "tokens": 171,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/exp1_lucasastorian_llmwiki_mirror.py::selection",
+    "prompt_class": "selection",
+    "tokens": 483,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/exp1_lucasastorian_llmwiki_mirror.py::args",
+    "prompt_class": "args",
+    "tokens": 177,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/exp1_lucasastorian_llmwiki_mirror.py::discoverability",
+    "prompt_class": "discoverability",
+    "tokens": 292,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/exp1_LycheeMem_LycheeMem_mirror.py::selection",
+    "prompt_class": "selection",
+    "tokens": 162,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/exp1_LycheeMem_LycheeMem_mirror.py::args",
+    "prompt_class": "args",
+    "tokens": 78,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/exp1_LycheeMem_LycheeMem_mirror.py::discoverability",
+    "prompt_class": "discoverability",
+    "tokens": 138,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/exp1_mrexodia_ida_pro_mcp_mirror.py::selection",
+    "prompt_class": "selection",
+    "tokens": 2240,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/exp1_mrexodia_ida_pro_mcp_mirror.py::args",
+    "prompt_class": "args",
+    "tokens": 184,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/exp1_mrexodia_ida_pro_mcp_mirror.py::discoverability",
+    "prompt_class": "discoverability",
+    "tokens": 1669,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/exp1_stefanoamorelli_sec_edgar_mcp_mirror.py::selection",
+    "prompt_class": "selection",
+    "tokens": 623,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/exp1_stefanoamorelli_sec_edgar_mcp_mirror.py::args",
+    "prompt_class": "args",
+    "tokens": 139,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/exp1_stefanoamorelli_sec_edgar_mcp_mirror.py::discoverability",
+    "prompt_class": "discoverability",
+    "tokens": 390,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/exp1_stickerdaniel_linkedin_mcp_server_mirror.py::selection",
+    "prompt_class": "selection",
+    "tokens": 586,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/exp1_stickerdaniel_linkedin_mcp_server_mirror.py::args",
+    "prompt_class": "args",
+    "tokens": 221,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/exp1_stickerdaniel_linkedin_mcp_server_mirror.py::discoverability",
+    "prompt_class": "discoverability",
+    "tokens": 322,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/exp1_taylorwilsdon_google_workspace_mcp_mirror.py::selection",
+    "prompt_class": "selection",
+    "tokens": 7035,
+    "exceeded_4096": true
+   },
+   {
+    "prompt_id": "examples/exp1_taylorwilsdon_google_workspace_mcp_mirror.py::args",
+    "prompt_class": "args",
+    "tokens": 565,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/exp1_taylorwilsdon_google_workspace_mcp_mirror.py::discoverability",
+    "prompt_class": "discoverability",
+    "tokens": 2504,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/exp1_taylorwilsdon_google_workspace_mcp_mirror_oracle.py::selection",
+    "prompt_class": "selection",
+    "tokens": 7038,
+    "exceeded_4096": true
+   },
+   {
+    "prompt_id": "examples/exp1_taylorwilsdon_google_workspace_mcp_mirror_oracle.py::args",
+    "prompt_class": "args",
+    "tokens": 565,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/exp1_taylorwilsdon_google_workspace_mcp_mirror_oracle.py::discoverability",
+    "prompt_class": "discoverability",
+    "tokens": 2507,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/gcal_server.py::selection",
+    "prompt_class": "selection",
+    "tokens": 162,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/gcal_server.py::args",
+    "prompt_class": "args",
+    "tokens": 142,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/gcal_server.py::discoverability",
+    "prompt_class": "discoverability",
+    "tokens": 94,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/gcal_server_fixed.py::selection",
+    "prompt_class": "selection",
+    "tokens": 662,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/gcal_server_fixed.py::args",
+    "prompt_class": "args",
+    "tokens": 142,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/gcal_server_fixed.py::discoverability",
+    "prompt_class": "discoverability",
+    "tokens": 594,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/github_issues_server.py::selection",
+    "prompt_class": "selection",
+    "tokens": 162,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/github_issues_server.py::args",
+    "prompt_class": "args",
+    "tokens": 125,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/github_issues_server.py::discoverability",
+    "prompt_class": "discoverability",
+    "tokens": 90,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/github_issues_server_fixed.py::selection",
+    "prompt_class": "selection",
+    "tokens": 596,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/github_issues_server_fixed.py::args",
+    "prompt_class": "args",
+    "tokens": 125,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/github_issues_server_fixed.py::discoverability",
+    "prompt_class": "discoverability",
+    "tokens": 524,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/grounded_server.py::selection",
+    "prompt_class": "selection",
+    "tokens": 126,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/grounded_server.py::args",
+    "prompt_class": "args",
+    "tokens": 97,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/grounded_server.py::discoverability",
+    "prompt_class": "discoverability",
+    "tokens": 97,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/grounded_server_fixed.py::selection",
+    "prompt_class": "selection",
+    "tokens": 402,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/grounded_server_fixed.py::args",
+    "prompt_class": "args",
+    "tokens": 143,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/grounded_server_fixed.py::discoverability",
+    "prompt_class": "discoverability",
+    "tokens": 355,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/grounded_server_oracle.py::selection",
+    "prompt_class": "selection",
+    "tokens": 299,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/grounded_server_oracle.py::args",
+    "prompt_class": "args",
+    "tokens": 97,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/grounded_server_oracle.py::discoverability",
+    "prompt_class": "discoverability",
+    "tokens": 270,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/jira_issues_server.py::selection",
+    "prompt_class": "selection",
+    "tokens": 147,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/jira_issues_server.py::args",
+    "prompt_class": "args",
+    "tokens": 126,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/jira_issues_server.py::discoverability",
+    "prompt_class": "discoverability",
+    "tokens": 91,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/jira_issues_server_fixed.py::selection",
+    "prompt_class": "selection",
+    "tokens": 616,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/jira_issues_server_fixed.py::args",
+    "prompt_class": "args",
+    "tokens": 126,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/jira_issues_server_fixed.py::discoverability",
+    "prompt_class": "discoverability",
+    "tokens": 560,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/k8s_workloads_server.py::selection",
+    "prompt_class": "selection",
+    "tokens": 157,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/k8s_workloads_server.py::args",
+    "prompt_class": "args",
+    "tokens": 139,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/k8s_workloads_server.py::discoverability",
+    "prompt_class": "discoverability",
+    "tokens": 93,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/k8s_workloads_server_fixed.py::selection",
+    "prompt_class": "selection",
+    "tokens": 804,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/k8s_workloads_server_fixed.py::args",
+    "prompt_class": "args",
+    "tokens": 139,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/k8s_workloads_server_fixed.py::discoverability",
+    "prompt_class": "discoverability",
+    "tokens": 740,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/mediocre_server.py::selection",
+    "prompt_class": "selection",
+    "tokens": 114,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/mediocre_server.py::args",
+    "prompt_class": "args",
+    "tokens": 86,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/mediocre_server.py::discoverability",
+    "prompt_class": "discoverability",
+    "tokens": 87,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/mediocre_server_fixed.py::selection",
+    "prompt_class": "selection",
+    "tokens": 138,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/mediocre_server_fixed.py::args",
+    "prompt_class": "args",
+    "tokens": 167,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/mediocre_server_fixed.py::discoverability",
+    "prompt_class": "discoverability",
+    "tokens": 87,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/p2a_arm_a.py::selection",
+    "prompt_class": "selection",
+    "tokens": 992,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/p2a_arm_a.py::args",
+    "prompt_class": "args",
+    "tokens": 127,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/p2a_arm_a.py::discoverability",
+    "prompt_class": "discoverability",
+    "tokens": 558,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/p2a_arm_guardb.py::selection",
+    "prompt_class": "selection",
+    "tokens": 1808,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/p2a_arm_guardb.py::args",
+    "prompt_class": "args",
+    "tokens": 127,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/p2a_arm_guardb.py::discoverability",
+    "prompt_class": "discoverability",
+    "tokens": 1374,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/p2a_arm_oracle.py::selection",
+    "prompt_class": "selection",
+    "tokens": 2039,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/p2a_arm_oracle.py::args",
+    "prompt_class": "args",
+    "tokens": 127,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/p2a_arm_oracle.py::discoverability",
+    "prompt_class": "discoverability",
+    "tokens": 1605,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/p2a_internal_proxy_mirror.py::selection",
+    "prompt_class": "selection",
+    "tokens": 992,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/p2a_internal_proxy_mirror.py::args",
+    "prompt_class": "args",
+    "tokens": 127,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/p2a_internal_proxy_mirror.py::discoverability",
+    "prompt_class": "discoverability",
+    "tokens": 558,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/q3_arm_a.py::selection",
+    "prompt_class": "selection",
+    "tokens": 212,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/q3_arm_a.py::args",
+    "prompt_class": "args",
+    "tokens": 85,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/q3_arm_a.py::discoverability",
+    "prompt_class": "discoverability",
+    "tokens": 167,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/q3_arm_f_body.py::selection",
+    "prompt_class": "selection",
+    "tokens": 656,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/q3_arm_f_body.py::args",
+    "prompt_class": "args",
+    "tokens": 85,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/q3_arm_f_body.py::discoverability",
+    "prompt_class": "discoverability",
+    "tokens": 611,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/q3_arm_f_doc.py::selection",
+    "prompt_class": "selection",
+    "tokens": 692,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/q3_arm_f_doc.py::args",
+    "prompt_class": "args",
+    "tokens": 85,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/q3_arm_f_doc.py::discoverability",
+    "prompt_class": "discoverability",
+    "tokens": 647,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/q3_arm_o.py::selection",
+    "prompt_class": "selection",
+    "tokens": 445,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/q3_arm_o.py::args",
+    "prompt_class": "args",
+    "tokens": 85,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/q3_arm_o.py::discoverability",
+    "prompt_class": "discoverability",
+    "tokens": 400,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/q3_real_server.py::selection",
+    "prompt_class": "selection",
+    "tokens": 212,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/q3_real_server.py::args",
+    "prompt_class": "args",
+    "tokens": 85,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/q3_real_server.py::discoverability",
+    "prompt_class": "discoverability",
+    "tokens": 167,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/q3_real_server_fixed.py::selection",
+    "prompt_class": "selection",
+    "tokens": 212,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/q3_real_server_fixed.py::args",
+    "prompt_class": "args",
+    "tokens": 85,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/q3_real_server_fixed.py::discoverability",
+    "prompt_class": "discoverability",
+    "tokens": 167,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/q3_real_server_fixed_dqonly.py::selection",
+    "prompt_class": "selection",
+    "tokens": 212,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/q3_real_server_fixed_dqonly.py::args",
+    "prompt_class": "args",
+    "tokens": 85,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/q3_real_server_fixed_dqonly.py::discoverability",
+    "prompt_class": "discoverability",
+    "tokens": 167,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/q4_arm_f_body_scoped.py::selection",
+    "prompt_class": "selection",
+    "tokens": 715,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/q4_arm_f_body_scoped.py::args",
+    "prompt_class": "args",
+    "tokens": 85,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/q4_arm_f_body_scoped.py::discoverability",
+    "prompt_class": "discoverability",
+    "tokens": 670,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/q4_arm_f_doc_scoped.py::selection",
+    "prompt_class": "selection",
+    "tokens": 718,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/q4_arm_f_doc_scoped.py::args",
+    "prompt_class": "args",
+    "tokens": 85,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/q4_arm_f_doc_scoped.py::discoverability",
+    "prompt_class": "discoverability",
+    "tokens": 673,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/q5_arm_f_doc_guarded.py::selection",
+    "prompt_class": "selection",
+    "tokens": 434,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/q5_arm_f_doc_guarded.py::args",
+    "prompt_class": "args",
+    "tokens": 85,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/q5_arm_f_doc_guarded.py::discoverability",
+    "prompt_class": "discoverability",
+    "tokens": 389,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/q6_arm_a.py::selection",
+    "prompt_class": "selection",
+    "tokens": 359,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/q6_arm_a.py::args",
+    "prompt_class": "args",
+    "tokens": 85,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/q6_arm_a.py::discoverability",
+    "prompt_class": "discoverability",
+    "tokens": 281,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/q6_arm_f_doc_guarded.py::selection",
+    "prompt_class": "selection",
+    "tokens": 880,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/q6_arm_f_doc_guarded.py::args",
+    "prompt_class": "args",
+    "tokens": 85,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/q6_arm_f_doc_guarded.py::discoverability",
+    "prompt_class": "discoverability",
+    "tokens": 802,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/q6_real_server.py::selection",
+    "prompt_class": "selection",
+    "tokens": 359,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/q6_real_server.py::args",
+    "prompt_class": "args",
+    "tokens": 85,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/q6_real_server.py::discoverability",
+    "prompt_class": "discoverability",
+    "tokens": 281,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/rw1_arm_a.py::selection",
+    "prompt_class": "selection",
+    "tokens": 753,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/rw1_arm_a.py::args",
+    "prompt_class": "args",
+    "tokens": 285,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/rw1_arm_a.py::discoverability",
+    "prompt_class": "discoverability",
+    "tokens": 359,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/rw1_arm_guardb.py::selection",
+    "prompt_class": "selection",
+    "tokens": 1238,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/rw1_arm_guardb.py::args",
+    "prompt_class": "args",
+    "tokens": 285,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/rw1_arm_guardb.py::discoverability",
+    "prompt_class": "discoverability",
+    "tokens": 844,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/rw1_arm_oracle.py::selection",
+    "prompt_class": "selection",
+    "tokens": 1500,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/rw1_arm_oracle.py::args",
+    "prompt_class": "args",
+    "tokens": 285,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/rw1_arm_oracle.py::discoverability",
+    "prompt_class": "discoverability",
+    "tokens": 1106,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/rw1_github_mirror.py::selection",
+    "prompt_class": "selection",
+    "tokens": 753,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/rw1_github_mirror.py::args",
+    "prompt_class": "args",
+    "tokens": 285,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/rw1_github_mirror.py::discoverability",
+    "prompt_class": "discoverability",
+    "tokens": 359,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/rw2_arm_a.py::selection",
+    "prompt_class": "selection",
+    "tokens": 1306,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/rw2_arm_a.py::args",
+    "prompt_class": "args",
+    "tokens": 287,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/rw2_arm_a.py::discoverability",
+    "prompt_class": "discoverability",
+    "tokens": 879,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/rw2_arm_guardb.py::selection",
+    "prompt_class": "selection",
+    "tokens": 1409,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/rw2_arm_guardb.py::args",
+    "prompt_class": "args",
+    "tokens": 287,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/rw2_arm_guardb.py::discoverability",
+    "prompt_class": "discoverability",
+    "tokens": 982,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/rw2_aws_iam_mirror.py::selection",
+    "prompt_class": "selection",
+    "tokens": 1306,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/rw2_aws_iam_mirror.py::args",
+    "prompt_class": "args",
+    "tokens": 287,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/rw2_aws_iam_mirror.py::discoverability",
+    "prompt_class": "discoverability",
+    "tokens": 879,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/slack_messaging_server.py::selection",
+    "prompt_class": "selection",
+    "tokens": 131,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/slack_messaging_server.py::args",
+    "prompt_class": "args",
+    "tokens": 108,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/slack_messaging_server.py::discoverability",
+    "prompt_class": "discoverability",
+    "tokens": 93,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/slack_messaging_server_fixed.py::selection",
+    "prompt_class": "selection",
+    "tokens": 569,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/slack_messaging_server_fixed.py::args",
+    "prompt_class": "args",
+    "tokens": 108,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/slack_messaging_server_fixed.py::discoverability",
+    "prompt_class": "discoverability",
+    "tokens": 531,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/spotify_playlists_server.py::selection",
+    "prompt_class": "selection",
+    "tokens": 152,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/spotify_playlists_server.py::args",
+    "prompt_class": "args",
+    "tokens": 122,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/spotify_playlists_server.py::discoverability",
+    "prompt_class": "discoverability",
+    "tokens": 95,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/spotify_playlists_server_fixed.py::selection",
+    "prompt_class": "selection",
+    "tokens": 638,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/spotify_playlists_server_fixed.py::args",
+    "prompt_class": "args",
+    "tokens": 122,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/spotify_playlists_server_fixed.py::discoverability",
+    "prompt_class": "discoverability",
+    "tokens": 581,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/stripe_payments_server.py::selection",
+    "prompt_class": "selection",
+    "tokens": 142,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/stripe_payments_server.py::args",
+    "prompt_class": "args",
+    "tokens": 115,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/stripe_payments_server.py::discoverability",
+    "prompt_class": "discoverability",
+    "tokens": 87,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/stripe_payments_server_fixed.py::selection",
+    "prompt_class": "selection",
+    "tokens": 668,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/stripe_payments_server_fixed.py::args",
+    "prompt_class": "args",
+    "tokens": 115,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/stripe_payments_server_fixed.py::discoverability",
+    "prompt_class": "discoverability",
+    "tokens": 613,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/t18_fixer_server.py::selection",
+    "prompt_class": "selection",
+    "tokens": 2912,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/t18_fixer_server.py::args",
+    "prompt_class": "args",
+    "tokens": 85,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/t18_fixer_server.py::discoverability",
+    "prompt_class": "discoverability",
+    "tokens": 2721,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/t18_oracle_server.py::selection",
+    "prompt_class": "selection",
+    "tokens": 1829,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/t18_oracle_server.py::args",
+    "prompt_class": "args",
+    "tokens": 85,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/t18_oracle_server.py::discoverability",
+    "prompt_class": "discoverability",
+    "tokens": 1638,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/t18_q2b_server.py::selection",
+    "prompt_class": "selection",
+    "tokens": 2532,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/t18_q2b_server.py::args",
+    "prompt_class": "args",
+    "tokens": 85,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/t18_q2b_server.py::discoverability",
+    "prompt_class": "discoverability",
+    "tokens": 2341,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/t18_vague_server.py::selection",
+    "prompt_class": "selection",
+    "tokens": 838,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/t18_vague_server.py::args",
+    "prompt_class": "args",
+    "tokens": 85,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/t18_vague_server.py::discoverability",
+    "prompt_class": "discoverability",
+    "tokens": 647,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/twilio_messaging_server.py::selection",
+    "prompt_class": "selection",
+    "tokens": 171,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/twilio_messaging_server.py::args",
+    "prompt_class": "args",
+    "tokens": 129,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/twilio_messaging_server.py::discoverability",
+    "prompt_class": "discoverability",
+    "tokens": 93,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/twilio_messaging_server_fixed.py::selection",
+    "prompt_class": "selection",
+    "tokens": 868,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/twilio_messaging_server_fixed.py::args",
+    "prompt_class": "args",
+    "tokens": 129,
+    "exceeded_4096": false
+   },
+   {
+    "prompt_id": "examples/twilio_messaging_server_fixed.py::discoverability",
+    "prompt_class": "discoverability",
+    "tokens": 790,
+    "exceeded_4096": false
+   }
+  ]
+ }
+}
