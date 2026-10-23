@@ -1,0 +1,96 @@
+{
+  "format": "agentgauge-replay",
+  "format_version": 1,
+  "agentgauge_version": "0.5.3",
+  "model": "hand-written-fixture",
+  "seed": 42,
+  "trials_per_task": 4,
+  "created_utc": "2026-10-23T00:00:00Z",
+  "server": {
+    "target": "examples/echo_server.py",
+    "tools_sha256": "11f56d83a7fe6724dd3d65a10e17a6877d57507e98ee9bfdb85c48f804ceee68"
+  },
+  "tasks_sha256": null,
+  "trials": [
+    {
+      "task_tool_name": "echo",
+      "selected_tool": "echo",
+      "constraint_satisfaction": 1.0
+    },
+    {
+      "task_tool_name": "echo",
+      "selected_tool": "echo",
+      "constraint_satisfaction": 1.0
+    },
+    {
+      "task_tool_name": "echo",
+      "selected_tool": "echo",
+      "constraint_satisfaction": 1.0
+    },
+    {
+      "task_tool_name": "echo",
+      "selected_tool": "echo",
+      "constraint_satisfaction": 1.0
+    },
+    {
+      "task_tool_name": "add",
+      "selected_tool": "add",
+      "constraint_satisfaction": 1.0
+    },
+    {
+      "task_tool_name": "add",
+      "selected_tool": "add",
+      "constraint_satisfaction": 1.0
+    },
+    {
+      "task_tool_name": "add",
+      "selected_tool": "add",
+      "constraint_satisfaction": 1.0
+    },
+    {
+      "task_tool_name": "add",
+      "selected_tool": "add",
+      "constraint_satisfaction": 1.0
+    },
+    {
+      "task_tool_name": "mystery",
+      "selected_tool": "echo",
+      "constraint_satisfaction": 0.0
+    },
+    {
+      "task_tool_name": "mystery",
+      "selected_tool": "echo",
+      "constraint_satisfaction": 0.0
+    },
+    {
+      "task_tool_name": "mystery",
+      "selected_tool": "echo",
+      "constraint_satisfaction": 0.0
+    },
+    {
+      "task_tool_name": "mystery",
+      "selected_tool": "echo",
+      "constraint_satisfaction": 0.0
+    },
+    {
+      "task_tool_name": "greet",
+      "selected_tool": "echo",
+      "constraint_satisfaction": 0.0
+    },
+    {
+      "task_tool_name": "greet",
+      "selected_tool": "echo",
+      "constraint_satisfaction": 0.0
+    },
+    {
+      "task_tool_name": "greet",
+      "selected_tool": "echo",
+      "constraint_satisfaction": 0.0
+    },
+    {
+      "task_tool_name": "greet",
+      "selected_tool": "echo",
+      "constraint_satisfaction": 0.0
+    }
+  ]
+}
