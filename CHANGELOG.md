@@ -39,6 +39,10 @@ integrated on `release/v0.6.0` for rehearsal and are folded in once merged.
 - **Per-trial seeds change what repeat trials return** on seeded samplers (#119): cassettes recorded
   against the old fixed seed no longer match, and `diff`/`eval` take a new `--seed` (default 42).
 - **`mcp` floor is now `>=1.30.0`** (was `>=1.3.0`).
+- **`agentgauge init` scaffolds a lint-only GitHub workflow by default** (#123); the live-diff job runs
+  only when the repository variable `AGENTGAUGE_LIVE_DIFF=true` is set.
+- **`scan`/`fix`/`ci`/`try` are labelled `(legacy)` and `attribute` is hidden from `--help`** (#123);
+  all still run.
 
 ### Security
 
@@ -68,8 +72,9 @@ integrated on `release/v0.6.0` for rehearsal and are folded in once merged.
   the model maximum; otherwise the guard runs after the call at the effective window (88654f1). If
   `/api/show` is unavailable, a warning is logged and the requested `num_ctx` is used. Impact audit
   (read-only, no published number changed): `docs/evidence/ollama_numctx_impact_audit.json`,
-  `scripts/ollama_numctx_impact_audit.py` (ef66fb7): 316 prompts over 79 bundled servers, 2 exceed the
-  4096 default window (both the 116-tool google_workspace mirror).
+  `scripts/ollama_numctx_impact_audit.py` (ef66fb7): 316 estimated prompts over 79 bundled servers, 10
+  exceed 4096 tokens: 8 are `fixer_source` upper bounds (the scripts used much smaller per-tool
+  source) and the 2 agent-selection prompts are both the 116-tool google_workspace mirror.
 - **`diff` at n=1 per arm (`fix/diff-insufficient-sensitivity`, b9df83b)** now returns
   `INSUFFICIENT_SENSITIVITY` instead of a verdict computed from a zero-width CI (see Behaviour changes).
 - **Server crash on start (`fix/server-crash-one-line-error`, c2b7b87, 449c6ba, 60ee1be).** A stdio
