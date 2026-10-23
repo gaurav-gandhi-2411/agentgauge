@@ -1,0 +1,1635 @@
+{
+ "provenance": {
+  "git_sha": "6892910b35b2bcd7797f864ae7ea0a0300dfbe7c",
+  "branch": "chore/gw-rerun-check (= origin/fix/ollama-num-ctx)",
+  "dirty_tracked_files": false,
+  "untracked": [
+   "docs/evidence/gw_rerun_check.json"
+  ],
+  "ollama_version": "0.40.3",
+  "agent_model": "gemma2:9b",
+  "model_digest_id": "ff02c3702f32",
+  "seeds": "42+trial_idx (trials 0-4)",
+  "temperature": "Ollama default (not set by provider, same as original)",
+  "date": "2026-10-17",
+  "procedure": "scripts/exp1_run_trial.py run_arm_a/run_arm_b with FAMILIES/ORACLE_DESCRIPTIONS from scripts/exp1_run_remaining_trials.py; 4 tasks x 5 trials x 2 arms",
+  "control": "compute_num_ctx patched to 4096 (old default window); truncation guard recorded but not raised"
+ },
+ "published": {
+  "arm_a": 0.0,
+  "arm_b": 0.0,
+  "fixtures": "evals/fixtures/exp1_trial_taylorwilsdon-google_workspace_mcp_arm_{a,b}.json"
+ },
+ "fix": {
+  "mode": "fix",
+  "arm_a_calls": [
+   {
+    "seed": 42,
+    "prompt_eval_count": 7005,
+    "num_ctx": 16384,
+    "truncation_guard": "ok",
+    "response": "manage_chat_message",
+    "latency_s": 16.29
+   },
+   {
+    "seed": 43,
+    "prompt_eval_count": 7005,
+    "num_ctx": 16384,
+    "truncation_guard": "ok",
+    "response": "send_message \n",
+    "latency_s": 1.15
+   },
+   {
+    "seed": 44,
+    "prompt_eval_count": 7005,
+    "num_ctx": 16384,
+    "truncation_guard": "ok",
+    "response": "send_message \n",
+    "latency_s": 1.21
+   },
+   {
+    "seed": 45,
+    "prompt_eval_count": 7005,
+    "num_ctx": 16384,
+    "truncation_guard": "ok",
+    "response": "send_message",
+    "latency_s": 0.98
+   },
+   {
+    "seed": 46,
+    "prompt_eval_count": 7005,
+    "num_ctx": 16384,
+    "truncation_guard": "ok",
+    "response": "send_message \n",
+    "latency_s": 1.23
+   },
+   {
+    "seed": 42,
+    "prompt_eval_count": 7000,
+    "num_ctx": 16384,
+    "truncation_guard": "ok",
+    "response": "send_gmail_message \n",
+    "latency_s": 3.18
+   },
+   {
+    "seed": 43,
+    "prompt_eval_count": 7000,
+    "num_ctx": 16384,
+    "truncation_guard": "ok",
+    "response": "send_gmail_message \n",
+    "latency_s": 1.45
+   },
+   {
+    "seed": 44,
+    "prompt_eval_count": 7000,
+    "num_ctx": 16384,
+    "truncation_guard": "ok",
+    "response": "send_gmail_message \n",
+    "latency_s": 1.55
+   },
+   {
+    "seed": 45,
+    "prompt_eval_count": 7000,
+    "num_ctx": 16384,
+    "truncation_guard": "ok",
+    "response": "send_gmail_message \n",
+    "latency_s": 1.49
+   },
+   {
+    "seed": 46,
+    "prompt_eval_count": 7000,
+    "num_ctx": 16384,
+    "truncation_guard": "ok",
+    "response": "send_gmail_message \n",
+    "latency_s": 1.49
+   },
+   {
+    "seed": 42,
+    "prompt_eval_count": 7002,
+    "num_ctx": 16384,
+    "truncation_guard": "ok",
+    "response": "get_gmail_thread_content \nsend_gmail_message  \n",
+    "latency_s": 3.92
+   },
+   {
+    "seed": 43,
+    "prompt_eval_count": 7002,
+    "num_ctx": 16384,
+    "truncation_guard": "ok",
+    "response": "send_gmail_message \n",
+    "latency_s": 1.33
+   },
+   {
+    "seed": 44,
+    "prompt_eval_count": 7002,
+    "num_ctx": 16384,
+    "truncation_guard": "ok",
+    "response": "send_gmail_message \n",
+    "latency_s": 1.38
+   },
+   {
+    "seed": 45,
+    "prompt_eval_count": 7002,
+    "num_ctx": 16384,
+    "truncation_guard": "ok",
+    "response": "send_gmail_message \n",
+    "latency_s": 1.48
+   },
+   {
+    "seed": 46,
+    "prompt_eval_count": 7002,
+    "num_ctx": 16384,
+    "truncation_guard": "ok",
+    "response": "send_gmail_message \n",
+    "latency_s": 1.48
+   },
+   {
+    "seed": 42,
+    "prompt_eval_count": 7006,
+    "num_ctx": 16384,
+    "truncation_guard": "ok",
+    "response": "manage_deployment \n",
+    "latency_s": 1.59
+   },
+   {
+    "seed": 43,
+    "prompt_eval_count": 7006,
+    "num_ctx": 16384,
+    "truncation_guard": "ok",
+    "response": "manage_deployment \n",
+    "latency_s": 1.12
+   },
+   {
+    "seed": 44,
+    "prompt_eval_count": 7006,
+    "num_ctx": 16384,
+    "truncation_guard": "ok",
+    "response": "manage_deployment \n",
+    "latency_s": 1.19
+   },
+   {
+    "seed": 45,
+    "prompt_eval_count": 7006,
+    "num_ctx": 16384,
+    "truncation_guard": "ok",
+    "response": "manage_deployment  ",
+    "latency_s": 1.1
+   },
+   {
+    "seed": 46,
+    "prompt_eval_count": 7006,
+    "num_ctx": 16384,
+    "truncation_guard": "ok",
+    "response": "manage_deployment \n",
+    "latency_s": 1.24
+   }
+  ],
+  "arm_b_calls": [
+   {
+    "seed": 42,
+    "prompt_eval_count": 7008,
+    "num_ctx": 16384,
+    "truncation_guard": "ok",
+    "response": "chat_service \n",
+    "latency_s": 8.12
+   },
+   {
+    "seed": 43,
+    "prompt_eval_count": 7008,
+    "num_ctx": 16384,
+    "truncation_guard": "ok",
+    "response": "send_message \n",
+    "latency_s": 1.08
+   },
+   {
+    "seed": 44,
+    "prompt_eval_count": 7008,
+    "num_ctx": 16384,
+    "truncation_guard": "ok",
+    "response": "send_message \n",
+    "latency_s": 1.14
+   },
+   {
+    "seed": 45,
+    "prompt_eval_count": 7008,
+    "num_ctx": 16384,
+    "truncation_guard": "ok",
+    "response": "send_message",
+    "latency_s": 0.95
+   },
+   {
+    "seed": 46,
+    "prompt_eval_count": 7008,
+    "num_ctx": 16384,
+    "truncation_guard": "ok",
+    "response": "send_message \n",
+    "latency_s": 1.18
+   },
+   {
+    "seed": 42,
+    "prompt_eval_count": 7003,
+    "num_ctx": 16384,
+    "truncation_guard": "ok",
+    "response": "send_gmail_message \n",
+    "latency_s": 2.83
+   },
+   {
+    "seed": 43,
+    "prompt_eval_count": 7003,
+    "num_ctx": 16384,
+    "truncation_guard": "ok",
+    "response": "send_gmail_message \n",
+    "latency_s": 1.24
+   },
+   {
+    "seed": 44,
+    "prompt_eval_count": 7003,
+    "num_ctx": 16384,
+    "truncation_guard": "ok",
+    "response": "send_gmail_message \n",
+    "latency_s": 1.31
+   },
+   {
+    "seed": 45,
+    "prompt_eval_count": 7003,
+    "num_ctx": 16384,
+    "truncation_guard": "ok",
+    "response": "send_gmail_message \n",
+    "latency_s": 1.37
+   },
+   {
+    "seed": 46,
+    "prompt_eval_count": 7003,
+    "num_ctx": 16384,
+    "truncation_guard": "ok",
+    "response": "send_gmail_message \n",
+    "latency_s": 1.47
+   },
+   {
+    "seed": 42,
+    "prompt_eval_count": 7005,
+    "num_ctx": 16384,
+    "truncation_guard": "ok",
+    "response": "get_gmail_thread_content \nsend_gmail_message",
+    "latency_s": 3.59
+   },
+   {
+    "seed": 43,
+    "prompt_eval_count": 7005,
+    "num_ctx": 16384,
+    "truncation_guard": "ok",
+    "response": "send_gmail_message \n",
+    "latency_s": 1.28
+   },
+   {
+    "seed": 44,
+    "prompt_eval_count": 7005,
+    "num_ctx": 16384,
+    "truncation_guard": "ok",
+    "response": "send_gmail_message \n",
+    "latency_s": 1.34
+   },
+   {
+    "seed": 45,
+    "prompt_eval_count": 7005,
+    "num_ctx": 16384,
+    "truncation_guard": "ok",
+    "response": "send_gmail_message \n",
+    "latency_s": 1.4
+   },
+   {
+    "seed": 46,
+    "prompt_eval_count": 7005,
+    "num_ctx": 16384,
+    "truncation_guard": "ok",
+    "response": "send_gmail_message \n",
+    "latency_s": 1.48
+   },
+   {
+    "seed": 42,
+    "prompt_eval_count": 7009,
+    "num_ctx": 16384,
+    "truncation_guard": "ok",
+    "response": "manage_deployment \n",
+    "latency_s": 1.62
+   },
+   {
+    "seed": 43,
+    "prompt_eval_count": 7009,
+    "num_ctx": 16384,
+    "truncation_guard": "ok",
+    "response": "manage_deployment \n",
+    "latency_s": 1.07
+   },
+   {
+    "seed": 44,
+    "prompt_eval_count": 7009,
+    "num_ctx": 16384,
+    "truncation_guard": "ok",
+    "response": "manage_deployment \n",
+    "latency_s": 1.12
+   },
+   {
+    "seed": 45,
+    "prompt_eval_count": 7009,
+    "num_ctx": 16384,
+    "truncation_guard": "ok",
+    "response": "manage_deployment  ",
+    "latency_s": 1.06
+   },
+   {
+    "seed": 46,
+    "prompt_eval_count": 7009,
+    "num_ctx": 16384,
+    "truncation_guard": "ok",
+    "response": "manage_deployment \n",
+    "latency_s": 1.21
+   }
+  ],
+  "arm_a": {
+   "server_id": "taylorwilsdon-google_workspace_mcp",
+   "family_id": "send_family",
+   "agent_model": "gemma2:9b",
+   "trials_per_task": 5,
+   "n_contested": 4,
+   "parse_failed_a": 0,
+   "arm_a_accuracy": 0.65,
+   "headroom_gated": true,
+   "aborted": false,
+   "abort_reason": "",
+   "arm_a_outcomes": [
+    {
+     "task_id": "gws_1",
+     "trial": 0,
+     "outcome": "ABSTAINED-OR-HEDGED",
+     "selected_tool": "manage_chat_message"
+    },
+    {
+     "task_id": "gws_1",
+     "trial": 1,
+     "outcome": "SELECTED-CORRECT",
+     "selected_tool": "send_message"
+    },
+    {
+     "task_id": "gws_1",
+     "trial": 2,
+     "outcome": "SELECTED-CORRECT",
+     "selected_tool": "send_message"
+    },
+    {
+     "task_id": "gws_1",
+     "trial": 3,
+     "outcome": "SELECTED-CORRECT",
+     "selected_tool": "send_message"
+    },
+    {
+     "task_id": "gws_1",
+     "trial": 4,
+     "outcome": "SELECTED-CORRECT",
+     "selected_tool": "send_message"
+    },
+    {
+     "task_id": "gws_2",
+     "trial": 0,
+     "outcome": "SELECTED-CORRECT",
+     "selected_tool": "send_gmail_message"
+    },
+    {
+     "task_id": "gws_2",
+     "trial": 1,
+     "outcome": "SELECTED-CORRECT",
+     "selected_tool": "send_gmail_message"
+    },
+    {
+     "task_id": "gws_2",
+     "trial": 2,
+     "outcome": "SELECTED-CORRECT",
+     "selected_tool": "send_gmail_message"
+    },
+    {
+     "task_id": "gws_2",
+     "trial": 3,
+     "outcome": "SELECTED-CORRECT",
+     "selected_tool": "send_gmail_message"
+    },
+    {
+     "task_id": "gws_2",
+     "trial": 4,
+     "outcome": "SELECTED-CORRECT",
+     "selected_tool": "send_gmail_message"
+    },
+    {
+     "task_id": "gws_3",
+     "trial": 0,
+     "outcome": "SELECTED-WRONG",
+     "selected_tool": "get_gmail_thread_content"
+    },
+    {
+     "task_id": "gws_3",
+     "trial": 1,
+     "outcome": "SELECTED-CORRECT",
+     "selected_tool": "send_gmail_message"
+    },
+    {
+     "task_id": "gws_3",
+     "trial": 2,
+     "outcome": "SELECTED-CORRECT",
+     "selected_tool": "send_gmail_message"
+    },
+    {
+     "task_id": "gws_3",
+     "trial": 3,
+     "outcome": "SELECTED-CORRECT",
+     "selected_tool": "send_gmail_message"
+    },
+    {
+     "task_id": "gws_3",
+     "trial": 4,
+     "outcome": "SELECTED-CORRECT",
+     "selected_tool": "send_gmail_message"
+    },
+    {
+     "task_id": "gws_4",
+     "trial": 0,
+     "outcome": "SELECTED-WRONG",
+     "selected_tool": "manage_deployment"
+    },
+    {
+     "task_id": "gws_4",
+     "trial": 1,
+     "outcome": "SELECTED-WRONG",
+     "selected_tool": "manage_deployment"
+    },
+    {
+     "task_id": "gws_4",
+     "trial": 2,
+     "outcome": "SELECTED-WRONG",
+     "selected_tool": "manage_deployment"
+    },
+    {
+     "task_id": "gws_4",
+     "trial": 3,
+     "outcome": "SELECTED-WRONG",
+     "selected_tool": "manage_deployment"
+    },
+    {
+     "task_id": "gws_4",
+     "trial": 4,
+     "outcome": "SELECTED-WRONG",
+     "selected_tool": "manage_deployment"
+    }
+   ],
+   "raw_log_a": [
+    {
+     "task_id": "gws_1",
+     "trial": 0,
+     "raw_response": "manage_chat_message",
+     "selected_tool": "manage_chat_message",
+     "gold_tool": "send_message",
+     "outcome": "ABSTAINED-OR-HEDGED"
+    },
+    {
+     "task_id": "gws_1",
+     "trial": 1,
+     "raw_response": "send_message",
+     "selected_tool": "send_message",
+     "gold_tool": "send_message",
+     "outcome": "SELECTED-CORRECT"
+    },
+    {
+     "task_id": "gws_1",
+     "trial": 2,
+     "raw_response": "send_message",
+     "selected_tool": "send_message",
+     "gold_tool": "send_message",
+     "outcome": "SELECTED-CORRECT"
+    },
+    {
+     "task_id": "gws_1",
+     "trial": 3,
+     "raw_response": "send_message",
+     "selected_tool": "send_message",
+     "gold_tool": "send_message",
+     "outcome": "SELECTED-CORRECT"
+    },
+    {
+     "task_id": "gws_1",
+     "trial": 4,
+     "raw_response": "send_message",
+     "selected_tool": "send_message",
+     "gold_tool": "send_message",
+     "outcome": "SELECTED-CORRECT"
+    },
+    {
+     "task_id": "gws_2",
+     "trial": 0,
+     "raw_response": "send_gmail_message",
+     "selected_tool": "send_gmail_message",
+     "gold_tool": "send_gmail_message",
+     "outcome": "SELECTED-CORRECT"
+    },
+    {
+     "task_id": "gws_2",
+     "trial": 1,
+     "raw_response": "send_gmail_message",
+     "selected_tool": "send_gmail_message",
+     "gold_tool": "send_gmail_message",
+     "outcome": "SELECTED-CORRECT"
+    },
+    {
+     "task_id": "gws_2",
+     "trial": 2,
+     "raw_response": "send_gmail_message",
+     "selected_tool": "send_gmail_message",
+     "gold_tool": "send_gmail_message",
+     "outcome": "SELECTED-CORRECT"
+    },
+    {
+     "task_id": "gws_2",
+     "trial": 3,
+     "raw_response": "send_gmail_message",
+     "selected_tool": "send_gmail_message",
+     "gold_tool": "send_gmail_message",
+     "outcome": "SELECTED-CORRECT"
+    },
+    {
+     "task_id": "gws_2",
+     "trial": 4,
+     "raw_response": "send_gmail_message",
+     "selected_tool": "send_gmail_message",
+     "gold_tool": "send_gmail_message",
+     "outcome": "SELECTED-CORRECT"
+    },
+    {
+     "task_id": "gws_3",
+     "trial": 0,
+     "raw_response": "get_gmail_thread_content \nsend_gmail_message",
+     "selected_tool": "get_gmail_thread_content",
+     "gold_tool": "send_gmail_message",
+     "outcome": "SELECTED-WRONG"
+    },
+    {
+     "task_id": "gws_3",
+     "trial": 1,
+     "raw_response": "send_gmail_message",
+     "selected_tool": "send_gmail_message",
+     "gold_tool": "send_gmail_message",
+     "outcome": "SELECTED-CORRECT"
+    },
+    {
+     "task_id": "gws_3",
+     "trial": 2,
+     "raw_response": "send_gmail_message",
+     "selected_tool": "send_gmail_message",
+     "gold_tool": "send_gmail_message",
+     "outcome": "SELECTED-CORRECT"
+    },
+    {
+     "task_id": "gws_3",
+     "trial": 3,
+     "raw_response": "send_gmail_message",
+     "selected_tool": "send_gmail_message",
+     "gold_tool": "send_gmail_message",
+     "outcome": "SELECTED-CORRECT"
+    },
+    {
+     "task_id": "gws_3",
+     "trial": 4,
+     "raw_response": "send_gmail_message",
+     "selected_tool": "send_gmail_message",
+     "gold_tool": "send_gmail_message",
+     "outcome": "SELECTED-CORRECT"
+    },
+    {
+     "task_id": "gws_4",
+     "trial": 0,
+     "raw_response": "manage_deployment",
+     "selected_tool": "manage_deployment",
+     "gold_tool": "send_message",
+     "outcome": "SELECTED-WRONG"
+    },
+    {
+     "task_id": "gws_4",
+     "trial": 1,
+     "raw_response": "manage_deployment",
+     "selected_tool": "manage_deployment",
+     "gold_tool": "send_message",
+     "outcome": "SELECTED-WRONG"
+    },
+    {
+     "task_id": "gws_4",
+     "trial": 2,
+     "raw_response": "manage_deployment",
+     "selected_tool": "manage_deployment",
+     "gold_tool": "send_message",
+     "outcome": "SELECTED-WRONG"
+    },
+    {
+     "task_id": "gws_4",
+     "trial": 3,
+     "raw_response": "manage_deployment",
+     "selected_tool": "manage_deployment",
+     "gold_tool": "send_message",
+     "outcome": "SELECTED-WRONG"
+    },
+    {
+     "task_id": "gws_4",
+     "trial": 4,
+     "raw_response": "manage_deployment",
+     "selected_tool": "manage_deployment",
+     "gold_tool": "send_message",
+     "outcome": "SELECTED-WRONG"
+    }
+   ]
+  },
+  "arm_b": {
+   "server_id": "taylorwilsdon-google_workspace_mcp",
+   "family_id": "send_family",
+   "agent_model": "gemma2:9b",
+   "trials_per_task": 5,
+   "n_contested": 4,
+   "parse_failed_a": 0,
+   "parse_failed_b": 0,
+   "arm_a_accuracy": 0.65,
+   "arm_b_accuracy": 0.65,
+   "effect_pp": 0.0,
+   "headroom_gated": true,
+   "in_regime": false,
+   "aborted": false,
+   "abort_reason": "",
+   "oracle_descriptions": {
+    "send_message": "Posts a message into an internal team Google Chat space, not an email.",
+    "send_gmail_message": "Sends an email via Gmail to an email address, not a chat space."
+   },
+   "raw_log_b": [
+    {
+     "task_id": "gws_1",
+     "trial": 0,
+     "raw_response": "chat_service",
+     "selected_tool": "chat_service",
+     "gold_tool": "send_message",
+     "outcome": "ABSTAINED-OR-HEDGED"
+    },
+    {
+     "task_id": "gws_1",
+     "trial": 1,
+     "raw_response": "send_message",
+     "selected_tool": "send_message",
+     "gold_tool": "send_message",
+     "outcome": "SELECTED-CORRECT"
+    },
+    {
+     "task_id": "gws_1",
+     "trial": 2,
+     "raw_response": "send_message",
+     "selected_tool": "send_message",
+     "gold_tool": "send_message",
+     "outcome": "SELECTED-CORRECT"
+    },
+    {
+     "task_id": "gws_1",
+     "trial": 3,
+     "raw_response": "send_message",
+     "selected_tool": "send_message",
+     "gold_tool": "send_message",
+     "outcome": "SELECTED-CORRECT"
+    },
+    {
+     "task_id": "gws_1",
+     "trial": 4,
+     "raw_response": "send_message",
+     "selected_tool": "send_message",
+     "gold_tool": "send_message",
+     "outcome": "SELECTED-CORRECT"
+    },
+    {
+     "task_id": "gws_2",
+     "trial": 0,
+     "raw_response": "send_gmail_message",
+     "selected_tool": "send_gmail_message",
+     "gold_tool": "send_gmail_message",
+     "outcome": "SELECTED-CORRECT"
+    },
+    {
+     "task_id": "gws_2",
+     "trial": 1,
+     "raw_response": "send_gmail_message",
+     "selected_tool": "send_gmail_message",
+     "gold_tool": "send_gmail_message",
+     "outcome": "SELECTED-CORRECT"
+    },
+    {
+     "task_id": "gws_2",
+     "trial": 2,
+     "raw_response": "send_gmail_message",
+     "selected_tool": "send_gmail_message",
+     "gold_tool": "send_gmail_message",
+     "outcome": "SELECTED-CORRECT"
+    },
+    {
+     "task_id": "gws_2",
+     "trial": 3,
+     "raw_response": "send_gmail_message",
+     "selected_tool": "send_gmail_message",
+     "gold_tool": "send_gmail_message",
+     "outcome": "SELECTED-CORRECT"
+    },
+    {
+     "task_id": "gws_2",
+     "trial": 4,
+     "raw_response": "send_gmail_message",
+     "selected_tool": "send_gmail_message",
+     "gold_tool": "send_gmail_message",
+     "outcome": "SELECTED-CORRECT"
+    },
+    {
+     "task_id": "gws_3",
+     "trial": 0,
+     "raw_response": "get_gmail_thread_content \nsend_gmail_message",
+     "selected_tool": "get_gmail_thread_content",
+     "gold_tool": "send_gmail_message",
+     "outcome": "SELECTED-WRONG"
+    },
+    {
+     "task_id": "gws_3",
+     "trial": 1,
+     "raw_response": "send_gmail_message",
+     "selected_tool": "send_gmail_message",
+     "gold_tool": "send_gmail_message",
+     "outcome": "SELECTED-CORRECT"
+    },
+    {
+     "task_id": "gws_3",
+     "trial": 2,
+     "raw_response": "send_gmail_message",
+     "selected_tool": "send_gmail_message",
+     "gold_tool": "send_gmail_message",
+     "outcome": "SELECTED-CORRECT"
+    },
+    {
+     "task_id": "gws_3",
+     "trial": 3,
+     "raw_response": "send_gmail_message",
+     "selected_tool": "send_gmail_message",
+     "gold_tool": "send_gmail_message",
+     "outcome": "SELECTED-CORRECT"
+    },
+    {
+     "task_id": "gws_3",
+     "trial": 4,
+     "raw_response": "send_gmail_message",
+     "selected_tool": "send_gmail_message",
+     "gold_tool": "send_gmail_message",
+     "outcome": "SELECTED-CORRECT"
+    },
+    {
+     "task_id": "gws_4",
+     "trial": 0,
+     "raw_response": "manage_deployment",
+     "selected_tool": "manage_deployment",
+     "gold_tool": "send_message",
+     "outcome": "SELECTED-WRONG"
+    },
+    {
+     "task_id": "gws_4",
+     "trial": 1,
+     "raw_response": "manage_deployment",
+     "selected_tool": "manage_deployment",
+     "gold_tool": "send_message",
+     "outcome": "SELECTED-WRONG"
+    },
+    {
+     "task_id": "gws_4",
+     "trial": 2,
+     "raw_response": "manage_deployment",
+     "selected_tool": "manage_deployment",
+     "gold_tool": "send_message",
+     "outcome": "SELECTED-WRONG"
+    },
+    {
+     "task_id": "gws_4",
+     "trial": 3,
+     "raw_response": "manage_deployment",
+     "selected_tool": "manage_deployment",
+     "gold_tool": "send_message",
+     "outcome": "SELECTED-WRONG"
+    },
+    {
+     "task_id": "gws_4",
+     "trial": 4,
+     "raw_response": "manage_deployment",
+     "selected_tool": "manage_deployment",
+     "gold_tool": "send_message",
+     "outcome": "SELECTED-WRONG"
+    }
+   ]
+  },
+  "wall_s": 84.7
+ },
+ "control": {
+  "mode": "control",
+  "arm_a_calls": [
+   {
+    "seed": 42,
+    "prompt_eval_count": 2051,
+    "num_ctx": 4096,
+    "truncation_guard": "RAISED",
+    "response": "Google Chat  \n",
+    "latency_s": 11.31
+   },
+   {
+    "seed": 43,
+    "prompt_eval_count": 2051,
+    "num_ctx": 4096,
+    "truncation_guard": "RAISED",
+    "response": "Google Chat  \n",
+    "latency_s": 0.83
+   },
+   {
+    "seed": 44,
+    "prompt_eval_count": 2051,
+    "num_ctx": 4096,
+    "truncation_guard": "RAISED",
+    "response": "Google Chat \n",
+    "latency_s": 0.86
+   },
+   {
+    "seed": 45,
+    "prompt_eval_count": 2051,
+    "num_ctx": 4096,
+    "truncation_guard": "RAISED",
+    "response": "Available_message  \n",
+    "latency_s": 0.9
+   },
+   {
+    "seed": 46,
+    "prompt_eval_count": 2051,
+    "num_ctx": 4096,
+    "truncation_guard": "RAISED",
+    "response": "Available_message \n",
+    "latency_s": 0.86
+   },
+   {
+    "seed": 42,
+    "prompt_eval_count": 2051,
+    "num_ctx": 4096,
+    "truncation_guard": "RAISED",
+    "response": "draft_gmail_message \n",
+    "latency_s": 2.4
+   },
+   {
+    "seed": 43,
+    "prompt_eval_count": 2051,
+    "num_ctx": 4096,
+    "truncation_guard": "RAISED",
+    "response": "draft_gmail_message \n",
+    "latency_s": 0.94
+   },
+   {
+    "seed": 44,
+    "prompt_eval_count": 2051,
+    "num_ctx": 4096,
+    "truncation_guard": "RAISED",
+    "response": "draft_gmail_message \n",
+    "latency_s": 0.95
+   },
+   {
+    "seed": 45,
+    "prompt_eval_count": 2051,
+    "num_ctx": 4096,
+    "truncation_guard": "RAISED",
+    "response": "draft_gmail_message \n",
+    "latency_s": 0.93
+   },
+   {
+    "seed": 46,
+    "prompt_eval_count": 2051,
+    "num_ctx": 4096,
+    "truncation_guard": "RAISED",
+    "response": "draft_gmail_message \n",
+    "latency_s": 0.97
+   },
+   {
+    "seed": 42,
+    "prompt_eval_count": 2051,
+    "num_ctx": 4096,
+    "truncation_guard": "RAISED",
+    "response": "get_gmail_threads_content_batch \n",
+    "latency_s": 2.54
+   },
+   {
+    "seed": 43,
+    "prompt_eval_count": 2051,
+    "num_ctx": 4096,
+    "truncation_guard": "RAISED",
+    "response": "Availabledraft_gmail_message \n",
+    "latency_s": 0.97
+   },
+   {
+    "seed": 44,
+    "prompt_eval_count": 2051,
+    "num_ctx": 4096,
+    "truncation_guard": "RAISED",
+    "response": "Availabledraft_gmail_message \n",
+    "latency_s": 1.02
+   },
+   {
+    "seed": 45,
+    "prompt_eval_count": 2051,
+    "num_ctx": 4096,
+    "truncation_guard": "RAISED",
+    "response": "availabledraft_gmail_message \n",
+    "latency_s": 0.97
+   },
+   {
+    "seed": 46,
+    "prompt_eval_count": 2051,
+    "num_ctx": 4096,
+    "truncation_guard": "RAISED",
+    "response": "availabledraft_gmail_message \n",
+    "latency_s": 1.01
+   },
+   {
+    "seed": 42,
+    "prompt_eval_count": 2051,
+    "num_ctx": 4096,
+    "truncation_guard": "RAISED",
+    "response": "Availablemessage",
+    "latency_s": 2.21
+   },
+   {
+    "seed": 43,
+    "prompt_eval_count": 2051,
+    "num_ctx": 4096,
+    "truncation_guard": "RAISED",
+    "response": "Chat  \n",
+    "latency_s": 0.8
+   },
+   {
+    "seed": 44,
+    "prompt_eval_count": 2051,
+    "num_ctx": 4096,
+    "truncation_guard": "RAISED",
+    "response": "Chat  \n",
+    "latency_s": 0.83
+   },
+   {
+    "seed": 45,
+    "prompt_eval_count": 2051,
+    "num_ctx": 4096,
+    "truncation_guard": "RAISED",
+    "response": "slack  \n",
+    "latency_s": 0.81
+   },
+   {
+    "seed": 46,
+    "prompt_eval_count": 2051,
+    "num_ctx": 4096,
+    "truncation_guard": "RAISED",
+    "response": "slack  \n",
+    "latency_s": 0.81
+   }
+  ],
+  "arm_b_calls": [
+   {
+    "seed": 42,
+    "prompt_eval_count": 2051,
+    "num_ctx": 4096,
+    "truncation_guard": "RAISED",
+    "response": "google_chat",
+    "latency_s": 1.61
+   },
+   {
+    "seed": 43,
+    "prompt_eval_count": 2051,
+    "num_ctx": 4096,
+    "truncation_guard": "RAISED",
+    "response": "Google Chat  \n",
+    "latency_s": 0.92
+   },
+   {
+    "seed": 44,
+    "prompt_eval_count": 2051,
+    "num_ctx": 4096,
+    "truncation_guard": "RAISED",
+    "response": "Google Chat \n",
+    "latency_s": 0.89
+   },
+   {
+    "seed": 45,
+    "prompt_eval_count": 2051,
+    "num_ctx": 4096,
+    "truncation_guard": "RAISED",
+    "response": "Available_message  \n",
+    "latency_s": 0.92
+   },
+   {
+    "seed": 46,
+    "prompt_eval_count": 2051,
+    "num_ctx": 4096,
+    "truncation_guard": "RAISED",
+    "response": "Available_message \n",
+    "latency_s": 0.92
+   },
+   {
+    "seed": 42,
+    "prompt_eval_count": 2051,
+    "num_ctx": 4096,
+    "truncation_guard": "RAISED",
+    "response": "draft_gmail_message \n",
+    "latency_s": 1.38
+   },
+   {
+    "seed": 43,
+    "prompt_eval_count": 2051,
+    "num_ctx": 4096,
+    "truncation_guard": "RAISED",
+    "response": "draft_gmail_message \n",
+    "latency_s": 0.97
+   },
+   {
+    "seed": 44,
+    "prompt_eval_count": 2051,
+    "num_ctx": 4096,
+    "truncation_guard": "RAISED",
+    "response": "draft_gmail_message \n",
+    "latency_s": 0.98
+   },
+   {
+    "seed": 45,
+    "prompt_eval_count": 2051,
+    "num_ctx": 4096,
+    "truncation_guard": "RAISED",
+    "response": "draft_gmail_message \n",
+    "latency_s": 0.97
+   },
+   {
+    "seed": 46,
+    "prompt_eval_count": 2051,
+    "num_ctx": 4096,
+    "truncation_guard": "RAISED",
+    "response": "draft_gmail_message \n",
+    "latency_s": 0.96
+   },
+   {
+    "seed": 42,
+    "prompt_eval_count": 2051,
+    "num_ctx": 4096,
+    "truncation_guard": "RAISED",
+    "response": "Availabledraft_gmail_message \n",
+    "latency_s": 1.44
+   },
+   {
+    "seed": 43,
+    "prompt_eval_count": 2051,
+    "num_ctx": 4096,
+    "truncation_guard": "RAISED",
+    "response": "Availabledraft_gmail_message \n",
+    "latency_s": 0.99
+   },
+   {
+    "seed": 44,
+    "prompt_eval_count": 2051,
+    "num_ctx": 4096,
+    "truncation_guard": "RAISED",
+    "response": "Availabledraft_gmail_message \n",
+    "latency_s": 1.0
+   },
+   {
+    "seed": 45,
+    "prompt_eval_count": 2051,
+    "num_ctx": 4096,
+    "truncation_guard": "RAISED",
+    "response": "availabledraft_gmail_message \n",
+    "latency_s": 0.96
+   },
+   {
+    "seed": 46,
+    "prompt_eval_count": 2051,
+    "num_ctx": 4096,
+    "truncation_guard": "RAISED",
+    "response": "availabledraft_gmail_message \n",
+    "latency_s": 0.98
+   },
+   {
+    "seed": 42,
+    "prompt_eval_count": 2051,
+    "num_ctx": 4096,
+    "truncation_guard": "RAISED",
+    "response": "Availablemessage",
+    "latency_s": 1.25
+   },
+   {
+    "seed": 43,
+    "prompt_eval_count": 2051,
+    "num_ctx": 4096,
+    "truncation_guard": "RAISED",
+    "response": "Chat  \n",
+    "latency_s": 0.8
+   },
+   {
+    "seed": 44,
+    "prompt_eval_count": 2051,
+    "num_ctx": 4096,
+    "truncation_guard": "RAISED",
+    "response": "Chat  \n",
+    "latency_s": 0.81
+   },
+   {
+    "seed": 45,
+    "prompt_eval_count": 2051,
+    "num_ctx": 4096,
+    "truncation_guard": "RAISED",
+    "response": "slack  \n",
+    "latency_s": 0.84
+   },
+   {
+    "seed": 46,
+    "prompt_eval_count": 2051,
+    "num_ctx": 4096,
+    "truncation_guard": "RAISED",
+    "response": "slack  \n",
+    "latency_s": 0.86
+   }
+  ],
+  "arm_a": {
+   "server_id": "taylorwilsdon-google_workspace_mcp",
+   "family_id": "send_family",
+   "agent_model": "gemma2:9b",
+   "trials_per_task": 5,
+   "n_contested": 4,
+   "parse_failed_a": 0,
+   "arm_a_accuracy": 0.0,
+   "headroom_gated": true,
+   "aborted": false,
+   "abort_reason": "",
+   "arm_a_outcomes": [
+    {
+     "task_id": "gws_1",
+     "trial": 0,
+     "outcome": "ABSTAINED-OR-HEDGED",
+     "selected_tool": "Google"
+    },
+    {
+     "task_id": "gws_1",
+     "trial": 1,
+     "outcome": "ABSTAINED-OR-HEDGED",
+     "selected_tool": "Google"
+    },
+    {
+     "task_id": "gws_1",
+     "trial": 2,
+     "outcome": "ABSTAINED-OR-HEDGED",
+     "selected_tool": "Google"
+    },
+    {
+     "task_id": "gws_1",
+     "trial": 3,
+     "outcome": "ABSTAINED-OR-HEDGED",
+     "selected_tool": "Available_message"
+    },
+    {
+     "task_id": "gws_1",
+     "trial": 4,
+     "outcome": "ABSTAINED-OR-HEDGED",
+     "selected_tool": "Available_message"
+    },
+    {
+     "task_id": "gws_2",
+     "trial": 0,
+     "outcome": "SELECTED-WRONG",
+     "selected_tool": "draft_gmail_message"
+    },
+    {
+     "task_id": "gws_2",
+     "trial": 1,
+     "outcome": "SELECTED-WRONG",
+     "selected_tool": "draft_gmail_message"
+    },
+    {
+     "task_id": "gws_2",
+     "trial": 2,
+     "outcome": "SELECTED-WRONG",
+     "selected_tool": "draft_gmail_message"
+    },
+    {
+     "task_id": "gws_2",
+     "trial": 3,
+     "outcome": "SELECTED-WRONG",
+     "selected_tool": "draft_gmail_message"
+    },
+    {
+     "task_id": "gws_2",
+     "trial": 4,
+     "outcome": "SELECTED-WRONG",
+     "selected_tool": "draft_gmail_message"
+    },
+    {
+     "task_id": "gws_3",
+     "trial": 0,
+     "outcome": "SELECTED-WRONG",
+     "selected_tool": "get_gmail_threads_content_batch"
+    },
+    {
+     "task_id": "gws_3",
+     "trial": 1,
+     "outcome": "ABSTAINED-OR-HEDGED",
+     "selected_tool": "Availabledraft_gmail_message"
+    },
+    {
+     "task_id": "gws_3",
+     "trial": 2,
+     "outcome": "ABSTAINED-OR-HEDGED",
+     "selected_tool": "Availabledraft_gmail_message"
+    },
+    {
+     "task_id": "gws_3",
+     "trial": 3,
+     "outcome": "ABSTAINED-OR-HEDGED",
+     "selected_tool": "availabledraft_gmail_message"
+    },
+    {
+     "task_id": "gws_3",
+     "trial": 4,
+     "outcome": "ABSTAINED-OR-HEDGED",
+     "selected_tool": "availabledraft_gmail_message"
+    },
+    {
+     "task_id": "gws_4",
+     "trial": 0,
+     "outcome": "ABSTAINED-OR-HEDGED",
+     "selected_tool": "Availablemessage"
+    },
+    {
+     "task_id": "gws_4",
+     "trial": 1,
+     "outcome": "ABSTAINED-OR-HEDGED",
+     "selected_tool": "Chat"
+    },
+    {
+     "task_id": "gws_4",
+     "trial": 2,
+     "outcome": "ABSTAINED-OR-HEDGED",
+     "selected_tool": "Chat"
+    },
+    {
+     "task_id": "gws_4",
+     "trial": 3,
+     "outcome": "ABSTAINED-OR-HEDGED",
+     "selected_tool": "slack"
+    },
+    {
+     "task_id": "gws_4",
+     "trial": 4,
+     "outcome": "ABSTAINED-OR-HEDGED",
+     "selected_tool": "slack"
+    }
+   ],
+   "raw_log_a": [
+    {
+     "task_id": "gws_1",
+     "trial": 0,
+     "raw_response": "Google Chat",
+     "selected_tool": "Google",
+     "gold_tool": "send_message",
+     "outcome": "ABSTAINED-OR-HEDGED"
+    },
+    {
+     "task_id": "gws_1",
+     "trial": 1,
+     "raw_response": "Google Chat",
+     "selected_tool": "Google",
+     "gold_tool": "send_message",
+     "outcome": "ABSTAINED-OR-HEDGED"
+    },
+    {
+     "task_id": "gws_1",
+     "trial": 2,
+     "raw_response": "Google Chat",
+     "selected_tool": "Google",
+     "gold_tool": "send_message",
+     "outcome": "ABSTAINED-OR-HEDGED"
+    },
+    {
+     "task_id": "gws_1",
+     "trial": 3,
+     "raw_response": "Available_message",
+     "selected_tool": "Available_message",
+     "gold_tool": "send_message",
+     "outcome": "ABSTAINED-OR-HEDGED"
+    },
+    {
+     "task_id": "gws_1",
+     "trial": 4,
+     "raw_response": "Available_message",
+     "selected_tool": "Available_message",
+     "gold_tool": "send_message",
+     "outcome": "ABSTAINED-OR-HEDGED"
+    },
+    {
+     "task_id": "gws_2",
+     "trial": 0,
+     "raw_response": "draft_gmail_message",
+     "selected_tool": "draft_gmail_message",
+     "gold_tool": "send_gmail_message",
+     "outcome": "SELECTED-WRONG"
+    },
+    {
+     "task_id": "gws_2",
+     "trial": 1,
+     "raw_response": "draft_gmail_message",
+     "selected_tool": "draft_gmail_message",
+     "gold_tool": "send_gmail_message",
+     "outcome": "SELECTED-WRONG"
+    },
+    {
+     "task_id": "gws_2",
+     "trial": 2,
+     "raw_response": "draft_gmail_message",
+     "selected_tool": "draft_gmail_message",
+     "gold_tool": "send_gmail_message",
+     "outcome": "SELECTED-WRONG"
+    },
+    {
+     "task_id": "gws_2",
+     "trial": 3,
+     "raw_response": "draft_gmail_message",
+     "selected_tool": "draft_gmail_message",
+     "gold_tool": "send_gmail_message",
+     "outcome": "SELECTED-WRONG"
+    },
+    {
+     "task_id": "gws_2",
+     "trial": 4,
+     "raw_response": "draft_gmail_message",
+     "selected_tool": "draft_gmail_message",
+     "gold_tool": "send_gmail_message",
+     "outcome": "SELECTED-WRONG"
+    },
+    {
+     "task_id": "gws_3",
+     "trial": 0,
+     "raw_response": "get_gmail_threads_content_batch",
+     "selected_tool": "get_gmail_threads_content_batch",
+     "gold_tool": "send_gmail_message",
+     "outcome": "SELECTED-WRONG"
+    },
+    {
+     "task_id": "gws_3",
+     "trial": 1,
+     "raw_response": "Availabledraft_gmail_message",
+     "selected_tool": "Availabledraft_gmail_message",
+     "gold_tool": "send_gmail_message",
+     "outcome": "ABSTAINED-OR-HEDGED"
+    },
+    {
+     "task_id": "gws_3",
+     "trial": 2,
+     "raw_response": "Availabledraft_gmail_message",
+     "selected_tool": "Availabledraft_gmail_message",
+     "gold_tool": "send_gmail_message",
+     "outcome": "ABSTAINED-OR-HEDGED"
+    },
+    {
+     "task_id": "gws_3",
+     "trial": 3,
+     "raw_response": "availabledraft_gmail_message",
+     "selected_tool": "availabledraft_gmail_message",
+     "gold_tool": "send_gmail_message",
+     "outcome": "ABSTAINED-OR-HEDGED"
+    },
+    {
+     "task_id": "gws_3",
+     "trial": 4,
+     "raw_response": "availabledraft_gmail_message",
+     "selected_tool": "availabledraft_gmail_message",
+     "gold_tool": "send_gmail_message",
+     "outcome": "ABSTAINED-OR-HEDGED"
+    },
+    {
+     "task_id": "gws_4",
+     "trial": 0,
+     "raw_response": "Availablemessage",
+     "selected_tool": "Availablemessage",
+     "gold_tool": "send_message",
+     "outcome": "ABSTAINED-OR-HEDGED"
+    },
+    {
+     "task_id": "gws_4",
+     "trial": 1,
+     "raw_response": "Chat",
+     "selected_tool": "Chat",
+     "gold_tool": "send_message",
+     "outcome": "ABSTAINED-OR-HEDGED"
+    },
+    {
+     "task_id": "gws_4",
+     "trial": 2,
+     "raw_response": "Chat",
+     "selected_tool": "Chat",
+     "gold_tool": "send_message",
+     "outcome": "ABSTAINED-OR-HEDGED"
+    },
+    {
+     "task_id": "gws_4",
+     "trial": 3,
+     "raw_response": "slack",
+     "selected_tool": "slack",
+     "gold_tool": "send_message",
+     "outcome": "ABSTAINED-OR-HEDGED"
+    },
+    {
+     "task_id": "gws_4",
+     "trial": 4,
+     "raw_response": "slack",
+     "selected_tool": "slack",
+     "gold_tool": "send_message",
+     "outcome": "ABSTAINED-OR-HEDGED"
+    }
+   ]
+  },
+  "arm_b": {
+   "server_id": "taylorwilsdon-google_workspace_mcp",
+   "family_id": "send_family",
+   "agent_model": "gemma2:9b",
+   "trials_per_task": 5,
+   "n_contested": 4,
+   "parse_failed_a": 0,
+   "parse_failed_b": 0,
+   "arm_a_accuracy": 0.0,
+   "arm_b_accuracy": 0.0,
+   "effect_pp": 0.0,
+   "headroom_gated": true,
+   "in_regime": false,
+   "aborted": false,
+   "abort_reason": "",
+   "oracle_descriptions": {
+    "send_message": "Posts a message into an internal team Google Chat space, not an email.",
+    "send_gmail_message": "Sends an email via Gmail to an email address, not a chat space."
+   },
+   "raw_log_b": [
+    {
+     "task_id": "gws_1",
+     "trial": 0,
+     "raw_response": "google_chat",
+     "selected_tool": "google_chat",
+     "gold_tool": "send_message",
+     "outcome": "ABSTAINED-OR-HEDGED"
+    },
+    {
+     "task_id": "gws_1",
+     "trial": 1,
+     "raw_response": "Google Chat",
+     "selected_tool": "Google",
+     "gold_tool": "send_message",
+     "outcome": "ABSTAINED-OR-HEDGED"
+    },
+    {
+     "task_id": "gws_1",
+     "trial": 2,
+     "raw_response": "Google Chat",
+     "selected_tool": "Google",
+     "gold_tool": "send_message",
+     "outcome": "ABSTAINED-OR-HEDGED"
+    },
+    {
+     "task_id": "gws_1",
+     "trial": 3,
+     "raw_response": "Available_message",
+     "selected_tool": "Available_message",
+     "gold_tool": "send_message",
+     "outcome": "ABSTAINED-OR-HEDGED"
+    },
+    {
+     "task_id": "gws_1",
+     "trial": 4,
+     "raw_response": "Available_message",
+     "selected_tool": "Available_message",
+     "gold_tool": "send_message",
+     "outcome": "ABSTAINED-OR-HEDGED"
+    },
+    {
+     "task_id": "gws_2",
+     "trial": 0,
+     "raw_response": "draft_gmail_message",
+     "selected_tool": "draft_gmail_message",
+     "gold_tool": "send_gmail_message",
+     "outcome": "SELECTED-WRONG"
+    },
+    {
+     "task_id": "gws_2",
+     "trial": 1,
+     "raw_response": "draft_gmail_message",
+     "selected_tool": "draft_gmail_message",
+     "gold_tool": "send_gmail_message",
+     "outcome": "SELECTED-WRONG"
+    },
+    {
+     "task_id": "gws_2",
+     "trial": 2,
+     "raw_response": "draft_gmail_message",
+     "selected_tool": "draft_gmail_message",
+     "gold_tool": "send_gmail_message",
+     "outcome": "SELECTED-WRONG"
+    },
+    {
+     "task_id": "gws_2",
+     "trial": 3,
+     "raw_response": "draft_gmail_message",
+     "selected_tool": "draft_gmail_message",
+     "gold_tool": "send_gmail_message",
+     "outcome": "SELECTED-WRONG"
+    },
+    {
+     "task_id": "gws_2",
+     "trial": 4,
+     "raw_response": "draft_gmail_message",
+     "selected_tool": "draft_gmail_message",
+     "gold_tool": "send_gmail_message",
+     "outcome": "SELECTED-WRONG"
+    },
+    {
+     "task_id": "gws_3",
+     "trial": 0,
+     "raw_response": "Availabledraft_gmail_message",
+     "selected_tool": "Availabledraft_gmail_message",
+     "gold_tool": "send_gmail_message",
+     "outcome": "ABSTAINED-OR-HEDGED"
+    },
+    {
+     "task_id": "gws_3",
+     "trial": 1,
+     "raw_response": "Availabledraft_gmail_message",
+     "selected_tool": "Availabledraft_gmail_message",
+     "gold_tool": "send_gmail_message",
+     "outcome": "ABSTAINED-OR-HEDGED"
+    },
+    {
+     "task_id": "gws_3",
+     "trial": 2,
+     "raw_response": "Availabledraft_gmail_message",
+     "selected_tool": "Availabledraft_gmail_message",
+     "gold_tool": "send_gmail_message",
+     "outcome": "ABSTAINED-OR-HEDGED"
+    },
+    {
+     "task_id": "gws_3",
+     "trial": 3,
+     "raw_response": "availabledraft_gmail_message",
+     "selected_tool": "availabledraft_gmail_message",
+     "gold_tool": "send_gmail_message",
+     "outcome": "ABSTAINED-OR-HEDGED"
+    },
+    {
+     "task_id": "gws_3",
+     "trial": 4,
+     "raw_response": "availabledraft_gmail_message",
+     "selected_tool": "availabledraft_gmail_message",
+     "gold_tool": "send_gmail_message",
+     "outcome": "ABSTAINED-OR-HEDGED"
+    },
+    {
+     "task_id": "gws_4",
+     "trial": 0,
+     "raw_response": "Availablemessage",
+     "selected_tool": "Availablemessage",
+     "gold_tool": "send_message",
+     "outcome": "ABSTAINED-OR-HEDGED"
+    },
+    {
+     "task_id": "gws_4",
+     "trial": 1,
+     "raw_response": "Chat",
+     "selected_tool": "Chat",
+     "gold_tool": "send_message",
+     "outcome": "ABSTAINED-OR-HEDGED"
+    },
+    {
+     "task_id": "gws_4",
+     "trial": 2,
+     "raw_response": "Chat",
+     "selected_tool": "Chat",
+     "gold_tool": "send_message",
+     "outcome": "ABSTAINED-OR-HEDGED"
+    },
+    {
+     "task_id": "gws_4",
+     "trial": 3,
+     "raw_response": "slack",
+     "selected_tool": "slack",
+     "gold_tool": "send_message",
+     "outcome": "ABSTAINED-OR-HEDGED"
+    },
+    {
+     "task_id": "gws_4",
+     "trial": 4,
+     "raw_response": "slack",
+     "selected_tool": "slack",
+     "gold_tool": "send_message",
+     "outcome": "ABSTAINED-OR-HEDGED"
+    }
+   ]
+  },
+  "wall_s": 56.3
+ }
+}
