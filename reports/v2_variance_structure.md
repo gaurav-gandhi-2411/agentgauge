@@ -1,3 +1,5 @@
+> Historical — numbers superseded; see README (re-measured 2026-10-11).
+
 # AgentGauge v2.1 — variance structure (Task 1)
 
 Zero inference. Computed from `evals/fixtures/predictive_validity/results_raw.json` (5,535 trial

@@ -1,3 +1,5 @@
+> Historical — numbers superseded; see README (re-measured 2026-10-11).
+
 # Provenance ledger — AgentGauge methods paper
 
 Every number cited in `docs/paper2/main.tex` must resolve to a row in this table. No number

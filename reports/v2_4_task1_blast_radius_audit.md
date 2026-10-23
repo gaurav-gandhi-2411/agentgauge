@@ -1,3 +1,5 @@
+> Historical — numbers superseded; see README (re-measured 2026-10-11).
+
 # AgentGauge v2.4 — Task 1: blast-radius audit of artifact #7
 
 Zero inference for 1a/1c (pure code + data-provenance audit). GCP re-deploy
