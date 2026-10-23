@@ -1,0 +1,134 @@
+name: "agentgauge replay gate"
+description: >-
+  Gate pull requests on committed agentgauge replay files. Re-scores recorded trials with
+  `agentgauge diff --replay-before/--replay-after`: no model, no GPU, no secrets.
+author: "gaurav-gandhi-2411"
+branding:
+  icon: "check-circle"
+  color: "blue"
+
+inputs:
+  replay-before:
+    description: "Path (relative to the workspace) to the committed 'before' replay file."
+    required: true
+  replay-after:
+    description: "Path (relative to the workspace) to the committed 'after' replay file."
+    required: true
+  before-server:
+    description: >-
+      Optional path to the 'before' MCP server script. With both server inputs set, the CLI
+      refuses a v1 replay recorded against a different tool schema (the staleness check).
+    required: false
+    default: ""
+  after-server:
+    description: "Optional path to the 'after' MCP server script (set together with before-server)."
+    required: false
+    default: ""
+  tasks:
+    description: "Optional tasks file; with the servers set, also checked against the recorded hash."
+    required: false
+    default: ""
+  allow-stale-replay:
+    description: "Warn instead of failing when a replay no longer matches the server or tasks file."
+    required: false
+    default: "false"
+  agentgauge-version:
+    description: >-
+      Empty (default) installs the CLI from this action's own checkout, so action and CLI always
+      match. Set a version (for example 0.6.0) to install agentgauge-harness==<version> from PyPI.
+    required: false
+    default: ""
+  python-version:
+    description: "Python version for actions/setup-python."
+    required: false
+    default: "3.12"
+  fail-on:
+    description: >-
+      Comma-separated verdicts that fail the step (regression, improvement, no_change,
+      insufficient_sensitivity, ceiling, floor), or 'none'. Exit 2 from agentgauge (stale replay,
+      blocked audit, usage error) always fails the step regardless.
+    required: false
+    default: "regression"
+
+outputs:
+  verdict:
+    description: "Diff verdict (for example regression, no_change, insufficient_sensitivity)."
+    value: ${{ steps.diff.outputs.verdict }}
+  delta:
+    description: "Joint-success delta, after minus before (empty for ceiling/floor)."
+    value: ${{ steps.diff.outputs.delta }}
+  ci-low:
+    description: "Lower bound of the 95% bootstrap CI (empty if unavailable)."
+    value: ${{ steps.diff.outputs.ci-low }}
+  ci-high:
+    description: "Upper bound of the 95% bootstrap CI (empty if unavailable)."
+    value: ${{ steps.diff.outputs.ci-high }}
+  exit-code:
+    description: "Exit code of the agentgauge CLI."
+    value: ${{ steps.diff.outputs.exit-code }}
+
+runs:
+  using: composite
+  steps:
+    # SHA pin, version in the comment. Inputs below are passed through env: and referenced as
+    # "$VAR" in bash, never interpolated into the script text (script-injection hardening).
+    - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7
+      with:
+        python-version: ${{ inputs.python-version }}
+
+    - name: Install agentgauge
+      id: install
+      shell: bash
+      env:
+        AG_VERSION: ${{ inputs.agentgauge-version }}
+        ACTION_PATH: ${{ github.action_path }}
+        WORK_DIR: ${{ runner.temp }}
+      run: |
+        set -euo pipefail
+        venv="$WORK_DIR/agentgauge-action-venv"
+        python -m venv "$venv"
+        if [ -d "$venv/Scripts" ]; then bin="$venv/Scripts"; else bin="$venv/bin"; fi
+        "$bin/python" -m pip install --quiet --disable-pip-version-check --upgrade pip
+        if [ -n "$AG_VERSION" ]; then
+          "$bin/python" -m pip install --quiet "agentgauge-harness==$AG_VERSION"
+        else
+          "$bin/python" -m pip install --quiet "$ACTION_PATH"
+        fi
+        echo "bin=$bin" >> "$GITHUB_OUTPUT"
+
+    - name: Run agentgauge diff
+      id: diff
+      shell: bash
+      env:
+        AG_BIN: ${{ steps.install.outputs.bin }}
+        ACTION_PATH: ${{ github.action_path }}
+        WORK_DIR: ${{ runner.temp }}
+        REPLAY_BEFORE: ${{ inputs.replay-before }}
+        REPLAY_AFTER: ${{ inputs.replay-after }}
+        BEFORE_SERVER: ${{ inputs.before-server }}
+        AFTER_SERVER: ${{ inputs.after-server }}
+        TASKS: ${{ inputs.tasks }}
+        ALLOW_STALE: ${{ inputs.allow-stale-replay }}
+        FAIL_ON: ${{ inputs.fail-on }}
+        PYTHONUTF8: "1"  # Windows runners default stdout to a legacy codepage
+      run: |
+        set -uo pipefail
+        out="$WORK_DIR/agentgauge-action"
+        mkdir -p "$out"
+        if { [ -n "$BEFORE_SERVER" ] && [ -z "$AFTER_SERVER" ]; } || { [ -z "$BEFORE_SERVER" ] && [ -n "$AFTER_SERVER" ]; }; then
+          echo "::error title=agentgauge::before-server and after-server must be set together (or both left empty)."
+          exit 1
+        fi
+        args=(diff)
+        if [ -n "$BEFORE_SERVER" ]; then args+=("$BEFORE_SERVER" "$AFTER_SERVER"); fi
+        args+=(--replay-before "$REPLAY_BEFORE" --replay-after "$REPLAY_AFTER")
+        if [ -n "$TASKS" ]; then args+=(--tasks "$TASKS"); fi
+        if [ "$ALLOW_STALE" = "true" ]; then args+=(--allow-stale-replay); fi
+        args+=(--json)
+        # No `set -e` here: the CLI's exit code is captured, never swallowed (summarize.py decides).
+        "$AG_BIN/agentgauge" "${args[@]}" > "$out/diff.json" 2> "$out/stderr.txt"
+        code=$?
+        cat "$out/stderr.txt" >&2
+        "$AG_BIN/python" "$ACTION_PATH/action/summarize.py" \
+          --diff-json "$out/diff.json" --stderr "$out/stderr.txt" --exit-code "$code" \
+          --replay-before "$REPLAY_BEFORE" --replay-after "$REPLAY_AFTER" --fail-on "$FAIL_ON"
