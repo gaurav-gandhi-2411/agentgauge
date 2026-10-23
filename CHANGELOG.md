@@ -105,6 +105,7 @@ dependency-lockfile updates only).
   corrections to the two papers and their submission notes (#98-#101, #103-#106); consistency-check
   scripts for the papers (#100, #102); a version-pin checklist in `RELEASING.md` (#105).
 - `agentgauge diff` with a single trial per arm now returns `INSUFFICIENT_SENSITIVITY` (exit 0) instead of `NO_CHANGE` / `IMPROVEMENT` / `REGRESSION` / `CEILING` / `FLOOR` computed from a zero-width bootstrap CI; JSON `ci_lo`/`ci_hi` are `null` in that case.
+- A stdio server script that crashes on start now gives a one-line `Error: server failed to start: ...` plus the last <=20 lines of its stderr and exit code 2, instead of a ~140-line async traceback ending in `McpError: Connection closed` (exit 1).
 
 ## [0.5.3] - 2026-08-21
 
