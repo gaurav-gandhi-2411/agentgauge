@@ -103,7 +103,7 @@ from `main`, with no further merge required. See the paper's Reproducibility Art
 | No testable family | 3/10 servers (Dataojitori-nocturne_memory, blazickjp-arxiv-mcp-server, LycheeMem-LycheeMem) | same | same | ✓ |
 | Seed-bug false positives caught + reversed | 2 (`mrexodia-ida-pro-mcp` +50pp→90% no-headroom; `datalayer-jupyter-mcp-server` +25pp→−15pp HARM) | `STATUS.md` EXP-1 "Methodological note" | `0da8199` | ✓ |
 | Fixtures | `evals/fixtures/exp1_*.json` (server frame, doc-density scores, trial batches, anchor validation) | — | `0da8199` and frame-history commits | ✓ |
-| `taylorwilsdon-google_workspace_mcp` catalog size | 116 tools (0%/0% catalog-overwhelm failure mode) — added, flagged missing in second-pass adversarial audit | `STATUS.md` EXP-1 section ("...malformed/hedged output under a 116-tool catalog") | `0da8199` | ✓ |
+| `taylorwilsdon-google_workspace_mcp` catalog size | 116 tools; the originally published 0%/0% "catalog-overwhelm" result was an Ollama context-truncation artifact (prompt_eval_count 2051 at num_ctx 4096). CORRECTED rerun 65%/65%, +0pp, with num_ctx=16384 (prompt ~7000 tokens, gemma2:9b, seeds 42+trial). Original row was added after the second-pass adversarial audit and cited `STATUS.md` EXP-1 section | `docs/evidence/gw_rerun_check.json` (supersedes the `STATUS.md` reading) | added in the 2026-10-23 correction (original row: `0da8199`) | rerun |
 
 **Precision note for drafting (FIXED):** the precise figure is **0 of 9 servers
 with a testable confusable family** showed in-regime behavior (10 servers total in the frame;

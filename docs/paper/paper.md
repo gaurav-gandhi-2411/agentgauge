@@ -438,9 +438,10 @@ an input property; only behavior the fix actually repairs counts as in-regime.
 **This is the general behavioral construct, not a re-test of Section 4.2.1's specific
 density point.** None of the ten sampled servers were selected or verified to actually reach
 the 60-tool/10-family density where T18 found an effect (most have far fewer tools; the one
-large-catalog server sampled, at 116 tools, failed for an unrelated reason — catalog overwhelm,
-malformed output under a large listing, not confident wrong-tool selection — and contributes no
-evidence either way about the density regime specifically). What EXP-1 measures is the
+large-catalog server sampled, at 116 tools, showed no oracle recovery and contributes no
+evidence either way about the density regime specifically; its originally reported 0%/0% result,
+read at first as catalog overwhelm, was an Ollama context-truncation artifact — see the correction
+note beneath the EXP-1 results table). What EXP-1 measures is the
 prevalence of the general two-condition behavioral regime across whatever confusable families
 each server happens to have, at whatever scale it happens to be built at — a broader and
 different question than "how many real servers are built at T18's specific tested density."
@@ -464,9 +465,11 @@ GitHub, N=10 pilot" — stated as such everywhere this number appears in this pa
 | stickerdaniel-linkedin-mcp-server | thin | 100% | — | n/a | OUT-OF-REGIME |
 | mrexodia-ida-pro-mcp | near_empty | 90% | — | n/a | OUT-OF-REGIME (above headroom ceiling) |
 | AminForou-mcp-gsc | well_documented | 75% | 75% | +0pp | OUT-OF-REGIME (real functional overlap; no description fixes it) |
-| taylorwilsdon-google_workspace_mcp | thin | 0% | 0% | +0pp | OUT-OF-REGIME (catalog-overwhelm failure mode, not confusability) |
+| taylorwilsdon-google_workspace_mcp | thin | 65% | 65% | +0pp | OUT-OF-REGIME (no recovery: oracle descriptions did not change outcomes; corrected on rerun, see note below) |
 | datalayer-jupyter-mcp-server | near_empty | 70% | 55% | **−15pp** | OUT-OF-REGIME (HARM — replicates the P2-A account_query pattern on a fresh real server) |
 | Dataojitori / blazickjp-arxiv / LycheeMem | well_documented | — | — | — | no testable confusable family (3 servers) |
+
+> **Correction (2026-10-23):** this row originally read 0% / 0% with the reason "catalog-overwhelm failure mode". That was an Ollama context-truncation artifact: the ~7k-token 116-tool listing was silently truncated at the default 4096-token window (control rerun at num_ctx 4096 reproduced 0%/0%, prompt_eval_count 2051). Rerun with the window sized (num_ctx 16384, gemma2:9b, same procedure, seeds 42+trial) gives 65% (13/20) in both arms, +0pp; the remaining failure (gws_4, manage_deployment x5 in both arms) is a genuine wrong-tool pick. The catalog-overwhelm mechanism claim for this server is withdrawn; the OUT-OF-REGIME label stands under the frozen rule, for the reason of no recovery. Evidence: `docs/evidence/gw_rerun_check.json`.
 
 **Headline: 0 of 9 servers with a testable confusable family show in-regime behavior** (7
 freshly scored + 2 RW1/RW2 anchors cited from Section 4.3.1). Per fresh-only tier:
