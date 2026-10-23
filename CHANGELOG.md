@@ -12,6 +12,17 @@ re-measured here; their provenance is in `reports/` at each tag.
 
 ## [Unreleased]
 
+- **Replay files can now be written and checked.** New `agentgauge.replay` module (public
+  `load_replay` / `save_replay` / `tools_sha256`); `diff --save-before/--save-after` and
+  `eval --save` write a v1 file (`"format": "agentgauge-replay"`) recording model, seed,
+  trials per task, agentgauge version, tasks-file hash and a hash of the server's tool list.
+  Legacy bare-list files (including the bundled demo replays) load unchanged. With replay files
+  and server paths both given, `diff`/`eval` exit 2 if the live tool schemas (or the `--tasks`
+  file) no longer match the recording; `--allow-stale-replay` downgrades that to a warning.
+  Behaviour change: replay + server paths used to ignore the paths; they are now validated and
+  introspected (no model needed). Stacked on #123.
+
+The paragraph below predates this change and #123's `agentgauge/` edits (not re-audited here).
 Nothing under `agentgauge/` or in `pyproject.toml` has changed since 0.5.3
 (`git diff --stat v0.5.3 origin/main -- agentgauge pyproject.toml` is empty); the commits since the
 tag are documentation, CI and dependency-lockfile updates:

@@ -290,6 +290,19 @@ for worked examples of anti-tautology task authoring. Every `diff`/`eval` run pa
 consistency) — a failing check blocks the result from being reported, rather than silently
 shipping a bad measurement.
 
+**Record once, gate in CI with no model.** `--save-before`/`--save-after` (and `eval --save`) write
+the live trials as a replay file that also records the model, seed, tasks-file hash and a hash of
+the server's tool schemas. Pass the server paths alongside the replays in CI and `diff` exits 2 if a
+tool description or schema changed since recording (re-record, or `--allow-stale-replay` to
+override). Older bare-list replay files still load, with a "no provenance" warning.
+
+```bash
+agentgauge diff before.py after.py --tasks agentgauge_tasks.json \
+  --save-before before.json --save-after after.json          # live, once; commit both files
+agentgauge diff before.py after.py --tasks agentgauge_tasks.json \
+  --replay-before before.json --replay-after after.json      # CI: no model needed
+```
+
 ```bash
 # Point at a different provider with --provider-config instead of --model -- no code change.
 # See configs/provider.*.yaml for one example per adapter (ollama/anthropic/openai_compatible/
