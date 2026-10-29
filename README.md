@@ -354,8 +354,10 @@ size/complexity limit. Stripping `minItems`, `maxItems`, `minLength`, `maxLength
 `maximum`, `exclusiveMinimum`, `exclusiveMaximum`, `minProperties`, `maxProperties`, `pattern`,
 `format`, `examples`, `$schema` and dereferencing local `$ref` made all 24 accepted. With n=5
 rejections this is a heuristic: the note reports measured counts (properties and validation-only
-keywords) and says the catalog is *at risk*; it claims no pass/fail threshold, and a catalog
-without the note can still be rejected. (Vertex lists `format` as a supported attribute; it is in
+keywords) and states that, IF a request is rejected with HTTP 400 "invalid argument",
+stripping them (or moving them into descriptions) and inlining refs resolved it in our
+observation. It does not say a catalog is at risk, claims no threshold, and a catalog without
+the note can still be rejected. (Vertex lists `format` as a supported attribute; it is in
 the stripped set only because that is what was tested.) It is specific to Gemini/Vertex and says
 nothing about other providers.
 

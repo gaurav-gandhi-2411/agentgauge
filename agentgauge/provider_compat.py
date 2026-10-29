@@ -143,7 +143,7 @@ def check_function_name(name: str) -> list[Violation]:
         problems.append(
             f"is {len(name)} characters (documented maximum is {MAX_FUNCTION_NAME_LEN})"
         )
-    if not _FUNCTION_NAME_RE.match(name):
+    if not _FUNCTION_NAME_RE.fullmatch(name):
         problems.append(
             "does not match the documented character set (must start with a letter or "
             "underscore, then only a-z, A-Z, 0-9, underscores, dots or dashes)"
@@ -251,14 +251,15 @@ def check_catalog_size(tools: list[Any]) -> list[Violation]:
             severity=Severity.INFO,
             tool_name=_CATALOG,
             detail=(
-                f"Gemini/Vertex function calling (mode ANY) may reject very large or deeply "
-                f"nested schemas; no threshold is published, so this catalog is at risk, not "
-                f"known-bad. Measured: {n_properties} properties and {total} validation-only "
-                f"keywords ({listed}). In a private study (5 of 24 real catalogs rejected), "
-                f"stripping these keywords ({', '.join(_VALIDATION_ONLY_KEYWORDS)}) made all "
-                "24 accepted; Vertex also documents that unlisted attributes are not "
-                "supported. Fix: remove them from the schema or move the constraint into the "
-                f"description. See {_GEMINI_DOC_URL} and {_VERTEX_DOC_URL}"
+                f"Gemini/Vertex function calling: this catalog has {n_properties} properties and "
+                f"{total} validation-only keywords ({listed}). The Gemini docs say that for "
+                f"any mode the API may reject very large or deeply nested schemas; no "
+                f"threshold is published, and this note makes no claim that this catalog "
+                f"will be rejected. If a request is rejected with HTTP 400 'invalid "
+                f"argument', then in our observation (5 of 24 real catalogs, private study) "
+                f"stripping these keywords ({', '.join(_VALIDATION_ONLY_KEYWORDS)}) or moving "
+                f"them into descriptions, and inlining $ref, resolved it. "
+                f"See {_GEMINI_DOC_URL} and {_VERTEX_DOC_URL}"
             ),
         )
     ]

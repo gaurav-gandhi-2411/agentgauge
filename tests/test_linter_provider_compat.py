@@ -49,7 +49,7 @@ class TestToolName:
     def test_character_set(self) -> None:
         for ok in ("_private", "get-item.v2", "A1_b"):
             assert check_function_name(ok) == []
-        for bad in ("1abc", "has space", "slash/name", "-lead"):
+        for bad in ("1abc", "has space", "slash/name", "-lead", "abc\n"):
             found = check_function_name(bad)
             assert len(found) == 1, bad
             assert "character set" in found[0].detail
@@ -126,7 +126,16 @@ class TestCatalogSize:
         assert "3 validation-only keywords" in v.detail
         assert "maxItems=1, maximum=1, minimum=1" in v.detail
         assert "no threshold is published" in v.detail
+        assert "HTTP 400" in v.detail
         assert "https://ai.google.dev/gemini-api/docs/function-calling" in v.detail
+
+    def test_tiny_schema_message_makes_no_risk_claim(self) -> None:
+        schema = {"type": "object", "properties": {"t": {"type": "array", "maxItems": 3}}}
+        detail = lint_provider_compat([_tool(schema=schema)])[0].detail
+        assert "1 properties and 1 validation-only keywords" in detail
+        lowered = detail.lower()
+        assert "at risk" not in lowered and "fix:" not in lowered
+        assert "no claim that this catalog will be rejected" in lowered
 
     def test_property_named_like_a_keyword_is_not_counted(self) -> None:
         schema = {
