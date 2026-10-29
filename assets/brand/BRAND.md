@@ -26,14 +26,17 @@ is large or collapsed to nothing.
 
 Same seven Calibration tokens as `tracegauge` (see that repo's
 `BRAND.md` for the full table and the reasoning behind each). This
-motif uses four of the seven directly:
+motif uses five of the seven directly (roles as implemented in
+`scripts/generate_brand_assets.py`; the hero image `og-preview.svg` predates
+it and uses the same tokens on ink):
 
 | Token | Hex | Role in this motif |
 |---|---|---|
-| `paper` | `#F0EDE4` | The dimension-line bracket, the wordmark |
+| `ink` | `#12140F` | Dark ground; bracket and wordmark on paper (light variant) |
+| `paper` | `#F0EDE4` | Light ground; bracket and wordmark on ink (dark variant) |
 | `needle` | `#C9622B` | The "after" mark — a live reading, not a verdict |
-| `graphite` | `#5B5D53` | The pin lines connecting each mark to the bracket |
-| `tick` | `#A79F8C` | The "before" mark (hollow), the ground line, the tagline |
+| `graphite` | `#5B5D53` | The hollow "before" ring on paper |
+| `tick` | `#A79F8C` | The hollow "before" ring on ink; ground line (concept C); tagline |
 
 (`calibrated`/`regression` are deliberately unused here — this motif
 never asserts pass/fail, only "here is the measured gap," consistent
@@ -85,27 +88,45 @@ pass/fail colour. Every mark has a light-background and a dark-background
 (`-dark`) file; `logo-concept-X.svg` is the lockup (mark + traced Space
 Grotesk 700 wordmark), `logo-concept-X-mark.svg` the mark alone. All are
 transparent-background. Regenerate with `scripts/generate_brand_assets.py`.
-None is a gauge, dial, needle or bar-series, so none can be mistaken for
-a recolour of `tracegauge`'s marks (dial-and-needle, then a bar series
-with an accent bar).
+None is a gauge, dial, needle or bar-series. A and B are clearly distinct
+from `tracegauge`'s marks (dial-and-needle, then a bar series with an
+accent bar); C is "not a recolour" and no more than that — its single
+accent bar over a baseline echoes tracegauge's "Turns" mark.
 
 - **A — bracket over paired marks.** A hollow "before" circle and a filled
   `needle` "after" circle sit under a bracket whose legs are the pin lines.
-  The after mark is nudged up 3 units: a visible but small gap, so a zero
-  gap still reads correctly. Most literal expression of the motif, and
-  the sturdiest at 16 px (three bold shapes).
+  The 3-unit raise of the after mark in the primary mark is illustrative,
+  not a claimed improvement; a zero-gap variant (circles level, shown as
+  "A zero-gap" in the contact sheet) is an equally valid reading. Most
+  literal expression of the motif, and the sturdiest at 16 px (three
+  bold shapes).
 - **B — "ag" monogram.** Space Grotesk "a" and "g" with a dimension line
   spanning the space between them; the gap is the measurement. Most
   ownable, but the mark-only form is wide (about 1.6:1) and the dimension
-  line is hairline-thin at 16 px, so it is a poor favicon.
-- **C — tick-and-bracket glyph.** An ink corner bracket, a `needle` leg
-  that stops short of the left leg (the offset), and a ground line.
-  Minimal, but the least tied to the product name and the most generic.
+  line is hairline-thin at 16 px, so it is a poor favicon. At small sizes
+  the "a", dimension line and "g" also read as "aHg" (the mercury
+  symbol), an unintended chemistry reading.
+- **C — tick-and-bracket glyph (least preferred).** An ink corner
+  bracket, a `needle` leg that stops short of the left leg (the offset),
+  and a ground line. Minimal, but the least tied to the product name, the
+  most generic, and the closest to a sibling mark (see above).
 
 **Recommended: A.** It carries the hollow-before / filled-after /
 bracket-gap story without explanation, survives 16 px, and is what the
 favicon, apple-touch icon and 1200×630 OG image use. B is the runner-up
 if a wordmark-first identity is preferred.
+
+The favicon is a dedicated small-size drawing of A, not a scaled-down
+logo: the mark fills about 87% of a full ink tile (corner radius 6 of
+64; the apple-touch icon is full-bleed), strokes are 6 units, and the
+ring hole has radius 8 so it stays open at 16 px.
+
+The 1200×630 OG image is a centred stack: lockup (mark + wordmark) inside
+the central 630 px so a 1:1 centre crop keeps it, then the plain
+descriptor "Regression harness for MCP tool descriptions" (shortened from
+the `pyproject.toml` description) as the primary line, then the quieter
+"Whether the change moved anything at all." Content extents: x 198–1004,
+y 195–456 (lockup row x 300–903).
 
 Contrast (WCAG 2.x, computed by `generate_brand_assets.py`):
 
