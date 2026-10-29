@@ -387,6 +387,17 @@ A skip is not a pass: the terminal summary counts skipped agentgauge verdicts. M
 The staleness check only applies to v1 replays (which carry a tool-schema hash); legacy bare-list
 replays load but cannot be proven fresh.
 
+`agentgauge_diff` only measures: it never fails a test on a regression by itself. You must call
+`assert_no_regression(result)` for a regression to fail the test (without that call the test
+passes whatever the verdict). A call missing `replay_before=` or `replay_after=` fails with a
+message naming the missing argument; only an explicit `live=True` takes the live skip path.
+
+Freshness is only checked when you pass both `before_server=` and `after_server=`. If a v1 replay
+is used without them, the test still passes on the verdict (no server is needed to compute it) but
+`"replay freshness not checked: pass before_server/after_server"` is appended to `result.notes`
+and the terminal summary counts such results. Pass `--agentgauge-require-fresh` (default off) to
+make that unchecked case fail the test instead.
+
 ---
 
 ## Development
