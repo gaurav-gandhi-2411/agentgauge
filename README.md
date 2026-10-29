@@ -1,3 +1,5 @@
+<p align="center"><img src="assets/brand/logo-concept-a.svg" alt="AgentGauge logo: a hollow and a filled circle under a bracket, beside the wordmark" width="320"></p>
+
 # AgentGauge
 
 **AgentGauge is a statistical regression harness that measures whether a change to your MCP
