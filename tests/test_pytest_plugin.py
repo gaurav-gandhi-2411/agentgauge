@@ -216,6 +216,95 @@ class TestBrokenMeasurementNeverSkips:
         r.assert_outcomes(failed=1)
 
 
+def _v1_replay(
+    tmp_path: Path, src: str, name: str, tools_sha: str, tasks_sha: str | None = None
+) -> str:
+    """Re-save a bare-list synthetic replay as a v1 file carrying provenance."""
+    out = tmp_path / f"v1_{name}.json"
+    trials = [TrialOutcome.from_dict(d) for d in json.loads(Path(src).read_text())]
+    save_replay(out, trials, model="m", seed=42, trials_per_task=1, target="s.py",
+                tools_sha=tools_sha, tasks_sha=tasks_sha)  # fmt: skip
+    return str(out)
+
+
+class TestFailOpenFixes:
+    def test_missing_replay_argument_fails_instead_of_skipping(
+        self, pytester: pytest.Pytester, pairs: Any
+    ) -> None:
+        src = f"""
+def test_misconfigured(agentgauge_diff):
+    agentgauge_diff(replay_before={pairs["improvement"][0]!r})
+"""
+        r = _run(pytester, src)
+        r.assert_outcomes(failed=1)
+        r.stdout.fnmatch_lines(["*missing argument(s): replay_after*"])
+
+    def test_no_arguments_at_all_fails_naming_both(self, pytester: pytest.Pytester) -> None:
+        r = _run(pytester, "def test_x(agentgauge_diff):\n    agentgauge_diff()\n")
+        r.assert_outcomes(failed=1)
+        r.stdout.fnmatch_lines(["*missing argument(s): replay_before, replay_after*"])
+
+    def test_unchecked_freshness_is_noted_and_counted_but_passes(
+        self, pytester: pytest.Pytester, pairs: Any, tmp_path: Path
+    ) -> None:
+        b, a = pairs["improvement"]
+        v1 = [_v1_replay(tmp_path, b, "b", "0" * 64), _v1_replay(tmp_path, a, "a", "0" * 64)]
+        extra = "assert any('freshness not checked' in n for n in result.notes)"
+        r = _run(pytester, _body(*v1, extra=extra))
+        r.assert_outcomes(passed=1)
+        r.stdout.fnmatch_lines(["agentgauge: 1 result(s) with replay freshness not checked*"])
+
+    def test_require_fresh_fails_the_unchecked_case(
+        self, pytester: pytest.Pytester, pairs: Any, tmp_path: Path
+    ) -> None:
+        b, a = pairs["improvement"]
+        v1 = [_v1_replay(tmp_path, b, "b", "0" * 64), _v1_replay(tmp_path, a, "a", "0" * 64)]
+        r = _run(pytester, _body(*v1), "--agentgauge-require-fresh")
+        r.assert_outcomes(failed=1)
+        r.stdout.fnmatch_lines(["*freshness not checked*--agentgauge-require-fresh*"])
+
+    def test_require_fresh_does_not_fail_when_servers_are_given(
+        self, pytester: pytest.Pytester, pairs: Any, tmp_path: Path
+    ) -> None:
+        b, a = pairs["improvement"]
+        live_sha = plugin.server_tools_sha(BEFORE_SERVER)
+        v1 = [_v1_replay(tmp_path, b, "b", live_sha), _v1_replay(tmp_path, a, "a", live_sha)]
+        kw = f", before_server={BEFORE_SERVER!r}, after_server={BEFORE_SERVER!r}"
+        r = _run(pytester, _body(*v1, call_kwargs=kw), "--agentgauge-require-fresh")
+        r.assert_outcomes(passed=1)
+
+    def test_changed_tasks_file_makes_the_replay_stale(
+        self, pytester: pytest.Pytester, pairs: Any, tmp_path: Path
+    ) -> None:
+        b, a = pairs["improvement"]
+        live_sha = plugin.server_tools_sha(BEFORE_SERVER)
+        tasks = tmp_path / "tasks.json"
+        tasks.write_text("[]", encoding="utf-8")
+        v1 = [  # recorded against a different tasks file than the one passed below
+            _v1_replay(tmp_path, b, "b", live_sha, tasks_sha="1" * 64),
+            _v1_replay(tmp_path, a, "a", live_sha, tasks_sha="1" * 64),
+        ]
+        kw = (
+            f", before_server={BEFORE_SERVER!r}, after_server={BEFORE_SERVER!r}"
+            f", tasks={str(tasks)!r}"
+        )
+        r = _run(pytester, _body(*v1, call_kwargs=kw))
+        r.assert_outcomes(failed=1)
+        r.stdout.fnmatch_lines(["*before replay is stale*tasks file changed*"])
+
+
+class TestUnknownVerdict:
+    def test_unknown_verdict_fails_rather_than_passing(self) -> None:
+        class FakeResult:
+            verdict = "some_future_verdict"
+            message = "m"
+            inconclusive = "skip"
+            config = None
+
+        with pytest.raises(pytest.fail.Exception, match="unknown verdict 'some_future_verdict'"):
+            plugin.assert_no_regression(FakeResult())  # type: ignore[arg-type]
+
+
 class TestLiveIsOffByDefault:
     SRC = """
 def test_live(agentgauge_diff):

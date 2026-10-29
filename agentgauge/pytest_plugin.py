@@ -49,6 +49,7 @@ if TYPE_CHECKING:
 
 INCONCLUSIVE_CHOICES = ("skip", "fail")
 _SKIPPED_KEY = pytest.StashKey[list[str]]()
+_UNCHECKED_KEY = pytest.StashKey[list[str]]()  # node ids whose replay freshness went unchecked
 
 
 @dataclass
@@ -108,6 +109,13 @@ def pytest_addoption(parser: pytest.Parser) -> None:
         help="Allow agentgauge_diff to use a live model. Off by default: without it a live "
         "request is skipped and no model is ever called.",
     )
+    group.addoption(
+        "--agentgauge-require-fresh",
+        action="store_true",
+        default=False,
+        help="Fail a test whose v1 replay freshness was not checked (before_server=/"
+        "after_server= not given). Off by default: the verdict itself needs no server.",
+    )
 
 
 def pytest_configure(config: pytest.Config) -> None:
@@ -117,6 +125,7 @@ def pytest_configure(config: pytest.Config) -> None:
         "(select with -m agentgauge, deselect with -m 'not agentgauge')",
     )
     config.stash[_SKIPPED_KEY] = []
+    config.stash[_UNCHECKED_KEY] = []
 
 
 def pytest_terminal_summary(terminalreporter: Any, exitstatus: int, config: pytest.Config) -> None:
@@ -126,6 +135,12 @@ def pytest_terminal_summary(terminalreporter: Any, exitstatus: int, config: pyte
             f"agentgauge: {len(skipped)} inconclusive verdict(s) skipped, not passed "
             f"({', '.join(skipped)}); see skip reasons with -rs, or use "
             "--agentgauge-inconclusive=fail."
+        )
+    unchecked = config.stash.get(_UNCHECKED_KEY, [])
+    if unchecked:
+        terminalreporter.write_line(
+            f"agentgauge: {len(unchecked)} result(s) with replay freshness not checked "
+            "(pass before_server/after_server, or use --agentgauge-require-fresh to fail)."
         )
 
 
@@ -214,17 +229,31 @@ def _make_diff(request: pytest.FixtureRequest) -> Callable[..., AgentGaugeResult
             staleness_problems,
         )
 
-        if live or replay_before is None or replay_after is None:
+        if live:
             if not config.getoption("--agentgauge-live"):
                 pytest.skip(
                     "agentgauge live run requested but --agentgauge-live is not set "
                     "(no model is ever called by default); pass replay_before= and replay_after="
                 )
             pytest.fail(
-                "agentgauge: live runs are not implemented in this release. Record replays with "
-                "`agentgauge diff --save-before/--save-after` and pass replay_before=/replay_after=.",
+                "agentgauge: live runs are not implemented in this release. Record replays "
+                "with `agentgauge diff --save-before/--save-after` and pass "
+                "replay_before=/replay_after=.",
                 pytrace=False,
             )
+        # A misconfigured test is a broken measurement, not a request to go live: never skip.
+        missing = [
+            name
+            for name, value in (("replay_before", replay_before), ("replay_after", replay_after))
+            if value is None
+        ]
+        if missing:
+            pytest.fail(
+                f"agentgauge: missing argument(s): {', '.join(missing)}=. Pass both replay_before= "
+                "and replay_after= (or live=True to request a live run).",
+                pytrace=False,
+            )
+        assert replay_before is not None and replay_after is not None  # narrowed for mypy
         try:
             before = load_replay(Path(replay_before))
             after = load_replay(Path(replay_after))
@@ -251,9 +280,7 @@ def _make_diff(request: pytest.FixtureRequest) -> Callable[..., AgentGaugeResult
                     continue
                 try:
                     live_sha = server_tools_sha(target)
-                except (
-                    Exception
-                ) as exc:  # unreachable/broken server = broken measurement, not a skip
+                except Exception as exc:  # broken server = broken measurement, not a skip
                     pytest.fail(
                         f"agentgauge: cannot introspect {label} server {target}: {exc!r}",
                         pytrace=False,
@@ -265,6 +292,23 @@ def _make_diff(request: pytest.FixtureRequest) -> Callable[..., AgentGaugeResult
                         f"Re-record it with `agentgauge diff --save-{label}`.",
                         pytrace=False,
                     )
+
+        else:
+            unchecked = [
+                label
+                for label, rf in (("before", before), ("after", after))
+                if rf.provenance is not None
+            ]
+            if unchecked:
+                if config.getoption("--agentgauge-require-fresh"):
+                    pytest.fail(
+                        f"agentgauge: {' and '.join(unchecked)} replay freshness not checked "
+                        "and --agentgauge-require-fresh is set: pass before_server= and "
+                        "after_server=.",
+                        pytrace=False,
+                    )
+                notes.append("replay freshness not checked: pass before_server/after_server")
+                config.stash.setdefault(_UNCHECKED_KEY, []).append(request.node.nodeid)
 
         report = run_audit([], before_trials=before.trials, after_trials=after.trials)
         if report.blocking:
