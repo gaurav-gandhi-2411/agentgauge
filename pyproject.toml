@@ -51,6 +51,11 @@ dev = [
 [project.scripts]
 agentgauge = "agentgauge.cli:app"
 
+# Auto-loaded in every pytest session of an environment with this package installed; the module
+# keeps all heavy imports lazy. Opt out with `-p no:agentgauge`.
+[project.entry-points.pytest11]
+agentgauge = "agentgauge.pytest_plugin"
+
 [tool.hatch.build.targets.wheel]
 packages = ["agentgauge"]
 
