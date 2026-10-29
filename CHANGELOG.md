@@ -12,6 +12,12 @@ re-measured here; their provenance is in `reports/` at each tag.
 
 ## [Unreleased]
 
+- **Added (opt-in):** `agentgauge lint --provider-compat`, a zero-LLM rule family
+  (`provider_compat_tool_name`, `_schema_depth`, `_ref`, `_schema_size`, `_tool_count`) that flags
+  schemas Gemini/Vertex function calling is documented to reject or may reject. ADVISORY/INFO only:
+  off by default, never fails CI, no existing rule, count or score changes. The size note is a
+  heuristic with no published threshold; see the README subsection for evidence and limits.
+
 Nothing under `agentgauge/` or in `pyproject.toml` has changed since 0.5.3
 (`git diff --stat v0.5.3 origin/main -- agentgauge pyproject.toml` is empty); the commits since the
 tag are documentation, CI and dependency-lockfile updates:

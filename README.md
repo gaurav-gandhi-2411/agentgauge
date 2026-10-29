@@ -325,6 +325,40 @@ agentgauge lint examples/call_constraints_server_fixed.py --show-info
   ...
 ```
 
+### Optional: Gemini / Vertex function-calling compatibility (`--provider-compat`)
+
+```bash
+agentgauge lint path/to/your_server.py --provider-compat
+```
+
+An opt-in, zero-LLM, deterministic rule family (`provider_compat_*`). It is **off by default**,
+its findings are ADVISORY/INFO only (they never fail CI and never enter any score), and it
+does not change any existing rule's output.
+
+| Finding | Tier | Basis (official docs, fetched 2026-10-29) |
+|---|---|---|
+| `provider_compat_tool_name` | ADVISORY | Vertex: names start with a letter or underscore, use only `a-z A-Z 0-9 _ . -`, max length 64 |
+| `provider_compat_schema_depth` | ADVISORY | Vertex: "The maximum depth of nested schema is 32." (root counted as level 1 - our reading) |
+| `provider_compat_ref` | ADVISORY | Vertex: "`ref` must refer to direct child of `defs`; no external references." The docs write `ref`/`defs` without `$` and also list `$ref`/`$defs` as supported attributes, so the finding says "may need rewriting", not "rejected" |
+| `provider_compat_schema_size` | INFO | Gemini: "For any mode, the API may reject very large or deeply nested schemas." No threshold is published |
+| `provider_compat_tool_count` | INFO | Vertex: "ideally keeping the active set to a maximum of 10-20" (fires above 20) |
+
+Sources: <https://docs.cloud.google.com/vertex-ai/generative-ai/docs/multimodal/function-calling>
+and <https://ai.google.dev/gemini-api/docs/function-calling>.
+
+**Evidence behind the size note, and its limits.** In a private study (2026-10-29), Vertex
+Gemini 2.5 Flash/Pro with function-calling mode ANY rejected 5 of 24 real MCP server catalogs
+with HTTP 400. Bisection found no single forbidden keyword - a rejected tool became accepted
+after removing any one of several unrelated constraints - which is consistent with an aggregate
+size/complexity limit. Stripping `minItems`, `maxItems`, `minLength`, `maxLength`, `minimum`,
+`maximum`, `exclusiveMinimum`, `exclusiveMaximum`, `minProperties`, `maxProperties`, `pattern`,
+`format`, `examples`, `$schema` and dereferencing local `$ref` made all 24 accepted. With n=5
+rejections this is a heuristic: the note reports measured counts (properties and validation-only
+keywords) and says the catalog is *at risk*; it claims no pass/fail threshold, and a catalog
+without the note can still be rejected. (Vertex lists `format` as a supported attribute; it is in
+the stripped set only because that is what was tested.) It is specific to Gemini/Vertex and says
+nothing about other providers.
+
 ---
 
 ## v1 (legacy — not the recommended surface)
