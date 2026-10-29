@@ -954,17 +954,21 @@ def init(
     workflow_path = workflow_dir / "agentgauge.yml"
 
     if tasks_path.exists():
-        console.print(f"[yellow]{tasks_path} already exists -- not overwriting.[/yellow]")
+        console.print(
+            f"[yellow]{escape(str(tasks_path))} already exists -- not overwriting.[/yellow]"
+        )
     else:
         tasks_path.write_text(_STARTER_TASKS_TEMPLATE, encoding="utf-8")
-        console.print(f"[green]Wrote {tasks_path}[/green]")
+        console.print(f"[green]Wrote {escape(str(tasks_path))}[/green]")
 
     workflow_dir.mkdir(parents=True, exist_ok=True)
     if workflow_path.exists():
-        console.print(f"[yellow]{workflow_path} already exists -- not overwriting.[/yellow]")
+        console.print(
+            f"[yellow]{escape(str(workflow_path))} already exists -- not overwriting.[/yellow]"
+        )
     else:
         workflow_path.write_text(_GITHUB_ACTION_TEMPLATE, encoding="utf-8")
-        console.print(f"[green]Wrote {workflow_path}[/green]")
+        console.print(f"[green]Wrote {escape(str(workflow_path))}[/green]")
 
     console.print(
         "\nNext steps:\n"
@@ -1077,7 +1081,7 @@ async def _scan_async(
     console = Console()
     provider = MockProvider() if mock else OllamaProvider(model)
 
-    console.print(f"[dim]Connecting to [bold]{target}[/bold]...[/dim]")
+    console.print(f"[dim]Connecting to [bold]{escape(target)}[/bold]...[/dim]")
 
     if target.startswith("http://") or target.startswith("https://"):
         client, ctx = await connect_http(target)
@@ -1104,13 +1108,13 @@ async def _scan_async(
             suffix = out.suffix.lower()
             if suffix == ".json":
                 out.write_text(render_json_stable(report), encoding="utf-8")
-                console.print(f"[dim]JSON report written to {out}[/dim]")
+                console.print(f"[dim]JSON report written to {escape(str(out))}[/dim]")
             elif suffix == ".html":
                 out.write_text(render_html(report), encoding="utf-8")
-                console.print(f"[dim]HTML report written to {out}[/dim]")
+                console.print(f"[dim]HTML report written to {escape(str(out))}[/dim]")
             else:
                 console.print(
-                    f"[yellow]Warning: unsupported output format '{suffix}' — skipping write[/yellow]"
+                    f"[yellow]Warning: unsupported output format '{escape(suffix)}' — skipping write[/yellow]"
                 )
 
         return report.overall
@@ -1200,7 +1204,7 @@ async def _fix_async(
     dim_list = [d.strip() for d in dims.split(",") if d.strip()]
     source_path = Path(target)
     if not source_path.exists():
-        console.print(f"[red]Error: {target} not found[/red]")
+        console.print(f"[red]Error: {escape(target)} not found[/red]")
         raise typer.Exit(1)
 
     if mock:
@@ -1253,14 +1257,16 @@ async def _fix_async(
 
         if out_diff and report.diff_text:
             out_diff.write_text(report.diff_text, encoding="utf-8")
-            console.print(f"[dim]Diff written to {out_diff}[/dim]")
+            console.print(f"[dim]Diff written to {escape(str(out_diff))}[/dim]")
 
         if apply and report.accepted and report.patched_source:
             bak = _bak_path(source_path)
             bak.write_text(source_path.read_text(encoding="utf-8"), encoding="utf-8")
-            console.print(f"[dim]Backup written to {bak}[/dim]")
+            console.print(f"[dim]Backup written to {escape(str(bak))}[/dim]")
             source_path.write_text(report.patched_source, encoding="utf-8")
-            console.print(f"[green]Applied {len(report.accepted)} fix(es) to {source_path}[/green]")
+            console.print(
+                f"[green]Applied {len(report.accepted)} fix(es) to {escape(str(source_path))}[/green]"
+            )
         elif apply and not report.accepted:
             console.print("[dim]Nothing to apply — no accepted fixes[/dim]")
 
@@ -1368,7 +1374,7 @@ async def _try_async(
     )
 
     # Step (c): apply hint
-    console.print(f"\nRun `agentgauge fix {target} --apply` to apply these fixes.")
+    console.print(f"\nRun `agentgauge fix {escape(target)} --apply` to apply these fixes.")
 
 
 # Measured cost finding, v0.5.0 (reports/v0_5_probe_power_fix.md section 5): at the n_tasks
