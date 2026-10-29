@@ -180,3 +180,25 @@ def save_replay(
         with contextlib.suppress(OSError):
             tmp.unlink(missing_ok=True)
         raise
+
+
+def staleness_problems(
+    replay: ReplayFile, *, live_tools_sha: str, live_tasks_sha: str | None
+) -> list[str]:
+    """Why a v1 replay no longer matches the live server/tasks file (empty list = fresh).
+
+    A legacy file carries no hashes, so it can never be proven stale and also returns `[]`; callers
+    that care should check `replay.provenance is None` first. `live_tasks_sha=None` skips the
+    tasks-file comparison (no tasks file was given).
+    """
+    if replay.provenance is None:
+        return []
+    problems: list[str] = []
+    recorded = replay.tools_sha256
+    if recorded != live_tools_sha:
+        problems.append(
+            f"tool schema changed (recorded {str(recorded)[:12]} vs live {live_tools_sha[:12]})"
+        )
+    if live_tasks_sha is not None and replay.tasks_sha256 != live_tasks_sha:
+        problems.append("tasks file changed")
+    return problems

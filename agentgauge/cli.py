@@ -41,6 +41,7 @@ from agentgauge.replay import (
     file_sha256,
     load_replay,
     save_replay,
+    staleness_problems,
     tools_sha256,
 )
 from agentgauge.report import render_html, render_json_stable, render_text
@@ -840,14 +841,9 @@ def _check_replay_fresh(
             err=True,
         )
         return
-    problems: list[str] = []
-    recorded = replay.tools_sha256
-    if recorded != live_tools_sha:
-        problems.append(
-            f"tool schema changed (recorded {str(recorded)[:12]} vs live {live_tools_sha[:12]})"
-        )
-    if live_tasks_sha is not None and replay.tasks_sha256 != live_tasks_sha:
-        problems.append("tasks file changed")
+    problems = staleness_problems(
+        replay, live_tools_sha=live_tools_sha, live_tasks_sha=live_tasks_sha
+    )
     if not problems:
         return
     message = f"{label} is stale: {'; '.join(problems)}."

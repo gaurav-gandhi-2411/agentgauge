@@ -145,3 +145,16 @@ class TestToolsHash:
         assert tools_sha256([a, b]) != tools_sha256([edited, b])
         renamed = self._tool("a", "does a", {"x2": {"type": "string"}, "y": {"type": "integer"}})
         assert tools_sha256([a, b]) != tools_sha256([renamed, b])
+
+
+def test_staleness_problems(tmp_path: Path) -> None:
+    p = tmp_path / "r.json"
+    _save(p, _trials(), tools_sha="a" * 64, tasks_sha="t" * 64)
+    rf = load_replay(p)
+    fresh = replay.staleness_problems(rf, live_tools_sha="a" * 64, live_tasks_sha="t" * 64)
+    assert fresh == []
+    assert replay.staleness_problems(rf, live_tools_sha="a" * 64, live_tasks_sha=None) == []
+    both = replay.staleness_problems(rf, live_tools_sha="b" * 64, live_tasks_sha="x" * 64)
+    assert len(both) == 2 and "tool schema changed" in both[0] and "tasks file" in both[1]
+    legacy = load_replay(DEMO / "replay_before.json")
+    assert replay.staleness_problems(legacy, live_tools_sha="b" * 64, live_tasks_sha=None) == []
