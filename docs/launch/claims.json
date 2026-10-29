@@ -7,7 +7,11 @@
     "docs/launch/blog.md"
   ],
   "allowed_numbers": {
-    "docs/launch/show-hn.md": {"2.0": "Apache-2.0 licence name, not a measurement"}
+    "docs/launch/show-hn.md": {"2.0": "Apache-2.0 licence name, not a measurement"},
+    "docs/launch/blog.md": {
+      "7": "derived, not quoted: 20 trials per arm minus 13 correct = 7 misses per arm; verified by counting the arm_a_calls/arm_b_calls entries in docs/evidence/gw_rerun_check.json (5 gws_4 + 2 one-off misses in each arm)",
+      "2": "derived, not quoted: the 7 misses per arm minus the 5 gws_4 misses = 2 scattered one-off misses (gws_1 seed 42, gws_3 seed 42 two-tool reply), same in both arms; verified in docs/evidence/gw_rerun_check.json"
+    }
   },
   "claims": [
     {"id": "what-it-is", "source": "README.md",
@@ -15,9 +19,19 @@
      "numbers": [],
      "appears_in": {
        "docs/launch/show-hn.md": "It is a regression harness",
-       "docs/launch/reddit-ml.md": "AgentGauge compares two variants of an MCP server by running a local agent model on the same tasks",
+       "docs/launch/reddit-ml.md": "AgentGauge compares two variants of an MCP server by running an agent model",
        "docs/launch/linkedin.md": "AgentGauge is an open-source harness that compares two versions of an MCP server",
        "docs/launch/blog.md": "AgentGauge is an open-source harness that checks that hope"}},
+    {"id": "provider-default-ollama", "source": "README.md",
+     "quote": "`ollama` | Local Ollama (the original, still the default)", "numbers": [],
+     "appears_in": {
+       "docs/launch/show-hn.md": "(a local Ollama model by default)",
+       "docs/launch/reddit-ml.md": "(a local Ollama model by default; other providers are supported)",
+       "docs/launch/blog.md": "(a local Ollama model by default)"}},
+    {"id": "provider-anthropic", "source": "README.md",
+     "quote": "`anthropic` | Anthropic Messages API", "numbers": [],
+     "appears_in": {
+       "docs/launch/reddit-ml.md": "other providers are supported"}},
     {"id": "alloc-100", "source": "README.md",
      "quote": "Minimum detectable effect, 100 tasks/arm", "numbers": ["100"],
      "appears_in": {
@@ -32,10 +46,22 @@
        "docs/launch/reddit-ml.md": "a minimum detectable effect of 8.5 percentage points at 80% power",
        "docs/launch/linkedin.md": "at 80% power is 8.5 percentage points",
        "docs/launch/blog.md": "the minimum detectable effect is 8.5 percentage points"}},
+    {"id": "mde-assumes-user-tasks", "source": "reports/v2_2_optimal_allocation.md",
+     "quote": "recommending ~100 tasks in the user's `--tasks` file for a reliable regression gate",
+     "numbers": ["100"],
+     "appears_in": {
+       "docs/launch/show-hn.md": "assuming you supply about 100 tasks of your own",
+       "docs/launch/reddit-ml.md": "assuming you supply about 100 tasks of your own",
+       "docs/launch/linkedin.md": "assuming you write about 100 tasks of your own",
+       "docs/launch/blog.md": "assuming you supply about 100 tasks of your own"}},
     {"id": "false-alarm", "source": "README.md",
      "quote": "<5% in every stratum** (<10 tasks: 1.57%", "numbers": ["5", "10", "1.57"],
      "appears_in": {
        "docs/launch/reddit-ml.md": "keeps the false-alarm rate under 5% in every"}},
+    {"id": "false-alarm-n", "source": "reports/v2_2_few_clusters_correction.md",
+     "quote": "| <10 tasks | 700 | 11 | **1.57%** |", "numbers": ["700", "11", "1.57"],
+     "appears_in": {
+       "docs/launch/reddit-ml.md": "11 of 700 null comparisons on resampled historical data"}},
     {"id": "false-alarm-t", "source": "reports/v2_2_few_clusters_correction.md",
      "quote": "t(G-1)", "numbers": [],
      "appears_in": {
@@ -57,9 +83,26 @@
      "quote": "Abstention rate under the null (`INSUFFICIENT_SENSITIVITY`, correctly declining to call a verdict rather than over-claim) | **21.6%**",
      "numbers": ["21.6"],
      "appears_in": {
-       "docs/launch/show-hn.md": "that happened in 21.6% of null runs",
-       "docs/launch/reddit-ml.md": "Under the null, 21.6% of runs",
-       "docs/launch/blog.md": "Under the null that happens 21.6% of the time"}},
+       "docs/launch/show-hn.md": "The 21.6% abstention rate in the README is from an earlier version of the estimator",
+       "docs/launch/reddit-ml.md": "The 21.6% abstention rate in the README is from the earlier v2.1 estimator",
+       "docs/launch/blog.md": "the 21.6% figure in the README comes from the earlier v2.1 estimator"}},
+    {"id": "abstain-v21-report", "source": "reports/v2_1_estimator_rebuild.md",
+     "quote": "INSUFFICIENT_SENSITIVITY (abstention) rate | 71.5% | **21.6%**", "numbers": ["21.6"],
+     "appears_in": {
+       "docs/launch/reddit-ml.md": "the v2.1 estimator abstained in 21.6% of runs"}},
+    {"id": "abstain-context", "source": "reports/v2_1_estimator_rebuild.md",
+     "quote": "bootstrap-resample each of 44 real tool sets' own trial pools into two independent samples, 50 repeats each = 2200 null comparisons",
+     "numbers": ["44", "2200"],
+     "appears_in": {
+       "docs/launch/show-hn.md": "on 44 historical tool sets and 2200 bootstrap null comparisons",
+       "docs/launch/reddit-ml.md": "on 44 historical tool sets (2200 bootstrap null comparisons)",
+       "docs/launch/blog.md": "on 44 historical tool sets and 2200 bootstrap null comparisons"}},
+    {"id": "abstain-pre-100", "source": "README.md",
+     "quote": "reallocate trials to tasks (1 trial/task, 100 tasks/arm)", "numbers": ["1", "100"],
+     "appears_in": {
+       "docs/launch/show-hn.md": "before the move to 100 tasks per arm",
+       "docs/launch/reddit-ml.md": "before the move to 100 tasks per arm",
+       "docs/launch/blog.md": "before the allocation moved to 100 tasks per arm"}},
     {"id": "abstain-verdict", "source": "agentgauge/harness.py",
      "quote": "INSUFFICIENT_SENSITIVITY = \"insufficient_sensitivity\"", "numbers": [],
      "appears_in": {
@@ -79,6 +122,13 @@
        "docs/launch/reddit-ml.md": "three model\n  families",
        "docs/launch/linkedin.md": "across three small models",
        "docs/launch/blog.md": "The agents under test are small local models"}},
+    {"id": "models-tested", "source": "README.md",
+     "quote": "all 3 model families tested (gemma2:9b/llama3.1:8b/qwen2.5:7b)", "numbers": [],
+     "appears_in": {
+       "docs/launch/show-hn.md": "(gemma2:9b, llama3.1:8b, qwen2.5:7b)",
+       "docs/launch/reddit-ml.md": "(gemma2:9b, llama3.1:8b, qwen2.5:7b)",
+       "docs/launch/linkedin.md": "(gemma2:9b, llama3.1:8b, qwen2.5:7b)",
+       "docs/launch/blog.md": "(gemma2:9b, llama3.1:8b, qwen2.5:7b)"}},
     {"id": "one-rule", "source": "README.md",
      "quote": "Only one rule has a validated causal effect", "numbers": [],
      "appears_in": {
@@ -127,7 +177,11 @@
     {"id": "install-name", "source": "README.md",
      "quote": "The PyPI distribution is named `agentgauge-harness`", "numbers": [],
      "appears_in": {
-       "docs/launch/show-hn.md": "The install name and the CLI are documented in the"}},
+       "docs/launch/show-hn.md": "The install name and the CLI are\ndocumented in the README"}},
+    {"id": "init-scaffold", "source": "README.md",
+     "quote": "Scaffold a starter anti-tautology tasks file + GitHub Action agentgauge init", "numbers": [],
+     "appears_in": {
+       "docs/launch/show-hn.md": "`agentgauge init` scaffolds a starter one"}},
     {"id": "diff-needs-model", "source": "README.md",
      "quote": "`agentgauge diff` needs a live agent model (Ollama, default `gemma2:9b`) or a `--mock`/`--replay`",
      "numbers": [],
@@ -167,7 +221,14 @@
     {"id": "argdeg-null", "source": "README.md",
      "quote": "No model shows a practically significant effect", "numbers": [],
      "appears_in": {
-       "docs/launch/reddit-ml.md": "found no practically significant effect\n  in any of three models"}},
+       "docs/launch/reddit-ml.md": "found no practically significant effect\n  in any of three models",
+       "docs/launch/blog.md": "found no practically significant effect in any of three models"}},
+    {"id": "argdeg-llama", "source": "README.md",
+     "quote": "llama3.1:8b Δ+0.055 CI [+0.023,+0.089] (CI excludes zero but doesn't clear the 0.05 practical-significance threshold)",
+     "numbers": ["0.055", "0.05"],
+     "appears_in": {
+       "docs/launch/reddit-ml.md": "llama3.1:8b's CI excludes zero at +0.055 but does not clear the 0.05\n  practical-significance threshold",
+       "docs/launch/blog.md": "llama3.1:8b's interval excludes zero\nat +0.055 but does not clear the 0.05 practical-significance threshold"}},
     {"id": "attr-low", "source": "README.md",
      "quote": "**1.01x", "numbers": ["1.01"],
      "appears_in": {
@@ -186,38 +247,76 @@
     {"id": "pilot-10", "source": "docs/paper/paper.md",
      "quote": "a pre-registered pilot of ten public Python MCP servers", "numbers": [],
      "appears_in": {
-       "docs/launch/show-hn.md": "Across a pilot of ten public MCP servers",
+       "docs/launch/show-hn.md": "In a pilot of ten public MCP servers",
        "docs/launch/reddit-ml.md": "In a pilot of ten public MCP servers",
        "docs/launch/linkedin.md": "In a pilot of ten public servers",
        "docs/launch/blog.md": "In a pilot of ten public servers"}},
+    {"id": "pilot-7-testable", "source": "STATUS.md", "ref": "origin/docs/gw-truncation-correction",
+     "quote": "all 10 servers processed (7 behaviorally scored + 3 with no testable confusable family)",
+     "numbers": ["7"],
+     "appears_in": {
+       "docs/launch/show-hn.md": "7 had a testable confusable family",
+       "docs/launch/reddit-ml.md": "7 had a testable confusable family",
+       "docs/launch/linkedin.md": "7 had a testable confusable family",
+       "docs/launch/blog.md": "7 had a testable confusable family"}},
+    {"id": "pilot-2-anchors", "source": "docs/paper/paper.md", "ref": "origin/docs/gw-truncation-correction",
+     "quote": "(7 freshly scored + 2 RW1/RW2 anchors cited from Section 4.3.1)", "numbers": ["7", "2"],
+     "appears_in": {
+       "docs/launch/show-hn.md": "Counting 2 earlier anchor servers",
+       "docs/launch/reddit-ml.md": "counting 2 earlier anchor servers",
+       "docs/launch/linkedin.md": "Counting 2 earlier anchor servers",
+       "docs/launch/blog.md": "Counting 2 earlier anchor servers"}},
     {"id": "pilot-0-of-9", "source": "docs/paper/paper.md",
      "quote": "0 of 9 servers with a testable confusable family show in-regime behavior",
      "numbers": ["0", "9"],
      "appears_in": {
-       "docs/launch/show-hn.md": "0 of 9 with a testable confusable family showed the",
-       "docs/launch/reddit-ml.md": "0 of 9 with a testable confusable family were in the",
-       "docs/launch/linkedin.md": "0 of 9 with a testable confusable family were in the regime",
-       "docs/launch/blog.md": "0 of 9 with a testable confusable family showed the regime"}},
+       "docs/launch/show-hn.md": "0 of those 9 showed the regime",
+       "docs/launch/reddit-ml.md": "0 of those 9 were in the regime",
+       "docs/launch/linkedin.md": "0 of those 9 were in the regime",
+       "docs/launch/blog.md": "0 of those 9 showed the regime"}},
+    {"id": "pilot-regime-def", "source": "docs/paper/paper.md", "ref": "origin/docs/gw-truncation-correction",
+     "quote": "the server's real shipped descriptions fail at least one contested task, **and** (b) an oracle description recovers it",
+     "numbers": [],
+     "appears_in": {
+       "docs/launch/show-hn.md": "shipped descriptions fail at least one contested task and a hand-written oracle description recovers it",
+       "docs/launch/reddit-ml.md": "shipped descriptions fail at least one contested task and a hand-written oracle description recovers it",
+       "docs/launch/linkedin.md": "fail a task and a hand-written oracle description recovers it",
+       "docs/launch/blog.md": "shipped descriptions fail at least one contested task and a hand-written oracle description recovers it"}},
     {"id": "pilot-lower-bound", "source": "docs/paper/paper.md",
      "quote": "a lower bound, not a population estimate", "numbers": [],
      "appears_in": {
        "docs/launch/show-hn.md": "This is a lower bound from a small sample",
        "docs/launch/reddit-ml.md": "Small n; a lower bound",
        "docs/launch/linkedin.md": "A small sample, so a lower bound",
-       "docs/launch/blog.md": "that is a lower bound from a small sample, not a population estimate"}},
+       "docs/launch/blog.md": "That is a lower bound from a small sample, not a population estimate"}},
+    {"id": "pilot-skew", "source": "docs/paper/paper.md", "ref": "origin/docs/gw-truncation-correction",
+     "quote": "Public servers skew documented relative to the internal/custom long tail", "numbers": [],
+     "appears_in": {
+       "docs/launch/show-hn.md": "the sampled public servers skew toward documented ones",
+       "docs/launch/reddit-ml.md": "the sampled public servers skew toward documented ones",
+       "docs/launch/linkedin.md": "the sampled public servers skew toward documented ones",
+       "docs/launch/blog.md": "the sampled public servers skew toward documented ones"}},
+    {"id": "scan-legacy", "source": "README.md",
+     "quote": "## v1 (legacy — not the recommended surface) `agentgauge scan`/`fix`/`ci`/`try` implement an 8-axis LLM-judged correlational score",
+     "numbers": [],
+     "appears_in": {
+       "docs/launch/show-hn.md": "Rubric scores from `agentgauge scan`, the legacy v1 interface",
+       "docs/launch/reddit-ml.md": "Rubric scores from `agentgauge scan` (the legacy v1 interface)",
+       "docs/launch/linkedin.md": "Scores from the legacy `agentgauge scan` rubric",
+       "docs/launch/blog.md": "rubric scores from the legacy `agentgauge scan` depend on the judge model"}},
     {"id": "judge-pinned", "source": "CLAUDE.md",
      "quote": "**Pinned judge model:** `llama3.1:8b` (via Ollama)", "numbers": [],
      "appears_in": {
-       "docs/launch/show-hn.md": "The judge is pinned to llama3.1:8b",
+       "docs/launch/show-hn.md": "the judge is pinned to llama3.1:8b",
        "docs/launch/reddit-ml.md": "pinned to llama3.1:8b",
        "docs/launch/linkedin.md": "pinned to llama3.1:8b",
-       "docs/launch/blog.md": "The judge is pinned to llama3.1:8b"}},
+       "docs/launch/blog.md": "it is pinned to llama3.1:8b"}},
     {"id": "judge-not-comparable", "source": "CLAUDE.md",
      "quote": "Scores are NOT comparable across judge models", "numbers": [],
      "appears_in": {
        "docs/launch/show-hn.md": "not comparable",
        "docs/launch/reddit-ml.md": "comparable across judges",
-       "docs/launch/linkedin.md": "not comparable",
+       "docs/launch/linkedin.md": "not comparable across judges",
        "docs/launch/blog.md": "judge are not comparable"}},
     {"id": "gw-116-tools", "source": "docs/paper/paper.md", "ref": "origin/docs/gw-truncation-correction",
      "quote": "large-catalog server sampled, at 116 tools", "numbers": ["116"],
@@ -254,31 +353,74 @@
     {"id": "gw-rerun", "source": "docs/paper/paper.md", "ref": "origin/docs/gw-truncation-correction",
      "quote": "gives 65% (13/20) in both arms, +0pp", "numbers": ["65", "13", "20", "0"],
      "appears_in": {
-       "docs/launch/show-hn.md": "both arms score 65%",
+       "docs/launch/show-hn.md": "both arms score 65% (13/20)",
        "docs/launch/reddit-ml.md": "both arms score 65% (13/20), +0pp",
-       "docs/launch/linkedin.md": "both arms score 65%",
+       "docs/launch/linkedin.md": "both arms gave 65% (13/20)",
        "docs/launch/blog.md": "gave 65% (13/20) in both arms, a difference of +0pp"}},
-    {"id": "gw-remaining-failure", "source": "STATUS.md", "ref": "origin/docs/gw-truncation-correction",
-     "quote": "is a wrong-tool pick the oracle description does not fix", "numbers": [],
+    {"id": "gw-scale", "source": "docs/evidence/gw_rerun_check.json", "ref": "origin/docs/gw-truncation-correction",
+     "quote": "4 tasks x 5 trials x 2 arms", "numbers": ["4", "5"],
      "appears_in": {
-       "docs/launch/blog.md": "is a genuine wrong-tool pick that the oracle description does not fix"}},
+       "docs/launch/show-hn.md": "4 tasks x 5 trials on\ngemma2:9b",
+       "docs/launch/reddit-ml.md": "4 tasks x 5 trials on gemma2:9b",
+       "docs/launch/linkedin.md": "4 tasks x 5 trials on gemma2:9b",
+       "docs/launch/blog.md": "4 tasks × 5 trials per arm on gemma2:9b"}},
+    {"id": "gw-agent-model", "source": "docs/evidence/gw_rerun_check.json", "ref": "origin/docs/gw-truncation-correction",
+     "quote": "\"agent_model\": \"gemma2:9b\"", "numbers": [],
+     "appears_in": {
+       "docs/launch/show-hn.md": "on\ngemma2:9b",
+       "docs/launch/reddit-ml.md": "on gemma2:9b",
+       "docs/launch/linkedin.md": "on gemma2:9b",
+       "docs/launch/blog.md": "per arm on gemma2:9b"}},
+    {"id": "gw-remaining-failure", "source": "STATUS.md", "ref": "origin/docs/gw-truncation-correction",
+     "quote": "the one genuine failure (gws_4, manage_deployment x5 in both arms) is a wrong-tool pick the oracle description does not fix",
+     "numbers": ["5"],
+     "appears_in": {
+       "docs/launch/blog.md": "fails in all 5 trials with a\nwrong-tool pick (`manage_deployment`) that the oracle description does not fix"}},
     {"id": "gw-label-stands", "source": "docs/paper/paper.md", "ref": "origin/docs/gw-truncation-correction",
      "quote": "The catalog-overwhelm mechanism claim for this server is withdrawn; the OUT-OF-REGIME label stands under the frozen rule, for the reason of no recovery",
      "numbers": [],
      "appears_in": {
        "docs/launch/reddit-ml.md": "The out-of-regime label stands; the\nmechanism claim is withdrawn.",
        "docs/launch/blog.md": "The out-of-regime label stands, now for the reason of no recovery"}},
+    {"id": "gw-correction-note", "source": "docs/paper/paper.md", "ref": "origin/docs/gw-truncation-correction",
+     "quote": "**Correction (2026-10-23):** this row originally read 0% / 0%", "numbers": [],
+     "appears_in": {
+       "docs/launch/show-hn.md": "I corrected the paper in place with a dated correction note",
+       "docs/launch/reddit-ml.md": "The paper was corrected in place with a dated correction note",
+       "docs/launch/linkedin.md": "I corrected the paper in place with a dated note",
+       "docs/launch/blog.md": "I corrected the paper in place with a dated correction note"}},
     {"id": "gw-fixtures-kept", "source": "STATUS.md", "ref": "origin/docs/gw-truncation-correction",
      "quote": "are left as the historical record of what was run", "numbers": [],
      "appears_in": {
-       "docs/launch/blog.md": "The raw trial fixtures were left untouched as the record of what was run"}},
+       "docs/launch/show-hn.md": "kept the raw\nfixtures",
+       "docs/launch/reddit-ml.md": "the raw\nfixtures were kept",
+       "docs/launch/linkedin.md": "kept the raw fixtures",
+       "docs/launch/blog.md": "kept the raw trial fixtures untouched\nas the record of what was run"}},
     {"id": "guard-on-branch", "source": "agentgauge/providers.py", "ref": "origin/fix/ollama-num-ctx",
      "quote": "class OllamaTruncationError", "numbers": [],
      "appears_in": {
-       "docs/launch/blog.md": "A guard that raises an error when"}},
+       "docs/launch/show-hn.md": "a guard that raises when Ollama truncates a prompt",
+       "docs/launch/reddit-ml.md": "a guard that raises on\ntruncation",
+       "docs/launch/blog.md": "raises an error when Ollama truncates a prompt"}},
+    {"id": "num-ctx-on-branch", "source": "agentgauge/providers.py", "ref": "origin/fix/ollama-num-ctx",
+     "quote": "def compute_num_ctx(messages: list[Message]) -> int:", "numbers": [],
+     "appears_in": {
+       "docs/launch/show-hn.md": "The fix that sizes the window",
+       "docs/launch/reddit-ml.md": "sizing `num_ctx` to the prompt",
+       "docs/launch/linkedin.md": "The window fix\nis on the unmerged branch",
+       "docs/launch/blog.md": "Sizing the window to the prompt"}},
     {"id": "guard-not-on-main", "source": "agentgauge/providers.py", "absent": true,
      "quote": "OllamaTruncationError", "numbers": [],
      "appears_in": {
-       "docs/launch/blog.md": "but is not on main as of this draft"}}
+       "docs/launch/show-hn.md": "it is not on main yet",
+       "docs/launch/reddit-ml.md": "it is not on main yet",
+       "docs/launch/linkedin.md": "is not on main yet",
+       "docs/launch/blog.md": "but is not on main as of this draft"}},
+    {"id": "num-ctx-not-on-main", "source": "agentgauge/providers.py", "absent": true,
+     "quote": "compute_num_ctx", "numbers": [],
+     "appears_in": {
+       "docs/launch/show-hn.md": "so the shipped tool does not size the\nwindow itself",
+       "docs/launch/reddit-ml.md": "so the shipped tool does not size the window itself",
+       "docs/launch/blog.md": "so the shipped tool does\nnot include it yet"}}
   ]
 }
