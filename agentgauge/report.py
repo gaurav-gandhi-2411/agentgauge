@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import html
 import json
 
 from rich.console import Console
@@ -92,7 +93,7 @@ def render_html(report: ScoredReport) -> str:
             row_color = "#ef4444"
         rows += (
             f"<tr>"
-            f"<td>{dim.name}</td>"
+            f"<td>{html.escape(dim.name)}</td>"
             f"<td style='text-align:right;color:{row_color};font-weight:bold'>{dim.score:.1f}</td>"
             f"<td style='color:{row_color}'>{status}</td>"
             f"</tr>\n"
@@ -108,7 +109,8 @@ def render_html(report: ScoredReport) -> str:
     hints_html = ""
     if all_hints:
         items = "".join(
-            f"<li><strong>[{name}]</strong> {hint}</li>" for name, hint in all_hints[:10]
+            f"<li><strong>[{html.escape(name)}]</strong> {html.escape(hint)}</li>"
+            for name, hint in all_hints[:10]
         )
         hints_html = f"<h2>Prioritized Fixes</h2><ol>{items}</ol>"
 
