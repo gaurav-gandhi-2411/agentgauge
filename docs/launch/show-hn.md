@@ -37,11 +37,11 @@ What I measured, and what I did not:
   per-rule table that includes the nulls (README). That rule flags a contradiction
   between a type and its enum, and it cost 13.3 to 28.9 points of task success across three small models
   (README).
-- In a pilot of ten public MCP servers, 7 had a testable confusable family. Counting 2 earlier anchor
+- In a pilot of ten public Python MCP servers, 7 had a testable confusable family. Counting 2 earlier anchor
   servers, 0 of those 9 showed the regime where better descriptions help. "In the regime" means the
   server's shipped descriptions fail at least one contested task and a hand-written oracle description
   recovers it. This is a lower bound from a small sample, not a population estimate: the sampled public
-  servers skew toward documented ones (paper).
+  servers are more often documented than internal or custom servers (paper).
 - Scope of the numbers. Rubric scores from `agentgauge scan`, the legacy v1 interface, depend on its
   judge model: the judge is pinned to llama3.1:8b and scores from different judges are not
   comparable (CLAUDE.md). The effects `diff` reports are task success measured on the specific agent

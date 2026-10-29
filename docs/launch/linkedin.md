@@ -15,10 +15,10 @@ What the measurements showed, including the unflattering parts:
 
 - Only one lint rule has a validated effect on task success: the one that flags a
   type/enum contradiction cost 13.3 to 28.9 points across three small models (README).
-- In a pilot of ten public servers, 7 had a testable confusable family. Counting 2 earlier anchor
+- In a pilot of ten public Python MCP servers, 7 had a testable confusable family. Counting 2 earlier anchor
   servers, 0 of those 9 were in the regime where better descriptions help: the shipped descriptions
   fail a task and a hand-written oracle description recovers it. A small sample, so a lower bound; the
-  sampled public servers skew toward documented ones (paper).
+  sampled public servers are more often documented than internal or custom servers (paper).
 - Scores from the legacy `agentgauge scan` rubric depend on a judge model pinned to llama3.1:8b, so
   they are not comparable across judges (CLAUDE.md). Effects from `diff` are task success on the agent
   models I tested (gemma2:9b, llama3.1:8b, qwen2.5:7b) and may differ on other models.

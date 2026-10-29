@@ -57,11 +57,11 @@ it is pinned to llama3.1:8b, and scores from a different judge are not comparabl
 models tested (gemma2:9b, llama3.1:8b, qwen2.5:7b) and may differ on other models. The agents under
 test are small local models.
 
-In a pilot of ten public servers, 7 had a testable confusable family. Counting 2 earlier anchor
+In a pilot of ten public Python MCP servers, 7 had a testable confusable family. Counting 2 earlier anchor
 servers, 0 of those 9 showed the regime where better descriptions help. By "regime" I mean that the
 shipped descriptions fail at least one contested task and a hand-written oracle description recovers
 it. That is a lower bound from a small sample, not a population estimate: the sampled public servers
-skew toward documented ones ([paper](https://github.com/gaurav-gandhi-2411/agentgauge/blob/main/docs/paper/paper.md)). A failure-attribution feature exists but costs 1.01x to 20.24x a
+are more often documented than internal or custom servers ([paper](https://github.com/gaurav-gandhi-2411/agentgauge/blob/main/docs/paper/paper.md)). A failure-attribution feature exists but costs 1.01x to 20.24x a
 full re-evaluation, so it is gated behind `--experimental` ([README](https://github.com/gaurav-gandhi-2411/agentgauge/blob/main/README.md)).
 
 ## The google_workspace truncation lesson

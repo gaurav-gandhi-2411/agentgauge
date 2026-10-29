@@ -21,7 +21,11 @@ Status: **DRAFTS. Nothing here has been posted anywhere.**
 3. Optional: `fix/ollama-num-ctx` carries the `num_ctx` sizing and the Ollama truncation guard. It is not
    on main, so all four drafts say so (the shipped tool does not size the window itself). If that branch
    merges first, rewrite those sentences and flip the `guard-not-on-main` and `num-ctx-not-on-main`
-   claims.
+   claims. The same applies if v0.6.0 is released first: `release/v0.6.0` already contains that fix, so
+   a release makes the "not on main / shipped tool does not size the window" sentences stale.
+   At posting time, check the PyPI version (`pip index versions agentgauge-harness`; 0.5.3 on
+   2026-10-29) in a fresh venv, and check that the `pip install` / `lint` / `diff` / `init` examples and the
+   blog's `No violations found.` output still match what that version prints.
 4. Convert nothing else: links are absolute `github.com/.../blob/main/...` URLs already. Show HN and
    LinkedIn do not render markdown, so they carry bare URLs in a reference list at the end (the
    checker verifies bare URLs the same way as markdown links). The blog's guard link is a commit

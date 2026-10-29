@@ -45,10 +45,10 @@ before it was corrected to a null ([README](https://github.com/gaurav-gandhi-241
   [README](https://github.com/gaurav-gandhi-2411/agentgauge/blob/main/README.md)).
 - A failure-attribution feature is more expensive than re-running the full evaluation (1.01x to
   20.24x), so it is gated behind `--experimental` ([README](https://github.com/gaurav-gandhi-2411/agentgauge/blob/main/README.md)).
-- In a pilot of ten public MCP servers, 7 had a testable confusable family; counting 2 earlier anchor
+- In a pilot of ten public Python MCP servers, 7 had a testable confusable family; counting 2 earlier anchor
   servers, 0 of those 9 were in the regime where better descriptions help. "In the regime" means the
   shipped descriptions fail at least one contested task and a hand-written oracle description recovers
-  it. Small n; a lower bound, because the sampled public servers skew toward documented ones
+  it. Small n; a lower bound, because the sampled public servers are more often documented than internal or custom servers
   ([paper](https://github.com/gaurav-gandhi-2411/agentgauge/blob/main/docs/paper/paper.md)).
 
 **A correction.** The paper's EXP-1 table reported 0%/0% for a 116-tool Google Workspace server and
