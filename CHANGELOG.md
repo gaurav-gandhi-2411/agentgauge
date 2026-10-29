@@ -12,6 +12,16 @@ re-measured here; their provenance is in `reports/` at each tag.
 
 ## [Unreleased]
 
+- **pytest plugin (`agentgauge.pytest_plugin`, auto-loaded via the `pytest11` entry point).**
+  Fixture `agentgauge_diff(replay_before=, replay_after=, [before_server=, after_server=, tasks=])`
+  and helper `assert_no_regression(result)` map a replay-pair verdict to a test outcome:
+  regression fails, improvement/no_change pass, insufficient_sensitivity/ceiling/floor skip with the
+  reason (or fail with `--agentgauge-inconclusive=fail`), and a blocking audit finding, stale or
+  unreadable replay, or unreachable server always fails. Registers the `agentgauge` marker and
+  prints a terminal-summary line counting skipped verdicts. No model is ever called; `--agentgauge-live`
+  is reserved and live runs are not implemented. New public `replay.staleness_problems`
+  (the CLI's staleness comparison, extracted; CLI behaviour unchanged). Opt out with
+  `-p no:agentgauge`.
 - **Replay files can now be written and checked.** New `agentgauge.replay` module (public
   `load_replay` / `save_replay` / `tools_sha256`); `diff --save-before/--save-after` and
   `eval --save` write a v1 file (`"format": "agentgauge-replay"`) recording model, seed,

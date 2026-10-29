@@ -354,6 +354,41 @@ rebuild — but `diff`/`eval`/`lint`/`init` are the supported product surface go
 
 ---
 
+## Gate your test suite (pytest plugin)
+
+Installing the package also installs a pytest plugin (auto-loaded; opt out with
+`-p no:agentgauge`). It turns a recorded before/after replay pair into a test outcome, with no
+model, keys or network (record the pair once with `agentgauge diff --save-before/--save-after`):
+
+```python
+from agentgauge.pytest_plugin import assert_no_regression
+
+def test_descriptions_did_not_regress(agentgauge_diff):
+    result = agentgauge_diff(
+        replay_before="tests/agentgauge/replay_before.json",
+        replay_after="tests/agentgauge/replay_after.json",
+        # Optional: fail if the replays no longer match the server's tool schemas.
+        before_server="servers/before.py",
+        after_server="servers/after.py",
+    )
+    assert_no_regression(result)  # result also has .verdict .delta .ci_lo .ci_hi .message
+```
+
+| Verdict / condition | Outcome |
+|---|---|
+| `regression` | **fail** |
+| `improvement`, `no_change` | pass |
+| `insufficient_sensitivity`, `ceiling`, `floor` | **skip** with the reason (**fail** with `--agentgauge-inconclusive=fail`) |
+| blocking audit finding, stale replay, unreadable replay, unreachable server | **fail**, never skipped |
+
+A skip is not a pass: the terminal summary counts skipped agentgauge verdicts. Mark tests with
+`@pytest.mark.agentgauge` to select them (`-m agentgauge`). Live runs are not supported yet:
+`--agentgauge-live` is reserved, and a live request without it is skipped without calling a model.
+The staleness check only applies to v1 replays (which carry a tool-schema hash); legacy bare-list
+replays load but cannot be proven fresh.
+
+---
+
 ## Development
 
 ```bash
