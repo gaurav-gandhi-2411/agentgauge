@@ -26,6 +26,7 @@ from agentgauge.fixer import (
 )
 from agentgauge.harness import DecomposedRate, DiffResult, TrialOutcome, Verdict, diff_from_trials
 from agentgauge.linter import LintReport, lint_tool_set
+from agentgauge.provider_compat import lint_provider_compat
 from agentgauge.provider_config import create_provider, load_provider_config
 from agentgauge.providers import MockProvider, OllamaProvider, Provider
 from agentgauge.report import render_html, render_json_stable, render_text
@@ -784,6 +785,16 @@ def lint(
     json_output: Annotated[
         bool, typer.Option("--json", help="Machine-readable JSON output")
     ] = False,
+    provider_compat: Annotated[
+        bool,
+        typer.Option(
+            "--provider-compat",
+            help=(
+                "Also check schemas against documented Gemini/Vertex function-calling limits "
+                "(ADVISORY/INFO only, never fails CI; off by default)"
+            ),
+        ),
+    ] = False,
 ) -> None:
     """Deterministic schema-consistency + name-collision linter. No LLM calls.
 
@@ -797,15 +808,23 @@ def lint(
     reports/v2_1_severity_gate.md for measured precision/recall/false-alarm rate
     and reports/v2_3_task2_retiering.md for the causal-impact-based re-tiering.
     """
-    asyncio.run(_lint_async(target, show_info=show_info, json_output=json_output))
+    asyncio.run(
+        _lint_async(
+            target, show_info=show_info, json_output=json_output, provider_compat=provider_compat
+        )
+    )
 
 
-async def _lint_async(target: str, *, show_info: bool, json_output: bool) -> None:
+async def _lint_async(
+    target: str, *, show_info: bool, json_output: bool, provider_compat: bool = False
+) -> None:
     console = Console()
     client, ctx, _ = await _connect(target)
     try:
         info = await client.introspect()
         report = lint_tool_set(info.tools)
+        if provider_compat:
+            report.provider_compat_violations = lint_provider_compat(info.tools)
         if json_output:
             payload = {
                 "blocking": [

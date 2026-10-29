@@ -560,6 +560,9 @@ class LintReport:
 
     tool_results: list[ToolLintResult]
     collision_violations: list[Violation]
+    # Opt-in (`agentgauge lint --provider-compat`), ADVISORY/INFO only, never sets `flagged`;
+    # empty by default so existing counts are unchanged. See agentgauge.provider_compat.
+    provider_compat_violations: list[Violation] = field(default_factory=list)
 
     @property
     def blocking(self) -> list[Violation]:
@@ -567,11 +570,15 @@ class LintReport:
 
     @property
     def advisory(self) -> list[Violation]:
-        return [v for r in self.tool_results for v in r.advisory] + self.collision_violations
+        extra = [v for v in self.provider_compat_violations if v.severity == Severity.ADVISORY]
+        return (
+            [v for r in self.tool_results for v in r.advisory] + self.collision_violations + extra
+        )
 
     @property
     def info(self) -> list[Violation]:
-        return [v for r in self.tool_results for v in r.info]
+        extra = [v for v in self.provider_compat_violations if v.severity == Severity.INFO]
+        return [v for r in self.tool_results for v in r.info] + extra
 
     @property
     def n_blocking(self) -> int:
