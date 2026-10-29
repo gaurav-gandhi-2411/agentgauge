@@ -378,3 +378,49 @@ class TestScoringReferenceConsistencyGate:
 
         assert "scoring_reference_consistency" not in result.output
         assert result.exit_code in (0, 1)  # a real verdict was reached, not an audit block
+
+
+def test_lint_text_output_renders_untrusted_brackets_literally() -> None:
+    """Regression: `[{v.check}]` was parsed as Rich markup and swallowed; tool names / details
+    from an untrusted server containing `[bold]x[/bold]`-style text must render verbatim."""
+    from agentgauge.cli import _print_lint_report
+    from agentgauge.linter import LintReport, Severity, ToolLintResult, Violation
+
+    def _v(sev: Severity) -> Violation:
+        return Violation(
+            check="type_enum_contradiction",
+            severity=sev,
+            tool_name="evil[bold]x[/bold]",
+            detail="[/nope] [red]t[/red]",
+        )
+
+    report = LintReport(
+        tool_results=[
+            ToolLintResult(
+                tool_name="evil",
+                blocking=[_v(Severity.BLOCKING)],
+                advisory=[_v(Severity.ADVISORY)],
+                info=[_v(Severity.INFO)],
+            )
+        ],
+        collision_violations=[],
+    )
+    client = _make_mock_client()
+    with (
+        patch("agentgauge.cli._connect", new=AsyncMock(return_value=(client, None, None))),
+        patch("agentgauge.cli.cleanup_connection", new=AsyncMock()),
+        patch("agentgauge.cli.lint_tool_set", return_value=report),
+    ):
+        result = CliRunner().invoke(app, ["lint", "dummy.py", "--show-info"])
+    assert "[type_enum_contradiction] evil[bold]x[/bold]: [/nope] [red]t[/red]" in (result.output)
+    assert result.output.count("[type_enum_contradiction]") == 3
+    assert result.exception is None or isinstance(result.exception, SystemExit)
+
+    # Direct call too, so the contract does not depend on the CLI plumbing.
+    from io import StringIO
+
+    from rich.console import Console
+
+    buf = StringIO()
+    _print_lint_report(report, Console(file=buf, width=200), show_info=True)
+    assert buf.getvalue().count("[type_enum_contradiction]") == 3

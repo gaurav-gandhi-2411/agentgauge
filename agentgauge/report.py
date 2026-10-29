@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 
 from rich.console import Console
+from rich.markup import escape
 from rich.table import Table
 from rich.text import Text
 
@@ -50,7 +51,7 @@ def render_text(report: ScoredReport, console: Console | None = None) -> None:
         console.print()
         console.print("[bold]Prioritized Fixes[/bold]")
         for i, (dim_name, hint) in enumerate(all_hints[:10], 1):
-            console.print(f"  {i}. [{dim_name}] {hint}")
+            console.print(f"  {i}. {escape(f'[{dim_name}]')} {escape(hint)}")
 
     console.print()
 

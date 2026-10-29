@@ -12,9 +12,15 @@ re-measured here; their provenance is in `reports/` at each tag.
 
 ## [Unreleased]
 
-Nothing under `agentgauge/` or in `pyproject.toml` has changed since 0.5.3
-(`git diff --stat v0.5.3 origin/main -- agentgauge pyproject.toml` is empty); the commits since the
-tag are documentation, CI and dependency-lockfile updates:
+### Fixed
+
+- `agentgauge lint` text output no longer swallows the `[check_id]` or any `[...]` text in tool names
+  and details (they were parsed as Rich markup, and a stray closing tag raised `MarkupError`). The
+  same escaping now applies to the audit, fix-preview and prioritized-fixes output. JSON output was
+  unaffected.
+
+Apart from that fix, nothing under `agentgauge/` or in `pyproject.toml` has changed since 0.5.3; the
+other commits since the tag are documentation, CI and dependency-lockfile updates:
 
 - `uv.lock`: `pyjwt` 2.13.0 -> 2.15.0, which cleared a red `pip-audit` check (#112), and minor/patch
   groups (#92, #113). `pyjwt` is transitive; it is not a direct dependency.

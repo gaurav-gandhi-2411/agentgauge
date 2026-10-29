@@ -10,6 +10,7 @@ from typing import Annotated, Any
 
 import typer
 from rich.console import Console
+from rich.markup import escape
 
 from agentgauge import __version__
 from agentgauge.audit import AuditReport, CoverageSummary, run_audit, summarize_constraint_coverage
@@ -109,19 +110,25 @@ def _print_lint_report(report: LintReport, console: Console, *, show_info: bool)
             f"[bold red]{len(report.blocking)} BLOCKING violation(s) (fails CI):[/bold red]"
         )
         for v in report.blocking:
-            console.print(f"  [red]x[/red] [{v.check}] {v.tool_name}: {v.detail}")
+            console.print(
+                f"  [red]x[/red] {escape(f'[{v.check}]')} {escape(v.tool_name)}: {escape(v.detail)}"
+            )
     if report.advisory:
         console.print(
             f"[bold yellow]{len(report.advisory)} ADVISORY violation(s) (does not fail CI):[/bold yellow]"
         )
         for v in report.advisory:
-            console.print(f"  [yellow]![/yellow] [{v.check}] {v.tool_name}: {v.detail}")
+            console.print(
+                f"  [yellow]![/yellow] {escape(f'[{v.check}]')} {escape(v.tool_name)}: {escape(v.detail)}"
+            )
     if show_info and report.info:
         console.print(
             f"\n[bold yellow]{len(report.info)} INFO-severity hint(s) (off by default):[/bold yellow]"
         )
         for v in report.info:
-            console.print(f"  [yellow]-[/yellow] [{v.check}] {v.tool_name}: {v.detail}")
+            console.print(
+                f"  [yellow]-[/yellow] {escape(f'[{v.check}]')} {escape(v.tool_name)}: {escape(v.detail)}"
+            )
 
 
 @app.command()
@@ -560,9 +567,9 @@ def _trial_audit_or_exit(report: AuditReport, *, console: Console, json_output: 
 
 def _print_audit_report(report: AuditReport, console: Console) -> None:
     for f in report.blocking:
-        console.print(f"[bold red]AUDIT BLOCK[/bold red] ({f.check}): {f.detail}")
+        console.print(f"[bold red]AUDIT BLOCK[/bold red] ({escape(f.check)}): {escape(f.detail)}")
     for f in report.warnings:
-        console.print(f"[yellow]AUDIT WARN[/yellow] ({f.check}): {f.detail}")
+        console.print(f"[yellow]AUDIT WARN[/yellow] ({escape(f.check)}): {escape(f.detail)}")
 
 
 def _load_replay_trials(path: Path) -> list[TrialOutcome]:
@@ -998,11 +1005,11 @@ def _bak_path(source: Path) -> Path:
 def _render_fix_inline(candidate: FixCandidate, console: Console) -> None:
     """Print a compact before→after block for one accepted fix."""
     is_tty = console.is_terminal
-    label = f"{candidate.tool_name}:{candidate.dim} (+{candidate.delta:.1f})"
+    label = escape(f"{candidate.tool_name}:{candidate.dim} (+{candidate.delta:.1f})")
 
     if candidate.dim == "description_quality":
-        old_text = candidate.old_description or "(none)"
-        new_text = candidate.new_description or "(none)"
+        old_text = escape(candidate.old_description or "(none)")
+        new_text = escape(candidate.new_description or "(none)")
         if is_tty:
             console.print(f"  [bold]{label}[/bold]")
             console.print(f"  [red]- {old_text}[/red]")
@@ -1016,18 +1023,18 @@ def _render_fix_inline(candidate: FixCandidate, console: Console) -> None:
             console.print(f"  [bold]{label}[/bold]")
             for param, meta in candidate.new_schema_props.items():
                 old_meta = candidate.old_schema_props.get(param, {})
-                old_str = str(old_meta) if old_meta else "(no metadata)"
-                new_str = str(meta)
-                console.print(f"  [dim]{param}:[/dim]")
+                old_str = escape(str(old_meta)) if old_meta else "(no metadata)"
+                new_str = escape(str(meta))
+                console.print(f"  [dim]{escape(param)}:[/dim]")
                 console.print(f"    [red]- {old_str}[/red]")
                 console.print(f"    [green]+ {new_str}[/green]")
         else:
             console.print(f"  {label}")
             for param, meta in candidate.new_schema_props.items():
                 old_meta = candidate.old_schema_props.get(param, {})
-                old_str = str(old_meta) if old_meta else "(no metadata)"
-                new_str = str(meta)
-                console.print(f"  {param}:")
+                old_str = escape(str(old_meta)) if old_meta else "(no metadata)"
+                new_str = escape(str(meta))
+                console.print(f"  {escape(param)}:")
                 console.print(f"    - {old_str}")
                 console.print(f"    + {new_str}")
 
@@ -1223,16 +1230,18 @@ async def _fix_async(
         # Print accepted fixes with inline before/after
         for c in report.accepted:
             console.print(
-                f"[green]ACCEPTED[/green] {c.tool_name}:{c.dim} — "
+                f"[green]ACCEPTED[/green] {escape(c.tool_name)}:{c.dim} — "
                 f"delta={c.delta:+.1f} (threshold={c.threshold:.1f})"
             )
             _render_fix_inline(c, console)
 
         for c in report.rejected:
-            console.print(f"[yellow]REJECTED[/yellow] {c.tool_name}:{c.dim} — {c.rejection_reason}")
+            console.print(
+                f"[yellow]REJECTED[/yellow] {escape(c.tool_name)}:{c.dim} — {escape(c.rejection_reason)}"
+            )
 
         for s in report.skipped:
-            console.print(f"[dim]SKIPPED {s}[/dim]")
+            console.print(f"[dim]SKIPPED {escape(str(s))}[/dim]")
 
         generated = len(report.accepted) + len(report.rejected)
         console.print(
