@@ -18,9 +18,13 @@ re-measured here; their provenance is in `reports/` at each tag.
   and details (they were parsed as Rich markup, and a stray closing tag raised `MarkupError`). The
   same escaping now applies to the audit, fix-preview and prioritized-fixes output. JSON output was
   unaffected.
+- User-supplied paths (`target`, `--out`, `--out-diff`) and file suffixes in Rich status lines are
+  escaped too; a path containing `[/x]` used to crash with `MarkupError`.
+- `render_html` now `html.escape`s dimension names and fix hints (they carry server-controlled
+  tool names and descriptions).
 
-Apart from that fix, nothing under `agentgauge/` or in `pyproject.toml` has changed since 0.5.3; the
-other commits since the tag are documentation, CI and dependency-lockfile updates:
+Other changes since 0.5.3 listed here are lockfile, CI and documentation items only; this list is
+not a complete record of code changes (see `git log v0.5.3..`):
 
 - `uv.lock`: `pyjwt` 2.13.0 -> 2.15.0, which cleared a red `pip-audit` check (#112), and minor/patch
   groups (#92, #113). `pyjwt` is transitive; it is not a direct dependency.
