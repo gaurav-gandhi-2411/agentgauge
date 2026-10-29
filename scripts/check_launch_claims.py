@@ -11,7 +11,9 @@ Checks, all fail-closed (a missing file, ref, or quote is a failure, never a ski
 3. every claimed number appears in the claim's quote;
 4. every number in a draft's prose is vouched for by a claim for that draft, or is explicitly
    allowed with a reason (so an unsourced number cannot slip in);
-5. every GitHub blob link in a draft resolves to a real file at the ref it names.
+5. every GitHub blob URL in a draft -- markdown `[t](url)` or a bare URL (Show HN and LinkedIn
+   do not render markdown) -- resolves to a real file at the ref it names. A branch name, or a
+   40-hex commit permalink (`blob/<sha>/path`), is accepted; any other repo URL form is a failure.
 
 Usage: python scripts/check_launch_claims.py [--root DIR] [--claims PATH]
 """
@@ -25,7 +27,8 @@ import subprocess
 import sys
 from pathlib import Path
 
-REPO_URL = "https://github.com/gaurav-gandhi-2411/agentgauge/blob/"
+REPO_ROOT = "https://github.com/gaurav-gandhi-2411/agentgauge"
+REPO_URL = REPO_ROOT + "/blob/"
 # Branch name (as it appears in a blob URL) -> git refs whose tree defines that URL's files.
 # "main" links must resolve in the working tree or, post-merge, on the gw correction branch.
 BRANCH_REFS: dict[str, list[str | None]] = {
@@ -38,7 +41,14 @@ _MODEL_NAME = re.compile(r"\b[a-z][a-z0-9.-]*:\d+b\b")
 _INLINE_CODE = re.compile(r"`[^`]*`")
 _BARE_URL = re.compile(r"https?://\S+")
 _NUMBER = re.compile(r"(?<![\w.])\d+(?:[.,]\d+)*")
-_BLOB_LINK = re.compile(r"\((" + re.escape(REPO_URL) + r"[^)\s]+)\)")
+# Matches a blob URL wherever it appears: inside a markdown link target or bare in prose. The
+# character class stops at whitespace, `)`, `]`, `>` and quotes; trailing sentence punctuation is
+# stripped by the caller.
+_BLOB_URL = re.compile(re.escape(REPO_URL) + r"[^\s)\]>\"']+")
+# Any repo URL that is not the bare root and not a /blob/ URL (tree/raw/commit/...): the checker
+# cannot verify those, so they fail closed instead of slipping through unchecked.
+_OTHER_REPO_URL = re.compile(re.escape(REPO_ROOT) + r"/(?!blob/)[^\s)\]>\"']+")
+_COMMIT_SHA = re.compile(r"[0-9a-f]{40}")
 
 
 def norm(text: str) -> str:
@@ -84,17 +94,29 @@ def prose_numbers(text: str) -> set[str]:
 
 
 def check_links(root: Path, drafts: dict[str, str]) -> list[str]:
-    """Every repo blob link must resolve at the ref its branch segment names."""
+    """Every repo blob URL (markdown or bare) must resolve at the ref its first segment names."""
     errors: list[str] = []
     for name, text in drafts.items():
-        for m in _BLOB_LINK.finditer(text):
-            rest = m.group(1)[len(REPO_URL) :]
+        for m in _OTHER_REPO_URL.finditer(text):
+            url = m.group(0).rstrip(".,;:")
+            if url.rstrip("/") != REPO_ROOT:
+                errors.append(f"{name}: unsupported repo URL form (only /blob/ is checked): {url}")
+        for m in _BLOB_URL.finditer(text):
+            url = m.group(0).rstrip(".,;:")
+            rest = url[len(REPO_URL) :]
             match = next((b for b in BRANCH_REFS if rest.startswith(b + "/")), None)
-            if match is None:
-                errors.append(f"{name}: link to unknown branch: {m.group(1)}")
+            if match is not None:
+                path = rest[len(match) + 1 :]
+                refs: list[str | None] = BRANCH_REFS[match]
+            else:
+                head, _, path = rest.partition("/")
+                if not _COMMIT_SHA.fullmatch(head):
+                    errors.append(f"{name}: link to unknown branch: {url}")
+                    continue
+                refs = [head]
+            if not path:
+                errors.append(f"{name}: link has no file path: {url}")
                 continue
-            path = rest[len(match) + 1 :]
-            refs = BRANCH_REFS[match]
             ok = False
             for ref in refs:
                 try:
@@ -104,7 +126,7 @@ def check_links(root: Path, drafts: dict[str, str]) -> list[str]:
                 except FileNotFoundError:
                     continue
             if not ok:
-                errors.append(f"{name}: link does not resolve: {m.group(1)}")
+                errors.append(f"{name}: link does not resolve: {url}")
     return errors
 
 

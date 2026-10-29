@@ -133,3 +133,57 @@ def test_real_launch_claims_are_well_formed() -> None:
     ids = [c["id"] for c in spec["claims"]]
     assert len(ids) == len(set(ids))
     assert all(c["appears_in"] and c["quote"] for c in spec["claims"])
+
+
+def test_bare_url_good_and_broken() -> None:
+    """Show HN / LinkedIn carry bare URLs (no markdown): they must be checked too."""
+    ok = f"see {clc.REPO_URL}main/src.md for details.\n"
+    errs = clc.check_links(_ROOT / "tests", {"d": ok})
+    # tests/src.md does not exist, so a bare URL with trailing '.' must still be resolved and fail.
+    assert any("does not resolve" in e and e.endswith("main/src.md") for e in errs)
+
+
+def test_bare_url_in_tree_passes_and_missing_fails(tmp_path: Path) -> None:
+    root = _tree(tmp_path, f"the MDE is 8.5 points\nSrc: {clc.REPO_URL}main/src.md\n", [_claim()])
+    assert _run(root) == []
+    (root / DRAFT).write_text(
+        f"the MDE is 8.5 points\nSrc: {clc.REPO_URL}main/nope.md\n", encoding="utf-8"
+    )
+    assert any("does not resolve" in e for e in _run(root))
+
+
+def test_unknown_branch_and_unsupported_url_forms_fail_closed(tmp_path: Path) -> None:
+    unknown = f"the MDE is 8.5 points {clc.REPO_URL}some-branch/src.md\n"
+    assert any("unknown branch" in e for e in clc.check_links(tmp_path, {"d": unknown}))
+    tree_url = f"the MDE is 8.5 points {clc.REPO_ROOT}/tree/main/docs\n"
+    assert any("unsupported repo URL form" in e for e in clc.check_links(tmp_path, {"d": tree_url}))
+    root_only = f"code: {clc.REPO_ROOT}. And {clc.REPO_ROOT}\n"
+    assert clc.check_links(tmp_path, {"d": root_only}) == []
+    no_path = f"x {clc.REPO_URL}main/\n"
+    assert any(
+        "no file path" in e or "does not resolve" in e
+        for e in clc.check_links(tmp_path, {"d": no_path})
+    )
+
+
+def test_commit_permalink_resolves_only_for_a_real_commit(tmp_path: Path) -> None:
+    import subprocess
+
+    (tmp_path / "f.md").write_text("hello\n", encoding="utf-8")
+    git = ["git", "-c", "user.name=t", "-c", "user.email=t@example.invalid"]
+    subprocess.run(["git", "init", "-q"], cwd=tmp_path, check=True)  # noqa: S603, S607
+    subprocess.run(["git", "add", "f.md"], cwd=tmp_path, check=True)  # noqa: S603, S607
+    subprocess.run([*git, "commit", "-q", "-m", "x"], cwd=tmp_path, check=True)  # noqa: S603
+    sha = subprocess.run(  # noqa: S603
+        ["git", "rev-parse", "HEAD"],  # noqa: S607
+        cwd=tmp_path,
+        capture_output=True,
+        text=True,
+        check=True,
+    ).stdout.strip()
+    good = f"[x]({clc.REPO_URL}{sha}/f.md)\n"
+    assert clc.check_links(tmp_path, {"d": good}) == []
+    missing_file = f"[x]({clc.REPO_URL}{sha}/g.md)\n"
+    assert any("does not resolve" in e for e in clc.check_links(tmp_path, {"d": missing_file}))
+    fake = f"[x]({clc.REPO_URL}{'0' * 40}/f.md)\n"
+    assert any("does not resolve" in e for e in clc.check_links(tmp_path, {"d": fake}))
