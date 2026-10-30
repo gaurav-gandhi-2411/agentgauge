@@ -131,10 +131,10 @@ CAVEATS: tuple[str, ...] = (
     "In U1 and U3, removing enum also flips while every maxItems is kept, so the rejection "
     "depends on the other content of the request.",
     "Phase C refutes the simple count-budget prediction in U1, U3 and U5: renamed copies of one "
-    "tool, up to 4, carrying as many or more maxItems/enum/maximum instances than the rejected "
-    "unit, were accepted. Caveat: C requests are smaller than or comparable to the unit (U3 "
-    "copies are about 0.4x the unit's size), so C does not test a request-level budget at the "
-    "unit's scale.",
+    "tool, up to 4, were accepted. By the independent recompute's instance counts (private; not "
+    "derivable from this aggregate), those copies carried at least as many instances of the "
+    "flipping construct as the rejected unit. Caveat: C requests are smaller than or comparable "
+    "to the unit in size, so C does not test a request-level budget at the unit's scale.",
     "Phase C coverage: complete to 4 copies in U1, U3 and U5; U2 tested 2 and 3 (4 unresolved); "
     "U4 untested (copy 2 unresolved). `copies_rejected_at: null` must not be read as "
     '"accepted at all counts".',
@@ -351,10 +351,15 @@ def build_report(agg: dict[str, Any], *, input_sha256: str, git_head: str) -> di
     return out
 
 
+def _pair(a: Any, b: Any) -> str:
+    """`a/b` for a forward/reverse cell; `-` for a missing side."""
+    return f"{'-' if a is None else a}/{'-' if b is None else b}"
+
+
 def _table(header: Sequence[str], rows: Sequence[Sequence[Any]]) -> list[str]:
     """Markdown table lines."""
     lines = ["| " + " | ".join(header) + " |", "|" + "---|" * len(header)]
-    lines += ["| " + " | ".join(str(c) for c in r) + " |" for r in rows]
+    lines += ["| " + " | ".join("-" if c is None else str(c) for c in r) + " |" for r in rows]
     return lines
 
 
@@ -432,8 +437,8 @@ def render_markdown(rep: dict[str, Any]) -> str:
                     f"`{cons}`",
                     r["N"],
                     r["class"],
-                    f"{r['idx_forward']}/{r['idx_reverse']}",
-                    f"{r['n_forward']}/{r['n_reverse']}",
+                    _pair(r["idx_forward"], r["idx_reverse"]),
+                    _pair(r["n_forward"], r["n_reverse"]),
                     ", ".join(f"{k}: {v}" for k, v in sorted(r["singles"].items(), key=_ik)) or "-",
                     r["reason"] or "",
                 ]
