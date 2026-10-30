@@ -409,10 +409,12 @@ def _safe_keyword(keyword: str) -> str:
 
     Schema keys are attacker-controlled, and `agentgauge lint` prints `Violation.detail` inside
     Rich markup, where `[bold]x` or `[/]` would be interpreted. Square brackets are replaced and
-    the key is truncated and passed through `ascii()` so control characters stay inert.
+    the key is truncated and passed through `ascii()` so control characters stay inert. Colons
+    are written as the literal text `\\x3a` because Rich also renders `:name:` as an emoji
+    (a key like `:smile:` would otherwise print as one); the same form `ascii()` uses.
     """
     shown = ascii(keyword[:_MAX_KEYWORD_DISPLAY_LEN])[1:-1]
-    shown = shown.replace("[", "(").replace("]", ")")
+    shown = shown.replace("[", "(").replace("]", ")").replace(":", "\\x3a")
     return shown + ("..." if len(keyword) > _MAX_KEYWORD_DISPLAY_LEN else "")
 
 

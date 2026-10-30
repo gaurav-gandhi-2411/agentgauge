@@ -375,3 +375,15 @@ class TestUnsupportedAttributeSummary:
         long_key = "k" * 200
         detail = check_unsupported_attributes([_tool(schema={long_key: 1})])[0].detail
         assert long_key not in detail and "..." in detail
+
+    def test_keyword_emoji_codes_are_not_rendered_by_rich(self) -> None:
+        from io import StringIO
+
+        from rich.console import Console
+
+        schema = {"type": "object", "properties": {"a": {":smile:": 1}}}
+        detail = check_unsupported_attributes([_tool(schema=schema)])[0].detail
+        assert ":smile:" not in detail and "\\x3asmile\\x3a=1" in detail
+        out = StringIO()
+        Console(file=out, force_terminal=False, width=10_000).print(detail)
+        assert "\U0001f604" not in out.getvalue() and "smile" in out.getvalue()
