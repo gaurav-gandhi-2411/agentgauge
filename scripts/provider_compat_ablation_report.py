@@ -102,7 +102,7 @@ _TEXT_OK = re.compile(r"[A-Za-z0-9 ,.;:()\-₹]+")
 _REASON_OK = re.compile(r"[a-z ]{1,60}")
 
 CRITERION_2_REASON = (
-    "Criterion 2 fails: no single static quantity separates all 59 accepted from all 65 "
+    "Criterion 2 fails: no single static quantity separates all 63 accepted from all 67 "
     "rejected distinct requests, globally or within any unit."
 )
 CANDIDATES_TESTED = (
@@ -113,7 +113,10 @@ CANDIDATES_TESTED = (
 )
 RESENT_BREAKDOWN: dict[str, str] = {
     "U1": "D (set-to-1) and S only; A/B do not depend",
-    "U2": "A0, so everything depends",
+    "U2": (
+        "A0, so everything depends; the C 4-copy result and the B `maximum` search come from "
+        "the second resume"
+    ),
     "U3": "S only",
     "U4": (
         "one A1 non-flipping construct, and the B maxItems single-instance check (its "
@@ -130,13 +133,13 @@ CAVEATS: tuple[str, ...] = (
     'responsible". It cannot tell an additive budget from a specific conjunction of instances. '
     "In U1 and U3, removing enum also flips while every maxItems is kept, so the rejection "
     "depends on the other content of the request.",
-    "Phase C refutes the simple count-budget prediction in U1, U3 and U5: renamed copies of one "
+    "Phase C refutes the simple count-budget prediction in U1, U2, U3 and U5: renamed copies of one "
     "tool, up to 4, were accepted. By the independent recompute's instance counts (private; not "
     "derivable from this aggregate), those copies carried at least as many instances of the "
     "flipping construct as the rejected unit. Caveat: C requests are smaller than or comparable "
     "to the unit in size, so C does not test a request-level budget at the unit's scale.",
-    "Phase C coverage: complete to 4 copies in U1, U3 and U5; U2 tested 2 and 3 (4 unresolved); "
-    "U4 untested (copy 2 unresolved). `copies_rejected_at: null` must not be read as "
+    "Phase C coverage: complete to 4 copies in U1, U2, U3 and U5; U4 untested (copy 2 "
+    "unresolved after its one re-send). `copies_rejected_at: null` must not be read as "
     '"accepted at all counts".',
     "Phase D: setting every value to 1 made U1, U2, U4 and U5 accepted; doubling made all "
     "rejected. In U3, value 1 was still rejected. The value matters in 4 of 5 units, but not "
@@ -144,8 +147,9 @@ CAVEATS: tuple[str, ...] = (
     "U4: format is instance-critical (one specific format instance is needed).",
     "U5 (R5, 10-tool unit): removing maxItems does NOT flip it; only removing `maximum` flips "
     "it (aggregate, N=105). There is no stability boundary for U5, so it is unreplicated.",
-    "U2 `maximum` = inconsistent is an ARTEFACT of one unresolved HTTP 429 during the search, "
-    "not a real inconsistency.",
+    "U2 `maximum` = inconsistent (search completed in the second resume): the forward "
+    "threshold instance is accepted alone and the reverse threshold instance is rejected alone, "
+    "so neither `aggregate` nor `instance-critical` applies. Measured once.",
     "Single samples: the stability phase repeats only A0 and the maxItems boundary; the enum, "
     "maximum and format boundaries were measured once.",
 )
@@ -447,8 +451,8 @@ def render_markdown(rep: dict[str, Any]) -> str:
             ],
         ),
         "",
-        "U2 `maximum` = inconsistent is an artefact of one unresolved HTTP 429 during the search, "
-        "not a real inconsistency.",
+        "U2 `maximum` = inconsistent: the forward threshold instance is accepted alone and the "
+        "reverse threshold instance is rejected alone (measured once, second resume).",
         "",
         "## Phase C: duplication test",
         "",
