@@ -36,8 +36,8 @@ def test_fired_checks_sees_new_check_with_either_schema_key() -> None:
 
 def test_before_predicates_ignore_the_new_check() -> None:
     fired = posthoc.fired_checks(_WITH_LIMIT)
-    before = posthoc.predicates(fired, after=False)
-    after = posthoc.predicates(fired, after=True)
+    before = posthoc.predicates(fired, stage=0)
+    after = posthoc.predicates(fired, stage=2)
     assert posthoc.NEW_CHECK not in before
     assert after[posthoc.NEW_CHECK] is True
     # INFO tier: the gate predicate cannot move; any_finding is true either way here because the
@@ -48,8 +48,8 @@ def test_before_predicates_ignore_the_new_check() -> None:
 
 def test_new_check_alone_moves_any_finding_only_when_nothing_else_fires() -> None:
     fired = {posthoc.NEW_CHECK}
-    assert posthoc.predicates(fired, after=False)["any_finding"] is False
-    assert posthoc.predicates(fired, after=True)["any_finding"] is True
+    assert posthoc.predicates(fired, stage=0)["any_finding"] is False
+    assert posthoc.predicates(fired, stage=2)["any_finding"] is True
 
 
 def test_nameless_tool_fails_closed() -> None:
@@ -64,13 +64,52 @@ def test_validation_confusion_for_new_predicate() -> None:
         "b": posthoc.fired_checks(_WITH_LIMIT),
         "c": posthoc.fired_checks(_WITHOUT),
     }
-    m = posthoc.validation(labels, fired, after=True)["predicates"][posthoc.NEW_CHECK]
+    m = posthoc.validation(labels, fired, stage=2)["predicates"][posthoc.NEW_CHECK]
     assert (m["tp"], m["fp"], m["fn"], m["tn"]) == (1, 1, 0, 1)
-    assert posthoc.NEW_CHECK not in posthoc.validation(labels, fired, after=False)["predicates"]
+    assert posthoc.NEW_CHECK not in posthoc.validation(labels, fired, stage=0)["predicates"]
 
 
 def test_prevalence_groups_and_denominators() -> None:
     rows = [("S", posthoc.fired_checks(_WITH_LIMIT)), ("S", posthoc.fired_checks(_WITHOUT))]
-    table = posthoc.prevalence(rows, after=True)
+    table = posthoc.prevalence(rows, stage=2)
     assert table["ALL"]["n"] == 2 and table["S"]["n"] == 2
     assert table["ALL"][posthoc.NEW_CHECK]["k"] == 1
+
+
+_UNSUPPORTED_ONLY = [
+    {
+        "name": "t",
+        "inputSchema": {"type": "object", "properties": {"a": {"type": "string", "title": "x"}}},
+    }
+]
+_NAMED_LIKE_KEYWORD = [
+    {
+        "name": "t",
+        "inputSchema": {"type": "object", "properties": {"maxItems": {"type": "integer"}}},
+    }
+]
+
+
+def test_unsupported_check_fires_on_keyword_not_on_property_name() -> None:
+    assert posthoc.UNSUPPORTED_CHECK in posthoc.fired_checks(_UNSUPPORTED_ONLY)
+    assert posthoc.UNSUPPORTED_CHECK not in posthoc.fired_checks(_NAMED_LIKE_KEYWORD)
+    assert posthoc.SELECTED not in posthoc.fired_checks(_NAMED_LIKE_KEYWORD)
+
+
+def test_selected_predicate_only_at_stage_two_and_not_in_any_finding() -> None:
+    fired = posthoc.fired_checks(_WITH_LIMIT)
+    assert posthoc.SELECTED in fired
+    assert posthoc.SELECTED not in posthoc.predicates(fired, stage=1)
+    only_selected = {posthoc.SELECTED}
+    assert posthoc.predicates(only_selected, stage=2)["any_finding"] is False
+
+
+def test_unsupported_check_alone_moves_any_finding_only_at_stage_two() -> None:
+    fired = {posthoc.UNSUPPORTED_CHECK}
+    assert posthoc.predicates(fired, stage=1)["any_finding"] is False
+    assert posthoc.predicates(fired, stage=2)["any_finding"] is True
+
+
+def test_bad_stage_rejected() -> None:
+    with pytest.raises(ValueError):
+        posthoc.predicates(set(), stage=3)
