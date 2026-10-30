@@ -180,8 +180,9 @@ DIAGNOSIS_MD = """\
 
 Source: the existing Vertex probe and bisection logs only (private; no new call of any kind was
 made). The five rejected catalogs are R1-R5, arbitrary labels; the mapping is deliberately not
-recorded, and this table is kept at construct level, without per-catalog counts, tool counts or
-limit values, so a row cannot be matched to a server. R1 is the one the `$ref` check caught;
+recorded, and this table is kept at construct level: no identifiers, catalog sizes or limit
+values. It does give the size of the smallest rejected unit (one tool, a pair, a small group) and
+coarse descriptors such as "small limits", because those are the diagnostic finding. R1 is the one the `$ref` check caught;
 R2-R5 are the four misses. The bisection log stores only accept/reject per tool subset and per
 single-keyword removal, so a construct can be pinned only where such a removal was run.
 
