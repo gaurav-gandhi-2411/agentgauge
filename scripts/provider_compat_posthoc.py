@@ -315,8 +315,8 @@ def render_markdown(res: dict[str, Any]) -> str:
         "- **No added coverage.** any_finding is unchanged by the array-length note "
         f"({_cm(vb, 'any_finding')} -> {_cm(v1, 'any_finding')}): it adds nothing beyond "
         "`provider_compat_schema_size`, which already fires on every rejected catalog and on "
-        "every catalog with `maxItems`. The unsupported-attribute check likewise leaves "
-        f"any_finding at {_cm(va, 'any_finding')}.",
+        "every catalog with `maxItems`. The unsupported-attribute check changes any_finding "
+        f"to {_cm(va, 'any_finding')}: no new true positive, only added false positives.",
         f"- Vertex, any-violation (the gate predicate): unchanged, recall "
         f"{study._fmt(va['predicates']['any_violation']['recall'])}, precision "
         f"{study._fmt(va['predicates']['any_violation']['precision'])}. Both new checks are "
