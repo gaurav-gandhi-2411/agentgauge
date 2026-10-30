@@ -13,10 +13,12 @@ from agentgauge.provider_compat import (
     MAX_FUNCTION_NAME_LEN,
     MAX_SCHEMA_DEPTH,
     RECOMMENDED_MAX_TOOLS,
+    check_array_length_limits,
     check_function_name,
     check_refs,
     check_schema_depth,
     lint_provider_compat,
+    measure_array_limits,
     measure_catalog,
     schema_depth,
 )
@@ -120,7 +122,10 @@ class TestCatalogSize:
             },
         }
         found = lint_provider_compat([_tool(schema=schema)])
-        assert [v.check for v in found] == ["provider_compat_schema_size"]
+        assert [v.check for v in found] == [
+            "provider_compat_schema_size",
+            "provider_compat_array_length",
+        ]
         v = found[0]
         assert v.severity == Severity.INFO
         assert "3 validation-only keywords" in v.detail
@@ -144,6 +149,61 @@ class TestCatalogSize:
         }
         n_props, counts = measure_catalog([_tool(schema=schema)])
         assert (n_props, counts) == (2, {})
+
+
+class TestArrayLength:
+    def test_no_array_limit_no_finding(self) -> None:
+        schema = {"type": "object", "properties": {"t": {"type": "array", "items": {}}}}
+        assert check_array_length_limits([_tool(schema=schema)]) == []
+
+    def test_measurement_counts_nesting_and_largest(self) -> None:
+        inner = {"type": "array", "items": {"type": "string"}, "maxItems": 7}
+        schema = {
+            "type": "object",
+            "properties": {
+                "flat": {"type": "array", "items": {"type": "string"}, "maxItems": 3},
+                "outer": {"type": "array", "items": inner, "maxItems": 20},
+                "choice": {"anyOf": [{"type": "array", "items": {}, "maxItems": 5}]},
+            },
+        }
+        # outer(20) and flat(3) and choice-branch(5) are top-level; inner(7) is inside `outer`.
+        assert measure_array_limits([_tool(schema=schema)]) == (4, 1, 20)
+
+    def test_finding_is_info_presence_only_and_cites_docs(self) -> None:
+        schema = {"type": "object", "properties": {"a": {"type": "array", "maxItems": 1}}}
+        found = check_array_length_limits([_tool(schema=schema)])
+        assert [v.check for v in found] == ["provider_compat_array_length"]
+        v = found[0]
+        assert v.severity == Severity.INFO
+        assert "1 array(s) declare maxItems" in v.detail
+        assert "large maxItems limits (especially on nested arrays)" in v.detail
+        assert "long array length limits" in v.detail
+        assert "https://ai.google.dev/gemini-api/docs/structured-output" in v.detail
+        assert "control-generated-output" in v.detail
+        assert "no claim that this catalog will be rejected" in v.detail
+
+    def test_no_size_threshold_a_tiny_limit_still_fires(self) -> None:
+        # The docs say "large" without a number, so no size is encoded: presence only.
+        for limit in (1, 10, 1000):
+            schema = {"type": "object", "properties": {"a": {"type": "array", "maxItems": limit}}}
+            assert len(check_array_length_limits([_tool(schema=schema)])) == 1
+
+    def test_property_named_max_items_and_bool_value_not_counted(self) -> None:
+        schema = {
+            "type": "object",
+            "properties": {
+                "maxItems": {"type": "integer"},
+                "b": {"type": "array", "maxItems": True},
+            },
+        }
+        assert measure_array_limits([_tool(schema=schema)]) == (0, 0, None)
+
+    def test_hostile_depth_does_not_overflow(self) -> None:
+        schema: dict[str, Any] = {"type": "array", "maxItems": 2}
+        for _ in range(5000):
+            schema = {"type": "array", "items": schema}
+        n, nested, largest = measure_array_limits([_tool(schema=schema)])
+        assert (n, nested, largest) == (1, 1, 2)
 
 
 class TestToolCount:

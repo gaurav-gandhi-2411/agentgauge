@@ -25,6 +25,12 @@ an aggregate size/complexity limit. Stripping `_VALIDATION_ONLY_KEYWORDS` and de
 local `$ref` made all 24 accepted. This is a heuristic signal, not a guarantee in either
 direction.
 
+Array length limits (`provider_compat_array_length`, INFO, added POST-HOC 2026-10-30 after the
+5 rejections were seen): the Gemini API structured-output page says "Common causes are large
+maxItems limits (especially on nested arrays)" and the Vertex structured-output page lists "long
+array length limits" -- both for response schemas, neither with a number. Presence-only; no
+threshold is encoded.
+
 None of these findings is scoring: ADVISORY/INFO never set `LintReport.flagged`, and the checks
 only run when the caller opts in, so default lint output and published numbers are unchanged.
 """
@@ -41,6 +47,19 @@ _VERTEX_DOC_URL = (
     "https://docs.cloud.google.com/vertex-ai/generative-ai/docs/multimodal/function-calling"
 )
 _GEMINI_DOC_URL = "https://ai.google.dev/gemini-api/docs/function-calling"
+# Structured-output pages (fetched 2026-10-30). The Vertex URL redirects to
+# .../gemini-enterprise-agent-platform/models/capabilities/control-generated-output.
+_GEMINI_STRUCTURED_OUTPUT_DOC_URL = "https://ai.google.dev/gemini-api/docs/structured-output"
+_VERTEX_STRUCTURED_OUTPUT_DOC_URL = (
+    "https://docs.cloud.google.com/vertex-ai/generative-ai/docs/multimodal/control-generated-output"
+)
+# Verbatim, from the two pages above. Neither gives a number for "large" / "long".
+_ARRAY_LIMIT_QUOTES = (
+    'Gemini API: "Common causes are large maxItems limits (especially on nested arrays)"; '
+    'Vertex: "Complexity might come from long property names, long array length limits, '
+    "enums with many values, objects with lots of optional properties, or a combination of "
+    'these factors."'
+)
 
 # Vertex docs: "maximum length of 64"; "maximum depth of nested schema is 32"; "10-20" tools.
 MAX_FUNCTION_NAME_LEN = 64
@@ -265,6 +284,61 @@ def check_catalog_size(tools: list[Any]) -> list[Violation]:
     ]
 
 
+def measure_array_limits(tools: list[Any]) -> tuple[int, int, int | None]:
+    """(arrays declaring `maxItems`, how many sit inside another array, largest limit seen).
+
+    Counts schema nodes carrying a numeric `maxItems` structurally (a property merely NAMED
+    `maxItems` is not counted). "Inside another array" means some ancestor subschema is an
+    array (`type: array` or has `items`). Iterative, so hostile depth cannot overflow the stack.
+    """
+    n_limited = n_nested = 0
+    largest: int | None = None
+    for tool in tools:
+        stack: list[tuple[dict[str, Any], bool]] = [(tool.inputSchema or {}, False)]
+        while stack:
+            node, inside_array = stack.pop()
+            limit = node.get("maxItems")
+            if isinstance(limit, int | float) and not isinstance(limit, bool):
+                n_limited += 1
+                n_nested += inside_array
+                largest = int(limit) if largest is None else max(largest, int(limit))
+            is_array = node.get("type") == "array" or "items" in node
+            stack.extend((child, inside_array or is_array) for child in _children(node))
+    return n_limited, n_nested, largest
+
+
+def check_array_length_limits(tools: list[Any]) -> list[Violation]:
+    """INFO advisory: array length limits (`maxItems`), a documented complexity contributor.
+
+    Two official pages name array length limits as a cause of an INVALID_ARGUMENT rejection of
+    a complex schema (quotes in `_ARRAY_LIMIT_QUOTES`). Both describe structured-output response
+    schemas, not function declarations, and neither publishes a numeric threshold, so this
+    fires on PRESENCE only, never on a size, and makes no claim that a request will be
+    rejected.
+    """
+    n_limited, n_nested, largest = measure_array_limits(tools)
+    if not n_limited:
+        return []
+    return [
+        Violation(
+            check="provider_compat_array_length",
+            severity=Severity.INFO,
+            tool_name=_CATALOG,
+            detail=(
+                f"Gemini/Vertex function calling: {n_limited} array(s) declare maxItems "
+                f"({n_nested} inside another array; largest limit {largest}). Google's docs "
+                f"name array length limits among the common causes of an INVALID_ARGUMENT "
+                f"rejection of a complex schema: {_ARRAY_LIMIT_QUOTES} Those pages describe "
+                f"structured-output response schemas, not function declarations, and publish "
+                f"no numeric threshold, so this note makes no claim that this catalog will be "
+                f"rejected. If a request is rejected, lowering or removing array limits is "
+                f"the documented first step. See {_GEMINI_STRUCTURED_OUTPUT_DOC_URL} and "
+                f"{_VERTEX_STRUCTURED_OUTPUT_DOC_URL}"
+            ),
+        )
+    ]
+
+
 def check_tool_count(tools: list[Any]) -> list[Violation]:
     """INFO advisory: more than 20 tools (Vertex docs recommend an active set of 10-20)."""
     if len(tools) <= RECOMMENDED_MAX_TOOLS:
@@ -295,5 +369,6 @@ def lint_provider_compat(tools: list[Any]) -> list[Violation]:
         violations += check_schema_depth(tool.name, schema)
         violations += check_refs(tool.name, schema)
     violations += check_catalog_size(tools)
+    violations += check_array_length_limits(tools)
     violations += check_tool_count(tools)
     return violations

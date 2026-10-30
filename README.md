@@ -341,6 +341,7 @@ does not change any existing rule's output.
 | `provider_compat_schema_depth` | ADVISORY | Vertex: "The maximum depth of nested schema is 32." (root counted as level 1 - our reading) |
 | `provider_compat_ref` | ADVISORY | Vertex: "`ref` must refer to direct child of `defs`; no external references." The docs write `ref`/`defs` without `$` and also list `$ref`/`$defs` as supported attributes, so the finding says "may need rewriting", not "rejected" |
 | `provider_compat_schema_size` | INFO | Gemini: "For any mode, the API may reject very large or deeply nested schemas." No threshold is published |
+| `provider_compat_array_length` | INFO | Added post-hoc (2026-10-30). Gemini API structured-output page: "Common causes are large maxItems limits (especially on nested arrays)"; Vertex structured-output page lists "long array length limits". Both describe response schemas, not function declarations, and publish no number, so it fires on presence of any `maxItems` and claims nothing about rejection (see `reports/provider_compat_posthoc.md`) |
 | `provider_compat_tool_count` | INFO | Vertex: "ideally keeping the active set to a maximum of 10-20" (fires above 20) |
 
 Sources: <https://docs.cloud.google.com/vertex-ai/generative-ai/docs/multimodal/function-calling>
