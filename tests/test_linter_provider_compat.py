@@ -127,7 +127,6 @@ class TestCatalogSize:
         assert [v.check for v in found] == [
             "provider_compat_schema_size",
             "provider_compat_array_length",
-            "provider_compat_unsupported_attribute",
         ]
         v = found[0]
         assert v.severity == Severity.INFO
@@ -312,9 +311,67 @@ class TestUnsupportedAttributes:
         v = found[0]
         assert v.severity == Severity.INFO
         assert "pattern=1" in v.detail
+        assert "1 schema keyword occurrence(s)" in v.detail
         assert "Remaining attributes are not supported." in v.detail
         assert "type, nullable, required, format, description, properties, items, enum," in v.detail
         assert "no claim that a request will be rejected" in v.detail
         assert "may be ignored rather than rejected" in v.detail
         assert "no threshold is encoded" in v.detail
         assert "multimodal/function-calling" in v.detail
+
+
+class TestUnsupportedAttributeSummary:
+    """One summary line per catalog; opt-in via include_attributes (off by default)."""
+
+    _MANY = {
+        "type": "object",
+        "additionalProperties": False,
+        "properties": {
+            "a": {"type": "string", "default": "x", "title": "A", "pattern": "p"},
+            "b": {"type": "integer", "default": 1, "minimum": 0, "maximum": 5},
+            "c": {"type": "integer", "default": 2, "minimum": 1, "title": "C"},
+        },
+    }
+
+    def test_off_by_default(self) -> None:
+        found = lint_provider_compat([_tool(schema=self._MANY)])
+        assert "provider_compat_unsupported_attribute" not in {v.check for v in found}
+
+    def test_on_when_requested_gives_exactly_one_line_per_catalog(self) -> None:
+        tools = [_tool("a", self._MANY), _tool("b", self._MANY)]
+        found = lint_provider_compat(tools, include_attributes=True)
+        lines = [v for v in found if v.check == "provider_compat_unsupported_attribute"]
+        assert len(lines) == 1
+        assert lines[0].tool_name == "<catalog>"
+        assert lines[0].severity == Severity.INFO
+
+    def test_summary_counts_and_top_three_with_deterministic_ties(self) -> None:
+        # per tool (10 total): default=3, title=2, minimum=2, additionalProperties=1, pattern=1, maximum=1
+        # -> two tools: default=6, minimum=4, title=4, rest 2; tie minimum/title -> alphabetical.
+        tools = [_tool("a", self._MANY), _tool("b", self._MANY)]
+        detail = check_unsupported_attributes(tools)[0].detail
+        assert "20 schema keyword occurrence(s)" in detail
+        assert "across 6 distinct keyword(s)" in detail
+        assert "most common: default=6, minimum=4, title=4. " in detail
+        assert "pattern=2" not in detail and "maximum=2" not in detail
+        assert check_unsupported_attributes(tools[::-1])[0].detail == detail
+
+    def test_tie_break_is_alphabetical(self) -> None:
+        schema = {
+            "type": "object",
+            "properties": {"x": {"zeta": 1, "alpha": 1, "mid": 1, "beta": 1}},
+        }
+        detail = check_unsupported_attributes([_tool(schema=schema)])[0].detail
+        assert "most common: alpha=1, beta=1, mid=1. " in detail
+
+    def test_zero_out_of_list_keywords_no_line(self) -> None:
+        schema = {"type": "object", "properties": {"a": {"type": "string"}}}
+        assert lint_provider_compat([_tool(schema=schema)], include_attributes=True) == []
+
+    def test_keyword_names_are_safe_for_rich_markup(self) -> None:
+        schema = {"type": "object", "properties": {"a": {"[bold red]x[/]": 1, "ok\x1b[0m": 2}}}
+        detail = check_unsupported_attributes([_tool(schema=schema)])[0].detail
+        assert "[bold" not in detail and "[/]" not in detail and "\\x1b" in detail
+        long_key = "k" * 200
+        detail = check_unsupported_attributes([_tool(schema={long_key: 1})])[0].detail
+        assert long_key not in detail and "..." in detail

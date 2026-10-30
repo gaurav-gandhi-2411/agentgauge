@@ -331,6 +331,9 @@ agentgauge lint examples/call_constraints_server_fixed.py --show-info
 agentgauge lint path/to/your_server.py --provider-compat
 ```
 
+Add `--provider-compat-attributes` (valid only together with `--provider-compat`) to also get the
+single unsupported-attribute summary line; without it that check never runs.
+
 An opt-in, zero-LLM, deterministic rule family (`provider_compat_*`). It is **off by default**,
 its findings are ADVISORY/INFO only (they never fail CI and never enter any score), and it
 does not change any existing rule's output.
@@ -342,7 +345,7 @@ does not change any existing rule's output.
 | `provider_compat_ref` | ADVISORY | Vertex: "`ref` must refer to direct child of `defs`; no external references." The docs write `ref`/`defs` without `$` and also list `$ref`/`$defs` as supported attributes, so the finding says "may need rewriting", not "rejected" |
 | `provider_compat_schema_size` | INFO | Gemini: "For any mode, the API may reject very large or deeply nested schemas." No threshold is published |
 | `provider_compat_array_length` | INFO | Added post-hoc (2026-10-30). Gemini API structured-output page: "Common causes are large maxItems limits (especially on nested arrays)"; Vertex structured-output page lists "long array length limits". Both describe response schemas, not function declarations, and publish no number, so it fires on presence of any `maxItems` and claims nothing about rejection. Caveats: `maxItems` was picked from the documented contributors because the bisection had already implicated it (selection-biased precision), and it adds no coverage beyond `provider_compat_schema_size` (`any_finding` unchanged); see `reports/provider_compat_posthoc.md` |
-| `provider_compat_unsupported_attribute` | INFO | Added post-hoc (2026-10-30). Vertex function calling: "We support the following attributes: type, nullable, required, format, description, properties, items, enum, anyOf, $ref, and $defs. Remaining attributes are not supported." Reports counts of schema keywords outside that list; it claims nothing about rejection (unsupported attributes may be ignored) and encodes no threshold. The Gemini API page gives no such list, only "Only a subset of the OpenAPI schema is supported." |
+| `provider_compat_unsupported_attribute` | INFO, needs `--provider-compat-attributes` | Added post-hoc (2026-10-30). **Off by default, even under `--provider-compat`** (it fired on 71% of real catalogs at 5/20 precision, so it is opt-in on its own flag, which requires `--provider-compat`). ONE summary line per catalog: the count of out-of-list keyword occurrences and the top 3 keywords with counts (ties alphabetical). Vertex function calling: "We support the following attributes: type, nullable, required, format, description, properties, items, enum, anyOf, $ref, and $defs. Remaining attributes are not supported." It claims nothing about rejection (unsupported attributes may be ignored) and encodes no threshold. The Gemini API page gives no such list, only "Only a subset of the OpenAPI schema is supported." |
 | `provider_compat_tool_count` | INFO | Vertex: "ideally keeping the active set to a maximum of 10-20" (fires above 20) |
 
 Sources: <https://docs.cloud.google.com/vertex-ai/generative-ai/docs/multimodal/function-calling>

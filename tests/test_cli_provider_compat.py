@@ -18,7 +18,15 @@ LONG_NAME_TOOL = Tool(
     description="Look up a record.",
     inputSchema={
         "type": "object",
-        "properties": {"record": {"type": "array", "items": {"type": "string"}, "maxItems": 3}},
+        "properties": {
+            "record": {
+                "type": "array",
+                "items": {"type": "string"},
+                "maxItems": 3,
+                "default": [],
+                "title": "Record",
+            }
+        },
         "required": ["record"],
     },
 )
@@ -66,3 +74,39 @@ def test_default_run_shows_no_provider_compat_finding() -> None:
     payload = json.loads(_invoke(["--show-info", "--json"]).output)
     checks = {v["check"] for key in ("blocking", "advisory", "info") for v in payload[key]}
     assert not any(c.startswith("provider_compat") for c in checks)
+
+
+ATTR_CHECK = "provider_compat_unsupported_attribute"
+BOTH_FLAGS = ["--provider-compat", "--provider-compat-attributes"]
+
+
+def _info_checks(args: list[str]) -> list[str]:
+    payload = json.loads(_invoke([*args, "--show-info", "--json"]).output)
+    return [v["check"] for v in payload["info"]]
+
+
+def test_attribute_summary_off_by_default_with_and_without_provider_compat() -> None:
+    assert ATTR_CHECK not in _info_checks([])
+    assert ATTR_CHECK not in _info_checks(["--provider-compat"])
+
+
+def test_attribute_summary_on_via_flag_is_one_line_in_json() -> None:
+    assert _info_checks(BOTH_FLAGS).count(ATTR_CHECK) == 1
+    payload = json.loads(_invoke([*BOTH_FLAGS, "--show-info", "--json"]).output)
+    (v,) = [v for v in payload["info"] if v["check"] == ATTR_CHECK]
+    assert v["severity"] == "info" and v["tool_name"] == "<catalog>"
+    assert "3 schema keyword occurrence(s)" in v["detail"]
+    assert "default=1, maxItems=1, title=1" in v["detail"]
+    assert payload["flagged"] is False
+
+
+def test_attribute_summary_text_output_exits_zero() -> None:
+    result = _invoke([*BOTH_FLAGS, "--show-info"])
+    assert result.exit_code == 0, result.output
+    assert "outside the list the Vertex docs give as supported" in " ".join(result.output.split())
+
+
+def test_attribute_flag_without_provider_compat_is_a_usage_error() -> None:
+    result = _invoke(["--provider-compat-attributes"])
+    assert result.exit_code == 2
+    assert "requires --provider-compat" in " ".join(result.output.split())

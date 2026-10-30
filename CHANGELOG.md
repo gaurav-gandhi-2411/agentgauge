@@ -17,6 +17,12 @@ re-measured here; their provenance is in `reports/` at each tag.
   schemas Gemini/Vertex function calling is documented to reject or may reject. ADVISORY/INFO only:
   off by default, never fails CI, no existing rule, count or score changes. The size note is a
   heuristic with no published threshold; see the README subsection for evidence and limits.
+- **Added (opt-in, own flag):** `agentgauge lint --provider-compat --provider-compat-attributes`
+  adds `provider_compat_unsupported_attribute`: ONE INFO summary line per catalog (count of schema
+  keywords outside Vertex's documented supported list, plus the top 3 by count). Off by default,
+  including under `--provider-compat`, because it fires on most real catalogs at low precision;
+  `--provider-compat-attributes` alone is a usage error. `lint_provider_compat()` gained
+  `include_attributes=False` for the same reason.
 
 Nothing under `agentgauge/` or in `pyproject.toml` has changed since 0.5.3
 (`git diff --stat v0.5.3 origin/main -- agentgauge pyproject.toml` is empty); the commits since the

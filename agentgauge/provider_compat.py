@@ -1,6 +1,7 @@
 """Zero-LLM provider schema-compatibility lint: Gemini / Vertex AI function calling.
 
-Opt-in (`agentgauge lint --provider-compat`). Deterministic: no network, no model.
+Opt-in (`agentgauge lint --provider-compat`; the unsupported-attribute summary additionally
+needs `--provider-compat-attributes`). Deterministic: no network, no model.
 
 Scope is deliberately narrow. Every WARNING-tier check below mirrors a limit stated in the
 official provider docs (URLs in the constants); the catalog-level size note is an INFO-tier
@@ -41,7 +42,10 @@ nullable, required, format, description, properties, items, enum, anyOf, $ref, a
 Remaining attributes are not supported." The Gemini API function-calling page has no such
 list (only "Only a subset of the OpenAPI schema is supported."). The check reports which
 schema keywords outside the Vertex list a catalog uses; it does not claim rejection (an
-unsupported attribute may be ignored) and encodes no threshold.
+unsupported attribute may be ignored) and encodes no threshold. It fired on 71% of real
+catalogs (5/20 precision), so it is OFF by default even under `--provider-compat`, needs
+`--provider-compat-attributes`, and emits ONE summary line per catalog (occurrence count plus
+the top 3 keywords) instead of one finding per attribute.
 
 None of these findings is scoring: ADVISORY/INFO never set `LintReport.flagged`, and the checks
 only run when the caller opts in, so default lint output and published numbers are unchanged.
@@ -396,26 +400,50 @@ def measure_unsupported_attributes(tools: list[Any]) -> dict[str, int]:
     return dict(sorted(counts.items()))
 
 
+TOP_UNSUPPORTED_SHOWN = 3
+_MAX_KEYWORD_DISPLAY_LEN = 40
+
+
+def _safe_keyword(keyword: str) -> str:
+    """Render an UNTRUSTED schema key for a message that the text printer feeds to Rich markup.
+
+    Schema keys are attacker-controlled, and `agentgauge lint` prints `Violation.detail` inside
+    Rich markup, where `[bold]x` or `[/]` would be interpreted. Square brackets are replaced and
+    the key is truncated and passed through `ascii()` so control characters stay inert.
+    """
+    shown = ascii(keyword[:_MAX_KEYWORD_DISPLAY_LEN])[1:-1]
+    shown = shown.replace("[", "(").replace("]", ")")
+    return shown + ("..." if len(keyword) > _MAX_KEYWORD_DISPLAY_LEN else "")
+
+
 def check_unsupported_attributes(tools: list[Any]) -> list[Violation]:
-    """INFO advisory: schema keywords outside the Vertex-documented supported-attribute list.
+    """INFO advisory: ONE summary line per catalog for schema keywords outside the Vertex list.
 
     The Vertex docs state the list (`_SUPPORTED_ATTRIBUTES_QUOTE`) and that the remaining
     attributes are not supported. They do not say what happens to one (ignored vs rejected), and
     in our private study catalogs using several of them were accepted, so this makes no claim
-    that a request will be rejected and encodes no threshold: it reports presence and counts.
+    that a request will be rejected and encodes no threshold. It was measured to fire on 71% of
+    real catalogs with 5/20 precision, so it is OFF unless the caller opts in
+    (`lint_provider_compat(..., include_attributes=True)`), and it reports one line: the number
+    of out-of-list keyword occurrences (schema nodes) and the top `TOP_UNSUPPORTED_SHOWN`
+    keywords by count, ties broken alphabetically (deterministic). No out-of-list keyword, no
+    line.
     """
     counts = measure_unsupported_attributes(tools)
     if not counts:
         return []
-    listed = ", ".join(f"{k}={v}" for k, v in counts.items())
+    total = sum(counts.values())
+    ranked = sorted(counts.items(), key=lambda kv: (-kv[1], kv[0]))[:TOP_UNSUPPORTED_SHOWN]
+    listed = ", ".join(f"{_safe_keyword(k)}={v}" for k, v in ranked)
     return [
         Violation(
             check="provider_compat_unsupported_attribute",
             severity=Severity.INFO,
             tool_name=_CATALOG,
             detail=(
-                f"Gemini/Vertex function calling: this catalog uses schema keywords outside the "
-                f"list the Vertex docs give as supported ({listed}; counts are schema nodes). "
+                f"Gemini/Vertex function calling: this catalog has {total} schema keyword "
+                f"occurrence(s) outside the list the Vertex docs give as supported, across "
+                f"{len(counts)} distinct keyword(s); most common: {listed}. "
                 f"Vertex docs: {_SUPPORTED_ATTRIBUTES_QUOTE} This note makes no claim that a "
                 f"request will be rejected: unsupported attributes may be ignored rather than "
                 f"rejected, and no threshold is encoded. The Gemini API function-calling page "
@@ -444,8 +472,11 @@ def check_tool_count(tools: list[Any]) -> list[Violation]:
     ]
 
 
-def lint_provider_compat(tools: list[Any]) -> list[Violation]:
-    """Run every provider-compat check over a tool set. `tools` match `mcp.types.Tool`.
+def lint_provider_compat(tools: list[Any], *, include_attributes: bool = False) -> list[Violation]:
+    """Run the provider-compat checks over a tool set. `tools` match `mcp.types.Tool`.
+
+    `include_attributes` additionally runs `check_unsupported_attributes` (one summary line);
+    it is False by default because that check is noisy (see its docstring).
 
     Pure function: no I/O, no LLM. Order is deterministic (tool order, then check order).
     """
@@ -457,6 +488,7 @@ def lint_provider_compat(tools: list[Any]) -> list[Violation]:
         violations += check_refs(tool.name, schema)
     violations += check_catalog_size(tools)
     violations += check_array_length_limits(tools)
-    violations += check_unsupported_attributes(tools)
+    if include_attributes:
+        violations += check_unsupported_attributes(tools)
     violations += check_tool_count(tools)
     return violations

@@ -795,6 +795,17 @@ def lint(
             ),
         ),
     ] = False,
+    provider_compat_attributes: Annotated[
+        bool,
+        typer.Option(
+            "--provider-compat-attributes",
+            help=(
+                "Requires --provider-compat. Adds ONE INFO summary line per catalog counting "
+                "schema keywords outside Vertex's documented supported list, with the top 3. "
+                "Noisy (fires on most real catalogs), so off by default"
+            ),
+        ),
+    ] = False,
 ) -> None:
     """Deterministic schema-consistency + name-collision linter. No LLM calls.
 
@@ -808,15 +819,29 @@ def lint(
     reports/v2_1_severity_gate.md for measured precision/recall/false-alarm rate
     and reports/v2_3_task2_retiering.md for the causal-impact-based re-tiering.
     """
+    if provider_compat_attributes and not provider_compat:
+        raise typer.BadParameter(
+            "--provider-compat-attributes requires --provider-compat",
+            param_hint="--provider-compat-attributes",
+        )
     asyncio.run(
         _lint_async(
-            target, show_info=show_info, json_output=json_output, provider_compat=provider_compat
+            target,
+            show_info=show_info,
+            json_output=json_output,
+            provider_compat=provider_compat,
+            provider_compat_attributes=provider_compat_attributes,
         )
     )
 
 
 async def _lint_async(
-    target: str, *, show_info: bool, json_output: bool, provider_compat: bool = False
+    target: str,
+    *,
+    show_info: bool,
+    json_output: bool,
+    provider_compat: bool = False,
+    provider_compat_attributes: bool = False,
 ) -> None:
     console = Console()
     client, ctx, _ = await _connect(target)
@@ -824,7 +849,9 @@ async def _lint_async(
         info = await client.introspect()
         report = lint_tool_set(info.tools)
         if provider_compat:
-            report.provider_compat_violations = lint_provider_compat(info.tools)
+            report.provider_compat_violations = lint_provider_compat(
+                info.tools, include_attributes=provider_compat_attributes
+            )
         if json_output:
             payload = {
                 "blocking": [
