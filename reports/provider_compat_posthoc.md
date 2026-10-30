@@ -9,8 +9,8 @@ Zero-LLM, aggregate-only: no model or network call was made, and this report con
 ## Provenance
 
 - Date: 2026-10-30
-- Rule file sha256 `1adb6dad598eecfd6331df2ad6047775f796f3d246f9a205b64b876c8b9a808e`; run at HEAD `bc511a280f310f7748aaa83a0df42ff5f8ada673` (`agentgauge/` tree dirty: False).
-- Script sha256 (LF-normalised): `76a8c26da9f6ffef1dbe4bbc4563884edccd1722fa2a0774e16a7010d2260863`
+- Rule file sha256 `44c6ac3be41057af153b489e82c0ee0883007b49cb2933fe9c6f0845fd82b105`; run at HEAD `8552fbbb2594ccda6ce796da4e8d587693c559c4` (`agentgauge/` tree dirty: False).
+- Script sha256 (LF-normalised): `acb0cc11bb639c0485d485e89d289964432a13b529176525f2887ad383a46031`
 - Original report reproduced exactly by the unchanged checks: **True** (validation and prevalence blocks compared with `provider_compat_validation.json`).
 - Input files: same private files and hashes as the original report (`provider_compat_validation.md`, Provenance).
 
@@ -25,13 +25,15 @@ Zero-LLM, aggregate-only: no model or network call was made, and this report con
 
 ## Per-miss diagnosis (construct level)
 
-Source: the existing Vertex probe and bisection logs only (private; no new call of any kind was
-made). The five rejected catalogs are R1-R5, arbitrary labels; the mapping is deliberately not
+Source: the existing Vertex probe and bisection logs (private) and, for the multi-tool units,
+the later post-hoc ablation probe (design commit 3d5d6e6; aggregate report
+`reports/provider_compat_ablation.md`). This script makes no call of any kind. The five rejected catalogs are R1-R5, arbitrary labels; the mapping is deliberately not
 recorded, and this table is kept at construct level: no identifiers, catalog sizes or limit
 values. It does give the size of the smallest rejected unit (one tool, a pair, a small group) and
 coarse descriptors such as "small limits", because those are the diagnostic finding. R1 is the one the `$ref` check caught;
 R2-R5 are the four misses. The bisection log stores only accept/reject per tool subset and per
-single-keyword removal, so a construct can be pinned only where such a removal was run.
+single-keyword removal, so a construct can be pinned only where such a removal was run (for the multi-tool units, the
+ablation probe ran them).
 
 **Reading guide.** "Unit" = the smallest tool subset the bisection could still show rejected.
 "Flips" = removal of that single keyword (everywhere in the unit) made the unit accepted;
@@ -43,29 +45,36 @@ documented "too many states" wording is an inference, not an observation.
 |---|---|---|---|---|
 | R1 (caught by `$ref`) | one tool | `maxItems` only; other single removals tried did not flip it. Removing or inlining `$ref` was never run. | arrays with `maxItems`; local `$ref` that are not direct children of `$defs`; `anyOf` | `$ref` check is DOCUMENTED, but its TP is **not shown causal**: the only keyword that flips it is `maxItems` |
 | R2 (miss) | one tool | `maxItems` or `oneOf`; other single removals tried did not flip it | many properties, moderate nesting, many arrays with `maxItems` (all with small limits), most of them nested inside an array and under a `oneOf` branch | documented contributor (maxItems) present; magnitude not covered by any documented number |
-| R3 (miss) | a pair of tools, each accepted alone; no keyword-removal run | none run | per tool: moderate nesting, an array with `maxItems` whose items contain another array, several enums, an `anyOf`; the two tools are near-identical in shape and are the only tools in their catalog with `maxItems` | UNDETERMINED from existing logs (which construct); the only documented contributor present is `maxItems` on nested arrays |
-| R4 (miss) | at least four independent rejected units: two single tools and two multi-tool groups whose halves are each accepted | single tool A: `maxItems` or `oneOf`; single tool B: `maxItems` or `maximum`; other single removals tried did not flip either | each single tool has an array with `maxItems` (A also has one `oneOf`; B also has paired `minimum`/`maximum` and `pattern`); both groups carry `maxItems` across several tools | the two single-tool units: documented contributor (maxItems) present; magnitude not covered by any documented number; the two group-only units: UNDETERMINED |
-| R5 (miss) | a 3-tool group; its 1-tool and 2-tool parts are each accepted; no keyword-removal run | none run | arrays with `maxItems` in two of the three tools; the largest tool also has paired `minimum`/`maximum`, string length limits, `pattern`/`format` | UNDETERMINED from existing logs |
+| R3 (miss) | a pair of tools, each accepted alone | `maxItems` or `enum` (post-hoc probe) | per tool: moderate nesting, an array with `maxItems` whose items contain another array, several enums, an `anyOf`; the two tools are near-identical in shape and are the only tools in their catalog with `maxItems` | post-hoc probe: needs a combination of constructs; no single statically computable limit separates accepted from rejected (see `reports/provider_compat_ablation.md`). Aggregate (several instances together, no single instance responsible); renamed copies of one tool were accepted |
+| R4 (miss) | at least four independent rejected units: two single tools and two multi-tool groups (a 4-tool and a 32-tool unit) whose halves are each accepted | single tool A: `maxItems` or `oneOf`; single tool B: `maxItems` or `maximum`; other single removals tried did not flip either; 4-tool group (post-hoc probe): `maxItems` or `maximum` (the `maximum` class was left unresolved by one transient HTTP 429); 32-tool group: `maxItems` or `enum` | each single tool has an array with `maxItems` (A also has one `oneOf`; B also has paired `minimum`/`maximum` and `pattern`); both groups carry `maxItems` across several tools | the two single-tool units: documented contributor (maxItems) present; magnitude not covered by any documented number; the two group-only units: post-hoc probe: needs a combination of constructs; no single statically computable limit separates accepted from rejected (see `reports/provider_compat_ablation.md`) |
+| R5 (miss) | TWO independent group-only units (a 3-tool and a 10-tool group), each with every smaller part accepted. Correction: an earlier version of this row named only the 3-tool group; the second unit came from re-deriving the units for the ablation probe | 3-tool unit: `maxItems` or `format`, with `format` instance-critical (one specific instance is needed); 10-tool unit: `maximum` only (removing `maxItems` does not flip it) | 3-tool unit: arrays with `maxItems` in two of the three tools; the largest tool also has paired `minimum`/`maximum`, string length limits, `pattern`/`format`. 10-tool unit: many paired `minimum`/`maximum`, plus `enum`, `format`, `pattern`, string length limits; `maxItems` present but not flipping | post-hoc probe: needs a combination of constructs; no single statically computable limit separates accepted from rejected (see `reports/provider_compat_ablation.md`). The 10-tool unit has no stability boundary, so it is unreplicated |
 
 ### What the evidence supports, and how strongly
 
 1. **Every rejected catalog contains `maxItems`; most accepted ones do not.** 5 of 5 rejected
    catalogs carry at least one array with `maxItems`; 17 of 19 accepted catalogs carry none (the
    other 2 carry some and were accepted). This is a descriptive in-sample contingency, not a test.
-2. **Where a removal was run, `maxItems` always flips.** Of the 4 single-tool units with
+2. **In every single-tool unit with a removal run, `maxItems` flips; in the multi-tool units it
+   flips in 4 of 5.** Of the 4 single-tool units with
    keyword-removal runs (R1, R2, R4 x2), removing `maxItems` alone made all 4 accepted; no other
    single keyword flips more than 2 of them (`oneOf` flips 2, `maximum` flips 1). High
    confidence for "an array length limit participates" in those 4 units; it does NOT show that
    `maxItems` alone suffices (the units are also accepted after one other removal in 3 of 4
-   cases, so a second construct is needed there too).
+   cases, so a second construct is needed there too). In the 5 multi-tool units (post-hoc probe)
+   removing `maxItems` flipped 4; the 10-tool R5 unit flipped only on removing `maximum`, so
+   `maxItems` is not necessary everywhere.
 3. **Size of the limit is not the whole story.** R2's array limits are all small yet the unit
    is rejected, so "large `maxItems`" in the docs' wording does not describe R2; the number of
    limited arrays and their nesting fit better. Not established. This is why the R2 and R4
    single-tool rows carry the label "documented contributor (maxItems) present; magnitude not
    covered by any documented number" rather than a bare DOCUMENTED.
-4. **Aggregation across tools.** R3, R5 and two R4 units are rejected only as a group while every
-   smaller part is accepted. That is consistent with an additive budget over the whole
-   function-declaration set, which no page checked states (UNDOCUMENTED, below).
+4. **Aggregation across tools: probed, not isolated.** Five multi-tool units (R3, two R4, two R5)
+   are rejected only as a group while every smaller part is accepted. The post-hoc ablation
+   probe found no single construct instance responsible in most of them, but could not show an
+   additive budget: renamed copies of one tool, up to 4, were accepted in 3 units, and no single
+   statically computable quantity separated accepted from rejected requests, so the evidence is
+   compatible with a specific conjunction of instances as much as with a budget. No page checked
+   states such a limit (UNDOCUMENTED, below). All of it is in-sample, one model.
 5. **R1's `$ref` TP is weaker than it looks.** The `$ref` check fired on R1 and R1 was
    rejected, but the bisection shows R1's rejection flips on removing `maxItems` and was never
    tested for `$ref` removal. The single TP of `provider_compat_ref` is therefore compatible with
@@ -92,7 +101,7 @@ function declarations:
 
 **UNDOCUMENTED (searched; nothing found on any page above):** (a) any numeric threshold for
 "large" / "long" / "many" in the complexity wording; (b) that the complexity budget is
-aggregated across all function declarations in a request (R3, R5, two R4 units); (c) that the
+aggregated across all function declarations in a request (the five multi-tool units); (c) that the
 structured-output complexity rule applies to function declarations in mode ANY at all (the
 function-calling pages state only the generic "very large or deeply nested" sentence).
 
@@ -114,7 +123,8 @@ attributes may be ignored rather than rejected, and encodes no threshold. Not en
 deliberately: size cut-offs for `maxItems`, nesting-depth cut-offs, per-catalog count budgets
 (all inferred from this sample, none documented), and the other qualitative contributors (long
 names, many enum values, optional-property runs, `anyOf` breadth, numeric bounds), which have no
-checkable definition without inventing a threshold. **Selection caveat:** `maxItems` was chosen
+checkable definition without inventing a threshold. The later ablation probe isolated no limit,
+so no check was added or changed on its account. **Selection caveat:** `maxItems` was chosen
 from the documented contributors because the bisection implicated it; the post-hoc numbers below
 are therefore optimistic for it by construction.
 
