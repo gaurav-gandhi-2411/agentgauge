@@ -17,9 +17,11 @@ from agentgauge.provider_compat import (
     check_function_name,
     check_refs,
     check_schema_depth,
+    check_unsupported_attributes,
     lint_provider_compat,
     measure_array_limits,
     measure_catalog,
+    measure_unsupported_attributes,
     schema_depth,
 )
 
@@ -125,6 +127,7 @@ class TestCatalogSize:
         assert [v.check for v in found] == [
             "provider_compat_schema_size",
             "provider_compat_array_length",
+            "provider_compat_unsupported_attribute",
         ]
         v = found[0]
         assert v.severity == Severity.INFO
@@ -237,3 +240,81 @@ class TestIntegration:
         ]
         first = lint_provider_compat(tools)
         assert first and first == lint_provider_compat(tools)
+
+
+class TestUnsupportedAttributes:
+    def test_only_documented_attributes_no_finding(self) -> None:
+        schema = {
+            "type": "object",
+            "required": ["a"],
+            "properties": {
+                "a": {"type": "string", "nullable": True, "format": "date", "description": "d"},
+                "b": {"type": "array", "items": {"type": "string", "enum": ["x"]}},
+                "c": {"anyOf": [{"$ref": "#/$defs/d"}, {"type": "null"}]},
+            },
+            "$defs": {"d": {"type": "string"}},
+        }
+        assert measure_unsupported_attributes([_tool(schema=schema)]) == {}
+        assert check_unsupported_attributes([_tool(schema=schema)]) == []
+
+    def test_counts_per_keyword_including_nested_locations(self) -> None:
+        schema = {
+            "type": "object",
+            "additionalProperties": False,
+            "properties": {
+                "a": {"type": "array", "items": {"type": "integer", "maximum": 3}, "maxItems": 2},
+                "b": {"oneOf": [{"type": "string", "pattern": "x"}, {"const": 1}]},
+                "c": {"type": "string", "default": "q", "title": "t"},
+            },
+            "$defs": {"d": {"type": "object", "additionalProperties": {"type": "string"}}},
+        }
+        assert measure_unsupported_attributes([_tool(schema=schema)]) == {
+            "additionalProperties": 2,
+            "const": 1,
+            "default": 1,
+            "maxItems": 1,
+            "maximum": 1,
+            "oneOf": 1,
+            "pattern": 1,
+            "title": 1,
+        }
+
+    def test_property_named_like_keyword_is_not_counted(self) -> None:
+        schema = {
+            "type": "object",
+            "properties": {
+                "maxItems": {"type": "integer"},
+                "oneOf": {"type": "string"},
+                "default": {"type": "string"},
+                "additionalProperties": {"type": "boolean"},
+            },
+        }
+        assert measure_unsupported_attributes([_tool(schema=schema)]) == {}
+        assert check_unsupported_attributes([_tool(schema=schema)]) == []
+
+    def test_enum_const_default_values_are_not_walked(self) -> None:
+        schema = {
+            "type": "object",
+            "properties": {"a": {"type": "string", "enum": [{"maxItems": 1}], "format": "x"}},
+        }
+        assert measure_unsupported_attributes([_tool(schema=schema)]) == {}
+
+    def test_hostile_depth_does_not_overflow(self) -> None:
+        schema: dict[str, Any] = {"type": "string", "pattern": "x"}
+        for _ in range(5000):
+            schema = {"type": "array", "items": schema}
+        assert measure_unsupported_attributes([_tool(schema=schema)]) == {"pattern": 1}
+
+    def test_finding_is_info_quotes_docs_and_disclaims_rejection(self) -> None:
+        schema = {"type": "object", "properties": {"a": {"type": "string", "pattern": "x"}}}
+        found = check_unsupported_attributes([_tool(schema=schema)])
+        assert [v.check for v in found] == ["provider_compat_unsupported_attribute"]
+        v = found[0]
+        assert v.severity == Severity.INFO
+        assert "pattern=1" in v.detail
+        assert "Remaining attributes are not supported." in v.detail
+        assert "type, nullable, required, format, description, properties, items, enum," in v.detail
+        assert "no claim that a request will be rejected" in v.detail
+        assert "may be ignored rather than rejected" in v.detail
+        assert "no threshold is encoded" in v.detail
+        assert "multimodal/function-calling" in v.detail

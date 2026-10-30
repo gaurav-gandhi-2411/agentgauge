@@ -29,7 +29,19 @@ Array length limits (`provider_compat_array_length`, INFO, added POST-HOC 2026-1
 5 rejections were seen): the Gemini API structured-output page says "Common causes are large
 maxItems limits (especially on nested arrays)" and the Vertex structured-output page lists "long
 array length limits" -- both for response schemas, neither with a number. Presence-only; no
-threshold is encoded.
+threshold is encoded. CAVEATS on that check, kept here because they bound what it can claim:
+`maxItems` was picked from the documented contributors BECAUSE the bisection had already
+implicated it, so its in-sample precision (5 of 7 firings on the 24 labelled catalogs) is
+selection-biased by construction; and the check adds no coverage beyond
+`provider_compat_schema_size` (the aggregate `any_finding` predicate is unchanged by it).
+
+Unsupported attributes (`provider_compat_unsupported_attribute`, INFO, added POST-HOC
+2026-10-30): the Vertex function-calling page lists the supported schema attributes as "type,
+nullable, required, format, description, properties, items, enum, anyOf, $ref, and $defs.
+Remaining attributes are not supported." The Gemini API function-calling page has no such
+list (only "Only a subset of the OpenAPI schema is supported."). The check reports which
+schema keywords outside the Vertex list a catalog uses; it does not claim rejection (an
+unsupported attribute may be ignored) and encodes no threshold.
 
 None of these findings is scoring: ADVISORY/INFO never set `LintReport.flagged`, and the checks
 only run when the caller opts in, so default lint output and published numbers are unchanged.
@@ -59,6 +71,28 @@ _ARRAY_LIMIT_QUOTES = (
     'Vertex: "Complexity might come from long property names, long array length limits, '
     "enums with many values, objects with lots of optional properties, or a combination of "
     'these factors."'
+)
+
+# Vertex function-calling page, verbatim (fetched 2026-10-30), preceded there by "We support the
+# following attributes:". The Gemini API function-calling page has no equivalent list.
+_SUPPORTED_ATTRIBUTES_QUOTE = (
+    '"We support the following attributes: type, nullable, required, format, description, '
+    'properties, items, enum, anyOf, $ref, and $defs. Remaining attributes are not supported."'
+)
+DOCUMENTED_SUPPORTED_ATTRIBUTES: frozenset[str] = frozenset(
+    {
+        "type",
+        "nullable",
+        "required",
+        "format",
+        "description",
+        "properties",
+        "items",
+        "enum",
+        "anyOf",
+        "$ref",
+        "$defs",
+    }
 )
 
 # Vertex docs: "maximum length of 64"; "maximum depth of nested schema is 32"; "10-20" tools.
@@ -315,6 +349,10 @@ def check_array_length_limits(tools: list[Any]) -> list[Violation]:
     schemas, not function declarations, and neither publishes a numeric threshold, so this
     fires on PRESENCE only, never on a size, and makes no claim that a request will be
     rejected.
+
+    Selection caveat: `maxItems` was chosen from the documented contributors because a
+    bisection had already implicated it, so its in-sample precision is selection-biased. It
+    also adds no coverage beyond `provider_compat_schema_size` (`any_finding` is unchanged).
     """
     n_limited, n_nested, largest = measure_array_limits(tools)
     if not n_limited:
@@ -334,6 +372,55 @@ def check_array_length_limits(tools: list[Any]) -> list[Violation]:
                 f"rejected. If a request is rejected, lowering or removing array limits is "
                 f"the documented first step. See {_GEMINI_STRUCTURED_OUTPUT_DOC_URL} and "
                 f"{_VERTEX_STRUCTURED_OUTPUT_DOC_URL}"
+            ),
+        )
+    ]
+
+
+def measure_unsupported_attributes(tools: list[Any]) -> dict[str, int]:
+    """Count, per keyword, schema nodes carrying a keyword outside the documented list.
+
+    Looks at the KEYS OF SCHEMA NODES only. A property NAME is a key of a `properties` mapping
+    (never of a schema node), so a property literally called `maxItems` is not counted. Walks
+    every subschema reachable through `properties`, `items`, `anyOf`/`oneOf`/`allOf`, `$defs`
+    and the other containers in `_children`, iteratively. Subschemas held under keywords
+    `_children` does not descend (e.g. `dependentSchemas`) are not scanned, but those container
+    keywords are themselves reported as unsupported.
+    """
+    counts: dict[str, int] = {}
+    for tool in tools:
+        for node in _walk(tool.inputSchema or {}):
+            for key in node:
+                if key not in DOCUMENTED_SUPPORTED_ATTRIBUTES:
+                    counts[key] = counts.get(key, 0) + 1
+    return dict(sorted(counts.items()))
+
+
+def check_unsupported_attributes(tools: list[Any]) -> list[Violation]:
+    """INFO advisory: schema keywords outside the Vertex-documented supported-attribute list.
+
+    The Vertex docs state the list (`_SUPPORTED_ATTRIBUTES_QUOTE`) and that the remaining
+    attributes are not supported. They do not say what happens to one (ignored vs rejected), and
+    in our private study catalogs using several of them were accepted, so this makes no claim
+    that a request will be rejected and encodes no threshold: it reports presence and counts.
+    """
+    counts = measure_unsupported_attributes(tools)
+    if not counts:
+        return []
+    listed = ", ".join(f"{k}={v}" for k, v in counts.items())
+    return [
+        Violation(
+            check="provider_compat_unsupported_attribute",
+            severity=Severity.INFO,
+            tool_name=_CATALOG,
+            detail=(
+                f"Gemini/Vertex function calling: this catalog uses schema keywords outside the "
+                f"list the Vertex docs give as supported ({listed}; counts are schema nodes). "
+                f"Vertex docs: {_SUPPORTED_ATTRIBUTES_QUOTE} This note makes no claim that a "
+                f"request will be rejected: unsupported attributes may be ignored rather than "
+                f"rejected, and no threshold is encoded. The Gemini API function-calling page "
+                f'gives no attribute list, only "Only a subset of the OpenAPI schema is '
+                f'supported." See {_VERTEX_DOC_URL} and {_GEMINI_DOC_URL}'
             ),
         )
     ]
@@ -370,5 +457,6 @@ def lint_provider_compat(tools: list[Any]) -> list[Violation]:
         violations += check_refs(tool.name, schema)
     violations += check_catalog_size(tools)
     violations += check_array_length_limits(tools)
+    violations += check_unsupported_attributes(tools)
     violations += check_tool_count(tools)
     return violations
