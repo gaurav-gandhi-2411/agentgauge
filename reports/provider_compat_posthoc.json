@@ -1442,9 +1442,9 @@
     "catalog_files_combined_sha256": "051eb02c2de01590d30abf1f8f621dfeba05e7f86a1b4f48d9ba06ff0a3935bb",
     "catalog_files_count": 24,
     "date": "2026-10-30",
-    "head_at_run": "8552fbbb2594ccda6ce796da4e8d587693c559c4",
+    "head_at_run": "33ec49121e2229b947092b3a662d595a95b78893",
     "rule_file_sha256": "44c6ac3be41057af153b489e82c0ee0883007b49cb2933fe9c6f0845fd82b105",
-    "script_sha256": "acb0cc11bb639c0485d485e89d289964432a13b529176525f2887ad383a46031"
+    "script_sha256": "743b7a270a8933af0e8c0311125d16b225ce02bb9e8e5a0abe247101e0ed9481"
   },
   "secondary_after": {
     "n": 12,
