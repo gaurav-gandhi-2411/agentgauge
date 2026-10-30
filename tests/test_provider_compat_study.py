@@ -90,3 +90,22 @@ def test_vertex_labels_fail_closed_on_unknown_status() -> None:
     assert labels == {"x": True, "y": False} and meta["n_calls"] == 3
     with pytest.raises(ValueError):
         study.vertex_labels([{"server_id": "z", "labeller": "flash", "status": "timeout"}])
+
+
+def test_launch_gate_sentence_not_met_and_met() -> None:
+    weak = study._ratio(1, 1)
+    low = study._ratio(5, 18)
+    s = study.launch_gate_sentence(weak, low)
+    assert "NOT met" in s and "1/1" in s and "0.207" in s and "0.278" in s
+    strong = study._ratio(100, 100)
+    assert "**met**" in study.launch_gate_sentence(strong, strong)
+    undefined = study._ratio(0, 0)
+    assert "NOT met" in study.launch_gate_sentence(undefined, undefined)
+    assert "undefined" in study.launch_gate_sentence(undefined, undefined)
+
+
+def test_sha256_lf_ignores_crlf(tmp_path: Path) -> None:
+    a, b = tmp_path / "a.py", tmp_path / "b.py"
+    a.write_bytes(b"x = 1\r\ny = 2\r\n")
+    b.write_bytes(b"x = 1\ny = 2\n")
+    assert study.sha256_lf(a) == study.sha256_lf(b) == study.sha256_file(b)

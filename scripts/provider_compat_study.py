@@ -185,6 +185,15 @@ def sha256_file(path: Path) -> str:
     return h.hexdigest()
 
 
+def sha256_lf(path: Path) -> str:
+    """Hex sha256 of a text file with CRLF folded to LF.
+
+    Matches the committed git blob regardless of the checkout's autocrlf setting, so the
+    recorded script hash can be checked with `git show HEAD:<path> | sha256sum`.
+    """
+    return hashlib.sha256(path.read_bytes().replace(b"\r\n", b"\n")).hexdigest()
+
+
 def read_jsonl(path: Path) -> list[dict[str, Any]]:
     """Read a JSONL file into a list of dicts."""
     with path.open(encoding="utf-8") as fh:
@@ -265,10 +274,12 @@ def smithery_catalogs(
     frame = read_jsonl(frame_path)
     entry_of_smithery: dict[str, int] = {}
     sources: list[tuple[str, ...]] = []
+    n_smithery_members = 0
     for idx, entry in enumerate(frame):
         sources.append(tuple(sorted(entry["sources"])))
         for m in entry["members"]:
             if m["source"] == "smithery":
+                n_smithery_members += 1
                 entry_of_smithery[m["id"]] = idx
     details = read_jsonl(details_path)
     http = Counter(str(d["status"]) for d in details)
@@ -297,6 +308,7 @@ def smithery_catalogs(
     acct = {
         "frame_entries_total": len(frame),
         "frame_entries_by_source": dict(sorted(frame_src.items())),
+        "smithery_frame_members": n_smithery_members,
         "smithery_detail_records": len(details),
         "smithery_detail_http_status": dict(sorted(http.items())),
         "smithery_detail_http200": fetched_ok,
@@ -354,12 +366,44 @@ def _prev_rows(table: dict[str, Any]) -> list[str]:
     return lines
 
 
+GATE_PRECISION = 0.9
+
+
+def launch_gate_sentence(p_viol: dict[str, Any], p_any: dict[str, Any]) -> str:
+    """One plain-words verdict on the launch-claim gate, computed from the precision ratios.
+
+    The gate is met only when any-violation precision is defined and its Wilson 95 % lower bound
+    is >= GATE_PRECISION (the conservative reading: a point value alone cannot carry the claim
+    at this n). Undefined or unmet precision means NOT met.
+    """
+    lo = p_viol["ci95"][0] if p_viol["ci95"] else None
+    met = lo is not None and lo >= GATE_PRECISION
+    if p_viol["value"] is None:
+        viol = "any-violation precision is undefined (the predicate flags nothing)"
+    else:
+        viol = (
+            f"any-violation precision is {p_viol['k']}/{p_viol['n']} with Wilson lower bound "
+            f"{lo:.3f}"
+        )
+    anyf = (
+        "any-finding precision is undefined"
+        if p_any["value"] is None
+        else f"any-finding precision {p_any['value']:.3f}"
+    )
+    return (
+        f"Launch-claim gate (precision >= {GATE_PRECISION}, judged on the Wilson lower bound of "
+        f"any-violation precision): **{'met' if met else 'NOT met'}**. {viol[0].upper()}{viol[1:]}; "
+        f"{anyf}."
+    )
+
+
 def render_markdown(res: dict[str, Any]) -> str:
     """Render the full aggregate-only report."""
     v, s, pv = res["validation_vertex"], res["validation_gemini_api_secondary"], res["prevalence"]
     vm = v["predicates"]
     prov, pa = res["provenance"], res["prevalence_accounting"]
     p_viol, p_any = vm["any_violation"]["precision"], vm["any_finding"]["precision"]
+    gate_sentence = launch_gate_sentence(p_viol, p_any)
     gate_lines = []
     for label, pr in (("any violation", p_viol), ("any finding", p_any)):
         if pr["value"] is None:
@@ -399,8 +443,13 @@ def render_markdown(res: dict[str, Any]) -> str:
         "- **In-sample.** The rule family was designed AFTER the 5 Vertex rejections analysed "
         "in (a) were seen; those same catalogs are the validation set. This is a descriptive "
         "check of the rule on the data that motivated it, not an out-of-sample estimate.",
+        f"- **Not a random sample.** The held Smithery set is {pa['smithery_detail_records']:,} of "
+        f"the {pa['smithery_frame_members']:,} Smithery frame members: the first listed "
+        "(github-homepage servers first, then by use count). It is not a random sample, so "
+        "prevalence in section (b) describes only this held set, not the ecosystem.",
         f"- **Wide intervals.** n = {v['n']} with {v['n_positive']} positives. Wilson 95 % "
         "intervals are reported and are wide; no claim should rest on a point value alone.",
+        f"- {gate_sentence}",
         "- **Low recall is legitimate.** The private diagnostic (DECISIONS 36) found the "
         "rejections consistent with an AGGREGATE schema-complexity limit, not any single "
         "documented keyword. The rule deliberately implements only DOCUMENTED limits, plus two "
@@ -417,9 +466,9 @@ def render_markdown(res: dict[str, Any]) -> str:
         f"{src['catalogs_also_probed_with_pro']} of them ({src['catalogs_rejected_by_pro']} "
         f"rejected). So n = {v['n']} catalogs, not 29: 29 is the call count. Positive = rejected "
         f"by Flash and/or Pro ({v['n_positive']}); negative = accepted by everything it was sent "
-        f"to ({v['n_negative']}). A second probe after the pre-registered keyword-stripping rule "
-        f"({res['vertex_probe_after_strip']['n_calls']} calls) accepted "
-        f"{res['vertex_probe_after_strip']['n_ok']} of them.",
+        f"to ({v['n_negative']}). A second probe ({res['vertex_probe_after_strip']['n_calls']} "
+        "calls) re-probed the same catalogs after the uniform, pre-registered stripping of "
+        f"validation keywords; it accepted {res['vertex_probe_after_strip']['n_ok']} of them.",
         "",
         "### Definitions",
         "",
@@ -440,6 +489,8 @@ def render_markdown(res: dict[str, Any]) -> str:
         "Precision gate (launch claim needs precision >= 0.9):",
         "",
         *gate_lines,
+        "",
+        gate_sentence,
         "",
         "### Gemini API free-tier preflight (secondary; different endpoint)",
         "",
@@ -539,7 +590,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             "rule_file_sha256": sha256_file(rule_file),
             "head_at_run": _git("rev-parse", "HEAD"),
             "working_tree_dirty": bool(_git("status", "--short", "--", "agentgauge")),
-            "script_sha256": sha256_file(Path(__file__)),
+            "script_sha256": sha256_lf(Path(__file__)),
             "input_files_sha256": {
                 "vertex_probe (f1_schema_probe.jsonl)": sha256_file(probe),
                 "vertex_probe_after_strip (f1_schema_probe_wire1.jsonl)": sha256_file(probe_after),
