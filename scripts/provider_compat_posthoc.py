@@ -90,7 +90,11 @@ def profile(tools: Sequence[dict[str, Any]]) -> tuple[set[str], dict[str, int]]:
     `SELECTED_KEYWORDS` is present, so the predicate machinery treats it like a check.
     """
     objs = _as_objs(tools)
-    fired = {v.check for v in lint_provider_compat(objs, include_attributes=True) if isinstance(v.severity, Severity)}
+    fired = {
+        v.check
+        for v in lint_provider_compat(objs, include_attributes=True)
+        if isinstance(v.severity, Severity)
+    }
     counts = measure_unsupported_attributes(objs)
     if any(k in counts for k in SELECTED_KEYWORDS):
         fired.add(SELECTED)
