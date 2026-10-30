@@ -63,7 +63,7 @@ PREDICATES_AFTER: tuple[str, ...] = (
     "any_finding",
     SELECTED,
 )
-RARE_KEYWORD_MIN_CATALOGS = 3  # keywords used by fewer catalogs are not listed (fingerprint risk)
+RARE_KEYWORD_MIN_CATALOGS = 10  # keywords used by fewer catalogs are not listed (fingerprint risk)
 LABEL_PRESENT = (
     "documented contributor (maxItems) present; magnitude not covered by any documented number"
 )
