@@ -5,8 +5,8 @@ Zero-LLM, aggregate-only: no model or network call was made, and this report con
 ## Provenance
 
 - Date: 2026-10-30
-- Rule code: `agentgauge/provider_compat.py` last changed in commit `9c3090158ca207bcebf64e4b32d8562c635c7ab1`; file sha256 `664d09b6d7270463104e30b9e0219e4a2b322a3fad049c990263123ead8d3ba1`; study run at HEAD `c5646d37c1c84000ed37a0edf389f03a2f232037` (working tree dirty: False).
-- Study script sha256: `5cc6e1c721bad712bad823ef9d457f71b682b3a26659829626500908c97f8e83`
+- Rule code: `agentgauge/provider_compat.py` last changed in commit `9c3090158ca207bcebf64e4b32d8562c635c7ab1`; file sha256 `664d09b6d7270463104e30b9e0219e4a2b322a3fad049c990263123ead8d3ba1`; study run at HEAD `336f69ea3a45e6807ddb1f0724adcdf58ac9690c` (working tree dirty: False).
+- Study script sha256: `ea723ff9d4c44ed3fd32309c37b78ff822ae2666bceee7e79a1ba9b86c965305`
 - Input file sha256 (private data; hashes only):
   - vertex_probe (f1_schema_probe.jsonl): `bf642d4f333154ebdee6f8b337cf4b1749bccb76dc130825193e4c651ee2020b`
   - vertex_probe_after_strip (f1_schema_probe_wire1.jsonl): `8b498a28b7c9ba72c35e1bde0e20ea683a28cd1b12332a58b8c3da4b723f562d`
@@ -42,14 +42,16 @@ Zero-LLM, aggregate-only: no model or network call was made, and this report con
 ## Read this first: in-sample, wide intervals, low recall is expected
 
 - **In-sample.** The rule family was designed AFTER the 5 Vertex rejections analysed in (a) were seen; those same catalogs are the validation set. This is a descriptive check of the rule on the data that motivated it, not an out-of-sample estimate.
+- **Not a random sample.** The held Smithery set is 3,327 of the 6,610 Smithery frame members: the first listed (github-homepage servers first, then by use count). It is not a random sample, so prevalence in section (b) describes only this held set, not the ecosystem.
 - **Wide intervals.** n = 24 with 5 positives. Wilson 95 % intervals are reported and are wide; no claim should rest on a point value alone.
+- Launch-claim gate (precision >= 0.9, judged on the Wilson lower bound of any-violation precision): **NOT met**. Any-violation precision is 1/1 with Wilson lower bound 0.207; any-finding precision 0.278.
 - **Low recall is legitimate.** The private diagnostic (DECISIONS 36) found the rejections consistent with an AGGREGATE schema-complexity limit, not any single documented keyword. The rule deliberately implements only DOCUMENTED limits, plus two advisories that make no pass/fail claim; it is not a rejection predictor.
 
 ## (a) Validation against observed accept/reject outcomes
 
 ### What the "29" is
 
-The Vertex schema probe made **29 calls over 24 catalogs**: {'flash:HTTP_400': 5, 'flash:ok': 19, 'pro:HTTP_400': 3, 'pro:ok': 2}. Flash was called on every catalog (5 rejected with HTTP 400, 19 accepted); Pro was called on 5 of them (3 rejected). So n = 24 catalogs, not 29: 29 is the call count. Positive = rejected by Flash and/or Pro (5); negative = accepted by everything it was sent to (19). A second probe after the pre-registered keyword-stripping rule (29 calls) accepted 29 of them.
+The Vertex schema probe made **29 calls over 24 catalogs**: {'flash:HTTP_400': 5, 'flash:ok': 19, 'pro:HTTP_400': 3, 'pro:ok': 2}. Flash was called on every catalog (5 rejected with HTTP 400, 19 accepted); Pro was called on 5 of them (3 rejected). So n = 24 catalogs, not 29: 29 is the call count. Positive = rejected by Flash and/or Pro (5); negative = accepted by everything it was sent to (19). A second probe (29 calls) re-probed the same catalogs after the uniform, pre-registered stripping of validation keywords; it accepted 29 of them.
 
 ### Definitions
 
@@ -73,6 +75,8 @@ Precision gate (launch claim needs precision >= 0.9):
 
 - `any violation`: point precision 1.000, Wilson lower bound 0.207; point >= 0.9: **True**; lower bound >= 0.9: **False**.
 - `any finding`: point precision 0.278, Wilson lower bound 0.125; point >= 0.9: **False**; lower bound >= 0.9: **False**.
+
+Launch-claim gate (precision >= 0.9, judged on the Wilson lower bound of any-violation precision): **NOT met**. Any-violation precision is 1/1 with Wilson lower bound 0.207; any-finding precision 0.278.
 
 ### Gemini API free-tier preflight (secondary; different endpoint)
 
