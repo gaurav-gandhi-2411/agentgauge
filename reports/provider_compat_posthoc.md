@@ -9,8 +9,8 @@ Zero-LLM, aggregate-only: no model or network call was made, and this report con
 ## Provenance
 
 - Date: 2026-10-30
-- Rule file sha256 `d1b697cb982f7d04cb577ac6ec0d0a6c002c7180cf4b6c2fb0246077f84d6a46`; run at HEAD `00ea0fe6c8fd467fdf7050032e8277411b9b136e` (`agentgauge/` tree dirty: False).
-- Script sha256 (LF-normalised): `d069fa47c22576e8b9709bde49b9e6befec6fa01e4203a97fd58674918e48641`
+- Rule file sha256 `1adb6dad598eecfd6331df2ad6047775f796f3d246f9a205b64b876c8b9a808e`; run at HEAD `bc511a280f310f7748aaa83a0df42ff5f8ada673` (`agentgauge/` tree dirty: False).
+- Script sha256 (LF-normalised): `76a8c26da9f6ffef1dbe4bbc4563884edccd1722fa2a0774e16a7010d2260863`
 - Original report reproduced exactly by the unchanged checks: **True** (validation and prevalence blocks compared with `provider_compat_validation.json`).
 - Input files: same private files and hashes as the original report (`provider_compat_validation.md`, Provenance).
 

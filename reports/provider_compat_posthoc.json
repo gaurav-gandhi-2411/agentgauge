@@ -1442,9 +1442,9 @@
     "catalog_files_combined_sha256": "051eb02c2de01590d30abf1f8f621dfeba05e7f86a1b4f48d9ba06ff0a3935bb",
     "catalog_files_count": 24,
     "date": "2026-10-30",
-    "head_at_run": "00ea0fe6c8fd467fdf7050032e8277411b9b136e",
-    "rule_file_sha256": "d1b697cb982f7d04cb577ac6ec0d0a6c002c7180cf4b6c2fb0246077f84d6a46",
-    "script_sha256": "d069fa47c22576e8b9709bde49b9e6befec6fa01e4203a97fd58674918e48641"
+    "head_at_run": "bc511a280f310f7748aaa83a0df42ff5f8ada673",
+    "rule_file_sha256": "1adb6dad598eecfd6331df2ad6047775f796f3d246f9a205b64b876c8b9a808e",
+    "script_sha256": "76a8c26da9f6ffef1dbe4bbc4563884edccd1722fa2a0774e16a7010d2260863"
   },
   "secondary_after": {
     "n": 12,
