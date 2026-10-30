@@ -18,6 +18,7 @@ whose mapping is not written anywhere. The per-miss diagnosis
 from __future__ import annotations
 
 import argparse
+import hashlib
 import importlib.util
 import json
 import sys
@@ -513,6 +514,9 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         and res["prevalence_before"] == original["prevalence"]
     )
     cat_hashes = sorted(study.sha256_file(p) for p in (data / "f_catalogs").glob("*.json"))
+    # One combined digest, not the per-file list: the list is published in the original report,
+    # and repeating 24 per-catalog hashes here adds fingerprints without adding provenance.
+    combined = hashlib.sha256("\n".join(cat_hashes).encode()).hexdigest()
     res["provenance"] = {
         "date": datetime.now(UTC).date().isoformat(),
         "rule_file_sha256": study.sha256_file(_ROOT / "agentgauge" / "provider_compat.py"),
@@ -520,7 +524,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "agentgauge_tree_dirty": bool(study._git("status", "--short", "--", "agentgauge")),
         "script_sha256": study.sha256_lf(Path(__file__)),
         "before_reproduces_original_report": same,
-        "catalog_files_sha256_sorted": cat_hashes,
+        "catalog_files_count": len(cat_hashes),
+        "catalog_files_combined_sha256": combined,
     }
     if not same:
         raise RuntimeError("'before' numbers do not reproduce the original report; refusing")
