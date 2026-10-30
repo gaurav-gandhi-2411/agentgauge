@@ -9,8 +9,8 @@ Zero-LLM, aggregate-only: no model or network call was made, and this report con
 ## Provenance
 
 - Date: 2026-10-30
-- Rule file sha256 `d1b697cb982f7d04cb577ac6ec0d0a6c002c7180cf4b6c2fb0246077f84d6a46`; run at HEAD `15099fe88264d8dd52cdefedadfc665db0cf9b83` (`agentgauge/` tree dirty: False).
-- Script sha256 (LF-normalised): `eedb0e184586137fdfb084efd7b60cb7aeea3a0c6984d7e23916f1abddb39dc6`
+- Rule file sha256 `d1b697cb982f7d04cb577ac6ec0d0a6c002c7180cf4b6c2fb0246077f84d6a46`; run at HEAD `00ea0fe6c8fd467fdf7050032e8277411b9b136e` (`agentgauge/` tree dirty: False).
+- Script sha256 (LF-normalised): `d069fa47c22576e8b9709bde49b9e6befec6fa01e4203a97fd58674918e48641`
 - Original report reproduced exactly by the unchanged checks: **True** (validation and prevalence blocks compared with `provider_compat_validation.json`).
 - Input files: same private files and hashes as the original report (`provider_compat_validation.md`, Provenance).
 
@@ -27,8 +27,9 @@ Zero-LLM, aggregate-only: no model or network call was made, and this report con
 
 Source: the existing Vertex probe and bisection logs only (private; no new call of any kind was
 made). The five rejected catalogs are R1-R5, arbitrary labels; the mapping is deliberately not
-recorded, and this table is kept at construct level, without per-catalog counts, tool counts or
-limit values, so a row cannot be matched to a server. R1 is the one the `$ref` check caught;
+recorded, and this table is kept at construct level: no identifiers, catalog sizes or limit
+values. It does give the size of the smallest rejected unit (one tool, a pair, a small group) and
+coarse descriptors such as "small limits", because those are the diagnostic finding. R1 is the one the `$ref` check caught;
 R2-R5 are the four misses. The bisection log stores only accept/reject per tool subset and per
 single-keyword removal, so a construct can be pinned only where such a removal was run.
 
