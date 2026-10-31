@@ -381,12 +381,30 @@ def _group_rows(groups: dict[str, dict[str, Any]], title: str) -> list[str]:
     return lines
 
 
+def headline_note(v: dict[str, Any]) -> str:
+    """One plain sentence on the trivial-baseline comparison, built from the computed numbers."""
+    base, anyf = v["baseline_predict_has_required_arg"], v["overall"][ANY]
+    restricted = v["restricted_to_items_with_ge1_required_arg"]["metrics"][ANY]["specificity"]
+
+    def prs(m: dict[str, Any]) -> str:
+        return " / ".join(f"{m[k]['value']:.3f}" for k in ("precision", "recall", "specificity"))
+
+    return (
+        "any_finding does not beat the trivial 'has at least one required argument' baseline: "
+        f"on all items the baseline gets precision / recall / specificity {prs(base)} versus "
+        f"{prs(anyf)} for any_finding, and on the items with at least one required argument "
+        f"any_finding specificity is {restricted['value']:.3f} "
+        f"({restricted['k']}/{restricted['n']})."
+    )
+
+
 def render_markdown(res: dict[str, Any]) -> str:
     """Human-readable report; caveats first."""
     v, p = res["validation"], res["provenance"]
     out = ["# Task-specification check: post-hoc validation", ""]
     out += ["**Read these caveats first.**", ""]
     out += [f"{i}. {c}" for i, c in enumerate(CAVEATS, 1)]
+    out += ["", f"**Headline:** {res['headline_note']}"]
     out += [
         "",
         res["statement"],
@@ -491,8 +509,10 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         },
         "post_validation_changes": [],
         "validation": validate(items, catalogs),
+        "headline_note": "",
         "prevalence_committed_corpora": committed_corpora(),
     }
+    result["headline_note"] = headline_note(result["validation"])
     # Fail closed on the aggregate-only promise: no identifier may reach the output.
     blob = json.dumps(result) + render_markdown(result)
     leaked = find_leaks(blob, leak_tokens(items, catalogs) - set(catalogs))
