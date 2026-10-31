@@ -19,12 +19,15 @@ what its constraints check and what its text makes knowable.
 ## 1. State every required argument value in the task text
 
 An agent cannot be scored fairly on a value the task never tells it. The shipped worked example
-describes a ticket with its project, title, order number and priority all in the text, and
-constrains each of them (`agentgauge/cli.py`, `_STARTER_TASKS_TEMPLATE`). The README quickstart
-and the predictive-validity report describe the opposite hazard: do not quote the gold tool name,
-or required literal values, in a way that makes selection trivial (`README.md`, Quickstart step 2;
-`reports/predictive_validity_study.md`, artifact 1). The target is the narrow middle: state the
-values the agent must pass, in natural language, without naming the tool.
+describes a ticket with its project, title and priority in the text, and constrains the project,
+the title (via its order number) and the priority (`agentgauge/cli.py`,
+`_STARTER_TASKS_TEMPLATE`). Note the README quickstart and the predictive-validity report say to
+never quote "the gold tool name or a required literal value" in the task text, because that makes
+selection trivial (`README.md`, Quickstart step 2; `reports/predictive_validity_study.md`,
+artifact 1). That wording seems to conflict with this section. This guide's reconciliation, which
+is a synthesis and **not measured in this repo**: state the values the agent must pass in natural
+language, without naming the tool and without lifting them verbatim from the tool's own
+description, as the starter template does.
 
 Illustrative:
 
@@ -48,13 +51,16 @@ Evidence here is thin. What is committed:
   state that the real API nests `fields.project.key`, and the S3 fixture notes call each tool a
   "simplified wrapper" with flat parameters (`evals/fixtures/v2_4_corpus/jira_issues_NOTES.md`,
   "Honesty about sourcing"; `evals/fixtures/v2_4_corpus/aws_s3_NOTES.md`, opening section).
-- In one audit, a genuine failure category was an agent returning "a completely different response
-  shape (e.g. a nested `{"filter": {...}}` object)" (`reports/v2_3_task1_advisory_audit.md`).
+- A constraint whose `param` is not a top-level property of the tool schema is a BLOCKING audit
+  finding (`check_scoring_reference_consistency`, `agentgauge/audit.py`). It runs before any live
+  trial in `diff` and `eval` and exits 2 (`_schema_audit_or_exit`, `agentgauge/cli.py`). So a
+  nested-path constraint stops the run instead of silently scoring 0.
 
 Guidance that follows from this, **not measured in this repo**: if a tool takes its required
 arguments inside a wrapper object, say in the task text that they belong together, and check that
 your constraints can reach them. This repo has no measurement of how often wrapper inference
-fails, and no audit rule for it.
+fails, and no audit rule for that specific failure (the check above only catches a constraint
+naming a missing top-level parameter).
 
 ## 3. Watch near-duplicate tools
 
@@ -69,8 +75,8 @@ Two commands flag near-duplicate names, so run them on your server first:
 - `agentgauge lint` reports `name_collision` as an ADVISORY finding when the normalized
   edit-distance similarity of two names is at least 0.8 (`agentgauge/linter.py`,
   `check_name_collisions`; threshold in `agentgauge/scorer.py`, `_COLLISION_THRESHOLD`).
-- `agentgauge scan` deducts 0.15 per near-duplicate pair, capped at 0.30 (`agentgauge/scorer.py`,
-  `_COLLISION_PENALTY`).
+- `agentgauge scan` deducts 0.15 per near-duplicate pair, capped at 0.30, from the discoverability
+  heuristic sub-score, not the overall scan score (`agentgauge/scorer.py`, `_COLLISION_PENALTY`).
 
 The advice to write one task per member of each confusable pair, each cuing its own discriminator,
 is **not measured in this repo**. The T18 note above is the only committed evidence, and it
@@ -88,7 +94,9 @@ So: put a distinctive token in the task text (an ID, a number, a short quoted ph
 constrain on that token with `contains`. The audit's "stated value" detector is a heuristic that
 looks only at quoted strings and tokens containing a digit, and counts a literal as covered only
 if a matching `enum`/`contains`/`numeric_equals`/`range`/`format` constraint accepts it
-(`agentgauge/audit.py`, `_task_literals`, `_literal_is_checked`). A bare unquoted word is
+(`agentgauge/audit.py`, `_task_literals`, `_literal_is_checked`; `enum` and `contains` match by
+substring in either direction, and the check does not look at which parameter the constraint is
+on). A bare unquoted word is
 invisible to it.
 
 No committed measurement says how often agents paraphrase a free-text value, so the size of this
@@ -97,9 +105,11 @@ defined, not from an observed failure rate.
 
 ## 5. Constraint coverage
 
-Every `diff` run prints a line of the form
+Every live `diff` or `eval` run with `--tasks` prints a line of the form
 `constraint coverage over N tasks: X selection-only, Y partial, Z full`
-(`agentgauge/audit.py`, `CoverageSummary.line`; printed from `agentgauge/cli.py`). Classes
+(`agentgauge/audit.py`, `CoverageSummary.line`; printed from `agentgauge/cli.py`, where the
+coverage object is initialised to `None` with the comment "needs the tasks file, so live runs
+only", so replay runs do not print it). Classes
 (`agentgauge/audit.py`, `classify_task_coverage`):
 
 - **selection-only**: no constraint at all. Any arguments score 1.0 once the tool is chosen.
@@ -130,8 +140,9 @@ comment above `_QUOTED`).
 ## How to check your tasks
 
 Flags verified against `uv run agentgauge --help` and each subcommand's `--help`. There is no
-standalone `audit` subcommand: the audit runs inside `diff` and `eval`, and a blocking finding (for
-example a task that contains its own gold tool name) stops the run.
+standalone `audit` subcommand: the "agentgauge audit" the README mentions is the in-process audit
+inside `diff` and `eval`, and a blocking finding (for example a task that contains its own gold
+tool name) stops the run.
 
 ```bash
 # scaffold a starter tasks file and CI workflow into a directory
@@ -154,12 +165,13 @@ agentgauge diff before_server.py after_server.py --tasks agentgauge_tasks.json
 | Constraint kinds; `enum` exact case-sensitive; `contains` case-insensitive | `agentgauge/constraints.py` | `Constraint` docstring |
 | No constraints scores 1.0 on arguments | `agentgauge/constraints.py` | `constraint_satisfaction` docstring |
 | Constraints read top-level args by name | `agentgauge/constraints.py` | `constructed_args.get(c.param)` |
-| Worked example states and constrains project, title, order number, priority; `contains` on "4417" | `agentgauge/cli.py` | `_STARTER_TASKS_TEMPLATE` |
+| Constraint on a non-top-level param is BLOCKING, pre-trial, exit 2 | `agentgauge/audit.py`; `agentgauge/cli.py` | `check_scoring_reference_consistency`; `_schema_audit_or_exit` |
+| Coverage line only on live runs with tasks | `agentgauge/cli.py` | `coverage: CoverageSummary | None = None  # needs the tasks file, so live runs only` |
+| Worked example constrains project, title (`contains` "4417") and priority | `agentgauge/cli.py` | `_STARTER_TASKS_TEMPLATE` |
 | Do not quote gold tool name or required literal values | `README.md` | Quickstart step 2 |
 | Same, as a fixed measurement artifact | `reports/predictive_validity_study.md` | artifact 1 ("Task-name leakage") |
 | Real Jira API nests `fields.project.key`; fixtures flatten | `evals/fixtures/v2_4_corpus/jira_issues_NOTES.md` | "Honesty about sourcing" |
 | S3 tools are simplified wrappers with flat params | `evals/fixtures/v2_4_corpus/aws_s3_NOTES.md` | opening paragraph |
-| Nested `{"filter": {...}}` response-shape failure | `reports/v2_3_task1_advisory_audit.md` | paragraph after the model table |
 | Floor ties from ambiguous gold: `find_entries`/`lookup_data`, `book_slot`/`plan_event` | `STATUS.md` | T18 "Scope" paragraph ("2 tied at floor") |
 | `name_collision` advisory at similarity >= 0.8 | `agentgauge/linter.py`; `agentgauge/scorer.py` | `check_name_collisions`; `_COLLISION_THRESHOLD = 0.8` |
 | Scan deducts 0.15 per pair, capped 0.30 | `agentgauge/scorer.py` | `_COLLISION_PENALTY` and the comment above it |
