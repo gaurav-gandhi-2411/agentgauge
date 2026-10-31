@@ -377,4 +377,9 @@ class TestScoringReferenceConsistencyGate:
             )
 
         assert "scoring_reference_consistency" not in result.output
-        assert result.exit_code in (0, 1)  # a real verdict was reached, not an audit block
+        # Passed the schema audit, then --mock correctly REFUSED to produce a verdict (MockProvider
+        # cannot yield a meaningful one; was: "exit_code in (0, 1)", a mock NO_CHANGE).
+        assert result.exit_code == 2, result.output
+        assert "--mock cannot produce a verdict" in result.output
+        assert "NO_CHANGE" not in result.output
+        mock_client.call_tool.assert_not_called()
