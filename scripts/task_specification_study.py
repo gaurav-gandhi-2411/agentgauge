@@ -486,7 +486,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             "items_file_sha256": sha256_file(items_path),
             "catalog_files": {
                 "count": len(catalogs),
-                "sha256_sorted": sorted(catalogs),
+                "combined_sha256": hashlib.sha256("".join(sorted(catalogs)).encode()).hexdigest(),
             },
         },
         "post_validation_changes": [],
