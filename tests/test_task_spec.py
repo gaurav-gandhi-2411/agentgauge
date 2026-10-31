@@ -227,3 +227,33 @@ class TestCli:
         ):
             res = CliRunner().invoke(app, ["lint", "srv.py", "--json"])
         assert "task_specification" not in json.loads(res.output)
+
+
+class TestSurvivingMutants:
+    """Boundary tests added after mutation testing: each fails against one specific mutant."""
+
+    def test_min_description_tokens_boundary(self) -> None:
+        three = "alpha bravo charlie"
+        four = "alpha bravo charlie delta"
+        # identical descriptions (Jaccard 1.0): 3 content tokens is below the minimum, 4 is not.
+        assert CHECK_DESC_DUP not in checks(
+            BlindTask("a1", "x"), [tool("a1", {}, [], three), tool("b2", {}, [], three)]
+        )
+        assert CHECK_DESC_DUP in checks(
+            BlindTask("a1", "x"), [tool("a1", {}, [], four), tool("b2", {}, [], four)]
+        )
+        # the other tool's description is held to the same minimum (Jaccard 0.75 here)
+        assert CHECK_DESC_DUP not in checks(
+            BlindTask("a1", "x"), [tool("a1", {}, [], four), tool("b2", {}, [], three)]
+        )
+
+    def test_wrapper_fires_when_task_names_only_one_of_two_inner_fields(self) -> None:
+        items = TestWrapperObjectArg.items
+        t = tool("add", {"todos": {"type": "array", "items": items}}, ["todos"])
+        task = BlindTask("add", "Add a todo with the title 'Pay rent'.")
+        assert CHECK_WRAPPER in checks(task, [t])
+
+    def test_single_value_enum_and_const_count_as_satisfied(self) -> None:
+        for schema in ({"enum": ["only"]}, {"const": "only"}):
+            t = tool("x", {"mode": schema}, ["mode"])
+            assert CHECK_UNSTATED not in checks(BlindTask("x", "Do it."), [t])
