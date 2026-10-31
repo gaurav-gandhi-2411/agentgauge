@@ -7,6 +7,7 @@
     "Possible circularity: the `near_duplicate_tool` field is a boolean that matches a threshold of about 0.70 on `max_cosine_to_other_tool`, a cosine similarity between the gold tool and the most similar other tool in the same catalog; the `primary_cause` and `all_causes` fields are present for disputed items only. The tool-pair near-duplicate findings here use name edit distance and description token overlap on the same catalogs, so the near-duplicate result is not independent of how that field was derived. How `primary_cause` was assigned was not inspected beyond the field values.",
     "No launch claim: nothing here gates, scores or changes a published number. The check is opt-in, ADVISORY only."
   ],
+  "headline_note": "any_finding does not beat the trivial 'has at least one required argument' baseline: on all items the baseline gets precision / recall / specificity 0.759 / 1.000 / 0.683 versus 0.731 / 0.888 / 0.673 for any_finding, and on the items with at least one required argument any_finding specificity is 0.134 (32/239).",
   "post_validation_changes": [],
   "prevalence_committed_corpora": {
     "argument_degradation_253": {
@@ -148,12 +149,12 @@
       "count": 24
     },
     "date": "2026-10-31",
-    "head_at_run": "e378b17008c2e7d0a1e7907c667fc5e364f3f322",
+    "head_at_run": "fa02a569b9b0879bd7d31d8c468b1f94bdb31d4d",
     "items_file_sha256": "77f5c5e8addc7395159827f2ac48a3628969d137bd746ad2ab48058ff13e8ff5",
     "rule_commit": "849e9c482f60ffcddc050202d91381c3ef01362c",
     "rule_file_last_commit": "849e9c482f60ffcddc050202d91381c3ef01362c",
     "rule_file_sha256": "4438ae298e8b21e2ec82d356e26800759e920b3665b3f7c482c6bf055e853add",
-    "script_sha256": "d4861d0f76d8ac3890431e9d03a51033095248d4c4574e71e8c8fefae23af293",
+    "script_sha256": "a5f30bbf2d9a1ed7b4883de79c6fdf76bb7604c6b613c2f3a30770b5e81f9874",
     "working_tree_dirty": false
   },
   "statement": "Zero-LLM, aggregate-only: no model or network call; counts only.",

@@ -9,11 +9,13 @@
 5. Possible circularity: the `near_duplicate_tool` field is a boolean that matches a threshold of about 0.70 on `max_cosine_to_other_tool`, a cosine similarity between the gold tool and the most similar other tool in the same catalog; the `primary_cause` and `all_causes` fields are present for disputed items only. The tool-pair near-duplicate findings here use name edit distance and description token overlap on the same catalogs, so the near-duplicate result is not independent of how that field was derived. How `primary_cause` was assigned was not inspected beyond the field values.
 6. No launch claim: nothing here gates, scores or changes a published number. The check is opt-in, ADVISORY only.
 
+**Headline:** any_finding does not beat the trivial 'has at least one required argument' baseline: on all items the baseline gets precision / recall / specificity 0.759 / 1.000 / 0.683 versus 0.731 / 0.888 / 0.673 for any_finding, and on the items with at least one required argument any_finding specificity is 0.134 (32/239).
+
 Zero-LLM, aggregate-only: no model or network call; counts only.
 
 - rule_commit (thresholds fixed): `849e9c482f60ffcddc050202d91381c3ef01362c`
 - rule file sha256 at run: `4438ae298e8b21e2ec82d356e26800759e920b3665b3f7c482c6bf055e853add`
-- head at run: `e378b17008c2e7d0a1e7907c667fc5e364f3f322` (working tree dirty: False)
+- head at run: `fa02a569b9b0879bd7d31d8c468b1f94bdb31d4d` (working tree dirty: False)
 - post-validation rule changes: none
 - items: 1506 (753 disputed, 753 control; 514 controls have zero required arguments)
 
