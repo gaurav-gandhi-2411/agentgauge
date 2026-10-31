@@ -1,0 +1,1705 @@
+{
+  "caveats": [
+    "POST-HOC and IN-SAMPLE: the rules were designed after seeing the A6 cause taxonomy (wrapper object, free-text required argument, near-duplicate tools, other) and are scored on the same items. These numbers are not out-of-sample performance.",
+    "The label is open-labeller DISAGREEMENT on required arguments: a noisy proxy for underspecification, not ground truth. A disputed item can be well specified (a labeller error) and an agreed item can be underspecified (shared bias).",
+    "The control set is stratum-matched, not a random sample, and the 50/50 class balance is by construction. Precision does not transfer to a real prevalence of underspecified tasks; recall and specificity are the transferable quantities.",
+    "Structural confound: every disputed item has at least one required argument (disagreement on required arguments needs one), while a share of controls has none. Argument-based findings cannot fire on those controls, which inflates specificity and precision. The `restricted_to_items_with_ge1_required_arg` table removes this confound and is the one to read.",
+    "Possible circularity: the `near_duplicate_tool` field is a boolean that matches a threshold of about 0.70 on `max_cosine_to_other_tool`, a cosine similarity between the gold tool and the most similar other tool in the same catalog; the `primary_cause` and `all_causes` fields are present for disputed items only. The tool-pair near-duplicate findings here use name edit distance and description token overlap on the same catalogs, so the near-duplicate result is not independent of how that field was derived. How `primary_cause` was assigned was not inspected beyond the field values.",
+    "No launch claim: nothing here gates, scores or changes a published number. The check is opt-in, ADVISORY only."
+  ],
+  "post_validation_changes": [],
+  "prevalence_committed_corpora": {
+    "argument_degradation_253": {
+      "any_finding": {
+        "ci95": [
+          0.9440008247673488,
+          0.9865343041693329
+        ],
+        "k": 246,
+        "n": 253,
+        "value": 0.9723320158102767
+      },
+      "n_tasks": 253,
+      "near_duplicate_name_or_description": {
+        "ci95": [
+          0.0,
+          0.014956537150709458
+        ],
+        "k": 0,
+        "n": 253,
+        "value": 0.0
+      },
+      "task_spec_free_text_required_arg": {
+        "ci95": [
+          0.826898653159873,
+          0.9089638546603478
+        ],
+        "k": 221,
+        "n": 253,
+        "value": 0.8735177865612648
+      },
+      "task_spec_near_duplicate_description": {
+        "ci95": [
+          0.0,
+          0.014956537150709458
+        ],
+        "k": 0,
+        "n": 253,
+        "value": 0.0
+      },
+      "task_spec_near_duplicate_name": {
+        "ci95": [
+          0.0,
+          0.014956537150709458
+        ],
+        "k": 0,
+        "n": 253,
+        "value": 0.0
+      },
+      "task_spec_unstated_required_arg": {
+        "ci95": [
+          0.818075866234673,
+          0.902212831896231
+        ],
+        "k": 219,
+        "n": 253,
+        "value": 0.8656126482213439
+      },
+      "task_spec_wrapper_object_arg": {
+        "ci95": [
+          0.0,
+          0.014956537150709458
+        ],
+        "k": 0,
+        "n": 253,
+        "value": 0.0
+      }
+    },
+    "predictive_validity_44_tool_sets": {
+      "any_finding": {
+        "ci95": [
+          0.7476279659241,
+          0.7963073289382804
+        ],
+        "k": 878,
+        "n": 1136,
+        "value": 0.772887323943662
+      },
+      "n_tasks": 1136,
+      "near_duplicate_name_or_description": {
+        "ci95": [
+          0.1193514989750599,
+          0.15949557783642945
+        ],
+        "k": 157,
+        "n": 1136,
+        "value": 0.1382042253521127
+      },
+      "task_spec_free_text_required_arg": {
+        "ci95": [
+          0.6429120043964982,
+          0.6974862123883463
+        ],
+        "k": 762,
+        "n": 1136,
+        "value": 0.670774647887324
+      },
+      "task_spec_near_duplicate_description": {
+        "ci95": [
+          0.06729721817396205,
+          0.09925353969819715
+        ],
+        "k": 93,
+        "n": 1136,
+        "value": 0.0818661971830986
+      },
+      "task_spec_near_duplicate_name": {
+        "ci95": [
+          0.06012053135296404,
+          0.09063855666835187
+        ],
+        "k": 84,
+        "n": 1136,
+        "value": 0.07394366197183098
+      },
+      "task_spec_unstated_required_arg": {
+        "ci95": [
+          0.41239527582045216,
+          0.4700445152899367
+        ],
+        "k": 501,
+        "n": 1136,
+        "value": 0.4410211267605634
+      },
+      "task_spec_wrapper_object_arg": {
+        "ci95": [
+          0.014237636676145322,
+          0.031243652339548563
+        ],
+        "k": 24,
+        "n": 1136,
+        "value": 0.02112676056338028
+      }
+    }
+  },
+  "provenance": {
+    "catalog_files": {
+      "combined_sha256": "688131d12b230e0e5e66103caceda9ac2bff3794816ae4623aba14175b68d9db",
+      "count": 24
+    },
+    "date": "2026-10-31",
+    "head_at_run": "e378b17008c2e7d0a1e7907c667fc5e364f3f322",
+    "items_file_sha256": "77f5c5e8addc7395159827f2ac48a3628969d137bd746ad2ab48058ff13e8ff5",
+    "rule_commit": "849e9c482f60ffcddc050202d91381c3ef01362c",
+    "rule_file_last_commit": "849e9c482f60ffcddc050202d91381c3ef01362c",
+    "rule_file_sha256": "4438ae298e8b21e2ec82d356e26800759e920b3665b3f7c482c6bf055e853add",
+    "script_sha256": "d4861d0f76d8ac3890431e9d03a51033095248d4c4574e71e8c8fefae23af293",
+    "working_tree_dirty": false
+  },
+  "statement": "Zero-LLM, aggregate-only: no model or network call; counts only.",
+  "validation": {
+    "baseline_predict_has_required_arg": {
+      "fn": 0,
+      "fp": 239,
+      "precision": {
+        "ci95": [
+          0.7314938211173521,
+          0.7846525950086591
+        ],
+        "k": 753,
+        "n": 992,
+        "value": 0.7590725806451613
+      },
+      "recall": {
+        "ci95": [
+          0.9949243546638158,
+          1.0
+        ],
+        "k": 753,
+        "n": 753,
+        "value": 1.0
+      },
+      "specificity": {
+        "ci95": [
+          0.6485018735120236,
+          0.7148503144462093
+        ],
+        "k": 514,
+        "n": 753,
+        "value": 0.6826029216467463
+      },
+      "tn": 514,
+      "tp": 753
+    },
+    "baseline_predict_near_duplicate_tool_flag": {
+      "fn": 700,
+      "fp": 54,
+      "precision": {
+        "ci95": [
+          0.402410704021837,
+          0.5885674010063757
+        ],
+        "k": 53,
+        "n": 107,
+        "value": 0.4953271028037383
+      },
+      "recall": {
+        "ci95": [
+          0.05421195941374353,
+          0.09091943837179593
+        ],
+        "k": 53,
+        "n": 753,
+        "value": 0.0703851261620186
+      },
+      "specificity": {
+        "ci95": [
+          0.9076032083247002,
+          0.9446228325227913
+        ],
+        "k": 699,
+        "n": 753,
+        "value": 0.9282868525896414
+      },
+      "tn": 699,
+      "tp": 53
+    },
+    "n_controls_with_zero_required_args": 514,
+    "n_items": 1506,
+    "n_negative_control": 753,
+    "n_positive_disputed": 753,
+    "near_duplicate_flag_vs_cosine": {
+      "flag_false_max_max_cosine": 0.6956,
+      "flag_true_min_max_cosine": 0.7026
+    },
+    "overall": {
+      "any_finding": {
+        "fn": 84,
+        "fp": 246,
+        "precision": {
+          "ci95": [
+            0.7014975494624077,
+            0.758864786106242
+          ],
+          "k": 669,
+          "n": 915,
+          "value": 0.7311475409836066
+        },
+        "recall": {
+          "ci95": [
+            0.8639594465639111,
+            0.9089897532745115
+          ],
+          "k": 669,
+          "n": 753,
+          "value": 0.8884462151394422
+        },
+        "specificity": {
+          "ci95": [
+            0.639002035420905,
+            0.7058522229685451
+          ],
+          "k": 507,
+          "n": 753,
+          "value": 0.6733067729083665
+        },
+        "tn": 507,
+        "tp": 669
+      },
+      "near_duplicate_name_or_description": {
+        "fn": 466,
+        "fp": 95,
+        "precision": {
+          "ci95": [
+            0.7056039877628849,
+            0.7920097227669239
+          ],
+          "k": 287,
+          "n": 382,
+          "value": 0.7513089005235603
+        },
+        "recall": {
+          "ci95": [
+            0.3471394455130921,
+            0.4163513121431855
+          ],
+          "k": 287,
+          "n": 753,
+          "value": 0.38114209827357237
+        },
+        "specificity": {
+          "ci95": [
+            0.8482093990813507,
+            0.8956716257204133
+          ],
+          "k": 658,
+          "n": 753,
+          "value": 0.8738379814077025
+        },
+        "tn": 658,
+        "tp": 287
+      },
+      "task_spec_free_text_required_arg": {
+        "fn": 314,
+        "fp": 170,
+        "precision": {
+          "ci95": [
+            0.683927381605663,
+            0.7550115905024632
+          ],
+          "k": 439,
+          "n": 609,
+          "value": 0.7208538587848933
+        },
+        "recall": {
+          "ci95": [
+            0.5474499761694617,
+            0.6177101092660987
+          ],
+          "k": 439,
+          "n": 753,
+          "value": 0.5830013280212484
+        },
+        "specificity": {
+          "ci95": [
+            0.7430261469805586,
+            0.8026627752985329
+          ],
+          "k": 583,
+          "n": 753,
+          "value": 0.7742363877822045
+        },
+        "tn": 583,
+        "tp": 439
+      },
+      "task_spec_near_duplicate_description": {
+        "fn": 557,
+        "fp": 84,
+        "precision": {
+          "ci95": [
+            0.6439131980575437,
+            0.7506732744942046
+          ],
+          "k": 196,
+          "n": 280,
+          "value": 0.7
+        },
+        "recall": {
+          "ci95": [
+            0.23022392295493485,
+            0.2927937503071668
+          ],
+          "k": 196,
+          "n": 753,
+          "value": 0.2602921646746348
+        },
+        "specificity": {
+          "ci95": [
+            0.8639594465639111,
+            0.9089897532745115
+          ],
+          "k": 669,
+          "n": 753,
+          "value": 0.8884462151394422
+        },
+        "tn": 669,
+        "tp": 196
+      },
+      "task_spec_near_duplicate_name": {
+        "fn": 659,
+        "fp": 18,
+        "precision": {
+          "ci95": [
+            0.7602144580069617,
+            0.8958546279118978
+          ],
+          "k": 94,
+          "n": 112,
+          "value": 0.8392857142857143
+        },
+        "recall": {
+          "ci95": [
+            0.10311316395453288,
+            0.1503632498767342
+          ],
+          "k": 94,
+          "n": 753,
+          "value": 0.1248339973439575
+        },
+        "specificity": {
+          "ci95": [
+            0.9625315118013225,
+            0.9848267382570521
+          ],
+          "k": 735,
+          "n": 753,
+          "value": 0.9760956175298805
+        },
+        "tn": 735,
+        "tp": 94
+      },
+      "task_spec_unstated_required_arg": {
+        "fn": 474,
+        "fp": 33,
+        "precision": {
+          "ci95": [
+            0.8551815957676052,
+            0.9236901866720026
+          ],
+          "k": 279,
+          "n": 312,
+          "value": 0.8942307692307693
+        },
+        "recall": {
+          "ci95": [
+            0.3367622436514777,
+            0.4055880230690481
+          ],
+          "k": 279,
+          "n": 753,
+          "value": 0.3705179282868526
+        },
+        "specificity": {
+          "ci95": [
+            0.9390933533462669,
+            0.9686264762075731
+          ],
+          "k": 720,
+          "n": 753,
+          "value": 0.9561752988047809
+        },
+        "tn": 720,
+        "tp": 279
+      },
+      "task_spec_wrapper_object_arg": {
+        "fn": 603,
+        "fp": 0,
+        "precision": {
+          "ci95": [
+            0.9750297556319235,
+            1.0
+          ],
+          "k": 150,
+          "n": 150,
+          "value": 1.0
+        },
+        "recall": {
+          "ci95": [
+            0.17223423505001834,
+            0.2292256153315108
+          ],
+          "k": 150,
+          "n": 753,
+          "value": 0.199203187250996
+        },
+        "specificity": {
+          "ci95": [
+            0.9949243546638158,
+            1.0
+          ],
+          "k": 753,
+          "n": 753,
+          "value": 1.0
+        },
+        "tn": 753,
+        "tp": 150
+      }
+    },
+    "recall_by_n_required_args": {
+      "1": {
+        "any_finding": {
+          "ci95": [
+            0.8290069358902096,
+            0.8942669342795976
+          ],
+          "k": 365,
+          "n": 422,
+          "value": 0.8649289099526066
+        },
+        "n": 422,
+        "near_duplicate_name_or_description": {
+          "ci95": [
+            0.3364365089194108,
+            0.4287343124540285
+          ],
+          "k": 161,
+          "n": 422,
+          "value": 0.3815165876777251
+        },
+        "task_spec_free_text_required_arg": {
+          "ci95": [
+            0.4548596999897874,
+            0.5498368835827439
+          ],
+          "k": 212,
+          "n": 422,
+          "value": 0.5023696682464455
+        },
+        "task_spec_near_duplicate_description": {
+          "ci95": [
+            0.2726765774381198,
+            0.3609899039044454
+          ],
+          "k": 133,
+          "n": 422,
+          "value": 0.31516587677725116
+        },
+        "task_spec_near_duplicate_name": {
+          "ci95": [
+            0.052231673896492116,
+            0.10238328304788916
+          ],
+          "k": 31,
+          "n": 422,
+          "value": 0.07345971563981042
+        },
+        "task_spec_unstated_required_arg": {
+          "ci95": [
+            0.12699906926008012,
+            0.19669289629542494
+          ],
+          "k": 67,
+          "n": 422,
+          "value": 0.15876777251184834
+        },
+        "task_spec_wrapper_object_arg": {
+          "ci95": [
+            0.19005476868733925,
+            0.2698381204715711
+          ],
+          "k": 96,
+          "n": 422,
+          "value": 0.22748815165876776
+        }
+      },
+      "2": {
+        "any_finding": {
+          "ci95": [
+            0.8303292745615479,
+            0.929927256875598
+          ],
+          "k": 137,
+          "n": 154,
+          "value": 0.8896103896103896
+        },
+        "n": 154,
+        "near_duplicate_name_or_description": {
+          "ci95": [
+            0.20856017828111717,
+            0.34795684504721447
+          ],
+          "k": 42,
+          "n": 154,
+          "value": 0.2727272727272727
+        },
+        "task_spec_free_text_required_arg": {
+          "ci95": [
+            0.6520431549527855,
+            0.7914398217188828
+          ],
+          "k": 112,
+          "n": 154,
+          "value": 0.7272727272727273
+        },
+        "task_spec_near_duplicate_description": {
+          "ci95": [
+            0.03565054847774999,
+            0.11539632475077052
+          ],
+          "k": 10,
+          "n": 154,
+          "value": 0.06493506493506493
+        },
+        "task_spec_near_duplicate_name": {
+          "ci95": [
+            0.1512102004161851,
+            0.27859740100595565
+          ],
+          "k": 32,
+          "n": 154,
+          "value": 0.2077922077922078
+        },
+        "task_spec_unstated_required_arg": {
+          "ci95": [
+            0.4219976741976088,
+            0.5780023258023912
+          ],
+          "k": 77,
+          "n": 154,
+          "value": 0.5
+        },
+        "task_spec_wrapper_object_arg": {
+          "ci95": [
+            0.05991824014917512,
+            0.15448334403244088
+          ],
+          "k": 15,
+          "n": 154,
+          "value": 0.09740259740259741
+        }
+      },
+      "3+": {
+        "any_finding": {
+          "ci95": [
+            0.8991380443647501,
+            0.9690257109147671
+          ],
+          "k": 167,
+          "n": 177,
+          "value": 0.943502824858757
+        },
+        "n": 177,
+        "near_duplicate_name_or_description": {
+          "ci95": [
+            0.40233517815666675,
+            0.5478974728145711
+          ],
+          "k": 84,
+          "n": 177,
+          "value": 0.4745762711864407
+        },
+        "task_spec_free_text_required_arg": {
+          "ci95": [
+            0.5769347604477979,
+            0.7161396282771346
+          ],
+          "k": 115,
+          "n": 177,
+          "value": 0.6497175141242938
+        },
+        "task_spec_near_duplicate_description": {
+          "ci95": [
+            0.2368060516329271,
+            0.370584861584616
+          ],
+          "k": 53,
+          "n": 177,
+          "value": 0.2994350282485876
+        },
+        "task_spec_near_duplicate_name": {
+          "ci95": [
+            0.12621718688212497,
+            0.2378666866392477
+          ],
+          "k": 31,
+          "n": 177,
+          "value": 0.1751412429378531
+        },
+        "task_spec_unstated_required_arg": {
+          "ci95": [
+            0.6948770103289283,
+            0.8193855963016137
+          ],
+          "k": 135,
+          "n": 177,
+          "value": 0.7627118644067796
+        },
+        "task_spec_wrapper_object_arg": {
+          "ci95": [
+            0.16557973554449934,
+            0.2869794251391171
+          ],
+          "k": 39,
+          "n": 177,
+          "value": 0.22033898305084745
+        }
+      }
+    },
+    "recall_by_near_duplicate_flag": {
+      "flag_false": {
+        "any_finding": {
+          "ci95": [
+            0.8538293376016501,
+            0.9020226988660236
+          ],
+          "k": 616,
+          "n": 700,
+          "value": 0.88
+        },
+        "n": 700,
+        "near_duplicate_name_or_description": {
+          "ci95": [
+            0.30032756216543627,
+            0.37005275275843547
+          ],
+          "k": 234,
+          "n": 700,
+          "value": 0.3342857142857143
+        },
+        "task_spec_free_text_required_arg": {
+          "ci95": [
+            0.5474127816301366,
+            0.6202386099172046
+          ],
+          "k": 409,
+          "n": 700,
+          "value": 0.5842857142857143
+        },
+        "task_spec_near_duplicate_description": {
+          "ci95": [
+            0.17607025289251899,
+            0.2357291021871485
+          ],
+          "k": 143,
+          "n": 700,
+          "value": 0.2042857142857143
+        },
+        "task_spec_near_duplicate_name": {
+          "ci95": [
+            0.11101365488877944,
+            0.16154979873631656
+          ],
+          "k": 94,
+          "n": 700,
+          "value": 0.13428571428571429
+        },
+        "task_spec_unstated_required_arg": {
+          "ci95": [
+            0.34339528434999395,
+            0.4150730498614637
+          ],
+          "k": 265,
+          "n": 700,
+          "value": 0.37857142857142856
+        },
+        "task_spec_wrapper_object_arg": {
+          "ci95": [
+            0.16667715438983102,
+            0.22523135762489768
+          ],
+          "k": 136,
+          "n": 700,
+          "value": 0.19428571428571428
+        }
+      },
+      "flag_true": {
+        "any_finding": {
+          "ci95": [
+            0.932418011423458,
+            0.9999999999999999
+          ],
+          "k": 53,
+          "n": 53,
+          "value": 1.0
+        },
+        "n": 53,
+        "near_duplicate_name_or_description": {
+          "ci95": [
+            0.932418011423458,
+            0.9999999999999999
+          ],
+          "k": 53,
+          "n": 53,
+          "value": 1.0
+        },
+        "task_spec_free_text_required_arg": {
+          "ci95": [
+            0.4326535142760728,
+            0.6904960344024968
+          ],
+          "k": 30,
+          "n": 53,
+          "value": 0.5660377358490566
+        },
+        "task_spec_near_duplicate_description": {
+          "ci95": [
+            0.932418011423458,
+            0.9999999999999999
+          ],
+          "k": 53,
+          "n": 53,
+          "value": 1.0
+        },
+        "task_spec_near_duplicate_name": {
+          "ci95": [
+            0.0,
+            0.06758198857654187
+          ],
+          "k": 0,
+          "n": 53,
+          "value": 0.0
+        },
+        "task_spec_unstated_required_arg": {
+          "ci95": [
+            0.16437353918463654,
+            0.395806644106185
+          ],
+          "k": 14,
+          "n": 53,
+          "value": 0.2641509433962264
+        },
+        "task_spec_wrapper_object_arg": {
+          "ci95": [
+            0.16437353918463654,
+            0.395806644106185
+          ],
+          "k": 14,
+          "n": 53,
+          "value": 0.2641509433962264
+        }
+      }
+    },
+    "recall_by_pilot": {
+      "A5": {
+        "any_finding": {
+          "ci95": [
+            0.9322133422830445,
+            0.9807138950110632
+          ],
+          "k": 238,
+          "n": 247,
+          "value": 0.9635627530364372
+        },
+        "n": 247,
+        "near_duplicate_name_or_description": {
+          "ci95": [
+            0.4004325366282675,
+            0.5238224087490774
+          ],
+          "k": 114,
+          "n": 247,
+          "value": 0.46153846153846156
+        },
+        "task_spec_free_text_required_arg": {
+          "ci95": [
+            0.32615114372690696,
+            0.44661369240512744
+          ],
+          "k": 95,
+          "n": 247,
+          "value": 0.38461538461538464
+        },
+        "task_spec_near_duplicate_description": {
+          "ci95": [
+            0.4004325366282675,
+            0.5238224087490774
+          ],
+          "k": 114,
+          "n": 247,
+          "value": 0.46153846153846156
+        },
+        "task_spec_near_duplicate_name": {
+          "ci95": [
+            0.004139089434447867,
+            0.03509469140450417
+          ],
+          "k": 3,
+          "n": 247,
+          "value": 0.012145748987854251
+        },
+        "task_spec_unstated_required_arg": {
+          "ci95": [
+            0.06285104904167169,
+            0.13584600468708083
+          ],
+          "k": 23,
+          "n": 247,
+          "value": 0.0931174089068826
+        },
+        "task_spec_wrapper_object_arg": {
+          "ci95": [
+            0.3689740980606394,
+            0.4914955381607852
+          ],
+          "k": 106,
+          "n": 247,
+          "value": 0.4291497975708502
+        }
+      },
+      "A6": {
+        "any_finding": {
+          "ci95": [
+            0.8181719818515913,
+            0.8800842973130292
+          ],
+          "k": 431,
+          "n": 506,
+          "value": 0.8517786561264822
+        },
+        "n": 506,
+        "near_duplicate_name_or_description": {
+          "ci95": [
+            0.30189704791739264,
+            0.38427990526704764
+          ],
+          "k": 173,
+          "n": 506,
+          "value": 0.34189723320158105
+        },
+        "task_spec_free_text_required_arg": {
+          "ci95": [
+            0.6379677649158115,
+            0.7190059508368878
+          ],
+          "k": 344,
+          "n": 506,
+          "value": 0.6798418972332015
+        },
+        "task_spec_near_duplicate_description": {
+          "ci95": [
+            0.1325137004342518,
+            0.19668953699748914
+          ],
+          "k": 82,
+          "n": 506,
+          "value": 0.16205533596837945
+        },
+        "task_spec_near_duplicate_name": {
+          "ci95": [
+            0.14883013864599534,
+            0.21567819155249604
+          ],
+          "k": 91,
+          "n": 506,
+          "value": 0.17984189723320157
+        },
+        "task_spec_unstated_required_arg": {
+          "ci95": [
+            0.46248613199350647,
+            0.5492822322620771
+          ],
+          "k": 256,
+          "n": 506,
+          "value": 0.5059288537549407
+        },
+        "task_spec_wrapper_object_arg": {
+          "ci95": [
+            0.06541308453449284,
+            0.11472420565985718
+          ],
+          "k": 44,
+          "n": 506,
+          "value": 0.08695652173913043
+        }
+      }
+    },
+    "recall_by_primary_cause": {
+      "enum_or_case_difference": {
+        "any_finding": {
+          "ci95": [
+            0.8928208017449293,
+            1.0
+          ],
+          "k": 32,
+          "n": 32,
+          "value": 1.0
+        },
+        "n": 32,
+        "near_duplicate_name_or_description": {
+          "ci95": [
+            0.17952541633609734,
+            0.4856667830095541
+          ],
+          "k": 10,
+          "n": 32,
+          "value": 0.3125
+        },
+        "task_spec_free_text_required_arg": {
+          "ci95": [
+            0.8928208017449293,
+            1.0
+          ],
+          "k": 32,
+          "n": 32,
+          "value": 1.0
+        },
+        "task_spec_near_duplicate_description": {
+          "ci95": [
+            0.11023836252604186,
+            0.3875499364924353
+          ],
+          "k": 7,
+          "n": 32,
+          "value": 0.21875
+        },
+        "task_spec_near_duplicate_name": {
+          "ci95": [
+            0.032401551298366194,
+            0.24218154728387864
+          ],
+          "k": 3,
+          "n": 32,
+          "value": 0.09375
+        },
+        "task_spec_unstated_required_arg": {
+          "ci95": [
+            0.3644951711897464,
+            0.6913061289193116
+          ],
+          "k": 17,
+          "n": 32,
+          "value": 0.53125
+        },
+        "task_spec_wrapper_object_arg": {
+          "ci95": [
+            0.0,
+            0.1071791982550706
+          ],
+          "k": 0,
+          "n": 32,
+          "value": 0.0
+        }
+      },
+      "free_text_paraphrase": {
+        "any_finding": {
+          "ci95": [
+            0.8770049929218792,
+            0.9383062321620793
+          ],
+          "k": 302,
+          "n": 331,
+          "value": 0.9123867069486404
+        },
+        "n": 331,
+        "near_duplicate_name_or_description": {
+          "ci95": [
+            0.2099046901927391,
+            0.3032977651600622
+          ],
+          "k": 84,
+          "n": 331,
+          "value": 0.2537764350453172
+        },
+        "task_spec_free_text_required_arg": {
+          "ci95": [
+            0.7704017485842147,
+            0.8537742442456291
+          ],
+          "k": 270,
+          "n": 331,
+          "value": 0.8157099697885196
+        },
+        "task_spec_near_duplicate_description": {
+          "ci95": [
+            0.07187369022856709,
+            0.1367069887192387
+          ],
+          "k": 33,
+          "n": 331,
+          "value": 0.09969788519637462
+        },
+        "task_spec_near_duplicate_name": {
+          "ci95": [
+            0.1191748650501293,
+            0.19691938204061604
+          ],
+          "k": 51,
+          "n": 331,
+          "value": 0.1540785498489426
+        },
+        "task_spec_unstated_required_arg": {
+          "ci95": [
+            0.41519371884578216,
+            0.5220900330708363
+          ],
+          "k": 155,
+          "n": 331,
+          "value": 0.46827794561933533
+        },
+        "task_spec_wrapper_object_arg": {
+          "ci95": [
+            0.03231045264670498,
+            0.08070261017404337
+          ],
+          "k": 17,
+          "n": 331,
+          "value": 0.0513595166163142
+        }
+      },
+      "list_order_or_membership": {
+        "any_finding": {
+          "ci95": [
+            0.0,
+            0.32440756488388023
+          ],
+          "k": 0,
+          "n": 8,
+          "value": 0.0
+        },
+        "n": 8,
+        "near_duplicate_name_or_description": {
+          "ci95": [
+            0.0,
+            0.32440756488388023
+          ],
+          "k": 0,
+          "n": 8,
+          "value": 0.0
+        },
+        "task_spec_free_text_required_arg": {
+          "ci95": [
+            0.0,
+            0.32440756488388023
+          ],
+          "k": 0,
+          "n": 8,
+          "value": 0.0
+        },
+        "task_spec_near_duplicate_description": {
+          "ci95": [
+            0.0,
+            0.32440756488388023
+          ],
+          "k": 0,
+          "n": 8,
+          "value": 0.0
+        },
+        "task_spec_near_duplicate_name": {
+          "ci95": [
+            0.0,
+            0.32440756488388023
+          ],
+          "k": 0,
+          "n": 8,
+          "value": 0.0
+        },
+        "task_spec_unstated_required_arg": {
+          "ci95": [
+            0.0,
+            0.32440756488388023
+          ],
+          "k": 0,
+          "n": 8,
+          "value": 0.0
+        },
+        "task_spec_wrapper_object_arg": {
+          "ci95": [
+            0.0,
+            0.32440756488388023
+          ],
+          "k": 0,
+          "n": 8,
+          "value": 0.0
+        }
+      },
+      "missing_required_arg": {
+        "any_finding": {
+          "ci95": [
+            0.8153398649097212,
+            0.9195747821461866
+          ],
+          "k": 135,
+          "n": 154,
+          "value": 0.8766233766233766
+        },
+        "n": 154,
+        "near_duplicate_name_or_description": {
+          "ci95": [
+            0.4410618703575967,
+            0.5969509562142604
+          ],
+          "k": 80,
+          "n": 154,
+          "value": 0.5194805194805194
+        },
+        "task_spec_free_text_required_arg": {
+          "ci95": [
+            0.47309327840473736,
+            0.6282742591202154
+          ],
+          "k": 85,
+          "n": 154,
+          "value": 0.551948051948052
+        },
+        "task_spec_near_duplicate_description": {
+          "ci95": [
+            0.2144018004562505,
+            0.3547861650627003
+          ],
+          "k": 43,
+          "n": 154,
+          "value": 0.2792207792207792
+        },
+        "task_spec_near_duplicate_name": {
+          "ci95": [
+            0.17963045107645126,
+            0.31353186129878485
+          ],
+          "k": 37,
+          "n": 154,
+          "value": 0.24025974025974026
+        },
+        "task_spec_unstated_required_arg": {
+          "ci95": [
+            0.5778377286824492,
+            0.7262648838924093
+          ],
+          "k": 101,
+          "n": 154,
+          "value": 0.6558441558441559
+        },
+        "task_spec_wrapper_object_arg": {
+          "ci95": [
+            0.0962711916321223,
+            0.2068269878838274
+          ],
+          "k": 22,
+          "n": 154,
+          "value": 0.14285714285714285
+        }
+      },
+      "nested_object_difference": {
+        "any_finding": {
+          "ci95": [
+            0.7008549515804559,
+            1.0
+          ],
+          "k": 9,
+          "n": 9,
+          "value": 1.0
+        },
+        "n": 9,
+        "near_duplicate_name_or_description": {
+          "ci95": [
+            0.5650002944233439,
+            0.9801091123614551
+          ],
+          "k": 8,
+          "n": 9,
+          "value": 0.8888888888888888
+        },
+        "task_spec_free_text_required_arg": {
+          "ci95": [
+            0.019890887638544907,
+            0.434999705576656
+          ],
+          "k": 1,
+          "n": 9,
+          "value": 0.1111111111111111
+        },
+        "task_spec_near_duplicate_description": {
+          "ci95": [
+            0.5650002944233439,
+            0.9801091123614551
+          ],
+          "k": 8,
+          "n": 9,
+          "value": 0.8888888888888888
+        },
+        "task_spec_near_duplicate_name": {
+          "ci95": [
+            0.019890887638544907,
+            0.434999705576656
+          ],
+          "k": 1,
+          "n": 9,
+          "value": 0.1111111111111111
+        },
+        "task_spec_unstated_required_arg": {
+          "ci95": [
+            0.019890887638544907,
+            0.434999705576656
+          ],
+          "k": 1,
+          "n": 9,
+          "value": 0.1111111111111111
+        },
+        "task_spec_wrapper_object_arg": {
+          "ci95": [
+            0.45258896910698887,
+            0.9367748928821533
+          ],
+          "k": 7,
+          "n": 9,
+          "value": 0.7777777777777778
+        }
+      },
+      "numeric_formatting": {
+        "any_finding": {
+          "ci95": [
+            0.7846891972623643,
+            1.0
+          ],
+          "k": 14,
+          "n": 14,
+          "value": 1.0
+        },
+        "n": 14,
+        "near_duplicate_name_or_description": {
+          "ci95": [
+            1.3877787807814457e-17,
+            0.2153108027376358
+          ],
+          "k": 0,
+          "n": 14,
+          "value": 0.0
+        },
+        "task_spec_free_text_required_arg": {
+          "ci95": [
+            0.7846891972623643,
+            1.0
+          ],
+          "k": 14,
+          "n": 14,
+          "value": 1.0
+        },
+        "task_spec_near_duplicate_description": {
+          "ci95": [
+            1.3877787807814457e-17,
+            0.2153108027376358
+          ],
+          "k": 0,
+          "n": 14,
+          "value": 0.0
+        },
+        "task_spec_near_duplicate_name": {
+          "ci95": [
+            1.3877787807814457e-17,
+            0.2153108027376358
+          ],
+          "k": 0,
+          "n": 14,
+          "value": 0.0
+        },
+        "task_spec_unstated_required_arg": {
+          "ci95": [
+            1.3877787807814457e-17,
+            0.2153108027376358
+          ],
+          "k": 0,
+          "n": 14,
+          "value": 0.0
+        },
+        "task_spec_wrapper_object_arg": {
+          "ci95": [
+            1.3877787807814457e-17,
+            0.2153108027376358
+          ],
+          "k": 0,
+          "n": 14,
+          "value": 0.0
+        }
+      },
+      "value_type_or_shape_mismatch": {
+        "any_finding": {
+          "ci95": [
+            0.6886323576918694,
+            0.8425347018910412
+          ],
+          "k": 86,
+          "n": 111,
+          "value": 0.7747747747747747
+        },
+        "n": 111,
+        "near_duplicate_name_or_description": {
+          "ci95": [
+            0.1498221189884963,
+            0.3015955079996454
+          ],
+          "k": 24,
+          "n": 111,
+          "value": 0.21621621621621623
+        },
+        "task_spec_free_text_required_arg": {
+          "ci95": [
+            0.2525113750360455,
+            0.4253053265284187
+          ],
+          "k": 37,
+          "n": 111,
+          "value": 0.3333333333333333
+        },
+        "task_spec_near_duplicate_description": {
+          "ci95": [
+            0.1498221189884963,
+            0.3015955079996454
+          ],
+          "k": 24,
+          "n": 111,
+          "value": 0.21621621621621623
+        },
+        "task_spec_near_duplicate_name": {
+          "ci95": [
+            0.004955178708528081,
+            0.06332555284276006
+          ],
+          "k": 2,
+          "n": 111,
+          "value": 0.018018018018018018
+        },
+        "task_spec_unstated_required_arg": {
+          "ci95": [
+            0.01939176008214913,
+            0.10113491175598267
+          ],
+          "k": 5,
+          "n": 111,
+          "value": 0.04504504504504504
+        },
+        "task_spec_wrapper_object_arg": {
+          "ci95": [
+            0.32713457628753195,
+            0.5074199461374632
+          ],
+          "k": 46,
+          "n": 111,
+          "value": 0.4144144144144144
+        }
+      },
+      "wrapper_object_flattening": {
+        "any_finding": {
+          "ci95": [
+            0.9103268539187764,
+            0.9890873725316923
+          ],
+          "k": 91,
+          "n": 94,
+          "value": 0.9680851063829787
+        },
+        "n": 94,
+        "near_duplicate_name_or_description": {
+          "ci95": [
+            0.7776396834531167,
+            0.9173622188040635
+          ],
+          "k": 81,
+          "n": 94,
+          "value": 0.8617021276595744
+        },
+        "task_spec_free_text_required_arg": {
+          "ci95": [
+            0.0,
+            0.03926207629154474
+          ],
+          "k": 0,
+          "n": 94,
+          "value": 0.0
+        },
+        "task_spec_near_duplicate_description": {
+          "ci95": [
+            0.7776396834531167,
+            0.9173622188040635
+          ],
+          "k": 81,
+          "n": 94,
+          "value": 0.8617021276595744
+        },
+        "task_spec_near_duplicate_name": {
+          "ci95": [
+            0.0,
+            0.03926207629154474
+          ],
+          "k": 0,
+          "n": 94,
+          "value": 0.0
+        },
+        "task_spec_unstated_required_arg": {
+          "ci95": [
+            0.0,
+            0.03926207629154474
+          ],
+          "k": 0,
+          "n": 94,
+          "value": 0.0
+        },
+        "task_spec_wrapper_object_arg": {
+          "ci95": [
+            0.5159955881639535,
+            0.7088579684486636
+          ],
+          "k": 58,
+          "n": 94,
+          "value": 0.6170212765957447
+        }
+      }
+    },
+    "restricted_to_items_with_ge1_required_arg": {
+      "metrics": {
+        "any_finding": {
+          "fn": 84,
+          "fp": 207,
+          "precision": {
+            "ci95": [
+              0.7344538543452908,
+              0.7906407469244052
+            ],
+            "k": 669,
+            "n": 876,
+            "value": 0.7636986301369864
+          },
+          "recall": {
+            "ci95": [
+              0.8639594465639111,
+              0.9089897532745115
+            ],
+            "k": 669,
+            "n": 753,
+            "value": 0.8884462151394422
+          },
+          "specificity": {
+            "ci95": [
+              0.09646275050015628,
+              0.182902474656006
+            ],
+            "k": 32,
+            "n": 239,
+            "value": 0.13389121338912133
+          },
+          "tn": 32,
+          "tp": 669
+        },
+        "near_duplicate_name_or_description": {
+          "fn": 466,
+          "fp": 56,
+          "precision": {
+            "ci95": [
+              0.7939291322016349,
+              0.8720812138089888
+            ],
+            "k": 287,
+            "n": 343,
+            "value": 0.8367346938775511
+          },
+          "recall": {
+            "ci95": [
+              0.3471394455130921,
+              0.4163513121431855
+            ],
+            "k": 287,
+            "n": 753,
+            "value": 0.38114209827357237
+          },
+          "specificity": {
+            "ci95": [
+              0.7080487975178813,
+              0.8149261533687897
+            ],
+            "k": 183,
+            "n": 239,
+            "value": 0.7656903765690377
+          },
+          "tn": 183,
+          "tp": 287
+        },
+        "task_spec_free_text_required_arg": {
+          "fn": 314,
+          "fp": 170,
+          "precision": {
+            "ci95": [
+              0.683927381605663,
+              0.7550115905024632
+            ],
+            "k": 439,
+            "n": 609,
+            "value": 0.7208538587848933
+          },
+          "recall": {
+            "ci95": [
+              0.5474499761694617,
+              0.6177101092660987
+            ],
+            "k": 439,
+            "n": 753,
+            "value": 0.5830013280212484
+          },
+          "specificity": {
+            "ci95": [
+              0.23495233462117449,
+              0.3491384524689535
+            ],
+            "k": 69,
+            "n": 239,
+            "value": 0.28870292887029286
+          },
+          "tn": 69,
+          "tp": 439
+        },
+        "task_spec_near_duplicate_description": {
+          "fn": 557,
+          "fp": 55,
+          "precision": {
+            "ci95": [
+              0.7256798576080821,
+              0.8276053129151619
+            ],
+            "k": 196,
+            "n": 251,
+            "value": 0.7808764940239044
+          },
+          "recall": {
+            "ci95": [
+              0.23022392295493485,
+              0.2927937503071668
+            ],
+            "k": 196,
+            "n": 753,
+            "value": 0.2602921646746348
+          },
+          "specificity": {
+            "ci95": [
+              0.7124941336838976,
+              0.8187166432009886
+            ],
+            "k": 184,
+            "n": 239,
+            "value": 0.7698744769874477
+          },
+          "tn": 184,
+          "tp": 196
+        },
+        "task_spec_near_duplicate_name": {
+          "fn": 659,
+          "fp": 3,
+          "precision": {
+            "ci95": [
+              0.9129799648468901,
+              0.9894266550514474
+            ],
+            "k": 94,
+            "n": 97,
+            "value": 0.9690721649484536
+          },
+          "recall": {
+            "ci95": [
+              0.10311316395453288,
+              0.1503632498767342
+            ],
+            "k": 94,
+            "n": 753,
+            "value": 0.1248339973439575
+          },
+          "specificity": {
+            "ci95": [
+              0.9637516583923142,
+              0.9957220703997669
+            ],
+            "k": 236,
+            "n": 239,
+            "value": 0.9874476987447699
+          },
+          "tn": 236,
+          "tp": 94
+        },
+        "task_spec_unstated_required_arg": {
+          "fn": 474,
+          "fp": 33,
+          "precision": {
+            "ci95": [
+              0.8551815957676052,
+              0.9236901866720026
+            ],
+            "k": 279,
+            "n": 312,
+            "value": 0.8942307692307693
+          },
+          "recall": {
+            "ci95": [
+              0.3367622436514777,
+              0.4055880230690481
+            ],
+            "k": 279,
+            "n": 753,
+            "value": 0.3705179282868526
+          },
+          "specificity": {
+            "ci95": [
+              0.8124344098163583,
+              0.8999645390292643
+            ],
+            "k": 206,
+            "n": 239,
+            "value": 0.8619246861924686
+          },
+          "tn": 206,
+          "tp": 279
+        },
+        "task_spec_wrapper_object_arg": {
+          "fn": 603,
+          "fp": 0,
+          "precision": {
+            "ci95": [
+              0.9750297556319235,
+              1.0
+            ],
+            "k": 150,
+            "n": 150,
+            "value": 1.0
+          },
+          "recall": {
+            "ci95": [
+              0.17223423505001834,
+              0.2292256153315108
+            ],
+            "k": 150,
+            "n": 753,
+            "value": 0.199203187250996
+          },
+          "specificity": {
+            "ci95": [
+              0.984181206786727,
+              1.0
+            ],
+            "k": 239,
+            "n": 239,
+            "value": 1.0
+          },
+          "tn": 239,
+          "tp": 150
+        }
+      },
+      "n_items": 992,
+      "n_negative": 239,
+      "n_positive": 753
+    }
+  }
+}
