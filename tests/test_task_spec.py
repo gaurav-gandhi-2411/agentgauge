@@ -257,3 +257,16 @@ class TestSurvivingMutants:
         for schema in ({"enum": ["only"]}, {"const": "only"}):
             t = tool("x", {"mode": schema}, ["mode"])
             assert CHECK_UNSTATED not in checks(BlindTask("x", "Do it."), [t])
+
+
+def test_info_only_report_has_no_underspecified_headline() -> None:
+    from rich.console import Console
+
+    from agentgauge.cli import _print_spec_report
+
+    rep = check_task_file([BlindTask("missing", "x")], [tool("a", {}, [])])
+    console = Console(record=True, width=200)
+    _print_spec_report(rep, console)
+    out = console.export_text()
+    assert "may be underspecified" not in out
+    assert CHECK_UNKNOWN_TOOL in out

@@ -800,10 +800,13 @@ def _print_spec_report(spec: TaskSpecReport, console: Console) -> None:
     if not spec.by_task:
         console.print(f"[green]Task specification: no findings in {spec.n_tasks} task(s).[/green]")
         return
-    console.print(
-        f"[bold yellow]Task specification: {spec.n_tasks_flagged}/{spec.n_tasks} task(s) may be "
-        "underspecified (ADVISORY, heuristic, does not fail CI):[/bold yellow]"
-    )
+    if spec.n_tasks_flagged:
+        console.print(
+            f"[bold yellow]Task specification: {spec.n_tasks_flagged}/{spec.n_tasks} task(s) may "
+            "be underspecified (ADVISORY, heuristic, does not fail CI):[/bold yellow]"
+        )
+    else:
+        console.print("[bold]Task specification notes (INFO only):[/bold]")
     for i, vs in spec.by_task:
         for v in vs:
             console.print(
