@@ -10,6 +10,7 @@ from typing import Annotated, Any
 
 import typer
 from rich.console import Console
+from rich.markup import escape
 
 from agentgauge import __version__
 from agentgauge.audit import AuditReport, CoverageSummary, run_audit, summarize_constraint_coverage
@@ -31,6 +32,7 @@ from agentgauge.providers import MockProvider, OllamaProvider, Provider
 from agentgauge.report import render_html, render_json_stable, render_text
 from agentgauge.runner import RunResult, run_tasks
 from agentgauge.scorer import score_all
+from agentgauge.task_spec import TaskSpecReport, check_task_file
 from agentgauge.tasks import Task
 
 # Model the judge rubric was calibrated against. Scores are model-specific:
@@ -775,6 +777,41 @@ async def _eval_async(
         raise typer.Exit(1)
 
 
+def _spec_report_payload(spec: TaskSpecReport) -> dict[str, Any]:
+    return {
+        "n_tasks": spec.n_tasks,
+        "n_tasks_flagged": spec.n_tasks_flagged,
+        "findings": [
+            {
+                "task_index": i,
+                "check": v.check,
+                "severity": v.severity.value,
+                "tool_name": v.tool_name,
+                "detail": v.detail,
+            }
+            for i, vs in spec.by_task
+            for v in vs
+        ],
+    }
+
+
+def _print_spec_report(spec: TaskSpecReport, console: Console) -> None:
+    """Task text and tool names come from the user's files / a server: escape before printing."""
+    if not spec.by_task:
+        console.print(f"[green]Task specification: no findings in {spec.n_tasks} task(s).[/green]")
+        return
+    console.print(
+        f"[bold yellow]Task specification: {spec.n_tasks_flagged}/{spec.n_tasks} task(s) may be "
+        "underspecified (ADVISORY, heuristic, does not fail CI):[/bold yellow]"
+    )
+    for i, vs in spec.by_task:
+        for v in vs:
+            console.print(
+                f"  [yellow]![/yellow] task {i} {escape('[' + v.check + ']')} "
+                f"{escape(v.tool_name)}: {escape(v.detail)}"
+            )
+
+
 @app.command()
 def lint(
     target: Annotated[str, typer.Argument(help="Path to MCP server script, or HTTP/SSE URL")],
@@ -784,6 +821,14 @@ def lint(
     json_output: Annotated[
         bool, typer.Option("--json", help="Machine-readable JSON output")
     ] = False,
+    tasks_file: Annotated[
+        Path | None,
+        typer.Option(
+            "--tasks",
+            help="Opt in: also flag tasks in this tasks file that look underspecified "
+            "(ADVISORY only; never changes the exit code)",
+        ),
+    ] = None,
 ) -> None:
     """Deterministic schema-consistency + name-collision linter. No LLM calls.
 
@@ -797,17 +842,26 @@ def lint(
     reports/v2_1_severity_gate.md for measured precision/recall/false-alarm rate
     and reports/v2_3_task2_retiering.md for the causal-impact-based re-tiering.
     """
-    asyncio.run(_lint_async(target, show_info=show_info, json_output=json_output))
+    asyncio.run(
+        _lint_async(target, show_info=show_info, json_output=json_output, tasks_file=tasks_file)
+    )
 
 
-async def _lint_async(target: str, *, show_info: bool, json_output: bool) -> None:
+async def _lint_async(
+    target: str, *, show_info: bool, json_output: bool, tasks_file: Path | None = None
+) -> None:
     console = Console()
     client, ctx, _ = await _connect(target)
     try:
         info = await client.introspect()
         report = lint_tool_set(info.tools)
+        spec_report = (
+            check_task_file(_load_tasks_file(tasks_file), list(info.tools))
+            if tasks_file is not None
+            else None
+        )
         if json_output:
-            payload = {
+            payload: dict[str, Any] = {
                 "blocking": [
                     {
                         "check": v.check,
@@ -840,9 +894,13 @@ async def _lint_async(target: str, *, show_info: bool, json_output: bool) -> Non
                 "n_info": report.n_info,
                 "flagged": report.flagged,
             }
+            if spec_report is not None:
+                payload["task_specification"] = _spec_report_payload(spec_report)
             typer.echo(json.dumps(payload, indent=2))
         else:
             _print_lint_report(report, console, show_info=show_info)
+            if spec_report is not None:
+                _print_spec_report(spec_report, console)
     finally:
         await cleanup_connection(ctx)
     if report.flagged:
