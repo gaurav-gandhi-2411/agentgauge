@@ -97,3 +97,16 @@ Share of tasks on which each finding fires (no label; nothing here says a flagge
 |---|---|---|---|---|---|---|---|---|
 | argument_degradation_253 | 253 | 0.866 [0.818, 0.902] (219/253) | 0.874 [0.827, 0.909] (221/253) | 0.000 [0.000, 0.015] (0/253) | 0.000 [0.000, 0.015] (0/253) | 0.000 [0.000, 0.015] (0/253) | 0.000 [0.000, 0.015] (0/253) | 0.972 [0.944, 0.987] (246/253) |
 | predictive_validity_44_tool_sets | 1136 | 0.441 [0.412, 0.470] (501/1136) | 0.671 [0.643, 0.697] (762/1136) | 0.021 [0.014, 0.031] (24/1136) | 0.074 [0.060, 0.091] (84/1136) | 0.082 [0.067, 0.099] (93/1136) | 0.138 [0.119, 0.159] (157/1136) | 0.773 [0.748, 0.796] (878/1136) |
+
+## Prospective validation (pre-registered)
+
+The sections above are post-hoc and in-sample. This section is different: a single pre-registered run (registered and timestamped before any data) with the lint frozen at commit d0bd2e7. Source numbers: `reports/task_specification_prospective.json`.
+
+- Sample: 20 MCP servers not used to build or tune the lint, drawn from the same registry and Smithery frame, stratified 5 per catalog-size stratum. 2,792 generated tasks were blind-labelled by two open models and the generator; the outcome is labellers disagreeing on a required argument (26.0% of tasks).
+- Intervals: server-clustered bootstrap, 95%, B = 2,000. Pre-specified bar: lower precision bound >= 0.80 and >= 20 flags from >= 5 servers.
+
+| check | precision | recall | flags | flagging servers | meets bar |
+|---|---|---|---|---|---|
+| task_spec_wrapper_object_arg | 0.989 [0.950, 1.000] | 0.121 [0.020, 0.256] | 89 | 5 of 20 | yes |
+
+`task_spec_wrapper_object_arg` meets the bar, but only just on breadth: it sits exactly at the 5-server floor (leaving out any one flagging server leaves 4 and the check would not be evaluable; precision stays >= 0.98). Read it as high precision, low recall (about 12% of disputed tasks), narrow breadth (5 of 20 servers). One other check was tested and did not meet the pre-specified bar.

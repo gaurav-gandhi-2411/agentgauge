@@ -1,0 +1,23 @@
+{
+  "design": {
+    "frozen_lint_commit": "d0bd2e7",
+    "pre_registered": true,
+    "sample": "20 MCP servers not used to build or tune the lint, drawn from the same registry and Smithery frame, stratified 5 per catalog-size stratum",
+    "n_servers": 20,
+    "n_tasks": 2792,
+    "outcome": "two open-model labellers and the generator, blind-labelled; disagreement on a required argument",
+    "outcome_prevalence": 0.260,
+    "ci": "server-clustered bootstrap, 95%, B = 2000",
+    "pre_specified_bar": "lower precision bound >= 0.80 and >= 20 flags from >= 5 servers"
+  },
+  "task_spec_wrapper_object_arg": {
+    "precision": {"estimate": 0.989, "ci95": [0.950, 1.000]},
+    "recall": {"estimate": 0.121, "ci95": [0.020, 0.256]},
+    "n_flags": 89,
+    "n_flagging_servers": 5,
+    "n_servers": 20,
+    "meets_pre_specified_bar": true,
+    "note": "Exactly at the 5-server floor: leaving out any one flagging server leaves 4 and the check is then not evaluable (precision stays >= 0.98)."
+  },
+  "other_checks": "One other check was tested and did not meet the pre-specified bar."
+}
