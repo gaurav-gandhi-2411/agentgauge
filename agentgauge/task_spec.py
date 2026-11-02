@@ -25,7 +25,8 @@ Checks (every finding is ADVISORY; none changes a score or an exit code):
       properties at all (nothing in the task can be matched to it). Prospectively validated
       (pre-registered, 20 held-out servers, 2,792 tasks): precision 0.989 [0.950, 1.000] but
       recall only 0.121 [0.020, 0.256], and it flagged on just 5 of the 20 servers (see
-      reports/task_specification_prospective.json). High precision, low recall, narrow breadth.
+      reports/task_specification_prospective.json). High precision, low recall, narrow breadth:
+      all flags came from those 5 servers, so generalisation beyond them is not established.
   task_spec_near_duplicate_name
       Another tool in the same catalog has a name whose similarity to the target is at least
       `agentgauge.scorer._COLLISION_THRESHOLD` (the threshold `check_name_collisions` uses).

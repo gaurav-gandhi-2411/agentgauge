@@ -109,4 +109,4 @@ The sections above are post-hoc and in-sample. This section is different: a sing
 |---|---|---|---|---|---|
 | task_spec_wrapper_object_arg | 0.989 [0.950, 1.000] | 0.121 [0.020, 0.256] | 89 | 5 of 20 | yes |
 
-`task_spec_wrapper_object_arg` meets the bar, but only just on breadth: it sits exactly at the 5-server floor (leaving out any one flagging server leaves 4 and the check would not be evaluable; precision stays >= 0.98). Read it as high precision, low recall (about 12% of disputed tasks), narrow breadth (5 of 20 servers). One other check was tested and did not meet the pre-specified bar.
+`task_spec_wrapper_object_arg` meets the bar, but only just on breadth: it sits exactly at the 5-server floor (leaving out any one flagging server leaves 4 and the check would not be evaluable; precision stays >= 0.98). Read it as high precision, low recall (about 12% of disputed tasks), narrow breadth (5 of 20 servers). All 89 flags came from those 5 servers, so generalisation beyond them is not established. One other check was tested and did not meet the pre-specified bar.
