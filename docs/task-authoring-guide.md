@@ -68,7 +68,8 @@ One pre-registered prospective result bears on this. A separate opt-in task-spec
 parameter and the task text does not name every inner required field. On 20 held-out servers
 (2,792 tasks; outcome: two open-model labellers and the generator disagree on a required
 argument), its precision was 0.989 (95% CI 0.950 to 1.000) but its recall was only 0.121
-(0.020 to 0.256), and it flagged tasks on just 5 of the 20 servers (89 flags). Read a flag as
+(0.020 to 0.256), and it flagged tasks on just 5 of the 20 servers (89 flags). All flags came
+from those 5 servers, so generalisation beyond them is not established. Read a flag as
 a reliable hint; read silence as no information. Numbers: `reports/task_specification_prospective.json`
 and `reports/task_specification_validation.md` on that branch (not on this one).
 
@@ -182,7 +183,7 @@ agentgauge diff before_server.py after_server.py --tasks agentgauge_tasks.json
 | Same, as a fixed measurement artifact | `reports/predictive_validity_study.md` | artifact 1 ("Task-name leakage") |
 | Real Jira API nests `fields.project.key`; fixtures flatten | `evals/fixtures/v2_4_corpus/jira_issues_NOTES.md` | "Honesty about sourcing" |
 | S3 tools are simplified wrappers with flat params | `evals/fixtures/v2_4_corpus/aws_s3_NOTES.md` | opening paragraph |
-| Wrapper-object lint, prospective: precision 0.989, recall 0.121, 89 flags from 5 of 20 servers | `reports/task_specification_prospective.json` (branch `feat/lint-task-specification`, lint frozen at d0bd2e7) | `task_spec_wrapper_object_arg` |
+| Wrapper-object lint, prospective: precision 0.989 [0.950, 1.000], recall 0.121, 89 flags all from 5 of 20 servers (generalisation not established) | `reports/task_specification_prospective.json` (branch `feat/lint-task-specification`, lint frozen at d0bd2e7) | `task_spec_wrapper_object_arg` |
 | Floor ties from ambiguous gold: `find_entries`/`lookup_data`, `book_slot`/`plan_event` | `STATUS.md` | T18 "Scope" paragraph ("2 tied at floor") |
 | `name_collision` advisory at similarity >= 0.8 | `agentgauge/linter.py`; `agentgauge/scorer.py` | `check_name_collisions`; `_COLLISION_THRESHOLD = 0.8` |
 | Scan deducts 0.15 per pair, capped 0.30 | `agentgauge/scorer.py` | `_COLLISION_PENALTY` and the comment above it |
